@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miniflow.dev/contracts/project-config.schema.json",
+  "title": "project-config · 项目初始化配置",
+  "description": "projects/<id>/项目配置.json——每个 flow 初始化时读取的实例配置层。合并优先级：显式入参 > 本文件 > flow 默认值。目的：把用户的题材/需求/灵感/出品严肃性/风格/AB 决策在开跑前定死，让 flow 带着底气跑、避免返工。字段用中文键（用户直接手编）。",
+  "type": "object",
+  "required": ["项目"],
+  "additionalProperties": true,
+  "properties": {
+    "项目": { "type": "string", "description": "项目 id，须与目录名一致" },
+    "题材": { "type": "string", "description": "题材/赛道（组合进 direction 输入）" },
+    "题材类型": {
+      "type": "string",
+      "enum": ["现实映射", "模板文"],
+      "description": "现实映射=冲突动力来自现实关系（职场/都市/舆论等），S1 跑全套素材解剖（material-dissect）；模板文=冲突动力来自自足规则系统（无限流/修仙/穿越/系统等），S1 跳过实时解剖（flow 输入 zeitgeist=false）、直接走 kb/trope 梗族结构选型"
+    },
+    "创作目标": {
+      "type": "string",
+      "description": "本项目的商业/创作目标（如：快餐追读优先前三章进推荐池 / 稳健连载防断更 / 短剧 IP 改编向 / 练笔试错）——影响严肃性建议、卡点密度与打磨深度，随背景卡下发子代理"
+    },
+    "需求": { "type": "string", "description": "甲方需求与硬性要求（组合进 direction）" },
+    "灵感": { "type": "string", "description": "灵感、情绪切入、结构参考（组合进 direction）" },
+    "严肃性": {
+      "type": "string",
+      "enum": ["探索", "标准", "出品"],
+      "description": "出品严肃性：探索=低成本试错（建议自动门+免AB）；标准=默认；出品=交付级（建议人工门+AB对照+全量打磨）"
+    },
+    "风格": {
+      "type": "string",
+      "enum": ["爽", "标准"],
+      "description": "风格路线：爽=情绪浓度优先（route=hot）；标准=合理性优先（route=calm）。AB测试=true 时本字段被 route=dual 覆盖"
+    },
+    "AB测试": {
+      "type": "boolean",
+      "description": "是否跑 A/B 对照（双版本+监管基线件，S3 工作量约翻倍）——默认 false，除非出品级或甲方明确要求"
+    },
+    "市场预估": {
+      "type": "string",
+      "description": "基于市场快照（kb/market/snapshot）的人工预估笔记——随背景卡下发给每个子代理，作为选题与结构阶段的底气"
+    },
+    "presets": {
+      "type": "object",
+      "description": "可选：按阶段覆写执行模式（S1-S5: auto/semi/manual）。出品级建议人工门",
+      "additionalProperties": { "type": "string", "enum": ["auto", "semi", "manual"] }
+    }
+  }
+}

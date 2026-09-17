@@ -1,0 +1,81 @@
+{
+  "id": "kb/aesthetic/assertions",
+  "run": "p-ts-001",
+  "scope": "前三章剧本.md（first3 产物）",
+  "tool": "check_aesthetic_asserts (simulated by host agent)",
+  "beats_scanned": 26,
+  "results": [
+    {
+      "assert": "AE-HOOK-EVENT",
+      "level": "block",
+      "pass": true,
+      "detail": "B0001 钩型=反常（四型之一），【0-3秒】在场"
+    },
+    {
+      "assert": "AE-BEAT-FORMAT",
+      "level": "major",
+      "pass": true,
+      "detail": "26 拍三件套完整度 100%"
+    },
+    {
+      "assert": "AE-BEAT-FORMAT#dur",
+      "level": "major",
+      "pass": true,
+      "detail": "时长全部落在 6-15s"
+    },
+    {
+      "assert": "AE-STRUCT-CAUSE#tailhook",
+      "level": "block",
+      "pass": true,
+      "detail": "每拍尾钩在场（一环扣一环）"
+    },
+    {
+      "assert": "AE-DENSITY-WORDS@ep1",
+      "level": "major",
+      "pass": true,
+      "detail": "第1集台词字数≈201（规范 200-300；计数口径=台词正文，分镜/表演指导语不计——发现1：C3 计数口径需在 KB 澄清）"
+    },
+    {
+      "assert": "AE-DENSITY-WORDS@ep2",
+      "level": "major",
+      "pass": true,
+      "detail": "第2集台词字数≈211（规范 200-300；计数口径=台词正文，分镜/表演指导语不计——发现1：C3 计数口径需在 KB 澄清）"
+    },
+    {
+      "assert": "AE-DENSITY-WORDS@ep3",
+      "level": "major",
+      "pass": true,
+      "detail": "第3集台词字数≈233（规范 200-300；计数口径=台词正文，分镜/表演指导语不计——发现1：C3 计数口径需在 KB 澄清）"
+    },
+    {
+      "assert": "AE-DENSITY-HOT",
+      "level": "major",
+      "pass": true,
+      "detail": "三集声明爽点数 [4, 4, 4]，全部 ≥3（hot 档）"
+    },
+    {
+      "assert": "AE-CARD-END",
+      "level": "major",
+      "pass": true,
+      "detail": "三集集末卡点体检逐集附（'为什么必须看下一集'×3）"
+    },
+    {
+      "assert": "AE-COMPLIANCE",
+      "level": "block",
+      "pass": true,
+      "detail": "无真实企业名（磐石/临江全虚构）"
+    },
+    {
+      "assert": "AE-AI-STRUCT",
+      "level": "major",
+      "pass": false,
+      "detail": "结构指纹：三集集功能同构（受辱→回击→授权）命中——红方意见书反对意见1，蓝方已采纳改良（ep4 起异构）"
+    }
+  ],
+  "summary": {
+    "block_fail": 0,
+    "block_total": 3,
+    "major_fail": 1,
+    "verdict": "PASS"
+  }
+}

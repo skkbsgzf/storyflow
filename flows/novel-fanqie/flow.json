@@ -1,0 +1,557 @@
+{
+  "format": "flow@2",
+  "id": "novel-fanqie",
+  "title": "番茄快餐网文工作流 v2（单元剧标准：发散选题 → 世界观底座 → 轻量大纲 → 成稿·去AI味）",
+  "desc": "网文不是电影是电视台：多故事集合体，世界观串联单元剧。S1 发散聚合（好梗集合+世界观种子+单元剧素材库，分清主次）→ S2 世界观底座（暗线先行，wiki 化 RAG）→ S3 轻量大纲（暗线节点+单元剧序列）→ S4 成稿五问（人设/冲突/梗/节目效果/去AI味）。两道用户门（选题 gate-r1、成稿 gate-final），中间红方 agent 复核不打断",
+  "version": "2.2.1",
+  "status": "official",
+  "dataBase": "2026-09-16",
+  "upstream": "novel-longform（母流程形态）；topic-selection v5（S1 选题引擎与红方机制来源）；kb/structure/episodic-webnovel（单元剧结构标准，本 flow 的结构宪法）",
+  "stages": [
+    {
+      "id": "S1",
+      "name": "选题",
+      "entry": "src",
+      "gate": "gate-r1",
+      "nodes": [
+        "src",
+        "market",
+        "tropes",
+        "combo",
+        "zeitgeist",
+        "benchmark",
+        "analysis"
+      ],
+      "question": "素材量爆炸的好梗在哪（发散聚合），主（世界观种子/暗线）次（单元剧素材库）怎么分"
+    },
+    {
+      "id": "S2",
+      "name": "世界观",
+      "entry": "bible",
+      "nodes": [
+        "bible",
+        "red-s2"
+      ],
+      "question": "力量体系/矛盾冲突/主角力量来源是否扎实到能长出一切（暗线先行，底座不能虚）"
+    },
+    {
+      "id": "S3",
+      "name": "大纲",
+      "entry": "outline3",
+      "nodes": [
+        "outline3",
+        "red-s3"
+      ],
+      "question": "暗线节点藏好了吗，单元剧序列每档都炸吗（轻量，只细化首单元）"
+    },
+    {
+      "id": "S4",
+      "name": "成稿",
+      "entry": "chapter",
+      "gate": "gate-final",
+      "nodes": [
+        "chapter",
+        "audit",
+        "polish"
+      ],
+      "question": "六问：人设立得住/冲突自然/梗多/节目效果足/有没有AI味/新读者跟得上吗（定场·新词·断层）"
+    }
+  ],
+  "inputs": {
+    "project": {
+      "type": "project",
+      "required": true,
+      "desc": "项目上下文（产物落点）"
+    },
+    "direction": {
+      "type": "string",
+      "required": true,
+      "desc": "题材方向/好梗种子（自然语言；发散聚合的起点）"
+    },
+    "platform": {
+      "type": "string",
+      "default": "番茄",
+      "desc": "目标平台（番茄=免费阅读/追读口径/日更2-3章）"
+    },
+    "chapters": {
+      "type": "number",
+      "default": 3,
+      "min": 1,
+      "max": 3,
+      "desc": "试稿章数（当前图为前三章展开；后续批次走续跑流程）"
+    },
+    "zeitgeist": {
+      "type": "boolean",
+      "default": true,
+      "bind": {
+        "gate": "e-zei"
+      },
+      "desc": "素材解剖开关。现实映射类题材必开；模板文（无限流/修仙/穿越/系统等）置 false——跳过实时解剖，直接消费 kb/trope 梗族结构选型"
+    }
+  },
+  "outputs": [
+    { "node": "analysis", "title": "S1 · 选题报告（好梗集合+世界观种子+单元剧素材库，分清主次）" },
+    { "node": "bible", "title": "S2 · 世界观圣经 + 世界观/ wiki（RAG）" },
+    { "node": "outline3", "title": "S3 · 暗线节点表 + 单元剧序列 + 首单元细纲" },
+    { "node": "polish", "title": "S4 · 三章终稿（去AI味·可发布口径）" }
+  ],
+  "graph": {
+    "format": "smwf@2",
+    "name": "novel-fanqie",
+    "nodes": {
+      "src": {
+        "kind": "novel-txt",
+        "stage": "S1",
+        "title": "选题素材",
+        "output": "选题素材.md"
+      },
+      "market": {
+        "kind": "core",
+        "stage": "S1",
+        "title": "市场快照装载",
+        "minitool": "kb_load",
+        "loads": [
+          "kb/market/snapshot",
+          "kb/market/structure",
+          "kb/market/constraints",
+          "kb/market/internet-feel",
+          "kb/market/setting-rules",
+          "kb/market/meme-rules",
+          "kb/market/topic-anatomy",
+          "kb/structure/episodic-webnovel",
+          "kb/formats/webnovel-fastfood",
+          "kb/formats/webnovel-longform"
+        ]
+      },
+      "tropes": {
+        "kind": "agent",
+        "stage": "S1",
+        "title": "找梗选梗（发散）",
+        "skill": "find-trope", "kit": "search", "op": "find-trope",
+        "output": "内部/稿本/梗卡.md",
+        "desc": "发散优先：检索梗族+演化链，找「素材量爆炸」的好梗（一个梗能长出一串故事和一表设定）；主梗机制从解剖结构/好梗种子里长出（回指出处，禁套路复写）；梗落位标注结构位与消费点（梗是结构的分泌物，不是库存）"
+      },
+      "combo": {
+        "kind": "core",
+        "stage": "S1",
+        "title": "梗组合相性校验",
+        "minitool": "check_trope_combo",
+        "onFail": "退回 tropes 重选"
+      },
+      "zeitgeist": {
+        "kind": "agent",
+        "stage": "S1",
+        "title": "素材解剖聚合",
+        "skill": "material-dissect", "kit": "search", "op": "material-dissect",
+        "webSearch": true,
+        "output": "内部/稿本/热点素材.md",
+        "desc": "扒结构不收集梗：四层剥离（现象/利益/权力/结构）→ 关系结构与权力不对称 → 逆位/好梗候选（每个回指出处）→ 材料落位表（素材必须标注结构位/消费点/去向，落不了位的删除）。模板文题材（zeitgeist=false）跳过本节点"
+      },
+      "benchmark": {
+        "kind": "core",
+        "stage": "S1",
+        "title": "竞品对标装载",
+        "minitool": "kb_load",
+        "loads": "kb/benchmark/*",
+        "filterBy": "tropes.梗卡.对标件"
+      },
+      "analysis": {
+        "kind": "agent",
+        "stage": "S1",
+        "title": "选题报告（发散聚合）",
+        "skill": "topic-analysis-report", "kit": "search", "op": "topic-analysis-report",
+        "assist": [
+          "internet-feel"
+        ],
+        "output": "对外交付/01-选题报告.md",
+        "desc": "选题=发散聚合，不是锁一个故事。产出四件：①好梗集合与世界观种子（素材量爆炸点细化：这个梗能长出多少设定/多少单元/多少梗）②调研融合（市场温度一句话/客群画像/话题度——篇幅给足客群与梗，竞品与平台体量不展开）③主次划分（主线=暗线悬念，只画节点不写故事；单元剧素材库=候选故事池，明确「具体事件只是单元候选」）④风险与约束移交单。书名候选随世界观种子给方向级候选（不锁死）"
+      },
+      "gate-r1": {
+        "kind": "gate",
+        "stage": "S1",
+        "title": "R1 · 选题验收（用户定种子与主次）",
+        "skill": "plot-redline", "kit": "plot", "op": "plot-redline",
+        "output": "内部/意见/多视角意见书-gate-r1.md",
+        "desc": "红方四视角验收选题（发散制）：素材爆炸(这个好梗能长出多少东西)/主次(主线暗线与单元库分清了吗)/客群(疼点真实吗)/梗(落位了吗)；合规红线逐条过；用户裁决世界观种子与主次划分后进 S2",
+        "reviewers": [
+          "plot-redline（红方评审）"
+        ]
+      },
+      "bible": {
+        "kind": "agent",
+        "stage": "S2",
+        "title": "世界观锻造（底座·暗线先行）",
+        "skill": "world-forge", "kit": "plot", "op": "world-forge",
+        "output": "世界书/世界观圣经.md",
+        "desc": "选题后先搞世界观：四件套（力量体系/势力矛盾/主角力量来源与代价/世界规则清单）——人物动机从世界观长出来，做啥都合理且有趣；规则清单三件套（gate-r1 指定的必交清单）在此定稿；产出双件：世界观圣经.md（人读）+ 世界观/ wiki 目录（词条+index.json，RAG：大纲/成稿节点开工查索引按 tags 拉词条）；本步不写任何剧情"
+      },
+      "red-s2": {
+        "kind": "agent",
+        "stage": "S2",
+        "title": "红方复核·世界观",
+        "skill": "plot-redline", "kit": "plot", "op": "plot-redline",
+        "output": "内部/意见/多视角意见书-red-s2.md",
+        "desc": "四视角复核世界观底座（非门）：力量体系能推演出场面吗(规则=梗的发生器)/矛盾张力线自然吗/主角来源之谜够撑暗线吗/规则清单有漏洞吗；wiki 词条齐备与 index.json 可用性属硬检查；block 级意见 S3 强制吸收"
+      },
+      "outline3": {
+        "kind": "agent",
+        "stage": "S3",
+        "title": "单元剧大纲（轻量）",
+        "skill": "episodic-outline", "kit": "plot", "op": "episodic-outline",
+        "output": "内部/稿本/单元剧大纲.md",
+        "desc": "轻量大纲，不开编剧式重型结构：①暗线节点表（3-5 节点，藏而不讲）②单元剧序列（前 3-5 单元：一句话故事/梗点/人设展示位/状态增量，首单元最炸）③只细化第一单元逐章细纲（前三章纪律：前 100 字入戏/每章 ≥1 梗点/钩型轮换/第 3 章末双押）；人物动机查 wiki 词条，冲突从张力线长出来，禁巧合硬凑"
+      },
+      "red-s3": {
+        "kind": "agent",
+        "stage": "S3",
+        "title": "红方复核·大纲",
+        "skill": "plot-redline", "kit": "plot", "op": "plot-redline",
+        "output": "内部/意见/多视角意见书-red-s3.md",
+        "desc": "四视角复核大纲（非门）：首单元炸吗(推荐池门票)/单元间有沙漠段吗/暗线藏住了吗(大纲正文不许剧透主线)/动机查得到词条吗；block 级意见成稿前强制吸收"
+      },
+      "audit": {
+        "kind": "core",
+        "stage": "S4",
+        "title": "断言校验（三章）",
+        "minitool": "check_aesthetic_asserts",
+        "asserts": [
+          "AE-PROSE-TRIPLET",
+          "AE-PROSE-NOTBUT",
+          "AE-PROSE-RHYTHM",
+          "AE-PROSE-SLOP",
+          "AE-COMPLIANCE"
+        ],
+        "onFail": "退回对应章定点修",
+        "desc": "确定性完整性断言（M1 边界）：小说正文走内核 AE-PROSE-* 断言（三连排比≤1/不是A是B≤2/节奏词≤2/slop词，iterate 上游自动展开全部实例）；剧本走拍级断言。收据=内部/断言报告-audit.json；交稿前另跑 tools/prose-scan.py 留收据 + tools/flow-verify.py 复检无红档（AGENTS.md 铁律10）"
+      },
+      "polish": {
+        "kind": "agent",
+        "stage": "S4",
+        "title": "去AI味终稿打磨",
+        "skill": "novel-deai", "kit": "prose", "op": "novel-deai",
+        "assist": [
+          "dialogue-polish"
+        ],
+        "output": "对外交付/02-前三章终稿.md",
+        "desc": "强制末环节，六问总检（人设/冲突/梗/节目效果/AI味/读者断层）：三章合稿过三遍法（声口→处境→机味）+ OpenAI 8类禁则清单扫描（kb/aesthetic/slop-list）+ 梗点存活检查 + 钩子轮换复核 + 可截屏场面盘点 + 新读者官零上下文通读（不知在哪/不知谁/不懂的词=block）；产出可发布终稿；修订对照表内部留痕"
+      },
+      "gate-final": {
+        "kind": "gate",
+        "stage": "S4",
+        "title": "终稿验收（用户读三章）",
+        "skill": "plot-redline", "kit": "plot", "op": "plot-redline",
+        "output": "内部/意见/多视角意见书-gate-final.md",
+        "desc": "红方五视角终审（六问制）：人设/冲突/梗/节目效果/AI味/读者断层（first-reader 零上下文通读）；前置硬条件：tools/flow-verify.py 无红档；用户读三章终稿裁决——过=试稿交付，打回=按根因退 polish 或对应章",
+        "reviewers": [
+          "plot-redline（红方评审）",
+          "first-reader（新读者官·零上下文首读者，评审前禁读大纲/圣经/底牌）"
+        ]
+      },
+      "chapter": {
+        "kind": "agent",
+        "stage": "S4",
+        "title": "章节成稿",
+        "skill": "novel-chapter", "kit": "prose", "op": "novel-chapter",
+        "iterate": {
+          "unit": "章",
+          "over": "outline3.逐章细纲",
+          "artifact": "章节正文/第{n}章.md",
+          "first": 3
+        },
+        "desc": "逐章成稿：每章是一个迭代实例（独立任务包/产物/快照），节点本身只有一个。读者契约：首章前300字交齐定场四问（何时/何地/谁+想要什么/世界规矩）；新设定词首现必须巧妙说明（五手法：场景演示/官方文书/人物一句话/用后即释/刻意存疑且每章≤2）；写前先拉世界书（index.json 按tags + 章账末节读者认知边界），正文出现而世界书未登记的词=断层，先登记再写",
+        "output": "章节正文/第1章.md"
+      }
+    },
+    "edges": [
+      {
+        "id": "e-tro",
+        "from": "src",
+        "to": "tropes",
+        "role": "flow"
+      },
+      {
+        "id": "e-mkt-tro",
+        "from": "market",
+        "to": "tropes",
+        "role": "flow"
+      },
+      {
+        "id": "e-zei",
+        "from": "src",
+        "to": "zeitgeist",
+        "role": "flow"
+      },
+      {
+        "id": "e-combo",
+        "from": "tropes",
+        "to": "combo",
+        "role": "flow"
+      },
+      {
+        "id": "e-tro-ben",
+        "from": "tropes",
+        "to": "benchmark",
+        "role": "flow",
+        "desc": "按 tropes.梗卡.对标件 过滤装载"
+      },
+      {
+        "id": "e-an1",
+        "from": "src",
+        "to": "analysis",
+        "via": "sm.topic-analysis",
+        "role": "flow"
+      },
+      {
+        "id": "e-an2",
+        "from": "market",
+        "to": "analysis",
+        "via": "sm.topic-analysis",
+        "role": "flow"
+      },
+      {
+        "id": "e-an3",
+        "from": "tropes",
+        "to": "analysis",
+        "via": "sm.topic-analysis",
+        "role": "flow"
+      },
+      {
+        "id": "e-an4",
+        "from": "combo",
+        "to": "analysis",
+        "via": "sm.topic-analysis",
+        "role": "flow"
+      },
+      {
+        "id": "e-an5",
+        "from": "zeitgeist",
+        "to": "analysis",
+        "via": "sm.topic-analysis",
+        "role": "flow"
+      },
+      {
+        "id": "e-an6",
+        "from": "benchmark",
+        "to": "analysis",
+        "via": "sm.topic-analysis",
+        "role": "flow"
+      },
+      {
+        "id": "e-r1",
+        "from": "analysis",
+        "to": "gate-r1",
+        "via": "sm.review",
+        "role": "flow"
+      },
+      {
+        "id": "e-bible",
+        "from": "gate-r1",
+        "to": "bible",
+        "role": "flow"
+      },
+      {
+        "id": "e-red2",
+        "from": "bible",
+        "to": "red-s2",
+        "via": "sm.redline",
+        "role": "flow"
+      },
+      {
+        "id": "e-outline",
+        "from": "red-s2",
+        "to": "outline3",
+        "role": "flow"
+      },
+      {
+        "id": "e-red3",
+        "from": "outline3",
+        "to": "red-s3",
+        "via": "sm.redline",
+        "role": "flow"
+      },
+      {
+        "id": "e-pol1",
+        "from": "audit",
+        "to": "polish",
+        "role": "flow"
+      },
+      {
+        "id": "e-fin",
+        "from": "polish",
+        "to": "gate-final",
+        "via": "sm.review",
+        "role": "flow"
+      },
+      {
+        "id": "e-reds3-chapter",
+        "from": "red-s3",
+        "to": "chapter",
+        "role": "flow",
+        "desc": "大纲红方放行 → 逐章成稿"
+      },
+      {
+        "id": "e-bible-chapter",
+        "from": "bible",
+        "to": "chapter",
+        "role": "flow",
+        "desc": "世界观底座供设定"
+      },
+      {
+        "id": "e-outline3-chapter",
+        "from": "outline3",
+        "to": "chapter",
+        "role": "flow",
+        "desc": "逐章细纲为成稿输入"
+      },
+      {
+        "id": "e-chapter-audit",
+        "from": "chapter",
+        "to": "audit",
+        "role": "flow",
+        "desc": "逐章实例过断言，汇总校验"
+      },
+      {
+        "id": "e-chapter-polish",
+        "from": "chapter",
+        "to": "polish",
+        "role": "flow",
+        "desc": "各章实例打磨"
+      }
+    ],
+    "outputs": [
+      "analysis",
+      "bible",
+      "outline3",
+      "chapter",
+      "polish"
+    ]
+  },
+  "quality": {
+    "structureLaw": "kb/structure/episodic-webnovel 为结构宪法：网文=多故事集合体，世界观串联单元剧；暗线先行，主线可平，单元必须炸；选题分清主次（好梗集合+世界观种子+单元素材库，不锁主线故事）",
+    "reviewModel": "红方 v2 视角代入制：S2/S3 agent 复核意见书（非门，block 级意见下游强制吸收），S1/S4 用户验收门",
+    "worldviewFirst": "选题过门先做世界观（四件套+wiki RAG），本步不写剧情；人物动机从世界观长出来；世界观未 wiki 化（无 index.json）大纲/成稿不得派发",
+    "fiveQuestions": "成稿六问：人设立得住/冲突自然/梗多/节目效果足/没有AI味/新读者跟得上——大纲→小说的质量重心",
+    "readerContract": "读者契约（first-reader 新读者官执尺）：①开篇定场四问——首章前300字交齐何时/何地/谁+想要什么/世界规矩，且必须长在事件与对话里，禁说明书式倾泻；②新词准入——每个新设定词首现必须用五手法之一巧妙说明（场景演示/官方文书/人物一句话/用后即释/刻意存疑每章≤2），先在世界书登记再进正文；③读者认知边界——每章结算时在章账记「读者此刻知道/不知道」，断层=世界观书里有而读者不知道的词被当已知用，或正文有而世界书没有的词",
+    "memeDensity": "每章 ≥1 可切片梗点；梗进对话进情境禁解说式玩梗；情绪真段落零梗",
+    "deai": "终稿过 novel-deai 三遍法；朱雀类参考信号作抽测参考，不作目标函数",
+    "fastfood": "章长 1500-2400；前 300 字入戏；1-3 行段落为主；章末钩子四型轮换；首单元最炸（推荐池门票）",
+    "allow_agent_verdict": false,
+    "twoRounds": "第一轮跑至 gate-r1（用户定种子与主次）；第二轮 gate-r1 过后 S2→S4 直通至 gate-final（用户读三章终稿）"
+  },
+  "harness": {
+    "mode": "task-package",
+    "awaiting_input_at": [
+      "analysis",
+      "bible",
+      "gate-final",
+      "gate-r1",
+      "outline3",
+      "polish",
+      "red-s2",
+      "red-s3",
+      "tropes",
+      "zeitgeist",
+      "chapter"
+    ],
+    "core_in_process": [
+      "src",
+      "market",
+      "combo",
+      "benchmark",
+      "audit"
+    ],
+    "wikiRag": "项目级设定 RAG 约定：projects/<id>/世界书/ 目录 = 类型化词条（设定/人物/势力/地理/编年/伏笔/底牌，frontmatter id/title/tags/links/status/version）+ index.json 索引；世界观步生成，章回交稿后按 世界书/纪律.md 结算五件（章卡/人物状态/handoff/伏笔变动/世界揭示）+第七件读者认知边界；大纲/成稿/打磨步开工先查索引按 tags 拉词条。正文驱动补全（写到哪里补到哪里）：写前拉「读者认知边界」（章账末节：读者此刻知道/不知道什么），写中新词即录待登记清单，结算时新词落档名目与黑话登记台账——正文出现而世界书没有的词=断层，世界书有而读者未被介绍的词当已知用=同罪",
+    "note": "章级连续性（台账五类+读者认知边界）由章回写手按 novel-chapter 契约滚动维护；改 done 节点产物必须走 flow_rerun 或铁律10五步降级路径（R2 事故决议）"
+  },
+  "engine": {
+    "type": "stage-gate-loop",
+    "rule": "每个阶段 = 产出流 → 质量关口。S1/S4 关口 = 用户验收门；S2/S3 关口 = 红方 agent 复核（意见书节点）。用户门裁决：pass → 下一阶段入口；send-back → 回本阶段入口定点重做，失效范围仅限本阶段",
+    "send_back": "gate → 本阶段 entry（仅本阶段；跨阶段须 force 人工介入）",
+    "cascade": "打回失效范围 = 本阶段；已 pass 阶段产物即定稿",
+    "exit": "gate-final pass → 试稿交付（三章终稿 + 单元排产口径）",
+    "verdicts": {
+      "pass": "通过前进",
+      "pass-with-conditions": "附条件前进",
+      "send-back": "打回（仅本阶段修改流）"
+    },
+    "snapshots": "数据流入节点即注入快照：输入指纹（上游哈希）+ 输出副本（不可变，逐版本）",
+    "rerun": "从任一节点重跑，跑到本阶段质量关口即停；未变化的上游走缓存命中",
+    "presets": [
+      "auto（全自动：断言绿即过，不提问）",
+      "semi（半自动：仅用户门与断言失败时提问）",
+      "manual（人工审：每个产出节点逐个确认）"
+    ],
+    "scheduling": {
+      "model": "dag-ready-batch",
+      "ready": "节点就绪 = 全部活跃上游 done（AND-join）",
+      "dispatch": "flow_next 返回就绪批：批内认知步互不依赖，宿主并行执行（S1：找梗 ∥ 素材解剖）",
+      "core_inline": "core/minitool 步零 token，内核就绪即就地执行",
+      "barrier": "用户门是同步屏障：门未 pass，下一阶段不派发"
+    },
+    "iterate": "节点=任务定义，可循环执行多次：节点 iterate{unit, over, artifact, first} 声明迭代单位/来源/产物模板/本期数量；实例=(节点,迭代键)，每次迭代独立任务包与快照（第 3 章和第 1 章是不同实例，不是不同节点）；写 1000 章节点也不爆炸。下游节点以「全部迭代实例完成」为就绪；内核循环调度为后续里程碑项，当前先在流程与画布层呈现"
+  },
+  "roleModel": {
+    "production": "找梗师/素材解剖师/世界观锻造师/单元剧编排师/章回写手/去AI味终稿师",
+    "review": "剧情红队——S2/S3 站复核位出意见书（非门），S1/S4 备验收剖面供用户裁决",
+    "principle": "底座打扎实（世界观+wiki），上层灵活跑（单元剧素材库随时补位、多创新多玩抽象）；用户只在两处拍板（种子与主次、三章终稿）"
+  },
+  "changelog": [
+    {
+      "version": "2.2.1",
+      "date": "2026-09-17",
+      "changes": [
+        "audit 咬合小说正文：内核断言表新增 AE-PROSE-*（三连排比/不是A是B/节奏词/slop 词），iterate 上游产物自动展开全部实例（此前小说正文被 AE-SKIP-NON-BEAT 跳过=空转）",
+        "gate-final 前置硬条件：flow-verify 无红档（R2 绕流事故决议落地）；收据纪律（prose-scan/flow-verify 落盘）入 harness.note"
+      ]
+    },
+    {
+      "version": "2.2.0",
+      "date": "2026-09-17",
+      "changes": [
+        "读者契约落地（用户反馈：开篇没交代世界观/背景/主角）：S4 五问升六问，新增 first-reader 新读者官角色（零上下文首读者，评审前禁读大纲/圣经/底牌）；chapter/polish/gate-final 契约挂定场四问+新词五手法+断层检查",
+        "正文驱动 RAG（写到哪里补到哪里）：harness.wikiRag 升级——写前拉读者认知边界（章账末节），写中新词即录待登记清单，结算新词落档名目与黑话登记台账；断层双向定义（世界书有读者不知/正文有世界书无）",
+        "去AI味升级：polish kb 新增 kb/aesthetic/slop-list（OpenAI 官方 8 类禁词+中文映射，词表双向：管输出也管提示词）；polish 加 8 类清单扫描与新读者官通读"
+      ]
+    },
+    {
+      "version": "2.1.0",
+      "date": "2026-09-17",
+      "changes": [
+        "节点建模修正：第1/2/3章成稿合并为迭代节点 chapter（iterate 声明：单位=章，来源=逐章细纲，产物=章节正文/第{n}章.md，本期前3章）——节点是任务定义可循环执行，实例增长不再撑爆节点图"
+      ]
+    },
+    {
+      "version": "2.0.0",
+      "date": "2026-09-16",
+      "changes": [
+        "结构重构（用户流程反馈驱动）：确立单元剧网文结构标准 kb/structure/episodic-webnovel 为结构宪法——网文=多故事集合体，世界观串联单元剧；暗线先行，主线可平，单元必须炸",
+        "S1 重定义为发散聚合：产出好梗集合+世界观种子+单元剧素材库，分清主次，不锁主线故事（gate-r1 验收发散制四问）",
+        "S2 从「开书 Bible」重构为「世界观锻造」（skill=world-forge）：四件套（力量体系/势力矛盾/主角来源与代价/规则清单）+ wiki 化 RAG（世界观/ 目录：词条+index.json，大纲/成稿按 tags 拉词条）；本步不写剧情，人物动机从世界观长出来",
+        "S3 从「前三章章纲」重构为「单元剧大纲」（skill=episodic-outline）：暗线节点表+单元剧序列+只细化首单元；大纲→成稿重心=五问（人设/冲突/梗/节目效果/AI味）",
+        "S4 章回/打磨节点契约接入五问与 wiki RAG 约定；plot-choreographer（编剧重型编排）退出本 flow 主线，留 toolkit 备用"
+      ]
+    },
+    {
+      "version": "1.2.0",
+      "date": "2026-09-16",
+      "changes": [
+        "S1 内容升级：zeitgeist 重构为素材解剖聚合（material-dissect）——四层剥离→关系结构→逆位爽点→材料落位表",
+        "流程灵活性：题材类型适配——模板文（zeitgeist=false）跳过实时解剖；新增 toolkit 件 kb/market/topic-anatomy + skills/material-dissect"
+      ]
+    },
+    {
+      "version": "1.1.0",
+      "date": "2026-09-16",
+      "changes": [
+        "选题报告契约重构：四问制（新鲜度/客群处境/话题度/梗怎么用）；明确不做平台体量、竞品对标表、热搜罗列"
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-09-16",
+      "changes": [
+        "首版：基于 topic-selection v5.1.1 引擎与 toolkit 搭建的番茄快餐网文线"
+      ]
+    }
+  ]
+}

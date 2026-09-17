@@ -1,0 +1,362 @@
+[
+ {
+  "id": "8",
+  "styleType": "自定义",
+  "styleName": "自定义",
+  "styleDesc": "自定义",
+  "styleImagePath": "",
+  "styleExampleImagePath": ""
+ },
+ {
+  "id": "17",
+  "styleType": "写实摄影",
+  "styleName": "照片写实",
+  "styleDesc": "照片写实",
+  "styleImagePath": "https://creative.creatifyone.com/images/照片写实.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/照片写实.png"
+ },
+ {
+  "id": "18",
+  "styleType": "写实摄影",
+  "styleName": "电影现实",
+  "styleDesc": "电影现实",
+  "styleImagePath": "https://creative.creatifyone.com/images/电影现实.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/电影现实.png"
+ },
+ {
+  "id": "19",
+  "styleType": "写实摄影",
+  "styleName": "模拟胶片",
+  "styleDesc": "模拟胶片",
+  "styleImagePath": "https://creative.creatifyone.com/images/模拟胶片.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/模拟胶片.png"
+ },
+ {
+  "id": "20",
+  "styleType": "写实摄影",
+  "styleName": "复古彩色",
+  "styleDesc": "复古彩色",
+  "styleImagePath": "https://creative.creatifyone.com/images/复古彩色.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/复古彩色.png"
+ },
+ {
+  "id": "21",
+  "styleType": "写实摄影",
+  "styleName": "复古黑白",
+  "styleDesc": "复古黑白",
+  "styleImagePath": "https://creative.creatifyone.com/images/复古黑白.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/复古黑白.png"
+ },
+ {
+  "id": "22",
+  "styleType": "卡通动画",
+  "styleName": "皮克斯动画",
+  "styleDesc": "皮克斯动画",
+  "styleImagePath": "https://creative.creatifyone.com/images/皮克斯动画.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/皮克斯动画.png"
+ },
+ {
+  "id": "23",
+  "styleType": "卡通动画",
+  "styleName": "迪士尼卡通",
+  "styleDesc": "迪士尼卡通",
+  "styleImagePath": "https://creative.creatifyone.com/images/迪士尼卡通.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/迪士尼卡通.png"
+ },
+ {
+  "id": "24",
+  "styleType": "卡通动画",
+  "styleName": "日式动画",
+  "styleDesc": "日式动画",
+  "styleImagePath": "https://creative.creatifyone.com/images/日式动画.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/日式动画.png"
+ },
+ {
+  "id": "25",
+  "styleType": "卡通动画",
+  "styleName": "日式可爱",
+  "styleDesc": "日式可爱",
+  "styleImagePath": "https://creative.creatifyone.com/images/日式可爱.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/日式可爱.png"
+ },
+ {
+  "id": "26",
+  "styleType": "卡通动画",
+  "styleName": "吉卜力",
+  "styleDesc": "吉卜力",
+  "styleImagePath": "https://creative.creatifyone.com/images/吉卜力.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/吉卜力.png"
+ },
+ {
+  "id": "27",
+  "styleType": "卡通动画",
+  "styleName": "卡通插画",
+  "styleDesc": "卡通插画",
+  "styleImagePath": "https://creative.creatifyone.com/images/卡通插画.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/卡通插画.png"
+ },
+ {
+  "id": "28",
+  "styleType": "卡通动画",
+  "styleName": "儿童绘本",
+  "styleDesc": "儿童绘本",
+  "styleImagePath": "https://creative.creatifyone.com/images/儿童绘本.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/儿童绘本.png"
+ },
+ {
+  "id": "29",
+  "styleType": "卡通动画",
+  "styleName": "美式漫画",
+  "styleDesc": "美式漫画",
+  "styleImagePath": "https://creative.creatifyone.com/images/美式漫画.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/美式漫画.png"
+ },
+ {
+  "id": "30",
+  "styleType": "卡通动画",
+  "styleName": "黏土动画",
+  "styleDesc": "黏土动画",
+  "styleImagePath": "https://creative.creatifyone.com/images/黏土动画.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/黏土动画.png"
+ },
+ {
+  "id": "31",
+  "styleType": "卡通动画",
+  "styleName": "木偶定格动画",
+  "styleDesc": "木偶定格动画",
+  "styleImagePath": "https://creative.creatifyone.com/images/木偶定格动画.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/木偶定格动画.png"
+ },
+ {
+  "id": "32",
+  "styleType": "卡通动画",
+  "styleName": "现代复古动画",
+  "styleDesc": "现代复古动画",
+  "styleImagePath": "https://creative.creatifyone.com/images/现代复古动画.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/现代复古动画.png"
+ },
+ {
+  "id": "33",
+  "styleType": "卡通动画",
+  "styleName": "梦工厂",
+  "styleDesc": "梦工厂",
+  "styleImagePath": "https://creative.creatifyone.com/images/梦工厂.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/梦工厂.png"
+ },
+ {
+  "id": "34",
+  "styleType": "卡通动画",
+  "styleName": "莱卡定格动画",
+  "styleDesc": "莱卡定格动画",
+  "styleImagePath": "https://creative.creatifyone.com/images/莱卡定格动画.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/莱卡定格动画.png"
+ },
+ {
+  "id": "35",
+  "styleType": "卡通动画",
+  "styleName": "照明娱乐",
+  "styleDesc": "照明娱乐",
+  "styleImagePath": "https://creative.creatifyone.com/images/照明娱乐.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/照明娱乐.png"
+ },
+ {
+  "id": "36",
+  "styleType": "风格艺术",
+  "styleName": "水彩画",
+  "styleDesc": "水彩画",
+  "styleImagePath": "https://creative.creatifyone.com/images/水彩画.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/水彩画.png"
+ },
+ {
+  "id": "37",
+  "styleType": "风格艺术",
+  "styleName": "线稿",
+  "styleDesc": "线稿",
+  "styleImagePath": "https://creative.creatifyone.com/images/线稿.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/线稿.png"
+ },
+ {
+  "id": "38",
+  "styleType": "风格艺术",
+  "styleName": "像素风",
+  "styleDesc": "像素风",
+  "styleImagePath": "https://creative.creatifyone.com/images/像素风.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/像素风.png"
+ },
+ {
+  "id": "39",
+  "styleType": "风格艺术",
+  "styleName": "低多边形",
+  "styleDesc": "低多边形",
+  "styleImagePath": "https://creative.creatifyone.com/images/低多边形.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/低多边形.png"
+ },
+ {
+  "id": "40",
+  "styleType": "风格艺术",
+  "styleName": "我的世界",
+  "styleDesc": "我的世界",
+  "styleImagePath": "https://creative.creatifyone.com/images/我的世界.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/我的世界.png"
+ },
+ {
+  "id": "41",
+  "styleType": "风格艺术",
+  "styleName": "2D 游戏美术",
+  "styleDesc": "2D 游戏美术",
+  "styleImagePath": "https://creative.creatifyone.com/images/2D 游戏美术.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/2D 游戏美术.png"
+ },
+ {
+  "id": "42",
+  "styleType": "风格艺术",
+  "styleName": "东方水墨",
+  "styleDesc": "东方水墨",
+  "styleImagePath": "https://creative.creatifyone.com/images/东方水墨.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/东方水墨.png"
+ },
+ {
+  "id": "43",
+  "styleType": "风格艺术",
+  "styleName": "炭笔画",
+  "styleDesc": "炭笔画",
+  "styleImagePath": "https://creative.creatifyone.com/images/炭笔画.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/炭笔画.png"
+ },
+ {
+  "id": "44",
+  "styleType": "风格艺术",
+  "styleName": "厚涂油画",
+  "styleDesc": "厚涂油画",
+  "styleImagePath": "https://creative.creatifyone.com/images/厚涂油画.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/厚涂油画.png"
+ },
+ {
+  "id": "45",
+  "styleType": "风格艺术",
+  "styleName": "原始艺术",
+  "styleDesc": "原始艺术",
+  "styleImagePath": "https://creative.creatifyone.com/images/原始艺术.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/原始艺术.png"
+ },
+ {
+  "id": "46",
+  "styleType": "风格艺术",
+  "styleName": "蜡笔涂鸦",
+  "styleDesc": "蜡笔涂鸦",
+  "styleImagePath": "https://creative.creatifyone.com/images/蜡笔涂鸦.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/蜡笔涂鸦.png"
+ },
+ {
+  "id": "47",
+  "styleType": "风格艺术",
+  "styleName": "奇幻艺术",
+  "styleDesc": "奇幻艺术",
+  "styleImagePath": "https://creative.creatifyone.com/images/奇幻艺术.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/奇幻艺术.png"
+ },
+ {
+  "id": "48",
+  "styleType": "风格艺术",
+  "styleName": "装饰艺术",
+  "styleDesc": "装饰艺术",
+  "styleImagePath": "https://creative.creatifyone.com/images/装饰艺术.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/装饰艺术.png"
+ },
+ {
+  "id": "49",
+  "styleType": "风格艺术",
+  "styleName": "新艺术",
+  "styleDesc": "新艺术",
+  "styleImagePath": "https://creative.creatifyone.com/images/新艺术.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/新艺术.png"
+ },
+ {
+  "id": "50",
+  "styleType": "风格艺术",
+  "styleName": "折纸",
+  "styleDesc": "折纸",
+  "styleImagePath": "https://creative.creatifyone.com/images/折纸.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/折纸.png"
+ },
+ {
+  "id": "51",
+  "styleType": "风格艺术",
+  "styleName": "赛博朋克",
+  "styleDesc": "赛博朋克",
+  "styleImagePath": "https://creative.creatifyone.com/images/赛博朋克.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/赛博朋克.png"
+ },
+ {
+  "id": "52",
+  "styleType": "风格艺术",
+  "styleName": "蒸汽波",
+  "styleDesc": "蒸汽波",
+  "styleImagePath": "https://creative.creatifyone.com/images/蒸汽波.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/蒸汽波.png"
+ },
+ {
+  "id": "53",
+  "styleType": "风格艺术",
+  "styleName": "包豪斯",
+  "styleDesc": "包豪斯",
+  "styleImagePath": "https://creative.creatifyone.com/images/包豪斯.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/包豪斯.png"
+ },
+ {
+  "id": "54",
+  "styleType": "风格艺术",
+  "styleName": "黑暗奇幻",
+  "styleDesc": "黑暗奇幻",
+  "styleImagePath": "https://creative.creatifyone.com/images/黑暗奇幻.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/黑暗奇幻.png"
+ },
+ {
+  "id": "55",
+  "styleType": "风格艺术",
+  "styleName": "水粉画",
+  "styleDesc": "水粉画",
+  "styleImagePath": "https://creative.creatifyone.com/images/水粉画.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/水粉画.png"
+ },
+ {
+  "id": "56",
+  "styleType": "风格艺术",
+  "styleName": "油画棒",
+  "styleDesc": "油画棒",
+  "styleImagePath": "https://creative.creatifyone.com/images/油画棒.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/油画棒.png"
+ },
+ {
+  "id": "57",
+  "styleType": "风格艺术",
+  "styleName": "复古未来主义",
+  "styleDesc": "复古未来主义",
+  "styleImagePath": "https://creative.creatifyone.com/images/复古未来主义.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/复古未来主义.png"
+ },
+ {
+  "id": "58",
+  "styleType": "风格艺术",
+  "styleName": "蒸汽朋克",
+  "styleDesc": "蒸汽朋克",
+  "styleImagePath": "https://creative.creatifyone.com/images/蒸汽朋克.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/蒸汽朋克.png"
+ },
+ {
+  "id": "59",
+  "styleType": "风格艺术",
+  "styleName": "末世废墟",
+  "styleDesc": "末世废墟",
+  "styleImagePath": "https://creative.creatifyone.com/images/末世废墟.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/末世废墟.png"
+ },
+ {
+  "id": "60",
+  "styleType": "风格艺术",
+  "styleName": "新黑色电影",
+  "styleDesc": "新黑色电影",
+  "styleImagePath": "https://creative.creatifyone.com/images/新黑色电影.png",
+  "styleExampleImagePath": "https://creative.creatifyone.com/images/新黑色电影.png"
+ }
+]

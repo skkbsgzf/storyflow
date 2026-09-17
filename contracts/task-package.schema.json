@@ -1,0 +1,200 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miniflow.dev/contracts/task-package.schema.json",
+  "title": "task-package · 宿主工作上下文",
+  "description": "宿主 Agent 获得的全部工作上下文。上下文纪律的载体：节点域隔离、哈希锚定、预算裁剪（输出契约 > 上游产物 > 方法论细节）。",
+  "type": "object",
+  "required": [
+    "runId",
+    "projectId",
+    "nodeId",
+    "kind",
+    "instruction",
+    "context",
+    "outputContract"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "runId": {
+      "type": "string"
+    },
+    "projectId": {
+      "type": "string"
+    },
+    "nodeId": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "agent",
+        "skill",
+        "llm",
+        "redline",
+        "review"
+      ],
+      "description": "认知步类型；core/minitool 步由内核就地执行，不产生任务包"
+    },
+    "instruction": {
+      "type": "object",
+      "required": [
+        "text"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "skill": {
+          "type": "string",
+          "description": "绑定的 skill id（方法论）"
+        },
+        "text": {
+          "type": "string",
+          "description": "组装后的指令正文（skill md + 变换参数）"
+        }
+      }
+    },
+    "context": {
+      "type": "array",
+      "description": "上游产物引用，哈希锚定；excerpt 有界摘录由组装器按预算裁剪",
+      "items": {
+        "type": "object",
+        "required": [
+          "ref",
+          "hash"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "ref": {
+            "type": "string",
+            "description": "产物注册表路径，如 对外交付/02-大纲.md"
+          },
+          "hash": {
+            "type": "string",
+            "description": "sha1 前 12 位；不匹配即输入失效，须重组任务包"
+          },
+          "excerpt": {
+            "type": "string"
+          },
+          "truncated": {
+            "type": "boolean",
+            "default": false
+          }
+        }
+      }
+    },
+    "outputContract": {
+      "type": "object",
+      "required": [
+        "file"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "应产出的项目内相对路径"
+        },
+        "schema": {
+          "$ref": "#/$defs/jsonSchema",
+          "description": "输出结构契约（内联 JSON Schema）"
+        },
+        "asserts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "提交前必跑的断言 id（含完整性断言与 check_aesthetic_asserts）"
+        }
+      }
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maxContextChars": {
+          "type": "integer",
+          "description": "上下文总预算（按宿主配置）"
+        }
+      }
+    },
+    "parallelWith": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "同批并行派发的其他节点 id（就绪批调度提示）：这些节点与本节点无数据依赖（AND-join 就绪集），宿主可并发执行"
+    },
+    "profile": {
+      "type": "object",
+      "description": "角色剖面投影（contracts/agent-profile.schema.json 的紧凑视图）——宿主按此把任务包派发给对应 subagent（编剧/审核/分析师…）",
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "mission": {
+          "type": "string"
+        },
+        "skill": {
+          "type": "string"
+        },
+        "knowledge": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "journalReadPolicy": {
+          "type": "string",
+          "description": "子代理 journal 读侧策略（审核类角色拒绝读生产推理，防同化）"
+        }
+      }
+    },
+    "background": {
+      "type": "string",
+      "description": "K1 项目背景卡：确定性组装（项目身份/阶段与阶段问题/甲方点子摘录/交付物用途/合规红线/专属词）——子代理不再自行考古拼背景"
+    },
+    "knowledge": {
+      "type": "array",
+      "description": "kit 标尺卡清单（内容已注入 instruction.text 的「判定标尺」段，此处为可核对回执）",
+      "items": {
+        "type": "object",
+        "required": ["id", "path", "chars"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "description": "kb 条目 id，如 kb/aesthetic/hook-3s" },
+          "path": { "type": "string", "description": "仓库内相对路径，如 knowledge/aesthetic/hook-3s.md" },
+          "chars": { "type": "integer" },
+          "truncated": { "type": "boolean", "default": false }
+        }
+      }
+    },
+    "kitRef": {
+      "type": "object",
+      "description": "节点 kit 引用回显（kit@1 / contracts/kit.schema.json）",
+      "required": ["kit", "op", "domain", "skill", "kind"],
+      "additionalProperties": false,
+      "properties": {
+        "kit": { "type": "string" },
+        "op": { "type": "string" },
+        "domain": { "type": "string", "enum": ["search", "plot", "prose", "tool"] },
+        "skill": { "type": "string" },
+        "kind": { "type": "string", "enum": ["produce", "review"] }
+      }
+    },
+    "toolConfig": {
+      "type": "object",
+      "description": "R5 本步生效的 tool 内容配置项取值（overlay.opConfig > 节点 config > op.default > 通用默认）",
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "jsonSchema": {
+      "type": "object"
+    }
+  }
+}

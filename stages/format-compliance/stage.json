@@ -1,0 +1,67 @@
+{
+  "format": "stage@1",
+  "id": "format-compliance",
+  "name": "格式规范",
+  "version": "1.0.0",
+  "applicability": [
+    "generic"
+  ],
+  "desc": "产物格式纪律：美学硬断言 + 正文纯净度 + 词汇表守卫。任意产线末尾可挂。",
+  "entry": "artifact",
+  "gate": "fmt-gate",
+  "inputs": [
+    {
+      "key": "待检产物",
+      "accept": [
+        "任意产物"
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "key": "合规产物",
+      "node": "fmt-check"
+    }
+  ],
+  "nodes": {
+    "artifact": {
+      "kind": "novel-txt",
+      "title": "产物输入"
+    },
+    "fmt-check": {
+      "kind": "core",
+      "title": "美学硬断言校验",
+      "minitool": "check_aesthetic_asserts"
+    },
+    "vocab": {
+      "kind": "core",
+      "title": "词汇表守卫",
+      "minitool": "kb_search",
+      "desc": "跨项目专名污染检查"
+    },
+    "fmt-gate": {
+      "kind": "gate",
+      "title": "格式合规验收"
+    }
+  },
+  "edges": [
+    {
+      "id": "f1",
+      "from": "artifact",
+      "to": "fmt-check",
+      "transform": "core.check_aesthetic_asserts"
+    },
+    {
+      "id": "f2",
+      "from": "fmt-check",
+      "to": "vocab",
+      "transform": "core.kb_search"
+    },
+    {
+      "id": "f3",
+      "from": "vocab",
+      "to": "fmt-gate",
+      "transform": "sm.review"
+    }
+  ]
+}

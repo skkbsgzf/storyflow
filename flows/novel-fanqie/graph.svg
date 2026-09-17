@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3398 558" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
+<defs><marker id="arw" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
+<path d="M0,0 L9,4 L0,8 z" fill="#5a6478"/></marker></defs>
+<rect width="3398" height="558" fill="#0f1115" rx="10"/>
+<rect x="60" y="16" width="1204" height="516" rx="12" fill="#14231c" stroke="#3d7a4f" stroke-width="0.8" stroke-dasharray="3,5" opacity="0.55"/>
+<text x="72" y="34" fill="#3d7a4f" font-size="11" font-weight="700">S1 调研</text>
+<rect x="1310" y="16" width="454" height="516" rx="12" fill="#161d31" stroke="#3d5a80" stroke-width="0.8" stroke-dasharray="3,5" opacity="0.55"/>
+<text x="1322" y="34" fill="#3d5a80" font-size="11" font-weight="700">S2 结构</text>
+<rect x="1810" y="16" width="454" height="516" rx="12" fill="#241b12" stroke="#e8b33d" stroke-width="0.8" stroke-dasharray="3,5" opacity="0.55"/>
+<text x="1822" y="34" fill="#e8b33d" font-size="11" font-weight="700">S3 方案</text>
+<rect x="2310" y="16" width="954" height="516" rx="12" fill="#28141f" stroke="#a5433a" stroke-width="0.8" stroke-dasharray="3,5" opacity="0.55"/>
+<text x="2322" y="34" fill="#a5433a" font-size="11" font-weight="700">S4 成稿</text>
+<path d="M250,170.0 C287.0,170.0 287.0,318.0 324,318.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-tro: src → tropes ｜ skill.find-trope</title></path>
+<text x="287.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">skill.find-trope</text>
+<path d="M250,318.0 C287.0,318.0 287.0,318.0 324,318.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-mkt-tro: market → tropes ｜ skill.find-trope</title></path>
+<text x="287.0" y="314.0" fill="#7a8496" font-size="9" text-anchor="middle">skill.find-trope</text>
+<path d="M250,170.0 C287.0,170.0 287.0,170.0 324,170.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-zei: src → zeitgeist ｜ skill.material-dissect</title></path>
+<text x="287.0" y="166.0" fill="#7a8496" font-size="9" text-anchor="middle">skill.material-disse</text>
+<path d="M500,318.0 C537.0,318.0 537.0,318.0 574,318.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-combo: tropes → combo ｜ core.check_trope_combo</title></path>
+<text x="537.0" y="314.0" fill="#7a8496" font-size="9" text-anchor="middle">core.check_trope_com</text>
+<path d="M500,318.0 C537.0,318.0 537.0,170.0 574,170.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-tro-ben: tropes → benchmark ｜ core.kb_load</title></path>
+<text x="537.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">core.kb_load</text>
+<path d="M250,170.0 C537.0,170.0 537.0,244.0 824,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-an1: src → analysis ｜ sm.topic-analysis</title></path>
+<text x="537.0" y="203.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.topic-analysis</text>
+<path d="M250,318.0 C537.0,318.0 537.0,244.0 824,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-an2: market → analysis ｜ sm.topic-analysis</title></path>
+<text x="537.0" y="277.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.topic-analysis</text>
+<path d="M500,318.0 C662.0,318.0 662.0,244.0 824,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-an3: tropes → analysis ｜ sm.topic-analysis</title></path>
+<text x="662.0" y="277.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.topic-analysis</text>
+<path d="M750,318.0 C787.0,318.0 787.0,244.0 824,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-an4: combo → analysis ｜ sm.topic-analysis</title></path>
+<text x="787.0" y="277.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.topic-analysis</text>
+<path d="M500,170.0 C662.0,170.0 662.0,244.0 824,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-an5: zeitgeist → analysis ｜ sm.topic-analysis</title></path>
+<text x="662.0" y="203.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.topic-analysis</text>
+<path d="M750,170.0 C787.0,170.0 787.0,244.0 824,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-an6: benchmark → analysis ｜ sm.topic-analysis</title></path>
+<text x="787.0" y="203.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.topic-analysis</text>
+<path d="M1000,244.0 C1037.0,244.0 1037.0,244.0 1074,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-r1: analysis → gate-r1 ｜ sm.review</title></path>
+<text x="1037.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.review</text>
+<path d="M1250,244.0 C1287.0,244.0 1287.0,244.0 1324,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-bible: gate-r1 → bible ｜ skill.world-forge</title></path>
+<text x="1287.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">skill.world-forge</text>
+<path d="M1500,244.0 C1537.0,244.0 1537.0,244.0 1574,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-red2: bible → red-s2 ｜ sm.redline</title></path>
+<text x="1537.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.redline</text>
+<path d="M1750,244.0 C1787.0,244.0 1787.0,244.0 1824,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-outline: red-s2 → outline3 ｜ skill.episodic-outline</title></path>
+<text x="1787.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">skill.episodic-outli</text>
+<path d="M2000,244.0 C2037.0,244.0 2037.0,244.0 2074,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-red3: outline3 → red-s3 ｜ sm.redline</title></path>
+<text x="2037.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.redline</text>
+<path d="M2750,244.0 C2787.0,244.0 2787.0,244.0 2824,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-pol1: audit → polish ｜ skill.novel-deai</title></path>
+<text x="2787.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">skill.novel-deai</text>
+<path d="M3000,244.0 C3037.0,244.0 3037.0,244.0 3074,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-fin: polish → gate-final ｜ sm.review</title></path>
+<text x="3037.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.review</text>
+<path d="M2250,244.0 C2287.0,244.0 2287.0,244.0 2324,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-reds3-chapter: red-s3 → chapter ｜ skill.novel-chapter</title></path>
+<text x="2287.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">skill.novel-chapter</text>
+<path d="M1500,244.0 C1912.0,244.0 1912.0,244.0 2324,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-bible-chapter: bible → chapter ｜ skill.novel-chapter</title></path>
+<text x="1912.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">skill.novel-chapter</text>
+<path d="M2000,244.0 C2162.0,244.0 2162.0,244.0 2324,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-outline3-chapter: outline3 → chapter ｜ skill.novel-chapter</title></path>
+<text x="2162.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">skill.novel-chapter</text>
+<path d="M2500,244.0 C2537.0,244.0 2537.0,244.0 2574,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-chapter-audit: chapter → audit ｜ core.check_aesthetic_asserts</title></path>
+<text x="2537.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">core.check_aesthetic</text>
+<path d="M2500,244.0 C2662.0,244.0 2662.0,244.0 2824,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-chapter-polish: chapter → polish ｜ skill.novel-deai</title></path>
+<text x="2662.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">skill.novel-deai</text>
+<path d="M1162.0,270.0 C1162.0,324.0 162.0,324.0 162.0,196.0" fill="none" stroke="#a5433a" stroke-width="1.5" stroke-dasharray="7,4" marker-end="url(#arw)" opacity="0.85"><title>S1 打回 · 修改流：回 src 重做（级联失效下游）</title></path>
+<text x="662.0" y="320.0" fill="#a5433a" font-size="9" text-anchor="middle">S1 打回·修改流</text>
+<path d="M3162.0,270.0 C3162.0,324.0 2412.0,324.0 2412.0,270.0" fill="none" stroke="#a5433a" stroke-width="1.5" stroke-dasharray="7,4" marker-end="url(#arw)" opacity="0.85"><title>S4 打回 · 修改流：回 chapter 重做（级联失效下游）</title></path>
+<text x="2787.0" y="320.0" fill="#a5433a" font-size="9" text-anchor="middle">S4 打回·修改流</text>
+<path d="M3162.0,270.0 C3162.0,338.0 162.0,338.0 162.0,196.0" fill="none" stroke="#7a4a4a" stroke-width="1.3" stroke-dasharray="3,5" marker-end="url(#arw)" opacity="0.7"><title>S4 打回 · 从零构筑流：回 src（根因在更早阶段时）</title></path>
+<g><title>src ｜ novel-txt ｜ 选题素材 ｜ skill=- minitool=-</title>
+<rect x="74" y="144.0" width="176" height="52" rx="9" fill="#1d3323" stroke="#3d7a4f" stroke-width="1.4"/>
+<text x="162.0" y="165.0" fill="#8fd4a3" font-size="12.5" font-weight="700" text-anchor="middle">src</text>
+<text x="162.0" y="181.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">选题素材</text>
+<text x="162.0" y="193.0" fill="#667089" font-size="8.5" text-anchor="middle">素材</text>
+</g>
+<g><title>market ｜ core ｜ 市场快照装载 ｜ skill=- minitool=kb_load</title>
+<rect x="74" y="292.0" width="176" height="52" rx="9" fill="#16233a" stroke="#3d5a80" stroke-width="1.4"/>
+<text x="162.0" y="313.0" fill="#a8c4e8" font-size="12.5" font-weight="700" text-anchor="middle">market</text>
+<text x="162.0" y="329.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">市场快照装载</text>
+<text x="162.0" y="341.0" fill="#667089" font-size="8.5" text-anchor="middle">kb_load</text>
+</g>
+<g><title>zeitgeist ｜ agent ｜ 素材解剖聚合 ｜ skill=material-dissect minitool=-</title>
+<rect x="324" y="144.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="1.4"/>
+<text x="412.0" y="165.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">zeitgeist</text>
+<text x="412.0" y="181.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">素材解剖聚合</text>
+<text x="412.0" y="193.0" fill="#667089" font-size="8.5" text-anchor="middle">material-dissect</text>
+</g>
+<g><title>tropes ｜ agent ｜ 找梗选梗（发散） ｜ skill=find-trope minitool=-</title>
+<rect x="324" y="292.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="1.4"/>
+<text x="412.0" y="313.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">tropes</text>
+<text x="412.0" y="329.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">找梗选梗（发散）</text>
+<text x="412.0" y="341.0" fill="#667089" font-size="8.5" text-anchor="middle">find-trope</text>
+</g>
+<g><title>benchmark ｜ core ｜ 竞品对标装载 ｜ skill=- minitool=kb_load</title>
+<rect x="574" y="144.0" width="176" height="52" rx="9" fill="#16233a" stroke="#3d5a80" stroke-width="1.4"/>
+<text x="662.0" y="165.0" fill="#a8c4e8" font-size="12.5" font-weight="700" text-anchor="middle">benchmark</text>
+<text x="662.0" y="181.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">竞品对标装载</text>
+<text x="662.0" y="193.0" fill="#667089" font-size="8.5" text-anchor="middle">kb_load</text>
+</g>
+<g><title>combo ｜ core ｜ 梗组合相性校验 ｜ skill=- minitool=check_trope_combo</title>
+<rect x="574" y="292.0" width="176" height="52" rx="9" fill="#16233a" stroke="#3d5a80" stroke-width="1.4"/>
+<text x="662.0" y="313.0" fill="#a8c4e8" font-size="12.5" font-weight="700" text-anchor="middle">combo</text>
+<text x="662.0" y="329.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">梗组合相性校验</text>
+<text x="662.0" y="341.0" fill="#667089" font-size="8.5" text-anchor="middle">check_trope_combo</text>
+</g>
+<g><title>analysis ｜ agent ｜ 选题报告（发散聚合） ｜ skill=topic-analysis-report minitool=-</title>
+<rect x="824" y="218.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="2.6"/>
+<circle cx="991" cy="227.0" r="5" fill="none" stroke="#e8b33d" stroke-width="1.2"/><circle cx="991" cy="227.0" r="1.8" fill="#e8b33d"/>
+<text x="912.0" y="239.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">analysis</text>
+<text x="912.0" y="255.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">选题报告（发散聚合）</text>
+<text x="912.0" y="267.0" fill="#667089" font-size="8.5" text-anchor="middle">topic-analysis-re…</text>
+</g>
+<g><title>gate-r1 ｜ gate ｜ R1 · 选题验收（用户定种子与主次） ｜ skill=plot-redline minitool=-</title>
+<polygon points="1162.0,218.0 1250,244.0 1162.0,270.0 1074,244.0" fill="#2a2313" stroke="#e8b33d" stroke-width="1.4"/>
+<text x="1162.0" y="242.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">gate-r1</text>
+<text x="1162.0" y="258.0" fill="#b8bdc7" font-size="9.5" text-anchor="middle">红方验收 ◇</text>
+</g>
+<g><title>bible ｜ agent ｜ 世界观锻造（底座·暗线先行） ｜ skill=world-forge minitool=-</title>
+<rect x="1324" y="218.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="2.6"/>
+<circle cx="1491" cy="227.0" r="5" fill="none" stroke="#e8b33d" stroke-width="1.2"/><circle cx="1491" cy="227.0" r="1.8" fill="#e8b33d"/>
+<text x="1412.0" y="239.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">bible</text>
+<text x="1412.0" y="255.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">世界观锻造（底座·暗线先行）</text>
+<text x="1412.0" y="267.0" fill="#667089" font-size="8.5" text-anchor="middle">world-forge</text>
+</g>
+<g><title>red-s2 ｜ agent ｜ 红方复核·世界观 ｜ skill=plot-redline minitool=-</title>
+<rect x="1574" y="218.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="1.4"/>
+<text x="1662.0" y="239.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">red-s2</text>
+<text x="1662.0" y="255.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">红方复核·世界观</text>
+<text x="1662.0" y="267.0" fill="#667089" font-size="8.5" text-anchor="middle">plot-redline</text>
+</g>
+<g><title>outline3 ｜ agent ｜ 单元剧大纲（轻量） ｜ skill=episodic-outline minitool=-</title>
+<rect x="1824" y="218.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="2.6"/>
+<circle cx="1991" cy="227.0" r="5" fill="none" stroke="#e8b33d" stroke-width="1.2"/><circle cx="1991" cy="227.0" r="1.8" fill="#e8b33d"/>
+<text x="1912.0" y="239.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">outline3</text>
+<text x="1912.0" y="255.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">单元剧大纲（轻量）</text>
+<text x="1912.0" y="267.0" fill="#667089" font-size="8.5" text-anchor="middle">episodic-outline</text>
+</g>
+<g><title>red-s3 ｜ agent ｜ 红方复核·大纲 ｜ skill=plot-redline minitool=-</title>
+<rect x="2074" y="218.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="1.4"/>
+<text x="2162.0" y="239.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">red-s3</text>
+<text x="2162.0" y="255.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">红方复核·大纲</text>
+<text x="2162.0" y="267.0" fill="#667089" font-size="8.5" text-anchor="middle">plot-redline</text>
+</g>
+<g><title>chapter ｜ agent ｜ 章节成稿 ｜ skill=novel-chapter minitool=-</title>
+<rect x="2324" y="218.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="2.6"/>
+<circle cx="2491" cy="227.0" r="5" fill="none" stroke="#e8b33d" stroke-width="1.2"/><circle cx="2491" cy="227.0" r="1.8" fill="#e8b33d"/>
+<text x="2412.0" y="239.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">chapter</text>
+<text x="2412.0" y="255.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">章节成稿</text>
+<text x="2412.0" y="267.0" fill="#667089" font-size="8.5" text-anchor="middle">novel-chapter</text>
+</g>
+<g><title>audit ｜ core ｜ 断言校验（三章） ｜ skill=- minitool=check_aesthetic_asserts</title>
+<rect x="2574" y="218.0" width="176" height="52" rx="9" fill="#16233a" stroke="#3d5a80" stroke-width="1.4"/>
+<text x="2662.0" y="239.0" fill="#a8c4e8" font-size="12.5" font-weight="700" text-anchor="middle">audit</text>
+<text x="2662.0" y="255.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">断言校验（三章）</text>
+<text x="2662.0" y="267.0" fill="#667089" font-size="8.5" text-anchor="middle">check_aesthetic_a…</text>
+</g>
+<g><title>polish ｜ agent ｜ 去AI味终稿打磨 ｜ skill=novel-deai minitool=-</title>
+<rect x="2824" y="218.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="2.6"/>
+<circle cx="2991" cy="227.0" r="5" fill="none" stroke="#e8b33d" stroke-width="1.2"/><circle cx="2991" cy="227.0" r="1.8" fill="#e8b33d"/>
+<text x="2912.0" y="239.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">polish</text>
+<text x="2912.0" y="255.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">去AI味终稿打磨</text>
+<text x="2912.0" y="267.0" fill="#667089" font-size="8.5" text-anchor="middle">novel-deai</text>
+</g>
+<g><title>gate-final ｜ gate ｜ 终稿验收（用户读三章） ｜ skill=plot-redline minitool=-</title>
+<polygon points="3162.0,218.0 3250,244.0 3162.0,270.0 3074,244.0" fill="#2a2313" stroke="#e8b33d" stroke-width="1.4"/>
+<text x="3162.0" y="242.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">gate-final</text>
+<text x="3162.0" y="258.0" fill="#b8bdc7" font-size="9.5" text-anchor="middle">红方验收 ◇</text>
+</g>
+</svg>

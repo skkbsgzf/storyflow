@@ -1,0 +1,20 @@
+{
+  "mode": "integrity",
+  "node": "combo",
+  "minitool": "check_trope_combo",
+  "checked": [
+    "梗卡.md"
+  ],
+  "results": [
+    {
+      "name": "exists",
+      "status": "pass",
+      "detail": "2237 chars"
+    },
+    {
+      "name": "no-debris",
+      "status": "pass"
+    }
+  ],
+  "note": "M1 integrity 模式；check_aesthetic_asserts 66 条美学断言 M2 接入"
+}

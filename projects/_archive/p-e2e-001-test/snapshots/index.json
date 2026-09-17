@@ -1,0 +1,77 @@
+{
+  "snapshots": {
+    "tropes": [
+      {
+        "round": 1,
+        "ts": "2026-09-15T21:34:56.929Z",
+        "note": "submit r1",
+        "files": {
+          "梗卡.md": {
+            "hash": "460dd7959ebb",
+            "path": "snapshots/tropes/r1/梗卡.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-15T21:35:48.515Z",
+        "note": "submit r3",
+        "files": {
+          "梗卡.md": {
+            "hash": "460dd7959ebb",
+            "path": "snapshots/tropes/r2/梗卡.md"
+          }
+        }
+      }
+    ],
+    "zeitgeist": [
+      {
+        "round": 1,
+        "ts": "2026-09-15T21:34:59.314Z",
+        "note": "submit r1",
+        "files": {
+          "热点素材.md": {
+            "hash": "660ed0384d3e",
+            "path": "snapshots/zeitgeist/r1/热点素材.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-15T21:35:49.758Z",
+        "note": "submit r3",
+        "files": {
+          "热点素材.md": {
+            "hash": "660ed0384d3e",
+            "path": "snapshots/zeitgeist/r2/热点素材.md"
+          }
+        }
+      }
+    ],
+    "analysis": [
+      {
+        "round": 1,
+        "ts": "2026-09-15T21:35:00.490Z",
+        "note": "submit r1",
+        "files": {
+          "选题分析报告.md": {
+            "hash": "dda1162ba0c5",
+            "path": "snapshots/analysis/r1/选题分析报告.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-15T21:35:50.959Z",
+        "note": "submit r3",
+        "files": {
+          "选题分析报告.md": {
+            "hash": "dda1162ba0c5",
+            "path": "snapshots/analysis/r2/选题分析报告.md"
+          }
+        }
+      }
+    ]
+  },
+  "inputs": {}
+}

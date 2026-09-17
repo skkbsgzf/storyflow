@@ -1,0 +1,237 @@
+{
+  "format": "flow@2",
+  "id": "novel-prose",
+  "title": "成文流水线（文学化专科拼装 · 逐段盖章）",
+  "desc": "架构判词落地（2026-09-17）：剧情前置锁定（编剧流分场卡→五行节拍卡，成文层无权改戏）→ 三专科并行出层稿（台词师/场景师/设定官，各归其约各显神通）→ 成文师逐拍拼装+逐段六维盖章（台词/场景/设定/人设/节奏/机味，全过才下推）→ 硬断言闸 → polish 只做收尾薄修（拒屎上雕花：质量内置在成文，不靠末端去AI味救）。约束整合入口=kb/craft/prose-constraints 六维路由总纲。",
+  "version": "0.1.0",
+  "status": "draft",
+  "upstream": "outline-production（分场小纲）/ novel-fanqie gate-final pass 后的批量成文线",
+  "inputs": {
+    "project": {
+      "type": "project",
+      "required": true,
+      "desc": "项目上下文"
+    },
+    "route": {
+      "type": "enum",
+      "default": "hot",
+      "options": [
+        "hot",
+        "calm"
+      ],
+      "desc": "沿用选题阶段路线档位"
+    },
+    "range": {
+      "type": "string",
+      "required": true,
+      "desc": "章范围（如 '4-9'）"
+    },
+    "batch": {
+      "type": "number",
+      "default": 4,
+      "min": 1,
+      "max": 6,
+      "desc": "每批章数"
+    }
+  },
+  "outputs": [
+    { "node": "beats", "title": "五行卡节拍（剧情锁定件）" },
+    { "node": "voices", "title": "对白层稿" },
+    { "node": "textures", "title": "场景层稿" },
+    { "node": "canon", "title": "设定层稿" },
+    { "node": "assemble", "title": "章正文（逐段盖章产物）" },
+    { "node": "audit", "title": "硬断言报告" },
+    { "node": "polish", "title": "收尾终稿" }
+  ],
+  "graph": {
+    "nodes": {
+      "src": {
+        "kind": "novel-txt",
+        "title": "分场卡（编剧流产物·已验收）",
+        "output": "分场卡.md"
+      },
+      "ledger": {
+        "kind": "core",
+        "title": "台账切片",
+        "minitool": "continuity_slice",
+        "desc": "从连续性台账切出本批章的知情范围/在场物品/到期伏笔，注入节拍卡与设定官"
+      },
+      "beats": {
+        "kind": "agent",
+        "title": "分场锻拍",
+        "skill": "scene-breakdown",
+        "kit": "plot",
+        "op": "scene-breakdown",
+        "output": "内部/稿本/成文节拍卡.md",
+        "desc": "分场小纲锻成五行卡节拍（每章 3-6 拍：地点/在场人物/冲突或事件/情绪值走向/拍末钩）——剧情在此锁定，成文层无权改戏，发现问题回打本卡"
+      },
+      "voices": {
+        "kind": "agent",
+        "title": "台词师",
+        "skill": "layer-voices",
+        "kit": "prose",
+        "op": "layer-voices",
+        "output": "内部/稿本/层稿-对白.md",
+        "desc": "逐拍对白层稿：遮名三句测试+每句目的+潜台词列"
+      },
+      "textures": {
+        "kind": "agent",
+        "title": "场景师",
+        "skill": "layer-scenes",
+        "kit": "prose",
+        "op": "layer-scenes",
+        "output": "内部/稿本/层稿-场景.md",
+        "desc": "逐拍场景层稿：五感计划/身体反应/道具伏笔/密度档/入戏细节一处/域内喻体备案"
+      },
+      "canon": {
+        "kind": "agent",
+        "title": "设定官",
+        "skill": "layer-canon",
+        "kit": "prose",
+        "op": "layer-canon",
+        "output": "内部/稿本/层稿-设定.md",
+        "desc": "逐拍设定层稿：知情范围/新词首现五手法/台账增量/人设揭示点；新词先登记再进正文"
+      },
+      "assemble": {
+        "kind": "agent",
+        "title": "成文师·逐段盖章",
+        "skill": "prose-assembler",
+        "kit": "prose",
+        "op": "prose-assembler",
+        "output": "章节正文/正文-第NNN章.md",
+        "desc": "逐拍拼装三层稿成正文；逐段六维盖章（台词/场景/设定/人设/节奏/机味，全过才下推）；无分场卡不开工；盖章单留痕"
+      },
+      "audit": {
+        "kind": "core",
+        "title": "硬断言闸",
+        "minitool": "check_aesthetic_asserts",
+        "asserts": [
+          "AE-WNF-HOOK",
+          "AE-PROSE-TRIPLET",
+          "AE-PROSE-NOTBUT",
+          "AE-PROSE-RHYTHM",
+          "AE-PROSE-SLOP",
+          "AE-CONT-KNOW",
+          "AE-CONT-ITEM",
+          "AE-CONT-FORESHADOW"
+        ],
+        "onFail": "退回 assemble 定点修（重试记账，不计完成）",
+        "desc": "确定性：钩子/三连/不是A是B/节奏词/slop词 + 越权/台账矛盾/伏笔逾期",
+        "output": "内部/收据/断言报告.json"
+},
+      "polish": {
+        "kind": "agent",
+        "title": "收尾薄修（novel-deai）",
+        "skill": "novel-deai",
+        "kit": "prose",
+        "op": "novel-deai",
+        "assist": [
+          "novel-judge"
+        ],
+        "output": "章节正文/终稿-第NNN章.md",
+        "desc": "架构条款：polish 只收尾——摘漏网机味、句式级 S1-S5 清零复核；质量主责在 assemble 盖章，原文级问题打回 assemble 重拼，禁止在 polish 层救烂原文（拒屎上雕花）"
+      },
+      "fin": {
+        "kind": "srd",
+        "title": "批次人工验收",
+        "desc": "按批次裁决；盖章单+断言报告+盲读报告随附"
+      }
+    },
+    "edges": [
+      {
+        "id": "e-1",
+        "from": "src",
+        "to": "ledger",
+        "role": "flow"
+      },
+      {
+        "id": "e-2",
+        "from": "ledger",
+        "to": "beats",
+        "role": "flow"
+      },
+      {
+        "id": "e-3",
+        "from": "beats",
+        "to": "voices",
+        "role": "flow"
+      },
+      {
+        "id": "e-4",
+        "from": "beats",
+        "to": "textures",
+        "role": "flow"
+      },
+      {
+        "id": "e-5",
+        "from": "beats",
+        "to": "canon",
+        "role": "flow"
+      },
+      {
+        "id": "e-6",
+        "from": "voices",
+        "to": "assemble",
+        "role": "flow"
+      },
+      {
+        "id": "e-7",
+        "from": "textures",
+        "to": "assemble",
+        "role": "flow"
+      },
+      {
+        "id": "e-8",
+        "from": "canon",
+        "to": "assemble",
+        "role": "flow"
+      },
+      {
+        "id": "e-9",
+        "from": "assemble",
+        "to": "audit",
+        "role": "flow"
+      },
+      {
+        "id": "e-10",
+        "from": "audit",
+        "to": "polish",
+        "role": "flow"
+      },
+      {
+        "id": "e-11",
+        "from": "polish",
+        "to": "fin",
+        "via": "sm.review",
+        "role": "flow"
+      }
+    ]
+  },
+  "quality": {
+    "stamping": "逐段六维盖章，盖章单随稿交付",
+    "lockFirst": "剧情锁定在节拍卡，成文层改戏=违规",
+    "layerRoles": "台词/场景/设定三专科并行，各归其约",
+    "polishBoundary": "polish 收尾薄修，质量主责在成文盖章"
+  },
+  "harness": {
+    "parallel": [
+      "voices",
+      "textures",
+      "canon"
+    ],
+    "model": "layer-voices/layer-scenes/prose-assembler/novel-deai/novel-judge 为文学判断节点，须强模型档（AGENTS.md 模型档位纪律）",
+    "receipts": [
+      "盖章单",
+      "层稿×3",
+      "断言报告",
+      "prose-scan 收据"
+    ]
+  },
+  "changelog": [
+    {
+      "version": "0.1.0",
+      "date": "2026-09-17",
+      "change": "初建：落地用户架构判词——整合文学优化知识库（prose-constraints 六维路由总纲）、剧情前置锁定（编剧流分场卡）、三专科层稿拼装、逐段盖章检视、polish 降级为收尾薄修（拒屎上雕花）"
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miniflow.dev/contracts/run-state.schema.json",
+  "title": "run-state · run 状态机（v1.0.2）",
+  "description": "projects/<id>/state.json。原子写 + 落盘前 schema 复验。v1.0.1 增补事实契约字段：comments/inputs/notes（可视化页面在用）、节点级 verdict/rootCauseStage/stale、gate 三出口裁决值域。v1.0.2 增补节点级 committed（K6：iterate 节点逐实例提交窗口清单）。现网 run-state.json 由内核迁移器无损映射（notes 同时转 journal 种子）。",
+  "type": "object",
+  "required": ["runId", "flowId", "flowVersion", "nodes", "gate"],
+  "additionalProperties": false,
+  "properties": {
+    "runId": { "type": "string" },
+    "projectId": { "type": "string" },
+    "flowId": { "type": "string" },
+    "flowVersion": { "type": "string" },
+    "flowHash": { "type": "string", "description": "计划编译时的 flow 指纹——恢复只读快照不读图（v3 纪律）" },
+    "planHash": { "type": "string", "description": "R5：编译时**生效编排**（flow ⊕ overlay ⊕ 边界注入）的计划指纹。与当前重算不符 = 编排被人/优化 agent 改过 → 重编译计划并 journal 留痕（生成式 flow 的落地机制）" },
+    "overlayHash": { "type": "string", "description": "R5：本次计划所依据的 overlay 合成指纹（审计：这份计划出自哪一版编排）" },
+    "policy": { "type": "object", "description": "R5：本 run 生效的编排策略快照（kit_boundary/gate_mode/adapt/budget）", "additionalProperties": true },
+    "status": { "type": "string", "enum": ["running", "awaiting_input", "suspended", "completed", "failed"] },
+    "plan": {
+      "type": "object",
+      "description": "编译后的执行计划（快照自带计划，恢复不读图）",
+      "additionalProperties": false,
+      "properties": {
+        "order": { "type": "array", "items": { "type": "string" }, "description": "拓扑序节点 id 列表（门任务不聚合）" }
+      },
+      "required": ["order"]
+    },
+    "nodes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status"],
+        "additionalProperties": false,
+        "properties": {
+          "status": { "type": "string", "enum": ["none", "running", "done", "pending", "awaiting", "rejected", "stale"] },
+          "round": { "type": "integer", "minimum": 0 },
+          "note": { "type": "string" },
+          "lastArtifact": { "type": "string", "description": "注册表中的最新产物路径" },
+          "failCount": { "type": "integer", "minimum": 0 },
+          "verdict": { "type": "string", "enum": ["pass", "pass-with-conditions", "send-back", "reject"], "description": "gate/srd 节点的裁决记录（三出口语义）" },
+          "rootCauseStage": { "type": "string", "description": "send-back 时指认的根因阶段 id" },
+          "stale": { "type": "boolean", "description": "级联失效标记：根因之后重算的节点" },
+          "committed": { "type": "array", "items": { "type": "string" }, "description": "iterate 节点（K6）本 await 窗口内已提交的实例文件清单——逐实例提交时保持 awaiting，seal 收口置 done；rerun 清零" }
+        }
+      }
+    },
+    "gate": {
+      "type": "object",
+      "required": ["verdict"],
+      "additionalProperties": false,
+      "properties": {
+        "verdict": { "type": "string", "enum": ["none", "awaiting", "pass", "pass-with-conditions", "send-back", "reject"] },
+        "at": { "type": "string" },
+        "node": { "type": "string" },
+        "round": { "type": "integer", "minimum": 0, "description": "挂起时的门轮次——旧轮次迟到裁决凭此拒绝" },
+        "token": { "type": "string", "description": "gateToken（projectId:runId:gateNodeId 三重校验凭据）" },
+        "note": { "type": "string" }
+      }
+    },
+    "presets": { "type": "object", "additionalProperties": { "type": "string", "enum": ["auto", "semi", "manual"] } },
+    "focus": { "type": "string", "description": "当前焦点节点 id（运行时维护，whereami 优先读它）" },
+    "inputs": { "type": "object", "description": "flow 输入绑定（route/批注回流 等 when 谓词取值处）；缺省时取 flow.inputs[].default", "additionalProperties": true },
+    "comments": { "type": "object", "description": "用户批注 {nodeId: string[]}", "additionalProperties": { "type": "array", "items": { "type": "string" } } },
+    "notes": { "type": "array", "items": { "type": "string" }, "description": "项目级时间线（迁移期保留；新事件一律进 journal）" },
+    "lastRejectReason": { "type": "string", "description": "最近一次 send-back 的根因（when 谓词『根因=X』的取值处）" }
+  }
+}

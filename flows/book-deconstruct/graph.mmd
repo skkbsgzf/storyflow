@@ -1,0 +1,23 @@
+flowchart LR
+    src["src · 参考作品文本"]:::src
+    pre["pre · 读前识别与样本检查"]:::core
+    read["read · 通读与设计层拆解"]:::agent
+    refine["refine · 细化层拆解"]:::agent
+    chars["chars · 人物拆解"]:::agent
+    style["style · 文风拆解"]:::agent
+    dedup["dedup · 查重与相性"]:::core
+    promote["promote · KB 候选条目组装"]:::core
+    fin["fin · 人工确认入库"]:::gate
+    src -->|core.kb_load| pre
+    pre -->|skill.deconstruct-book| read
+    read -->|skill.deconstruct-book| refine
+    refine -->|skill.deconstruct-book| chars
+    refine -->|skill.deconstruct-book| style
+    chars -->|core.kb_search| dedup
+    style -->|core.kb_search| dedup
+    dedup -->|core.check_aesthetic_asserts| promote
+    promote -->|sm.review| fin
+    classDef src fill:#1d3323,stroke:#3d7a4f,color:#8fd4a3
+    classDef core fill:#16233a,stroke:#3d5a80,color:#a8c4e8
+    classDef agent fill:#2a2313,stroke:#e8b33d,color:#e8b33d
+    classDef gate fill:#2a1616,stroke:#a5433a,color:#e8a49c

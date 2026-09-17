@@ -1,0 +1,55 @@
+{
+  "format": "flow@2",
+  "id": "episode-script",
+  "title": "分集剧本流水工作流（初稿）",
+  "desc": "已验收的分集大纲 → 逐集任务包（台账切片注入 → 分拍写作 → 断言+台账双校验 → 红队抽检）→ 批量人工验收 → 剧本包",
+  "version": "0.1.0-draft",
+  "status": "draft",
+  "upstream": "outline-production（取其分集大纲/卡点表为输入）",
+  "inputs": {
+    "project": { "type": "project", "required": true, "desc": "项目上下文" },
+    "route": { "type": "enum", "default": "hot", "options": ["hot", "calm"], "desc": "沿用选题阶段路线档位" },
+    "range": { "type": "string", "required": true, "desc": "集数范围（如 '1-6'，前三集优先）" },
+    "batch": { "type": "number", "default": 6, "min": 1, "max": 12, "desc": "单批集数（人工验收批次粒度）" }
+  },
+  "outputs": [
+    { "node": "ledger", "title": "连续性台账（滚动维护）" },
+    { "node": "write", "title": "单集剧本（script-drama-beat 硬格式）" },
+    { "node": "audit", "title": "逐集硬断言报告（block 项清零才收稿）" },
+    { "node": "redline", "title": "红队抽检意见（每批 ≥1 集）" }
+  ],
+  "graph": {
+    "format": "smwf@2",
+    "name": "episode-script",
+    "nodes": {
+      "src":      { "kind": "novel-txt", "title": "分集大纲（已验收）", "output": "分集大纲.md" },
+      "ledger":   { "kind": "core", "title": "台账切片注入", "minitool": "continuity_slice", "loads": "kb/continuity/state-ledger", "desc": "确定性：按本集出场人物/物件/知情范围/到期伏笔切出台账切片，注入任务包（写前查账）", "output": "内部/收据/连续性台账.json" },
+      "write":    { "kind": "agent", "title": "分拍写作", "skill": "script-drama-beat", "kit": "plot", "op": "script-drama-beat", "output": "内部/稿本/剧本-第XX集.md", "desc": "单集 600-900 字硬格式；前 3 秒钩子；△动作可拍摄；集末卡点体检；route 档位参数生效（hot：零时差/爆点密度；calm：9:1 浓度）" },
+      "audit":    { "kind": "core", "title": "断言+台账双校验", "minitool": "check_aesthetic_asserts", "asserts": ["AE-HOOK-EVENT", "AE-DENSITY-HOT", "AE-DENSITY-CALM", "AE-CARD-END", "AE-BEAT-FORMAT", "AE-VIS-EMPTY", "AE-CONT-KNOW", "AE-CONT-ITEM", "AE-CONT-FORESHADOW"], "onFail": "退回 write 定点修（重试记账，不计完成）", "desc": "确定性：钩子事件/密度档位/卡点/格式/禁空镜 + 知识越权/台账矛盾/伏笔逾期", "output": "内部/收据/硬断言报告.json" },
+      "ledgerUp": { "kind": "core", "title": "台账结算", "minitool": "continuity_commit", "desc": "确定性：校验全过后原子提交正文+台账增量（新增死亡/物品流转/知情变更/新伏笔）；不落状态不收稿" },
+      "redline":  { "kind": "agent", "title": "红队抽检", "skill": "plot-redline", "kit": "plot", "op": "plot-redline", "spotCheck": true, "policy": "每批 ≥1 集（优先爆点集与卡点集）", "output": "内部/意见/红方意见书-redline.md", "desc": "spot-check 模式：名场面可视化五要素 + 便宜方案检查 + 结构机味指纹" },
+      "fin":      { "kind": "srd", "title": "批次人工验收", "desc": "按批次裁决；连续 2 批全过 → 红队哨兵钝化自检（profile gate_behavior）" }
+    },
+    "edges": [
+      { "id": "e-ledg", "from": "src", "to": "ledger", "role": "flow" },
+      { "id": "e-write", "from": "ledger", "to": "write", "role": "flow" },
+      { "id": "e-audit", "from": "write", "to": "audit", "role": "flow" },
+      { "id": "e-commit", "from": "audit", "to": "ledgerUp", "role": "flow" },
+      { "id": "e-red", "from": "ledgerUp", "to": "redline", "via": "sm.redline", "role": "optional" },
+      { "id": "e-fin", "from": "redline", "to": "fin", "via": "sm.review", "role": "flow" }
+    ],
+    "outputs": ["write", "ledger"]
+  },
+  "quality": {
+    "assertions": "每集 block 清零才进台账结算；AE-CONT-* 三条是长线生命线",
+    "atomicCommit": "正文与台账增量原子提交（InkOS 纪律：不许状态推进了正文没落盘）",
+    "retryAccounting": "audit 退回走 journal 重试记账，不阻塞批次",
+    "allow_agent_verdict": false
+  },
+  "harness": {
+    "mode": "task-package",
+    "awaiting_input_at": ["write", "redline"],
+    "core_in_process": ["ledger", "audit", "ledgerUp"],
+    "note": "初稿：循环体（ledger→write→audit→ledgerUp）按集重复，runtime 图调度天然支持；断点续跑按集落盘。依赖 minitool：continuity_slice / continuity_commit（M2 实现，规格见 kb/continuity/state-ledger）"
+  }
+}

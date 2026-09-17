@@ -1,0 +1,92 @@
+{
+  "format": "kit@1",
+  "id": "detect",
+  "domain": "tool",
+  "name": "AI 检测域（本地打分 × 朱雀对照）",
+  "desc": "两级门：L1 本地约束引擎打分（prose-scan AI味指数，每章免费必跑）；L2 朱雀官方 API 对照（仅终稿/交付门一次，50万 token/月预算台账，100% 后拒绝调用）。检测值=软信号归人审，硬约束是 AE-PROSE-* 文本层断言；口径卡 kb/aesthetic/ai-detection-sources",
+  "version": "0.1.0",
+  "ops": {
+    "ai-flavor-score": {
+      "title": "本地AI味打分（L1）",
+      "script": "tools/prose-scan.py",
+      "desc": "配额层（三连/不是A是B/slop/节奏词/否定排比）+ 八维画像 → AI味指数 0-100（透明加权，带逐项罚分明细）。每章完成即跑；指数 ≥31 先本地改，改完才允许 L2 送检",
+      "knowledge": [
+        "kb/aesthetic/ai-detection-sources"
+      ],
+      "config": {
+        "warnAt": {
+          "type": "number",
+          "default": 30,
+          "min": 0,
+          "max": 100,
+          "desc": "指数超过该值在输出标注「建议本地修改」",
+          "effect": "仅影响摘要标注，不改变指数",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "jsonOut": {
+          "type": "boolean",
+          "default": true,
+          "desc": "输出机器可读 JSON（供 zhuque-check --compare 对照）",
+          "effect": "false 时退回人读文本",
+          "tunable_by": [
+            "user"
+          ]
+        }
+      }
+    },
+    "zhuque-check": {
+      "title": "朱雀AI检测（L2 对照）",
+      "script": "tools/zhuque-check.py",
+      "desc": "官方 API（ai-gateway.edgeone.link zhuque-text/classify，Bearer Key，月免费50万token）。仅终稿/交付门跑一次：softmax/ratio 置信度 + labels_ratio + segment_labels 逐段标注；--compare 读 L1 打分产出两级门对照表；配额台账 100% 后拒绝调用（--force 才放行）",
+      "knowledge": [
+        "kb/aesthetic/ai-detection-sources"
+      ],
+      "config": {
+        "is_merge": {
+          "type": "boolean",
+          "default": true,
+          "desc": "合并整篇出单一置信度；false=逐段独立置信度",
+          "effect": "false 时 segment_labels 可定位可疑段（定点重做入口）",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "threshold_warn": {
+          "type": "number",
+          "default": 0.5,
+          "min": 0,
+          "max": 1,
+          "desc": "人审提示线：AI占比超过该值在摘要标注「建议人工复核」",
+          "effect": "仅影响摘要标注，不影响退出码（软信号口径）",
+          "tunable_by": [
+            "user"
+          ]
+        },
+        "top_segments": {
+          "type": "number",
+          "default": 5,
+          "min": 0,
+          "desc": "摘要列出的可疑段落数",
+          "effect": "0=不列",
+          "tunable_by": [
+            "user"
+          ]
+        },
+        "monthlyBudget": {
+          "type": "number",
+          "default": 500000,
+          "min": 0,
+          "desc": "本月 token 预算（台账 .zhuque-usage.json 累计）",
+          "effect": "100% 后拒绝调用，--force 强制",
+          "tunable_by": [
+            "user"
+          ]
+        }
+      }
+    }
+  }
+}

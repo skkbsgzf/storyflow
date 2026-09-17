@@ -1,0 +1,72 @@
+{
+  "nodes": {
+    "src": {
+      "status": "none",
+      "round": 0
+    },
+    "market": {
+      "status": "none",
+      "round": 0
+    },
+    "tropes": {
+      "status": "none",
+      "round": 0
+    },
+    "combo": {
+      "status": "none",
+      "round": 0
+    },
+    "zeitgeist": {
+      "status": "none",
+      "round": 0
+    },
+    "benchmark": {
+      "status": "none",
+      "round": 0
+    },
+    "analysis": {
+      "status": "none",
+      "round": 0
+    },
+    "gate-r1": {
+      "status": "none",
+      "round": 0
+    },
+    "bible": {
+      "status": "none",
+      "round": 0
+    },
+    "red-s2": {
+      "status": "none",
+      "round": 0
+    },
+    "outline3": {
+      "status": "none",
+      "round": 0
+    },
+    "red-s3": {
+      "status": "none",
+      "round": 0
+    },
+    "audit": {
+      "status": "none",
+      "round": 0
+    },
+    "polish": {
+      "status": "none",
+      "round": 0
+    },
+    "gate-final": {
+      "status": "none",
+      "round": 0
+    },
+    "chapter": {
+      "status": "none",
+      "round": 0
+    }
+  },
+  "notes": [],
+  "presets": {},
+  "comments": {},
+  "inputs": {}
+}

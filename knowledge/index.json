@@ -1,0 +1,763 @@
+{
+  "kb": "miniflow-knowledge",
+  "version": "2026-09-15",
+  "updated": "2026-09-17",
+  "note": "知识库索引。md 条目由 frontmatter 汇总；generated 条目（trope/benchmark/market）随数据快照滚动重建（tools/distill-kakaxing.mjs）。",
+  "types": {
+    "aesthetic-standard": "审美判定标准（什么叫好：维度、条款、阈值）",
+    "style-route": "风格路线参数档位",
+    "aesthetic-assertions": "机器可查硬断言表",
+    "market-snapshot": "市场数据快照（机器可读）",
+    "market-standard": "市场/网感公式标准",
+    "deconstruct-protocol": "拆解层协议（怎么把参考作品拆成可入库素材）",
+    "continuity-standard": "长程连续性与状态台账标准",
+    "format-standard": "形态标准（长篇网文等载体的形态约束）",
+    "structure-catalog": "叙事结构选型目录（第二阶段深挖用）",
+    "meme-standard": "梗密度与发散性约束（网感输入源）",
+    "trope": "梗条目（机制+饱和度+演化链）",
+    "benchmark": "对标件（强度标尺）",
+    "craft-standard": "成文工艺标准（六维约束路由：写前看什么、盖章查什么）"
+  },
+  "entries": [
+    {
+      "id": "kb/aesthetic/ai-trace",
+      "type": "aesthetic-standard",
+      "title": "AI 痕迹标准（结构级去机味）",
+      "dimension": "ai-trace",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/ai-trace.md"
+    },
+    {
+      "id": "kb/aesthetic/assertions",
+      "type": "aesthetic-assertions",
+      "title": "审美硬断言表（机器可查）（73 条）",
+      "dimension": "assertions",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/assertions.json"
+    },
+    {
+      "id": "kb/aesthetic/character",
+      "type": "aesthetic-standard",
+      "title": "人物审美标准（三维·真相·维度）",
+      "dimension": "character",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/character.md"
+    },
+    {
+      "id": "kb/aesthetic/conflict-escalation",
+      "type": "aesthetic-standard",
+      "title": "冲突升级标准（代价梯与危机选择）",
+      "dimension": "conflict",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/conflict-escalation.md"
+    },
+    {
+      "id": "kb/aesthetic/constitution",
+      "type": "aesthetic-standard",
+      "title": "审美体系总纲",
+      "dimension": "constitution",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/constitution.md"
+    },
+    {
+      "id": "kb/aesthetic/dialogue",
+      "type": "aesthetic-standard",
+      "title": "对白标准（对白即行动）",
+      "dimension": "dialogue",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/dialogue.md"
+    },
+    {
+      "id": "kb/aesthetic/emotion-curve",
+      "type": "aesthetic-standard",
+      "title": "情绪曲线标准（六型判别）",
+      "dimension": "curve",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/emotion-curve.md"
+    },
+    {
+      "id": "kb/aesthetic/ending",
+      "type": "aesthetic-standard",
+      "title": "结局标准（反推五条件与禁止项）",
+      "dimension": "ending",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/ending.md"
+    },
+    {
+      "id": "kb/aesthetic/hook-3s",
+      "type": "aesthetic-standard",
+      "title": "开场钩子标准（3 秒公式）",
+      "dimension": "hook",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/hook-3s.md"
+    },
+    {
+      "id": "kb/aesthetic/metaphor-zh",
+      "type": "aesthetic-standard",
+      "title": "中文叙事比喻规范（悬浮比喻五病 + 场景内喻体）",
+      "dimension": "naturalness",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/metaphor-zh.md"
+    },
+    {
+      "id": "kb/aesthetic/naturalness-zh",
+      "type": "aesthetic-standard",
+      "title": "中文自然度标准（24 类去模板化清单）",
+      "dimension": "naturalness",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/naturalness-zh.md"
+    },
+    {
+      "id": "kb/aesthetic/oversight",
+      "type": "aesthetic-standard",
+      "title": "双专家监管标准（审美总编 × 需求交付监理）",
+      "dimension": "oversight",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/oversight.md"
+    },
+    {
+      "id": "kb/aesthetic/pacing-density",
+      "type": "aesthetic-standard",
+      "title": "节奏与爆点密度标准",
+      "dimension": "pacing",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/pacing-density.md"
+    },
+    {
+      "id": "kb/aesthetic/perspective-review",
+      "type": "aesthetic-standard",
+      "title": "视角评审协议（红方 v2：代入人，不念指标）",
+      "dimension": "perspective",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/perspective-review.md"
+    },
+    {
+      "id": "kb/aesthetic/platform-compliance",
+      "type": "aesthetic-standard",
+      "title": "平台适配与合规标准",
+      "dimension": "platform",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/platform-compliance.md"
+    },
+    {
+      "id": "kb/aesthetic/redline-scoring",
+      "type": "aesthetic-standard",
+      "title": "红方评分标准（对抗式打分）",
+      "dimension": "redline",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/redline-scoring.md"
+    },
+    {
+      "id": "kb/aesthetic/reversal",
+      "type": "aesthetic-standard",
+      "title": "反转标准（类型学与铺垫合规）",
+      "dimension": "reversal",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/reversal.md"
+    },
+    {
+      "id": "kb/aesthetic/scene-value",
+      "type": "aesthetic-standard",
+      "title": "场景价值转变标准",
+      "dimension": "scene",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/scene-value.md"
+    },
+    {
+      "id": "kb/aesthetic/style-routes",
+      "type": "style-route",
+      "title": "风格路线参数表（爽版 / 合理版）",
+      "dimension": "routes",
+      "routes": [
+        "hot",
+        "calm"
+      ],
+      "file": "aesthetic/style-routes.md"
+    },
+    {
+      "id": "kb/aesthetic/unreasonable-highlight",
+      "type": "aesthetic-standard",
+      "title": "不合理亮点标准（被磨平的冒险选择）",
+      "dimension": "redline",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/unreasonable-highlight.md"
+    },
+    {
+      "id": "kb/aesthetic/visual-poster",
+      "type": "aesthetic-standard",
+      "title": "名场面可视化标准（海报级分镜）",
+      "dimension": "visual",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/visual-poster.md"
+    },
+    {
+      "id": "kb/benchmark/b001-cn",
+      "type": "benchmark",
+      "title": "对标 · 仵作状元：开局金殿断奇案",
+      "market": "CN",
+      "file": "benchmark/b001-cn.md"
+    },
+    {
+      "id": "kb/benchmark/b002-cn",
+      "type": "benchmark",
+      "title": "对标 · 败家状元：开局做空敌国商会",
+      "market": "CN",
+      "file": "benchmark/b002-cn.md"
+    },
+    {
+      "id": "kb/benchmark/b003-cn",
+      "type": "benchmark",
+      "title": "对标 · 草包状元：开局沙盘点崩十军",
+      "market": "CN",
+      "file": "benchmark/b003-cn.md"
+    },
+    {
+      "id": "kb/benchmark/b004-cn",
+      "type": "benchmark",
+      "title": "对标 · 天灾流放，我靠百亿空间养活瞎眼杀神",
+      "market": "CN",
+      "file": "benchmark/b004-cn.md"
+    },
+    {
+      "id": "kb/benchmark/b005-cn",
+      "type": "benchmark",
+      "title": "对标 · 荒漠驿站：光脑美食养战神",
+      "market": "CN",
+      "file": "benchmark/b005-cn.md"
+    },
+    {
+      "id": "kb/benchmark/b006-cn",
+      "type": "benchmark",
+      "title": "对标 · 深海炼金：我把人鱼养成了皇",
+      "market": "CN",
+      "file": "benchmark/b006-cn.md"
+    },
+    {
+      "id": "kb/benchmark/b007-cn",
+      "type": "benchmark",
+      "title": "对标 · 荒沙之上，罪妻手握机械狂潮",
+      "market": "CN",
+      "file": "benchmark/b007-cn.md"
+    },
+    {
+      "id": "kb/benchmark/b008-cn",
+      "type": "benchmark",
+      "title": "对标 · 流放荒岛：我契约巨兽养出海上帝王",
+      "market": "CN",
+      "file": "benchmark/b008-cn.md"
+    },
+    {
+      "id": "kb/benchmark/b009-cn",
+      "type": "benchmark",
+      "title": "对标 · 暴雪封关，我靠种田捂热冷酷战神",
+      "market": "CN",
+      "file": "benchmark/b009-cn.md"
+    },
+    {
+      "id": "kb/benchmark/b010-cn",
+      "type": "benchmark",
+      "title": "对标 · 大漠狂沙：我驯服异兽与糙汉将军",
+      "market": "CN",
+      "file": "benchmark/b010-cn.md"
+    },
+    {
+      "id": "kb/benchmark/b011-cn",
+      "type": "benchmark",
+      "title": "对标 · 冰原种田：发配边关养大猫",
+      "market": "CN",
+      "file": "benchmark/b011-cn.md"
+    },
+    {
+      "id": "kb/benchmark/b012-cn",
+      "type": "benchmark",
+      "title": "对标 · 拆盲盒后，我把渣男净身出户了",
+      "market": "CN",
+      "file": "benchmark/b012-cn.md"
+    },
+    {
+      "id": "kb/benchmark/b013-fam",
+      "type": "benchmark",
+      "title": "对标 · 白月光归来：前夫，牢房已满员",
+      "market": "CN",
+      "file": "benchmark/b013-fam.md"
+    },
+    {
+      "id": "kb/benchmark/b014-fam",
+      "type": "benchmark",
+      "title": "对标 · 离婚后，前夫跪求当我的贴身男仆",
+      "market": "CN",
+      "file": "benchmark/b014-fam.md"
+    },
+    {
+      "id": "kb/benchmark/b015-fam",
+      "type": "benchmark",
+      "title": "对标 · 被嫌弃的真千金手握封神配方",
+      "market": "CN",
+      "file": "benchmark/b015-fam.md"
+    },
+    {
+      "id": "kb/benchmark/b016-fam",
+      "type": "benchmark",
+      "title": "对标 · 扫地姑娘是百亿精算师",
+      "market": "CN",
+      "file": "benchmark/b016-fam.md"
+    },
+    {
+      "id": "kb/benchmark/b017-fam",
+      "type": "benchmark",
+      "title": "对标 · 废土她不等你",
+      "market": "CN",
+      "file": "benchmark/b017-fam.md"
+    },
+    {
+      "id": "kb/benchmark/b018-fam",
+      "type": "benchmark",
+      "title": "对标 · 全员听我心声，豪门保姆成了团宠",
+      "market": "CN",
+      "file": "benchmark/b018-fam.md"
+    },
+    {
+      "id": "kb/benchmark/b019-na",
+      "type": "benchmark",
+      "title": "对标 · Inferno Tower Savior",
+      "market": "NA",
+      "file": "benchmark/b019-na.md"
+    },
+    {
+      "id": "kb/benchmark/b020-na",
+      "type": "benchmark",
+      "title": "对标 · Crush Depth",
+      "market": "NA",
+      "file": "benchmark/b020-na.md"
+    },
+    {
+      "id": "kb/benchmark/b021-na",
+      "type": "benchmark",
+      "title": "对标 · Mayday: The Shadow Pilot",
+      "market": "NA",
+      "file": "benchmark/b021-na.md"
+    },
+    {
+      "id": "kb/benchmark/b022-na",
+      "type": "benchmark",
+      "title": "对标 · Deadman Velocity",
+      "market": "NA",
+      "file": "benchmark/b022-na.md"
+    },
+    {
+      "id": "kb/benchmark/b023-na",
+      "type": "benchmark",
+      "title": "对标 · Deep Abyss Master",
+      "market": "NA",
+      "file": "benchmark/b023-na.md"
+    },
+    {
+      "id": "kb/benchmark/b024-na",
+      "type": "benchmark",
+      "title": "对标 · Tower Inferno: The Lone Architect",
+      "market": "NA",
+      "file": "benchmark/b024-na.md"
+    },
+    {
+      "id": "kb/benchmark/b025-s",
+      "type": "benchmark",
+      "title": "对标 · I Heard The Baby Alpha Whimper",
+      "market": "NA",
+      "file": "benchmark/b025-s.md"
+    },
+    {
+      "id": "kb/benchmark/b026-s",
+      "type": "benchmark",
+      "title": "对标 · The Beast Prince Refuses Any Other Nanny",
+      "market": "NA",
+      "file": "benchmark/b026-s.md"
+    },
+    {
+      "id": "kb/benchmark/b027-s",
+      "type": "benchmark",
+      "title": "对标 · 给大妈爆改后我成了顶流",
+      "market": "CN",
+      "file": "benchmark/b027-s.md"
+    },
+    {
+      "id": "kb/benchmark/b028-s",
+      "type": "benchmark",
+      "title": "对标 · 重回前夫假死那天，我大摆招魂席",
+      "market": "CN",
+      "file": "benchmark/b028-s.md"
+    },
+    {
+      "id": "kb/continuity/state-ledger",
+      "type": "continuity-standard",
+      "title": "长程连续性与状态台账标准",
+      "dimension": "continuity",
+      "routes": [
+        "all"
+      ],
+      "file": "continuity/state-ledger.md"
+    },
+    {
+      "id": "kb/deconstruct/protocol",
+      "type": "deconstruct-protocol",
+      "title": "拆书总协议（六槽位与溯源纪律）",
+      "dimension": "protocol",
+      "routes": [
+        "all"
+      ],
+      "file": "deconstruct/protocol.md"
+    },
+    {
+      "id": "kb/deconstruct/style-learning",
+      "type": "deconstruct-protocol",
+      "title": "文风学习协议（情绪决定笔墨密度）",
+      "dimension": "style",
+      "routes": [
+        "all"
+      ],
+      "file": "deconstruct/style-learning.md"
+    },
+    {
+      "id": "kb/formats/webnovel-longform",
+      "type": "format-standard",
+      "title": "长篇网文形态标准（章末钩子与批量生成）",
+      "dimension": "format",
+      "routes": [
+        "all"
+      ],
+      "file": "formats/webnovel-longform.md"
+    },
+    {
+      "id": "kb/market/constraints",
+      "type": "market-standard",
+      "title": "生产约束基线（短剧/漫剧实盘值）",
+      "routes": [
+        "all"
+      ],
+      "file": "market/constraints.md"
+    },
+    {
+      "id": "kb/market/internet-feel",
+      "type": "market-standard",
+      "title": "网感公式标准（标题 / 卖点 / 共情点句式）",
+      "routes": [
+        "all"
+      ],
+      "file": "market/internet-feel-formulas.md"
+    },
+    {
+      "id": "kb/market/meme-rules",
+      "type": "market-standard",
+      "title": "梗密度与发散性约束（S1 网感输入源）",
+      "dimension": "meme",
+      "routes": [
+        "all"
+      ],
+      "file": "market/meme-rules.md"
+    },
+    {
+      "id": "kb/market/setting-rules",
+      "type": "market-standard",
+      "title": "设定体系约束（项目级：世界观代入成本红线）",
+      "dimension": "setting",
+      "routes": [
+        "all"
+      ],
+      "file": "market/setting-rules.md"
+    },
+    {
+      "id": "kb/market/snapshot",
+      "type": "market-snapshot",
+      "title": "咔咔猩市场快照（机器可读）",
+      "routes": [
+        "all"
+      ],
+      "file": "market/snapshot.json"
+    },
+    {
+      "id": "kb/market/structure",
+      "type": "market-standard",
+      "title": "短剧市场结构标准（咔咔猩语料蒸馏）",
+      "routes": [
+        "all"
+      ],
+      "file": "market/market-structure.md"
+    },
+    {
+      "id": "kb/structure/catalog",
+      "type": "structure-catalog",
+      "title": "叙事结构选型目录（第二阶段深挖用）",
+      "dimension": "structure",
+      "routes": [
+        "all"
+      ],
+      "file": "structure/catalog.md"
+    },
+    {
+      "id": "kb/trope/chongsheng-fuchou",
+      "type": "trope",
+      "title": "梗族 · 重生复仇梗",
+      "saturation": "红海·有效",
+      "corpus_count": 702,
+      "avg_heat_w": 11978,
+      "file": "trope/chongsheng-fuchou.md"
+    },
+    {
+      "id": "kb/trope/dalian-nuezha",
+      "type": "trope",
+      "title": "梗族 · 打脸虐渣梗",
+      "saturation": "红海·有效",
+      "corpus_count": 1510,
+      "avg_heat_w": 18558,
+      "file": "trope/dalian-nuezha.md"
+    },
+    {
+      "id": "kb/trope/liufang-zhongtian",
+      "type": "trope",
+      "title": "梗族 · 流放种田梗",
+      "saturation": "上升期·蓝海偏好",
+      "corpus_count": 92,
+      "avg_heat_w": 22598,
+      "file": "trope/liufang-zhongtian.md"
+    },
+    {
+      "id": "kb/trope/majia-diaoma",
+      "type": "trope",
+      "title": "梗族 · 马甲掉马梗",
+      "saturation": "红海·过饱和",
+      "corpus_count": 750,
+      "avg_heat_w": 9215,
+      "file": "trope/majia-diaoma.md"
+    },
+    {
+      "id": "kb/trope/na-billionaire",
+      "type": "trope",
+      "title": "梗族 · 豪门财富梗(NA)",
+      "saturation": "红海·过饱和",
+      "corpus_count": 895,
+      "avg_heat_w": 228,
+      "file": "trope/na-billionaire.md"
+    },
+    {
+      "id": "kb/trope/na-fantasy",
+      "type": "trope",
+      "title": "梗族 · 奇幻生物梗(NA)",
+      "saturation": "退潮期·慎入",
+      "corpus_count": 161,
+      "avg_heat_w": 234,
+      "file": "trope/na-fantasy.md"
+    },
+    {
+      "id": "kb/trope/na-werewolf",
+      "type": "trope",
+      "title": "梗族 · 狼人命定梗(NA)",
+      "saturation": "退潮期·慎入",
+      "corpus_count": 359,
+      "avg_heat_w": 167,
+      "file": "trope/na-werewolf.md"
+    },
+    {
+      "id": "kb/trope/shenhao-baofu",
+      "type": "trope",
+      "title": "梗族 · 神豪暴富梗",
+      "saturation": "上升期·蓝海偏好",
+      "corpus_count": 380,
+      "avg_heat_w": 18987,
+      "file": "trope/shenhao-baofu.md"
+    },
+    {
+      "id": "kb/trope/tuanchong",
+      "type": "trope",
+      "title": "梗族 · 团宠护短梗",
+      "saturation": "退潮期·慎入",
+      "corpus_count": 63,
+      "avg_heat_w": 2703,
+      "file": "trope/tuanchong.md"
+    },
+    {
+      "id": "kb/trope/xianhun-lianai",
+      "type": "trope",
+      "title": "梗族 · 先婚后爱梗",
+      "saturation": "稳定·主流",
+      "corpus_count": 387,
+      "avg_heat_w": 10092,
+      "file": "trope/xianhun-lianai.md"
+    },
+    {
+      "id": "kb/trope/zhenjia-qianjin",
+      "type": "trope",
+      "title": "梗族 · 真假千金梗",
+      "saturation": "退潮期·慎入",
+      "corpus_count": 83,
+      "avg_heat_w": 7938,
+      "file": "trope/zhenjia-qianjin.md"
+    },
+    {
+      "id": "kb/trope/zhuiqi-huozangchang",
+      "type": "trope",
+      "title": "梗族 · 追妻火葬场梗",
+      "saturation": "上升期·蓝海偏好",
+      "corpus_count": 132,
+      "avg_heat_w": 14218,
+      "file": "trope/zhuiqi-huozangchang.md"
+    },
+    {
+      "id": "kb/trope/zhuxu-zhanshen",
+      "type": "trope",
+      "title": "梗族 · 赘婿战神梗",
+      "saturation": "稳定·主流",
+      "corpus_count": 192,
+      "avg_heat_w": 10684,
+      "file": "trope/zhuxu-zhanshen.md"
+    },
+    {
+      "id": "kb/continuity/worldbook",
+      "type": "continuity-standard",
+      "title": "世界书体系标准（小说/剧本双变体）",
+      "dimension": "continuity",
+      "routes": [
+        "all"
+      ],
+      "file": "continuity/worldbook.md"
+    },
+    {
+      "id": "kb/formats/webnovel-fastfood",
+      "type": "format-standard",
+      "title": "快餐抽象网文形态标准（番茄线）",
+      "dimension": "format",
+      "routes": [
+        "long-form"
+      ],
+      "file": "formats/webnovel-fastfood.md"
+    },
+    {
+      "id": "kb/market/topic-anatomy",
+      "type": "market-standard",
+      "title": "题材解剖学（素材聚合与关系逆位选题法）",
+      "dimension": "market",
+      "routes": [
+        "all"
+      ],
+      "file": "market/topic-anatomy.md"
+    },
+    {
+      "id": "kb/structure/episodic-webnovel",
+      "type": "structure-catalog",
+      "title": "单元剧网文结构标准（多故事集合体·暗线先行）",
+      "dimension": "structure",
+      "routes": [
+        "long-form"
+      ],
+      "file": "structure/episodic-webnovel.md"
+    },
+    {
+      "id": "kb/aesthetic/slop-list",
+      "type": "aesthetic-standard",
+      "title": "AI 味禁则清单（OpenAI 官方 8 类 + 中文映射）",
+      "dimension": "ai-trace",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/slop-list.md"
+    },
+    {
+      "id": "kb/method/revision-loop",
+      "type": "deconstruct-protocol",
+      "title": "多轮精修循环协议（判分→定向修订→防劣化收敛）",
+      "dimension": "method",
+      "routes": [
+        "all"
+      ],
+      "file": "method/revision-loop.md"
+    },
+    {
+      "id": "kb/method/longform-engineering",
+      "type": "deconstruct-protocol",
+      "title": "长篇工程方法（细纲节拍/递归重提示/双层记忆/大纲贴附）",
+      "dimension": "method",
+      "routes": [
+        "all"
+      ],
+      "file": "method/longform-engineering.md"
+    },
+    {
+      "id": "kb/craft/prose-constraints",
+      "type": "craft-standard",
+      "title": "成文约束总纲（六维路由——写前看什么、盖章查什么）",
+      "dimension": "craft",
+      "routes": [
+        "all"
+      ],
+      "file": "craft/prose-constraints.md"
+    },
+    {
+      "id": "kb/aesthetic/ai-detection-sources",
+      "type": "detection-playbook",
+      "title": "AI味检测口径卡（本地打分×朱雀对照·两级门·50万token纪律）",
+      "dimension": "aesthetic",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/ai-detection-sources.md"
+    },
+    {
+      "id": "kb/craft/user-style-rules",
+      "type": "user-style-rules",
+      "title": "用户补充·文学规则（公用 md，手动追加区——引号/加粗/箭头链红线）",
+      "dimension": "craft",
+      "routes": [
+        "all"
+      ],
+      "file": "craft/user-style-rules.md"
+    },
+    {
+      "id": "kb/craft/highlight-loop",
+      "type": "highlight-loop",
+      "title": "亮点闭环（卖点→台词范式→成文消费；AI语音梗台词范式库）",
+      "dimension": "craft",
+      "routes": [
+        "all"
+      ],
+      "file": "craft/highlight-loop.md"
+    }
+  ]
+}

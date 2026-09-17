@@ -1,0 +1,85 @@
+{
+  "format": "stage@1",
+  "id": "publish-review",
+  "name": "上架审核",
+  "version": "1.0.0",
+  "applicability": [
+    "drama",
+    "novel"
+  ],
+  "desc": "平台合规 + 内容安全 + 上架材料清单，产出可发布终稿。",
+  "entry": "final",
+  "gate": "pub-gate",
+  "inputs": [
+    {
+      "key": "待上架成稿",
+      "accept": [
+        "章节正文",
+        "剧本"
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "key": "可发布终稿",
+      "node": "material"
+    }
+  ],
+  "nodes": {
+    "final": {
+      "kind": "novel-txt",
+      "title": "成稿输入"
+    },
+    "compliance": {
+      "kind": "agent",
+      "title": "平台合规审查",
+      "skill": "topic-delivery-gate",
+      "desc": "真实人名/协会/赛事/口号台词排查"
+    },
+    "safety": {
+      "kind": "agent",
+      "title": "内容安全自查",
+      "skill": "topic-delivery-gate",
+      "desc": "敏感面/价值导向自查，逐处配反差翻译"
+    },
+    "material": {
+      "kind": "core",
+      "title": "上架材料清单",
+      "minitool": "kb_load",
+      "loads": [
+        "kb/market/constraints"
+      ],
+      "desc": "标题/简介/标签/封面要素"
+    },
+    "pub-gate": {
+      "kind": "gate",
+      "title": "上架验收"
+    }
+  },
+  "edges": [
+    {
+      "id": "r1",
+      "from": "final",
+      "to": "compliance",
+      "transform": "skill.topic-delivery-gate"
+    },
+    {
+      "id": "r2",
+      "from": "compliance",
+      "to": "safety",
+      "transform": "sm.review"
+    },
+    {
+      "id": "r3",
+      "from": "safety",
+      "to": "material",
+      "transform": "core.kb_load"
+    },
+    {
+      "id": "r4",
+      "from": "material",
+      "to": "pub-gate",
+      "transform": "sm.review"
+    }
+  ]
+}

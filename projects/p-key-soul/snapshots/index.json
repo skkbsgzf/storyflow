@@ -1,0 +1,133 @@
+{
+  "snapshots": {
+    "tropes": [
+      {
+        "round": 1,
+        "ts": "2026-09-15T22:29:25.529Z",
+        "note": "submit r1",
+        "files": {
+          "梗卡.md": {
+            "hash": "20ab679de77c",
+            "path": "snapshots/tropes/r1/梗卡.md"
+          }
+        }
+      }
+    ],
+    "zeitgeist": [
+      {
+        "round": 1,
+        "ts": "2026-09-15T22:29:26.658Z",
+        "note": "submit r1",
+        "files": {
+          "热点素材.md": {
+            "hash": "25fd93aac322",
+            "path": "snapshots/zeitgeist/r1/热点素材.md"
+          }
+        }
+      }
+    ],
+    "analysis": [
+      {
+        "round": 1,
+        "ts": "2026-09-15T22:37:31.707Z",
+        "note": "submit r1",
+        "files": {
+          "选题分析报告.md": {
+            "hash": "2b25e63585ba",
+            "path": "snapshots/analysis/r1/选题分析报告.md"
+          }
+        }
+      }
+    ],
+    "baseline": [
+      {
+        "round": 1,
+        "ts": "2026-09-15T23:06:53.865Z",
+        "note": "submit r1",
+        "files": {
+          "选题方案-爽版-基线.md": {
+            "hash": "51ca0d6e4213",
+            "path": "snapshots/baseline/r1/选题方案-爽版-基线.md"
+          }
+        }
+      }
+    ],
+    "structure": [
+      {
+        "round": 1,
+        "ts": "2026-09-15T23:31:02.917Z",
+        "note": "submit r1",
+        "files": {
+          "故事框架案.md": {
+            "hash": "43eeed69030e",
+            "path": "snapshots/structure/r1/故事框架案.md"
+          }
+        }
+      }
+    ],
+    "proposal": [
+      {
+        "round": 1,
+        "ts": "2026-09-15T23:47:05.417Z",
+        "note": "submit r1",
+        "files": {
+          "选题方案.md": {
+            "hash": "5a863096bcc7",
+            "path": "snapshots/proposal/r1/选题方案.md"
+          }
+        }
+      }
+    ],
+    "miniguided": [
+      {
+        "round": 1,
+        "ts": "2026-09-15T23:58:52.312Z",
+        "note": "submit r1",
+        "files": {
+          "小纲-第1-3集.md": {
+            "hash": "b48998baa85b",
+            "path": "snapshots/miniguided/r1/小纲-第1-3集.md"
+          }
+        }
+      }
+    ],
+    "first3": [
+      {
+        "round": 1,
+        "ts": "2026-09-16T00:13:43.732Z",
+        "note": "submit r1",
+        "files": {
+          "对外交付/04-成品剧本试稿.md": {
+            "hash": "b6039802db75",
+            "path": "snapshots/first3/r1/对外交付/04-成品剧本试稿.md"
+          }
+        }
+      }
+    ],
+    "polish": [
+      {
+        "round": 1,
+        "ts": "2026-09-16T00:24:01.645Z",
+        "note": "submit r1",
+        "files": {
+          "对外交付/03-剧本试稿.md": {
+            "hash": "c645eb829ef7",
+            "path": "snapshots/polish/r1/对外交付/03-剧本试稿.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-17 02:31",
+        "note": "",
+        "files": {
+          "对外交付/03-剧本试稿.md": {
+            "hash": null,
+            "path": null
+          }
+        }
+      }
+    ]
+  },
+  "inputs": {}
+}

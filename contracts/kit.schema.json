@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miniflow.dev/contracts/kit.schema.json",
+  "title": "kit@1 · 工种域单元（flow-pack 的子单位；R5 增补 op.config）",
+  "description": "kit 把一个「能力」的五个散落处（skill md + kb 条目 + minitool 登记 + flow 节点内联清单 + 可调配置项）粘回一个可引用单位。flow 节点不再手写知识清单，改写 kit+op 引用；装载由内核在 buildTaskPackage 单点执行。R5：每个 op 必须声明 config（内容配置项），使「tool 的位置」与「tool 的内容配置」都成为可被用户/优化 agent 调优的一等对象。",
+  "type": "object",
+  "required": ["format", "id", "domain", "name", "ops"],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "const": "kit@1" },
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "domain": {
+      "type": "string",
+      "enum": ["search", "plot", "prose", "tool"],
+      "description": "认知工种域：search 检索取数 / plot 剧情 / prose 文学 / tool 确定性底座"
+    },
+    "name": { "type": "string" },
+    "desc": { "type": "string" },
+    "version": { "type": "string" },
+    "ops": {
+      "type": "object",
+      "description": "域内操作：每个 op 绑定一个 skill（方法论）及其判定条款（knowledge）/确定性工具（minitools）/硬断言（asserts）。op id 建议等于 skill id，便于按技能反查。",
+      "additionalProperties": {
+        "type": "object",
+        "anyOf": [{ "required": ["skill"] }, { "required": ["minitools"] }, { "required": ["script"] }],
+        "additionalProperties": false,
+        "properties": {
+          "skill": { "type": "string", "description": "skills/<id>.md" },
+          "script": {
+            "type": "string",
+            "description": "确定性脚本（仓库内相对路径，如 tools/prose-scan.py）——tool 域操作"
+          },
+          "title": { "type": "string" },
+          "desc": { "type": "string" },
+          "kind": {
+            "type": "string",
+            "enum": ["produce", "review"],
+            "default": "produce",
+            "description": "review = 判定类操作。R5 起 review **不再**是图上节点：它以 op 的 asserts/config 形式内嵌在被判定节点下游，或作为 config.tunable 的自检开关；人工裁决只发生在 kit 边界。"
+          },
+          "model_tier": { "type": "string", "enum": ["high", "lite"] },
+          "knowledge": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "判定条款条目 id（kb/... 形式或 glob）——本步的标尺卡，由内核装载进任务包"
+          },
+          "exclude_knowledge": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "R5：从标尺中排除的条目 id。glob 声明（kb/trope/*）无法用 exact 删单条，优化器剔除死条款时写这里——精确、可审计、可回滚"
+          },
+          "minitools": { "type": "array", "items": { "type": "string" } },
+          "asserts": { "type": "array", "items": { "type": "string" } },
+          "assist": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "辅助技能 id（如 novel-deai 配 novel-judge）"
+          },
+          "config": {
+            "type": "object",
+            "description": "内容配置项声明（R5）：本操作的每一个可调参数。生效优先级 overlay.opConfig > 节点 config > 本处 default > 通用默认。缺省 {} = 只继承通用项；未声明 config = kit-lint error（能力不可调 = 违背 R5）。",
+            "additionalProperties": {
+              "type": "object",
+              "required": ["type", "desc"],
+              "additionalProperties": false,
+              "properties": {
+                "type": { "enum": ["number", "string", "boolean", "enum", "array"] },
+                "default": {},
+                "enum": { "type": "array" },
+                "min": { "type": "number" },
+                "max": { "type": "number" },
+                "unit": { "type": "string" },
+                "desc": { "type": "string", "description": "这个旋钮控制什么" },
+                "effect": { "type": "string", "description": "调高/调低对产物的影响（优化 agent 的判据）" },
+                "tunable_by": {
+                  "type": "array",
+                  "items": { "enum": ["user", "optimizer"] },
+                  "default": ["user", "optimizer"],
+                  "description": "谁可以改：默认人与优化 agent 都可"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

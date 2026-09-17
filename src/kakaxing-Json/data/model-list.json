@@ -1,0 +1,38 @@
+[
+ {
+  "id": "1",
+  "modelKey": "IMG_SPEED_MODEL",
+  "modelPoints": "5",
+  "modelName": "极速模型",
+  "modelDesc": "快速、低成本、满足基本质量要求",
+  "modelImagePath": "https://creative.creatifyone.com/icon/speed-model-icon.svg",
+  "freeFlag": "0",
+  "modelType": 0,
+  "customType": null,
+  "trainStatus": null
+ },
+ {
+  "id": "2",
+  "modelKey": "IMG_ADVANCED_MODEL",
+  "modelPoints": "25",
+  "modelName": "高级模型",
+  "modelDesc": "高品质、真实感强，适合追求卓越效果的用户",
+  "modelImagePath": "https://creative.creatifyone.com/icon/advanced-model-icon.svg",
+  "freeFlag": "1",
+  "modelType": 0,
+  "customType": null,
+  "trainStatus": null
+ },
+ {
+  "id": "3",
+  "modelKey": "IMG_PROFESSIONAL_MODEL",
+  "modelPoints": "50",
+  "modelName": "专业模型",
+  "modelDesc": "高度逼真、细节丰富，适合专业用户",
+  "modelImagePath": "https://creative.creatifyone.com/icon/professional-model-icon.svg",
+  "freeFlag": "1",
+  "modelType": 0,
+  "customType": null,
+  "trainStatus": null
+ }
+]

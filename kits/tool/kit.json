@@ -1,0 +1,995 @@
+{
+  "format": "kit@1",
+  "id": "tool",
+  "domain": "tool",
+  "name": "tool kit",
+  "desc": "确定性底座：零 LLM 的内核 minitool 与 tools/ 脚本，flow 底座共用",
+  "version": "0.3.1",
+  "ops": {
+    "kb_load": {
+      "title": "知识装载",
+      "minitools": [
+        "kb_load"
+      ],
+      "desc": "按节点 loads 清单聚合知识文件，产出带来源注记的装载件",
+      "config": {
+        "dedupe": {
+          "type": "boolean",
+          "default": true,
+          "desc": "重复来源去重",
+          "effect": "关掉 = 同一条款重复占预算",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "sourceNote": {
+          "type": "boolean",
+          "default": true,
+          "desc": "每段带来源注记",
+          "effect": "关掉 = 无法回溯条款出处",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "maxChars": {
+          "type": "number",
+          "default": 40000,
+          "min": 0,
+          "desc": "装载总字数上限",
+          "effect": "超出即截断",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "check_aesthetic_asserts": {
+      "title": "美学硬断言校验",
+      "minitools": [
+        "check_aesthetic_asserts"
+      ],
+      "desc": "钩型/三件套/时长/密度/梗点/卡点/合规/编排表忠实性（M2 正式版）",
+      "config": {
+        "scope": {
+          "type": "enum",
+          "default": "整批",
+          "enum": [
+            "单件",
+            "整批"
+          ],
+          "desc": "检查范围",
+          "effect": "单件 = 快但漏跨件一致性",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "severityFloor": {
+          "type": "enum",
+          "default": "block",
+          "enum": [
+            "warn",
+            "block"
+          ],
+          "desc": "最低阻断级别",
+          "effect": "调成 warn = 断言只提示不拦",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "dims": {
+          "type": "array",
+          "default": [
+            "钩型",
+            "三件套",
+            "时长",
+            "密度",
+            "梗点",
+            "卡点",
+            "合规",
+            "编排表忠实性"
+          ],
+          "desc": "参与的维度子集",
+          "effect": "减少 = 检查更快、覆盖变窄",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "check_trope_combo": {
+      "title": "梗组合相性校验",
+      "minitools": [
+        "check_trope_combo"
+      ],
+      "desc": "走 check_* integrity 模式：产物存在性/结构完整/断言子集",
+      "config": {
+        "mode": {
+          "type": "enum",
+          "default": "integrity",
+          "enum": [
+            "integrity",
+            "strict"
+          ],
+          "desc": "检查模式",
+          "effect": "strict = 更严，误报上升",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "skipMissing": {
+          "type": "boolean",
+          "default": false,
+          "desc": "缺产物时跳过而非阻断",
+          "effect": "开启 = 静默放行风险",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "render_html": {
+      "title": "交付页渲染",
+      "minitools": [
+        "render_html"
+      ],
+      "desc": "静态单文件交付页生成",
+      "config": {
+        "theme": {
+          "type": "enum",
+          "default": "纸感",
+          "enum": [
+            "纸感",
+            "暗色",
+            "极简"
+          ],
+          "desc": "交付页主题",
+          "effect": "换了 = 交付观感变化",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "maxSections": {
+          "type": "number",
+          "default": 20,
+          "min": 0,
+          "desc": "合入的最大产物数",
+          "effect": "提高 = 页面更全也更长",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "inlineCss": {
+          "type": "boolean",
+          "default": true,
+          "desc": "样式内联（单文件离线可读）",
+          "effect": "关掉 = 离开仓库即掉样式",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "docx_ingest": {
+      "title": "批注回流解析",
+      "minitools": [
+        "docx_ingest"
+      ],
+      "desc": "（planned，内核未实现，触达即 blocked）解析客户回传 docx 批注 → 结构化意见清单（批注回流=on 时触达）",
+      "config": {
+        "stripComments": {
+          "type": "boolean",
+          "default": true,
+          "desc": "解析后剥离原批注格式",
+          "effect": "关掉 = 意见清单带格式噪声",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "groupBy": {
+          "type": "enum",
+          "default": "段落",
+          "enum": [
+            "段落",
+            "批注人"
+          ],
+          "desc": "意见清单的分组方式",
+          "effect": "按批注人 = 便于追责",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "continuity_slice": {
+      "title": "台账切片",
+      "minitools": [
+        "continuity_slice"
+      ],
+      "desc": "（planned，内核未实现，触达即 blocked）世界书 台账/章账 按章切片供写手",
+      "config": {
+        "sliceUnit": {
+          "type": "enum",
+          "default": "章",
+          "enum": [
+            "章",
+            "拍",
+            "场景"
+          ],
+          "desc": "切片单位",
+          "effect": "拍/场景 = 更细更慢",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "lookback": {
+          "type": "number",
+          "default": 3,
+          "min": 0,
+          "desc": "回看范围（多少个单位）",
+          "effect": "提高 = 更连续也更占预算",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "includeRetired": {
+          "type": "boolean",
+          "default": false,
+          "desc": "是否包含已退役词条",
+          "effect": "开启 = 噪声增加",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "continuity_commit": {
+      "title": "台账结算",
+      "minitools": [
+        "continuity_commit"
+      ],
+      "desc": "（planned，内核未实现，触达即 blocked）章回写手待登记清单回写世界书词条（状态机 draft/active/retired）",
+      "config": {
+        "stateMachine": {
+          "type": "enum",
+          "default": "draft/active/retired",
+          "enum": [
+            "draft/active/retired",
+            "自由"
+          ],
+          "desc": "词条状态机",
+          "effect": "自由 = 状态不可枚举",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "requireEvidence": {
+          "type": "boolean",
+          "default": true,
+          "desc": "回写必须带依据",
+          "effect": "关掉 = 台账来源不明",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "kb_search": {
+      "title": "知识检索",
+      "minitools": [
+        "kb_search"
+      ],
+      "desc": "（planned，内核未实现，触达即 blocked）按 tags/关键词检索知识库条目",
+      "config": {
+        "limit": {
+          "type": "number",
+          "default": 8,
+          "min": 0,
+          "desc": "返回条目数上限",
+          "effect": "提高 = 召回更全、上下文更挤",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "tags": {
+          "type": "string",
+          "default": "",
+          "desc": "标签过滤（逗号分隔，空=不限）",
+          "effect": "缩小 = 更准也更窄",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "rerank": {
+          "type": "enum",
+          "default": "关键词",
+          "enum": [
+            "无",
+            "关键词",
+            "语义"
+          ],
+          "desc": "重排方式",
+          "effect": "语义 = 更准但更贵",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "meme_harvest": {
+      "title": "热点素材采集",
+      "minitools": [
+        "meme_harvest"
+      ],
+      "desc": "（planned，内核未实现，触达即 blocked）外部热点/梗源采集（现由宿主 agent 步承担）",
+      "config": {
+        "sinceDays": {
+          "type": "number",
+          "default": 30,
+          "min": 0,
+          "desc": "回看天数",
+          "effect": "放宽 = 更全也更旧",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "limit": {
+          "type": "number",
+          "default": 20,
+          "min": 0,
+          "desc": "采集条数上限",
+          "effect": "提高 = 素材更多、筛选成本上升",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "default": [],
+          "desc": "素材来源清单（空=默认源）",
+          "effect": "限定来源 = 提升可控性",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "kb_read": {
+      "title": "知识条目读取",
+      "minitools": [
+        "kb_read"
+      ],
+      "desc": "按条目 id 读取知识库内容——agent 节点场景已由 kit 标尺装载统一承担（assembler.loadKnowledge）",
+      "config": {
+        "mode": {
+          "type": "enum",
+          "default": "全文",
+          "enum": [
+            "全文",
+            "摘要"
+          ],
+          "desc": "读取模式",
+          "effect": "摘要 = 省预算丢细节",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "maxChars": {
+          "type": "number",
+          "default": 2000,
+          "min": 0,
+          "desc": "单条读取字数上限",
+          "effect": "超出即截断",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "flow_read_artifact": {
+      "title": "产物读取",
+      "minitools": [
+        "flow_read_artifact"
+      ],
+      "desc": "读取上游产物——已由任务包 context 上游摘录承担（assembler.buildTaskPackage）",
+      "config": {
+        "which": {
+          "type": "enum",
+          "default": "最新",
+          "enum": [
+            "最新",
+            "指定轮次"
+          ],
+          "desc": "读取哪一版产物",
+          "effect": "指定轮次 = 可复现历史判断",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "maxChars": {
+          "type": "number",
+          "default": 4000,
+          "min": 0,
+          "desc": "单件读取字数上限",
+          "effect": "超出即截断",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "continuity_check": {
+      "title": "连续性校验",
+      "minitools": [
+        "continuity_check"
+      ],
+      "desc": "（planned，内核未实现，触达即 blocked）台账矛盾/知情范围越权/伏笔逾期——当前由 check_aesthetic_asserts 的 AE-CONT-* 承担，待拆为独立 minitool",
+      "config": {
+        "dims": {
+          "type": "array",
+          "default": [
+            "矛盾",
+            "知情范围",
+            "伏笔逾期"
+          ],
+          "desc": "参与的检查维度",
+          "effect": "减少 = 更快但漏检",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "severityFloor": {
+          "type": "enum",
+          "default": "block",
+          "enum": [
+            "warn",
+            "block"
+          ],
+          "desc": "最低阻断级别",
+          "effect": "调成 warn = 只提示不拦",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "analyze-kakaxing": {
+      "script": "tools/analyze-kakaxing.py",
+      "title": "analyze-kakaxing.py",
+      "desc": "kakaxing 语料分析：题材×热度、八段式策划案解析、句式与梗族挖掘。确定性、零 LLM。",
+      "config": {
+        "topN": {
+          "type": "number",
+          "default": 20,
+          "min": 0,
+          "desc": "题材×热度榜取前 N",
+          "effect": "提高 = 样本更全",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "genre": {
+          "type": "string",
+          "default": "",
+          "desc": "限定题材（空=全量）",
+          "effect": "限定 = 更快更聚焦",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "artifact-lint": {
+      "script": "tools/artifact-lint.py",
+      "title": "artifact-lint.py",
+      "desc": "artifact-lint · 过程交付件格式体检（规范 R4 §二/§三/§四）",
+      "config": {}
+    },
+    "check-purity": {
+      "script": "tools/check-purity.py",
+      "title": "check-purity.py",
+      "desc": "产物正文纯净度检查（AE-OUTPUT-PURITY）。",
+      "config": {
+        "severityFloor": {
+          "type": "enum",
+          "default": "block",
+          "enum": [
+            "warn",
+            "block"
+          ],
+          "desc": "最低阻断级别",
+          "effect": "调成 warn = 纯净度只提示",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "allowFrontmatter": {
+          "type": "boolean",
+          "default": true,
+          "desc": "允许 artifact@1 头部",
+          "effect": "关掉 = 过程件也会被判污染",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "export-doc": {
+      "script": "tools/export-doc.py",
+      "title": "export-doc.py",
+      "desc": "export-doc · 小纲/剧本 → Word doc 导出器（export_doc minitool 实现）",
+      "config": {
+        "style": {
+          "type": "enum",
+          "default": "默认",
+          "enum": [
+            "默认",
+            "公文",
+            "网文"
+          ],
+          "desc": "导出模板风格",
+          "effect": "换了 = 交付观感变化",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "verify": {
+          "type": "boolean",
+          "default": true,
+          "desc": "导出后计数/残渣硬断言",
+          "effect": "关掉 = 交付失败不会被发现",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "outDir": {
+          "type": "string",
+          "default": "对外交付",
+          "desc": "导出目录",
+          "effect": "越界路径会被内核拒绝",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "flow-kit-apply": {
+      "script": "tools/flow-kit-apply.py",
+      "title": "flow-kit-apply.py",
+      "desc": "flow-kit-apply · flow 节点声明迁移：skill + kb → kit + op（kit@1）",
+      "config": {
+        "dryRun": {
+          "type": "boolean",
+          "default": false,
+          "desc": "只报告改动不写盘",
+          "effect": "开启 = 安全预演",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "keepSkill": {
+          "type": "boolean",
+          "default": false,
+          "desc": "迁移后保留 node.skill 兼容位",
+          "effect": "保留 = 漂移风险",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "flow-lint": {
+      "script": "tools/flow-lint.py",
+      "title": "flow-lint.py",
+      "desc": "flow-lint · flow@2 配置体检（规范 R4 §五/§六）",
+      "config": {
+        "strict": {
+          "type": "boolean",
+          "default": false,
+          "desc": "warning 也视为失败",
+          "effect": "开启 = 更严，可能卡住历史债",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "flow-normalize": {
+      "script": "tools/flow-normalize.py",
+      "title": "flow-normalize.py",
+      "desc": "flow@1 → flow@2 迁移器（规范 R4 §五）。纯 stdlib。",
+      "config": {}
+    },
+    "flow-verify": {
+      "script": "tools/flow-verify.py",
+      "title": "flow-verify.py",
+      "desc": "flow-verify.py · 产物脱流改动探测器（K7 · 2026-09-17 事故 R2 落地件）",
+      "config": {
+        "since": {
+          "type": "string",
+          "default": "",
+          "desc": "只看该时间之后的改动",
+          "effect": "缩小 = 更快",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "failOnMissingReceipt": {
+          "type": "boolean",
+          "default": true,
+          "desc": "声明了校验却无收据即失败",
+          "effect": "关掉 = 虚报有缝可钻",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "kit-config-init": {
+      "script": "tools/kit-config-init.py",
+      "title": "kit-config-init.py",
+      "desc": "kit-config-init · 为全部 tool（kit op）注入内容配置项声明（R5 §二）",
+      "config": {}
+    },
+    "kit": {
+      "script": "tools/kit.py",
+      "title": "kit.py",
+      "desc": "kit · 创作者工具链 vendor 器（拷贝自治模型）",
+      "config": {
+        "dest": {
+          "type": "string",
+          "default": "projects",
+          "desc": "vendor 目标目录",
+          "effect": "改错 = 拷到不该拷的地方",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "vendor": {
+          "type": "boolean",
+          "default": true,
+          "desc": "拷贝自治模型（含工具链）",
+          "effect": "关掉 = 项目不自洽",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "project-pages": {
+      "script": "tools/project-pages.py",
+      "title": "project-pages.py",
+      "desc": "每项目工作流页生成器（复用 v3 Canvas 语义：拖拽画布 / 检查器 / 节点快照查看·修改·重跑）",
+      "config": {
+        "theme": {
+          "type": "enum",
+          "default": "纸感",
+          "enum": [
+            "纸感",
+            "暗色"
+          ],
+          "desc": "工作台主题",
+          "effect": "换了 = 观感变化",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "embedFiles": {
+          "type": "number",
+          "default": 20,
+          "min": 0,
+          "desc": "内嵌产物件数上限",
+          "effect": "提高 = 页面更全也更重",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "prose-scan": {
+      "script": "tools/prose-scan.py",
+      "title": "prose-scan.py",
+      "desc": "prose-scan.py v2 · 成稿机味扫描：配额层 + 八维统计画像（可复跑的机械层）",
+      "config": {
+        "threshold": {
+          "type": "number",
+          "default": 0.5,
+          "min": 0,
+          "desc": "机味判定的阈值",
+          "effect": "调低 = 更敏感误报多",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "dims": {
+          "type": "array",
+          "default": [
+            "配额",
+            "句式",
+            "比喻",
+            "节奏"
+          ],
+          "desc": "参与的统计维度",
+          "effect": "减少 = 更快但画像不全",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "r5-migrate": {
+      "script": "tools/r5-migrate.py",
+      "title": "r5-migrate.py",
+      "desc": "r5-migrate · 门降级迁移（规范 R5 §四）",
+      "config": {}
+    },
+    "render-flow": {
+      "script": "tools/render-flow.py",
+      "title": "render-flow.py",
+      "desc": "flow.json -> 图示渲染器（零依赖，确定性）",
+      "config": {
+        "layout": {
+          "type": "enum",
+          "default": "纵向",
+          "enum": [
+            "纵向",
+            "横向"
+          ],
+          "desc": "图示布局",
+          "effect": "横向 = 宽图",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "theme": {
+          "type": "enum",
+          "default": "纸感",
+          "enum": [
+            "纸感",
+            "暗色"
+          ],
+          "desc": "图示主题",
+          "effect": "换了 = 观感变化",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "serve": {
+      "script": "tools/serve.py",
+      "title": "serve.py",
+      "desc": "本地应用服务器（替代 python -m http.server）：",
+      "config": {
+        "port": {
+          "type": "number",
+          "default": 8421,
+          "min": 0,
+          "desc": "监听端口",
+          "effect": "占用时需改",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "open": {
+          "type": "boolean",
+          "default": false,
+          "desc": "启动后自动打开浏览器",
+          "effect": "开启 = 更顺手",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "snapshot": {
+      "script": "tools/snapshot.py",
+      "title": "snapshot.py",
+      "desc": "快照与重跑工具链（snapshot / diff / rerun-scope）",
+      "config": {
+        "keep": {
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "desc": "每节点保留的快照轮数",
+          "effect": "提高 = 更可回溯也更占磁盘",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "compress": {
+          "type": "boolean",
+          "default": false,
+          "desc": "快照压缩存储",
+          "effect": "开启 = 省盘但不可直接读",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "stage": {
+      "script": "tools/stage.py",
+      "title": "stage.py",
+      "desc": "stage · Stage 封装包管理（list / validate / tree）",
+      "config": {
+        "action": {
+          "type": "enum",
+          "default": "list",
+          "enum": [
+            "list",
+            "validate",
+            "tree"
+          ],
+          "desc": "默认动作",
+          "effect": "换动作 = 影响 CLI 默认输出",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "validate-kb": {
+      "script": "tools/validate-kb.py",
+      "title": "validate-kb.py",
+      "desc": "",
+      "config": {
+        "strict": {
+          "type": "boolean",
+          "default": false,
+          "desc": "warning 也视为失败",
+          "effect": "开启 = 更严",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "whereami": {
+      "script": "tools/whereami.py",
+      "title": "whereami.py",
+      "desc": "whereami · 开工自检（AGENTS.md 铁律 #1）",
+      "config": {
+        "verbose": {
+          "type": "boolean",
+          "default": false,
+          "desc": "输出全部节点与输入清单",
+          "effect": "开启 = 信息更全",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "worldbook": {
+      "script": "tools/worldbook.py",
+      "title": "worldbook.py",
+      "desc": "世界书 · 脚手架与校验（零依赖，所有叙事项目通用）",
+      "config": {
+        "entries": {
+          "type": "number",
+          "default": 50,
+          "min": 0,
+          "desc": "脚手架生成的词条上限",
+          "effect": "提高 = 更全也更空",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "crossLink": {
+          "type": "boolean",
+          "default": true,
+          "desc": "词条交叉链接",
+          "effect": "关掉 = RAG 检索失效",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      }
+    },
+    "orchestration-mine": {
+      "title": "编排挖掘",
+      "skill": "orchestration-miner",
+      "desc": "事后挖掘（R5 §六质性通道）：journal/打回/批注/中间文件 → findings@1 证据化提案；flow_mine 组装任务包，flow_optimize 并入（非结构类 risk=medium 待批，结构类只进拍板清单）",
+      "config": {
+        "maxFindings": {
+          "type": "number",
+          "default": 8,
+          "min": 1,
+          "desc": "单轮 findings 上限（数量纪律，防灌水）",
+          "effect": "超出按 severity 截断",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "dimension": {
+          "type": "enum",
+          "default": "all",
+          "enum": [
+            "all",
+            "ctx",
+            "coverage",
+            "structure",
+            "quality",
+            "cost"
+          ],
+          "desc": "本轮聚焦的挖掘维度",
+          "effect": "非 all 时其余维度跳过",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "evidenceMin": {
+          "type": "number",
+          "default": 1,
+          "min": 1,
+          "desc": "每条 finding 的最少证据条数",
+          "effect": "不足即不予立案",
+          "tunable_by": [
+            "user"
+          ]
+        }
+      }
+    }
+  }
+}

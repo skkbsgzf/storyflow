@@ -1,0 +1,58 @@
+flowchart LR
+    src["src · 选题素材"]:::src
+    market["market · 市场快照装载"]:::core
+    tropes["tropes · 找梗选梗（含新梗）"]:::agent
+    combo["combo · 梗组合相性校验"]:::core
+    zeitgeist["zeitgeist · 实时热点扫描"]:::agent
+    benchmark["benchmark · 竞品对标装载"]:::core
+    analysis["analysis · 选题调研报告"]:::agent
+    gate-r1["gate-r1 · R1 · 调研验收"]:::agent
+    structure["structure · 结构选型与深挖"]:::agent
+    gate-r2["gate-r2 · R2 · 结构验收"]:::agent
+    proposal["proposal · 选题方案"]:::agent
+    baseline["baseline · 爽版无监管基线"]:::agent
+    gate-r3["gate-r3 · R3 · 方案验收"]:::agent
+    first3["first3 · 成品剧本试稿（连贯格式）"]:::agent
+    gate-r4["gate-r4 · R4 · 小纲验收"]:::agent
+    delivery["delivery · 选题交付页"]:::core
+    polish["polish · 台词去AI味打磨"]:::agent
+    miniguided["miniguided · 小纲（分镜脚本 doc）"]:::agent
+    intake["intake · 批注回流接入（可选模块）"]:::core
+    gate-r5["gate-r5 · R5 · 成稿验收"]:::agent
+    market -->|skill.find-trope| tropes
+    tropes -->|core.check_trope_combo| combo
+    src -->|sm.topic-analysis| analysis
+    market -->|sm.topic-analysis| analysis
+    tropes -->|sm.topic-analysis| analysis
+    zeitgeist -->|sm.topic-analysis| analysis
+    benchmark -->|sm.topic-analysis| analysis
+    analysis -->|sm.review| gate-r1
+    gate-r1 -->|skill.structure-design| structure
+    structure -->|sm.review| gate-r2
+    gate-r2 -->|sm.topic-proposal| proposal
+    analysis -.->|sm.topic-proposal| baseline
+    proposal -->|sm.review| gate-r3
+    baseline -.->|sm.review| gate-r3
+    gate-r3 -->|skill.scene-breakdown| miniguided
+    miniguided -.->|core.docx_ingest| intake
+    intake -->|skill.script-final| first3
+    first3 -->|sm.review| gate-r5
+    gate-r5 -->|sm.topic-delivery| delivery
+    gate-r1 -.->|sm.review.reject| tropes
+    gate-r1 -.->|sm.review.reject| analysis
+    gate-r2 -.->|sm.review.reject| structure
+    gate-r3 -.->|sm.review.reject| proposal
+    gate-r4 -.->|sm.review.reject| miniguided
+    first3 -->|skill.dialogue-polish| polish
+    polish -->|sm.review| gate-r5
+    src -->|skill.find-trope| tropes
+    src -->|skill.topic-zeitgeist| zeitgeist
+    tropes -->|core.kb_load| benchmark
+    combo -->|sm.topic-analysis| analysis
+    miniguided -->|sm.review| gate-r4
+    gate-r4 -->|skill.script-final| first3
+    gate-r5 -.->|sm.review.reject| first3
+    classDef src fill:#1d3323,stroke:#3d7a4f,color:#8fd4a3
+    classDef core fill:#16233a,stroke:#3d5a80,color:#a8c4e8
+    classDef agent fill:#2a2313,stroke:#e8b33d,color:#e8b33d
+    classDef gate fill:#2a1616,stroke:#a5433a,color:#e8a49c

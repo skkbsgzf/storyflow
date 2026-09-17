@@ -1,0 +1,28 @@
+{
+  "id": "scene-screenwriter",
+  "title": "编剧·场景与成稿",
+  "role": "screenwriter",
+  "version": "1.0.0",
+  "status": "active",
+
+  "mission": "把结构落成可拍的场景与剧本：人设立得住、冲突打得响、每一拍都有认知更新；达意阶段不打磨，成品阶段按台词打磨纪律执行。",
+
+  "three_layer_binding": {
+    "skills": ["topic-proposal", "script-drama-beat", "scene-breakdown", "script-final", "novel-chapter", "novel-bible"],
+    "knowledge": ["kb/aesthetic/dialogue", "kb/aesthetic/pacing-density", "kb/aesthetic/character", "kb/market/meme-rules"],
+    "minitools": ["export_doc", "check_aesthetic_asserts"]
+  },
+
+  "context_independence": {
+    "reads": ["artifacts", "bible", "constraints", "annotations"],
+    "journal_read_policy": "allow:own-node-history",
+    "rationale": "编剧需要完整生产上下文与客户批注回流；与红方隔离策略互为镜像。"
+  },
+
+  "division_of_labor": {
+    "assertion_layer": "check_aesthetic_asserts（拍时长/密度/格式——机器可查）",
+    "perspective_layer": "本角色（人物手感/台词口语度/场景可拍性——机器查不了）"
+  },
+
+  "provenance": { "source": "factory", "refs": ["miniflow 底座规格 §3 角色剖面"] }
+}

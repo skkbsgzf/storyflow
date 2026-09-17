@@ -1,0 +1,166 @@
+{
+  "runId": "run-mu38i90o-r1ytln",
+  "projectId": "p-ts-001",
+  "flowId": "topic-selection",
+  "flowVersion": "5.1.1",
+  "flowHash": "01bfbb29",
+  "status": "completed",
+  "plan": {
+    "order": [
+      "market",
+      "src",
+      "tropes",
+      "zeitgeist",
+      "combo",
+      "benchmark",
+      "analysis",
+      "gate-r1",
+      "baseline",
+      "structure",
+      "gate-r2",
+      "proposal",
+      "gate-r3",
+      "miniguided",
+      "gate-r4",
+      "first3",
+      "polish",
+      "gate-r5",
+      "delivery"
+    ]
+  },
+  "nodes": {
+    "src": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "选题素材.md"
+    },
+    "market": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "内部/kb-market.md"
+    },
+    "tropes": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "梗卡.md",
+      "stale": false
+    },
+    "combo": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "内部/断言报告-combo.json"
+    },
+    "zeitgeist": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "热点素材.md",
+      "stale": false
+    },
+    "benchmark": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "内部/kb-benchmark.md"
+    },
+    "analysis": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "选题分析报告.md",
+      "stale": false
+    },
+    "gate-r1": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass-with-conditions",
+      "stale": false
+    },
+    "structure": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "故事框架案.md",
+      "stale": false
+    },
+    "gate-r2": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass-with-conditions",
+      "stale": false
+    },
+    "proposal": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "选题方案.md",
+      "stale": false
+    },
+    "baseline": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "选题方案-爽版-基线.md",
+      "stale": false
+    },
+    "gate-r3": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass-with-conditions",
+      "stale": false
+    },
+    "first3": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "对外交付/04-成品剧本试稿.md",
+      "stale": false
+    },
+    "gate-r4": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "delivery": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "选题交付页.html"
+    },
+    "polish": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "对外交付/03-剧本试稿.md",
+      "stale": false
+    },
+    "miniguided": {
+      "status": "done",
+      "round": 1,
+      "failCount": 1,
+      "lastArtifact": "小纲-第1-3集.md",
+      "stale": false
+    },
+    "intake": {
+      "status": "none",
+      "round": 0
+    },
+    "gate-r5": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    }
+  },
+  "gate": {
+    "verdict": "pass",
+    "node": "gate-r5",
+    "at": "2026-09-16T00:24:16.016Z",
+    "note": "本轮默认通过"
+  },
+  "inputs": {
+    "project": "p-ts-001",
+    "direction": "老牌水利工程师在国债加固工程中坚持拒签问题堤段，众人偷工减料混官场，汛期将至",
+    "route": "dual",
+    "region": "CN",
+    "zeitgeist": true
+  },
+  "comments": {}
+}

@@ -1,0 +1,70 @@
+{
+  "format": "stage@1",
+  "id": "polish",
+  "name": "文笔润色",
+  "version": "1.0.0",
+  "applicability": [
+    "drama",
+    "novel"
+  ],
+  "desc": "原稿进来、润色稿出去：台词/文笔逐句打磨 + 去AI味终稿，质检门做 AI 痕迹与口癖检查。",
+  "entry": "draft",
+  "gate": "polish-gate",
+  "inputs": [
+    {
+      "key": "原稿",
+      "accept": [
+        "章节正文",
+        "剧本"
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "key": "润色终稿",
+      "node": "deai"
+    }
+  ],
+  "nodes": {
+    "draft": {
+      "kind": "novel-txt",
+      "title": "原稿输入"
+    },
+    "polish1": {
+      "kind": "agent",
+      "title": "文笔/台词润色",
+      "skill": "dialogue-polish",
+      "desc": "人物声口校准 → 处境校准 → 逐句打磨"
+    },
+    "deai": {
+      "kind": "agent",
+      "title": "去AI味终稿",
+      "skill": "novel-deai",
+      "desc": "结构级去AI味，过平台检测口径"
+    },
+    "polish-gate": {
+      "kind": "gate",
+      "title": "润色质检（口癖/AI痕/保真清单）"
+    }
+  },
+  "edges": [
+    {
+      "id": "p1",
+      "from": "draft",
+      "to": "polish1",
+      "transform": "skill.dialogue-polish"
+    },
+    {
+      "id": "p2",
+      "from": "polish1",
+      "to": "deai",
+      "transform": "skill.novel-deai"
+    },
+    {
+      "id": "p3",
+      "from": "deai",
+      "to": "polish-gate",
+      "transform": "sm.review"
+    }
+  ]
+}

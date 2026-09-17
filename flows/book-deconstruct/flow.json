@@ -1,0 +1,214 @@
+{
+  "format": "flow@2",
+  "id": "book-deconstruct",
+  "title": "拆书入库工作流（初稿）",
+  "desc": "参考作品 → 读前识别 → 六槽位拆解（设计层×细化层×文风）→ 组合查重 → KB 候选条目 → 人工确认入库（拆解入库飞轮）",
+  "version": "0.1.0-draft",
+  "status": "draft",
+  "upstream": "无（工具型 flow，服务于知识库飞轮与 benchmark/trope/archetype 层扩容）",
+  "inputs": {
+    "project": {
+      "type": "project",
+      "required": true,
+      "desc": "项目上下文（候选条目暂存）"
+    },
+    "sources": {
+      "type": "string",
+      "required": true,
+      "desc": "参考作品文本（单篇观察 / ≥2 篇类型共性 / ≥3 篇跨类型）"
+    },
+    "slots": {
+      "type": "enum",
+      "default": "all",
+      "options": [
+        "all",
+        "gimmick",
+        "character",
+        "plot-design",
+        "intro",
+        "plot-refine",
+        "excerpt",
+        "style"
+      ],
+      "desc": "拆解槽位（all=六槽位全量）"
+    }
+  },
+  "outputs": [
+    {
+      "node": "read",
+      "title": "拆解件·剧情设计（plot-design 槽）"
+    },
+    {
+      "node": "refine",
+      "title": "拆解件·剧情细化（plot-refine 槽）"
+    },
+    {
+      "node": "chars",
+      "title": "拆解件·人设（character 槽，含替换变量表）"
+    },
+    {
+      "node": "style",
+      "title": "拆解件·文风（style-learning 协议产物）"
+    },
+    {
+      "node": "promote",
+      "title": "KB 候选条目（frontmatter 齐全，待人工确认入库）"
+    }
+  ],
+  "graph": {
+    "format": "smwf@2",
+    "name": "book-deconstruct",
+    "nodes": {
+      "src": {
+        "kind": "novel-txt",
+        "title": "参考作品文本",
+        "output": "参考作品.md"
+      },
+      "pre": {
+        "kind": "core",
+        "title": "读前识别与样本检查",
+        "minitool": "kb_load",
+        "loads": [
+          "kb/deconstruct/protocol",
+          "kb/deconstruct/style-learning"
+        ],
+        "desc": "确定性：样本数下限检查（<2 不归纳共性）；OCR 缺漏标注；导语划界"
+      },
+      "read": {
+        "kind": "agent",
+        "title": "通读与设计层拆解",
+        "skill": "deconstruct-book",
+        "kit": "search",
+        "op": "deconstruct-book",
+        "output": "内部/稿本/拆解件-剧情设计.md",
+        "desc": "通读→类型判断与核心情绪→概括五行→结构公式（判断可追溯至章节范围）"
+      },
+      "refine": {
+        "kind": "agent",
+        "title": "细化层拆解",
+        "skill": "deconstruct-book",
+        "kit": "search",
+        "op": "deconstruct-book",
+        "output": "内部/稿本/拆解件-细化.md",
+        "desc": "章节功能/剧情点密度/钩子与伏笔落点/可复制开局结构"
+      },
+      "chars": {
+        "kind": "agent",
+        "title": "人物拆解",
+        "skill": "deconstruct-book",
+        "kit": "search",
+        "op": "deconstruct-book",
+        "output": "内部/稿本/拆解件-人设.md",
+        "desc": "人物卡（模式/关系网/弧光/关键选择与证据）+ 为什么一定是 TA + 替换变量表"
+      },
+      "style": {
+        "kind": "agent",
+        "title": "文风拆解",
+        "skill": "deconstruct-book",
+        "kit": "search",
+        "op": "deconstruct-book",
+        "output": "内部/稿本/拆解件-文风.md",
+        "desc": "九维度标记→'情绪决定笔墨密度'可执行规则→收束四型统计；产物须能直接指导写手（AE-DEC-STYLE）｜语义契约记账（自 promote 迁入 2026-09-17）：AE-DEC-TRACE/AE-DEC-SAMPLE/AE-DEC-SLOT/AE-DEC-STYLE"
+      },
+      "dedup": {
+        "kind": "core",
+        "title": "查重与相性",
+        "minitool": "kb_search",
+        "desc": "确定性：跨批次同名人物/同族桥段 kb_search 查重合并；新桥段与既有梗族相性入 meta"
+      },
+      "promote": {
+        "kind": "core",
+        "title": "KB 候选条目组装",
+        "minitool": "check_aesthetic_asserts",
+        "asserts": [],
+        "output": "内部/收据/KB候选条目.json",
+        "desc": "候选条目组装（provenance.source=run，不自动入库）；引擎机器层对拆解件不适用（非拍级非正文）。AE-DEC-TRACE/SAMPLE/SLOT/STYLE 四条为拆解质量语义契约，归 style/六槽拆解件的产品要求 + 人工确认入库门裁决（迁移记账 2026-09-17）"
+      },
+      "fin": {
+        "kind": "srd",
+        "title": "人工确认入库",
+        "desc": "拆解入库飞轮的裁决权在人：确认晋升 → 登记进 asset-index / KB 目录；驳回 → 退回对应槽位"
+      }
+    },
+    "edges": [
+      {
+        "id": "e-pre",
+        "from": "src",
+        "to": "pre",
+        "role": "flow"
+      },
+      {
+        "id": "e-read",
+        "from": "pre",
+        "to": "read",
+        "role": "flow"
+      },
+      {
+        "id": "e-refine",
+        "from": "read",
+        "to": "refine",
+        "role": "flow"
+      },
+      {
+        "id": "e-chars",
+        "from": "refine",
+        "to": "chars",
+        "role": "flow"
+      },
+      {
+        "id": "e-style",
+        "from": "refine",
+        "to": "style",
+        "role": "flow"
+      },
+      {
+        "id": "e-dedup",
+        "from": "chars",
+        "to": "dedup",
+        "role": "flow"
+      },
+      {
+        "id": "e-dedup2",
+        "from": "style",
+        "to": "dedup",
+        "role": "flow"
+      },
+      {
+        "id": "e-promote",
+        "from": "dedup",
+        "to": "promote",
+        "role": "flow"
+      },
+      {
+        "id": "e-fin",
+        "from": "promote",
+        "to": "fin",
+        "via": "sm.review",
+        "role": "flow"
+      }
+    ],
+    "outputs": [
+      "promote"
+    ]
+  },
+  "quality": {
+    "assertions": "deconstruct 维度四条（AE-DEC-*）全程 block 级：可追溯/三态/槽位/可执行",
+    "humanGate": "KB 晋升必须人工确认——知识库是所有下游 flow 的标尺来源，污染标尺 = 污染全线",
+    "allow_agent_verdict": false
+  },
+  "harness": {
+    "mode": "task-package",
+    "awaiting_input_at": [
+      "read",
+      "refine",
+      "chars",
+      "style"
+    ],
+    "core_in_process": [
+      "pre",
+      "dedup",
+      "promote"
+    ],
+    "note": "初稿：chars 与 style 可并行（依赖 refine 完成）；长作品按批次拆（每批 ≤20 章），跨批查重走 dedup 节点"
+  }
+}

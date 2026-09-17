@@ -1,0 +1,61 @@
+{
+  "snapshots": {
+    "analysis": [
+      {
+        "round": 1,
+        "ts": "2026-09-16 02:51",
+        "note": "S1 报告 r1",
+        "files": {
+          "对外交付/01-选题报告.md": {
+            "hash": "4d883dacc867",
+            "path": "snapshots/analysis/r1/对外交付/01-选题报告.md"
+          }
+        }
+      }
+    ],
+    "proposal": [
+      {
+        "round": 1,
+        "ts": "2026-09-16 02:51",
+        "note": "S3 大纲 r1",
+        "files": {
+          "对外交付/02-大纲.md": {
+            "hash": "4610a2d74ece",
+            "path": "snapshots/proposal/r1/对外交付/02-大纲.md"
+          }
+        }
+      }
+    ],
+    "structure": [
+      {
+        "round": 1,
+        "ts": "2026-09-16 02:51",
+        "note": "S2 框架案 r1（乒乓版）",
+        "files": {
+          "故事框架案.md": {
+            "hash": "06f274c68f7f",
+            "path": "snapshots/structure/r1/故事框架案.md"
+          }
+        }
+      }
+    ],
+    "miniguided": [
+      {
+        "round": 1,
+        "ts": "2026-09-16 04:49",
+        "note": "export-doc 自动快照：87 beats / 10 eps → 03-小纲2-第4-14集.docx",
+        "files": {
+          "小纲-第4-14集.md": {
+            "hash": "aa5f65c308c9",
+            "path": "snapshots/miniguided/r1/小纲-第4-14集.md"
+          },
+          "创作思路.md": {
+            "hash": "6e9b54f55f71",
+            "path": "snapshots/miniguided/r1/创作思路.md"
+          }
+        }
+      }
+    ]
+  },
+  "inputs": {}
+}

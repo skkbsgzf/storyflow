@@ -1,0 +1,220 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3898 558" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
+<defs><marker id="arw" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
+<path d="M0,0 L9,4 L0,8 z" fill="#5a6478"/></marker></defs>
+<rect width="3898" height="558" fill="#0f1115" rx="10"/>
+<rect x="60" y="16" width="954" height="516" rx="12" fill="#14231c" stroke="#3d7a4f" stroke-width="0.8" stroke-dasharray="3,5" opacity="0.55"/>
+<text x="72" y="34" fill="#3d7a4f" font-size="11" font-weight="700">S1 调研</text>
+<rect x="1060" y="16" width="204" height="516" rx="12" fill="#241b12" stroke="#e8b33d" stroke-width="0.8" stroke-dasharray="3,5" opacity="0.55"/>
+<text x="1072" y="34" fill="#e8b33d" font-size="11" font-weight="700">S3 方案</text>
+<rect x="1310" y="16" width="454" height="516" rx="12" fill="#161d31" stroke="#3d5a80" stroke-width="0.8" stroke-dasharray="3,5" opacity="0.55"/>
+<text x="1322" y="34" fill="#3d5a80" font-size="11" font-weight="700">S2 结构</text>
+<rect x="1810" y="16" width="454" height="516" rx="12" fill="#241b12" stroke="#e8b33d" stroke-width="0.8" stroke-dasharray="3,5" opacity="0.55"/>
+<text x="1822" y="34" fill="#e8b33d" font-size="11" font-weight="700">S3 方案</text>
+<rect x="2310" y="16" width="454" height="516" rx="12" fill="#28141f" stroke="#a5433a" stroke-width="0.8" stroke-dasharray="3,5" opacity="0.55"/>
+<text x="2322" y="34" fill="#a5433a" font-size="11" font-weight="700">S4 成稿</text>
+<rect x="2810" y="16" width="704" height="516" rx="12" fill="#1d1d24" stroke="#7a8496" stroke-width="0.8" stroke-dasharray="3,5" opacity="0.55"/>
+<text x="2822" y="34" fill="#7a8496" font-size="11" font-weight="700">交付</text>
+<rect x="3560" y="16" width="204" height="516" rx="12" fill="#28141f" stroke="#a5433a" stroke-width="0.8" stroke-dasharray="3,5" opacity="0.55"/>
+<text x="3572" y="34" fill="#a5433a" font-size="11" font-weight="700">S4 成稿</text>
+<path d="M250,318.0 C287.0,318.0 287.0,318.0 324,318.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-trope: market → tropes ｜ skill.find-trope</title></path>
+<text x="287.0" y="314.0" fill="#7a8496" font-size="9" text-anchor="middle">skill.find-trope</text>
+<path d="M500,318.0 C537.0,318.0 537.0,318.0 574,318.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-combo: tropes → combo ｜ core.check_trope_combo</title></path>
+<text x="537.0" y="314.0" fill="#7a8496" font-size="9" text-anchor="middle">core.check_trope_com</text>
+<path d="M250,170.0 C537.0,170.0 537.0,244.0 824,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-an1: src → analysis ｜ sm.topic-analysis</title></path>
+<text x="537.0" y="203.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.topic-analysis</text>
+<path d="M250,318.0 C537.0,318.0 537.0,244.0 824,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-an2: market → analysis ｜ sm.topic-analysis</title></path>
+<text x="537.0" y="277.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.topic-analysis</text>
+<path d="M500,318.0 C662.0,318.0 662.0,244.0 824,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-an3: tropes → analysis ｜ sm.topic-analysis</title></path>
+<text x="662.0" y="277.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.topic-analysis</text>
+<path d="M500,170.0 C662.0,170.0 662.0,244.0 824,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-an4: zeitgeist → analysis ｜ sm.topic-analysis</title></path>
+<text x="662.0" y="203.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.topic-analysis</text>
+<path d="M750,170.0 C787.0,170.0 787.0,244.0 824,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-an5: benchmark → analysis ｜ sm.topic-analysis</title></path>
+<text x="787.0" y="203.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.topic-analysis</text>
+<path d="M1000,244.0 C1037.0,244.0 1037.0,318.0 1074,318.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-r1: analysis → gate-r1 ｜ sm.review</title></path>
+<text x="1037.0" y="277.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.review</text>
+<path d="M1250,318.0 C1287.0,318.0 1287.0,244.0 1324,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-struct: gate-r1 → structure ｜ skill.structure-design</title></path>
+<text x="1287.0" y="277.0" fill="#7a8496" font-size="9" text-anchor="middle">skill.structure-desi</text>
+<path d="M1500,244.0 C1537.0,244.0 1537.0,244.0 1574,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-r2: structure → gate-r2 ｜ sm.review</title></path>
+<text x="1537.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.review</text>
+<path d="M1750,244.0 C1787.0,244.0 1787.0,244.0 1824,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-prop: gate-r2 → proposal ｜ sm.topic-proposal</title></path>
+<text x="1787.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.topic-proposal</text>
+<path d="M1000,244.0 C1037.0,244.0 1037.0,170.0 1074,170.0" fill="none" stroke="#5a6478" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#arw)"><title>e-baseline: analysis → baseline ｜ sm.topic-proposal ｜ route=dual</title></path>
+<text x="1037.0" y="203.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.topic-proposal</text>
+<path d="M2000,244.0 C2037.0,244.0 2037.0,244.0 2074,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-r3a: proposal → gate-r3 ｜ sm.review</title></path>
+<text x="2037.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.review</text>
+<path d="M1250,170.0 C1662.0,170.0 1662.0,244.0 2074,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#arw)"><title>e-r3b: baseline → gate-r3 ｜ sm.review ｜ route=dual</title></path>
+<text x="1662.0" y="203.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.review</text>
+<path d="M2250,244.0 C2287.0,244.0 2287.0,244.0 2324,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-mini: gate-r3 → miniguided ｜ skill.scene-breakdown</title></path>
+<text x="2287.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">skill.scene-breakdow</text>
+<path d="M2500,244.0 C2537.0,244.0 2537.0,318.0 2574,318.0" fill="none" stroke="#5a6478" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#arw)"><title>e-intake: miniguided → intake ｜ core.docx_ingest ｜ 批注回流=on ｜ optional</title></path>
+<text x="2537.0" y="277.0" fill="#7a8496" font-size="9" text-anchor="middle">core.docx_ingest</text>
+<path d="M2750,318.0 C2787.0,318.0 2787.0,244.0 2824,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-final2: intake → first3 ｜ skill.script-final</title></path>
+<text x="2787.0" y="277.0" fill="#7a8496" font-size="9" text-anchor="middle">skill.script-final</text>
+<path d="M3000,244.0 C3162.0,244.0 3162.0,244.0 3324,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-r4: first3 → gate-r5 ｜ sm.review</title></path>
+<text x="3162.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.review</text>
+<path d="M3500,244.0 C3537.0,244.0 3537.0,244.0 3574,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-del: gate-r5 → delivery ｜ sm.topic-delivery</title></path>
+<text x="3537.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.topic-delivery</text>
+<path d="M1162.0,344.0 C1162.0,378.0 412.0,378.0 412.0,344.0" fill="none" stroke="#a5433a" stroke-width="1.6" stroke-dasharray="6,4" marker-end="url(#arw)"><title>e-r1-back: gate-r1 → tropes</title></path>
+<text x="787.0" y="380.0" fill="#a5433a" font-size="9.5" text-anchor="middle">打回重做·R1 根因=梗选型</text>
+<path d="M1162.0,344.0 C1162.0,404.0 912.0,404.0 912.0,270.0" fill="none" stroke="#a5433a" stroke-width="1.6" stroke-dasharray="6,4" marker-end="url(#arw)"><title>e-r1-back2: gate-r1 → analysis</title></path>
+<text x="1037.0" y="406.0" fill="#a5433a" font-size="9.5" text-anchor="middle">打回重做·R1 根因=人群/竞品分析</text>
+<path d="M1662.0,270.0 C1662.0,356.0 1412.0,356.0 1412.0,270.0" fill="none" stroke="#a5433a" stroke-width="1.6" stroke-dasharray="6,4" marker-end="url(#arw)"><title>e-r2-back: gate-r2 → structure</title></path>
+<text x="1537.0" y="358.0" fill="#a5433a" font-size="9.5" text-anchor="middle">打回重做·R2 根因=结构单薄</text>
+<path d="M2162.0,270.0 C2162.0,304.0 1912.0,304.0 1912.0,270.0" fill="none" stroke="#a5433a" stroke-width="1.6" stroke-dasharray="6,4" marker-end="url(#arw)"><title>e-r3-back: gate-r3 → proposal</title></path>
+<text x="2037.0" y="306.0" fill="#a5433a" font-size="9.5" text-anchor="middle">打回重做·R3 根因=方案</text>
+<path d="M2662.0,196.0 C2662.0,330.0 2412.0,330.0 2412.0,270.0" fill="none" stroke="#a5433a" stroke-width="1.6" stroke-dasharray="6,4" marker-end="url(#arw)"><title>loop-r4-miniguided: gate-r4 → miniguided</title></path>
+<text x="2537.0" y="332.0" fill="#a5433a" font-size="9.5" text-anchor="middle">打回重做·rejected</text>
+<path d="M3000,244.0 C3037.0,244.0 3037.0,244.0 3074,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-polish: first3 → polish ｜ skill.dialogue-polish</title></path>
+<text x="3037.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">skill.dialogue-polis</text>
+<path d="M3250,244.0 C3287.0,244.0 3287.0,244.0 3324,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-polish-gate-r5: polish → gate-r5 ｜ sm.review</title></path>
+<text x="3287.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.review</text>
+<path d="M250,170.0 C287.0,170.0 287.0,318.0 324,318.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-src-tro-27: src → tropes ｜ skill.find-trope</title></path>
+<text x="287.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">skill.find-trope</text>
+<path d="M250,170.0 C287.0,170.0 287.0,170.0 324,170.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-src-zei-28: src → zeitgeist ｜ skill.topic-zeitgeist</title></path>
+<text x="287.0" y="166.0" fill="#7a8496" font-size="9" text-anchor="middle">skill.topic-zeitgeis</text>
+<path d="M500,318.0 C537.0,318.0 537.0,170.0 574,170.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-tro-ben-29: tropes → benchmark ｜ core.kb_load</title></path>
+<text x="537.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">core.kb_load</text>
+<path d="M750,318.0 C787.0,318.0 787.0,244.0 824,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-com-ana-30: combo → analysis ｜ sm.topic-analysis</title></path>
+<text x="787.0" y="277.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.topic-analysis</text>
+<path d="M2500,244.0 C2537.0,244.0 2537.0,170.0 2574,170.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-miniguided-gate-r4: miniguided → gate-r4 ｜ sm.review</title></path>
+<text x="2537.0" y="203.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.review</text>
+<path d="M2750,170.0 C2787.0,170.0 2787.0,244.0 2824,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-gate-r4-first3: gate-r4 → first3 ｜ skill.script-final</title></path>
+<text x="2787.0" y="203.0" fill="#7a8496" font-size="9" text-anchor="middle">skill.script-final</text>
+<path d="M3412.0,270.0 C3412.0,356.0 2912.0,356.0 2912.0,270.0" fill="none" stroke="#a5433a" stroke-width="1.6" stroke-dasharray="6,4" marker-end="url(#arw)"><title>loop-r5-first3: gate-r5 → first3</title></path>
+<text x="3162.0" y="358.0" fill="#a5433a" font-size="9.5" text-anchor="middle">打回重做·rejected</text>
+<path d="M1162.0,344.0 C1162.0,398.0 162.0,398.0 162.0,196.0" fill="none" stroke="#a5433a" stroke-width="1.5" stroke-dasharray="7,4" marker-end="url(#arw)" opacity="0.85"><title>S1 打回 · 修改流：回 src 重做（级联失效下游）</title></path>
+<text x="662.0" y="394.0" fill="#a5433a" font-size="9" text-anchor="middle">S1 打回·修改流</text>
+<path d="M1662.0,270.0 C1662.0,324.0 1412.0,324.0 1412.0,270.0" fill="none" stroke="#a5433a" stroke-width="1.5" stroke-dasharray="7,4" marker-end="url(#arw)" opacity="0.85"><title>S2 打回 · 修改流：回 structure 重做（级联失效下游）</title></path>
+<text x="1537.0" y="320.0" fill="#a5433a" font-size="9" text-anchor="middle">S2 打回·修改流</text>
+<path d="M1662.0,270.0 C1662.0,338.0 162.0,338.0 162.0,196.0" fill="none" stroke="#7a4a4a" stroke-width="1.3" stroke-dasharray="3,5" marker-end="url(#arw)" opacity="0.7"><title>S2 打回 · 从零构筑流：回 src（根因在更早阶段时）</title></path>
+<path d="M2162.0,270.0 C2162.0,324.0 1912.0,324.0 1912.0,270.0" fill="none" stroke="#a5433a" stroke-width="1.5" stroke-dasharray="7,4" marker-end="url(#arw)" opacity="0.85"><title>S3 打回 · 修改流：回 proposal 重做（级联失效下游）</title></path>
+<text x="2037.0" y="320.0" fill="#a5433a" font-size="9" text-anchor="middle">S3 打回·修改流</text>
+<path d="M2162.0,270.0 C2162.0,338.0 162.0,338.0 162.0,196.0" fill="none" stroke="#7a4a4a" stroke-width="1.3" stroke-dasharray="3,5" marker-end="url(#arw)" opacity="0.7"><title>S3 打回 · 从零构筑流：回 src（根因在更早阶段时）</title></path>
+<path d="M2662.0,196.0 C2662.0,324.0 2412.0,324.0 2412.0,270.0" fill="none" stroke="#a5433a" stroke-width="1.5" stroke-dasharray="7,4" marker-end="url(#arw)" opacity="0.85"><title>S4 打回 · 修改流：回 miniguided 重做（级联失效下游）</title></path>
+<text x="2537.0" y="320.0" fill="#a5433a" font-size="9" text-anchor="middle">S4 打回·修改流</text>
+<path d="M2662.0,196.0 C2662.0,264.0 162.0,264.0 162.0,196.0" fill="none" stroke="#7a4a4a" stroke-width="1.3" stroke-dasharray="3,5" marker-end="url(#arw)" opacity="0.7"><title>S4 打回 · 从零构筑流：回 src（根因在更早阶段时）</title></path>
+<path d="M3412.0,270.0 C3412.0,324.0 2912.0,324.0 2912.0,270.0" fill="none" stroke="#a5433a" stroke-width="1.5" stroke-dasharray="7,4" marker-end="url(#arw)" opacity="0.85"><title>S5 打回 · 修改流：回 first3 重做（级联失效下游）</title></path>
+<text x="3162.0" y="320.0" fill="#a5433a" font-size="9" text-anchor="middle">S5 打回·修改流</text>
+<path d="M3412.0,270.0 C3412.0,338.0 162.0,338.0 162.0,196.0" fill="none" stroke="#7a4a4a" stroke-width="1.3" stroke-dasharray="3,5" marker-end="url(#arw)" opacity="0.7"><title>S5 打回 · 从零构筑流：回 src（根因在更早阶段时）</title></path>
+<g><title>src ｜ novel-txt ｜ 选题素材 ｜ skill=- minitool=-</title>
+<rect x="74" y="144.0" width="176" height="52" rx="9" fill="#1d3323" stroke="#3d7a4f" stroke-width="1.4"/>
+<text x="162.0" y="165.0" fill="#8fd4a3" font-size="12.5" font-weight="700" text-anchor="middle">src</text>
+<text x="162.0" y="181.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">选题素材</text>
+<text x="162.0" y="193.0" fill="#667089" font-size="8.5" text-anchor="middle">素材</text>
+</g>
+<g><title>market ｜ core ｜ 市场快照装载 ｜ skill=- minitool=kb_load</title>
+<rect x="74" y="292.0" width="176" height="52" rx="9" fill="#16233a" stroke="#3d5a80" stroke-width="1.4"/>
+<text x="162.0" y="313.0" fill="#a8c4e8" font-size="12.5" font-weight="700" text-anchor="middle">market</text>
+<text x="162.0" y="329.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">市场快照装载</text>
+<text x="162.0" y="341.0" fill="#667089" font-size="8.5" text-anchor="middle">kb_load</text>
+</g>
+<g><title>zeitgeist ｜ agent ｜ 实时热点扫描 ｜ skill=topic-zeitgeist minitool=-</title>
+<rect x="324" y="144.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="1.4"/>
+<text x="412.0" y="165.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">zeitgeist</text>
+<text x="412.0" y="181.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">实时热点扫描</text>
+<text x="412.0" y="193.0" fill="#667089" font-size="8.5" text-anchor="middle">topic-zeitgeist</text>
+</g>
+<g><title>tropes ｜ agent ｜ 找梗选梗（含新梗） ｜ skill=find-trope minitool=-</title>
+<rect x="324" y="292.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="1.4"/>
+<text x="412.0" y="313.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">tropes</text>
+<text x="412.0" y="329.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">找梗选梗（含新梗）</text>
+<text x="412.0" y="341.0" fill="#667089" font-size="8.5" text-anchor="middle">find-trope</text>
+</g>
+<g><title>benchmark ｜ core ｜ 竞品对标装载 ｜ skill=- minitool=kb_load</title>
+<rect x="574" y="144.0" width="176" height="52" rx="9" fill="#16233a" stroke="#3d5a80" stroke-width="1.4"/>
+<text x="662.0" y="165.0" fill="#a8c4e8" font-size="12.5" font-weight="700" text-anchor="middle">benchmark</text>
+<text x="662.0" y="181.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">竞品对标装载</text>
+<text x="662.0" y="193.0" fill="#667089" font-size="8.5" text-anchor="middle">kb_load</text>
+</g>
+<g><title>combo ｜ core ｜ 梗组合相性校验 ｜ skill=- minitool=check_trope_combo</title>
+<rect x="574" y="292.0" width="176" height="52" rx="9" fill="#16233a" stroke="#3d5a80" stroke-width="1.4"/>
+<text x="662.0" y="313.0" fill="#a8c4e8" font-size="12.5" font-weight="700" text-anchor="middle">combo</text>
+<text x="662.0" y="329.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">梗组合相性校验</text>
+<text x="662.0" y="341.0" fill="#667089" font-size="8.5" text-anchor="middle">check_trope_combo</text>
+</g>
+<g><title>analysis ｜ agent ｜ 选题调研报告 ｜ skill=topic-analysis-report minitool=-</title>
+<rect x="824" y="218.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="2.6"/>
+<circle cx="991" cy="227.0" r="5" fill="none" stroke="#e8b33d" stroke-width="1.2"/><circle cx="991" cy="227.0" r="1.8" fill="#e8b33d"/>
+<text x="912.0" y="239.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">analysis</text>
+<text x="912.0" y="255.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">选题调研报告</text>
+<text x="912.0" y="267.0" fill="#667089" font-size="8.5" text-anchor="middle">topic-analysis-re…</text>
+</g>
+<g><title>baseline ｜ agent ｜ 爽版无监管基线 ｜ skill=topic-proposal minitool=-</title>
+<rect x="1074" y="144.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="1.4"/>
+<text x="1162.0" y="165.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">baseline</text>
+<text x="1162.0" y="181.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">爽版无监管基线</text>
+<text x="1162.0" y="193.0" fill="#667089" font-size="8.5" text-anchor="middle">topic-proposal</text>
+</g>
+<g><title>gate-r1 ｜ gate ｜ R1 · 调研验收 ｜ skill=plot-redline minitool=-</title>
+<polygon points="1162.0,292.0 1250,318.0 1162.0,344.0 1074,318.0" fill="#2a2313" stroke="#e8b33d" stroke-width="1.4"/>
+<text x="1162.0" y="316.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">gate-r1</text>
+<text x="1162.0" y="332.0" fill="#b8bdc7" font-size="9.5" text-anchor="middle">红方验收 ◇</text>
+</g>
+<g><title>structure ｜ agent ｜ 结构选型与深挖 ｜ skill=structure-design minitool=-</title>
+<rect x="1324" y="218.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="2.6"/>
+<circle cx="1491" cy="227.0" r="5" fill="none" stroke="#e8b33d" stroke-width="1.2"/><circle cx="1491" cy="227.0" r="1.8" fill="#e8b33d"/>
+<text x="1412.0" y="239.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">structure</text>
+<text x="1412.0" y="255.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">结构选型与深挖</text>
+<text x="1412.0" y="267.0" fill="#667089" font-size="8.5" text-anchor="middle">structure-design</text>
+</g>
+<g><title>gate-r2 ｜ gate ｜ R2 · 结构验收 ｜ skill=plot-redline minitool=-</title>
+<polygon points="1662.0,218.0 1750,244.0 1662.0,270.0 1574,244.0" fill="#2a2313" stroke="#e8b33d" stroke-width="1.4"/>
+<text x="1662.0" y="242.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">gate-r2</text>
+<text x="1662.0" y="258.0" fill="#b8bdc7" font-size="9.5" text-anchor="middle">红方验收 ◇</text>
+</g>
+<g><title>proposal ｜ agent ｜ 选题方案 ｜ skill=topic-proposal minitool=-</title>
+<rect x="1824" y="218.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="2.6"/>
+<circle cx="1991" cy="227.0" r="5" fill="none" stroke="#e8b33d" stroke-width="1.2"/><circle cx="1991" cy="227.0" r="1.8" fill="#e8b33d"/>
+<text x="1912.0" y="239.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">proposal</text>
+<text x="1912.0" y="255.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">选题方案</text>
+<text x="1912.0" y="267.0" fill="#667089" font-size="8.5" text-anchor="middle">topic-proposal</text>
+</g>
+<g><title>gate-r3 ｜ gate ｜ R3 · 方案验收 ｜ skill=plot-redline minitool=-</title>
+<polygon points="2162.0,218.0 2250,244.0 2162.0,270.0 2074,244.0" fill="#2a2313" stroke="#e8b33d" stroke-width="1.4"/>
+<text x="2162.0" y="242.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">gate-r3</text>
+<text x="2162.0" y="258.0" fill="#b8bdc7" font-size="9.5" text-anchor="middle">红方验收 ◇</text>
+</g>
+<g><title>miniguided ｜ agent ｜ 小纲（分镜脚本 doc） ｜ skill=scene-breakdown minitool=-</title>
+<rect x="2324" y="218.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="2.6"/>
+<circle cx="2491" cy="227.0" r="5" fill="none" stroke="#e8b33d" stroke-width="1.2"/><circle cx="2491" cy="227.0" r="1.8" fill="#e8b33d"/>
+<text x="2412.0" y="239.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">miniguided</text>
+<text x="2412.0" y="255.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">小纲（分镜脚本 doc）</text>
+<text x="2412.0" y="267.0" fill="#667089" font-size="8.5" text-anchor="middle">scene-breakdown</text>
+</g>
+<g><title>gate-r4 ｜ gate ｜ R4 · 小纲验收 ｜ skill=plot-redline minitool=-</title>
+<polygon points="2662.0,144.0 2750,170.0 2662.0,196.0 2574,170.0" fill="#2a2313" stroke="#e8b33d" stroke-width="1.4"/>
+<text x="2662.0" y="168.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">gate-r4</text>
+<text x="2662.0" y="184.0" fill="#b8bdc7" font-size="9.5" text-anchor="middle">红方验收 ◇</text>
+</g>
+<g><title>intake ｜ core ｜ 批注回流接入（可选模块） ｜ skill=- minitool=docx_ingest</title>
+<rect x="2574" y="292.0" width="176" height="52" rx="9" fill="#16233a" stroke="#3d5a80" stroke-width="1.4"/>
+<text x="2662.0" y="313.0" fill="#a8c4e8" font-size="12.5" font-weight="700" text-anchor="middle">intake</text>
+<text x="2662.0" y="329.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">批注回流接入（可选模块）</text>
+<text x="2662.0" y="341.0" fill="#667089" font-size="8.5" text-anchor="middle">docx_ingest</text>
+</g>
+<g><title>first3 ｜ agent ｜ 成品剧本试稿（连贯格式） ｜ skill=script-final minitool=-</title>
+<rect x="2824" y="218.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="2.6"/>
+<circle cx="2991" cy="227.0" r="5" fill="none" stroke="#e8b33d" stroke-width="1.2"/><circle cx="2991" cy="227.0" r="1.8" fill="#e8b33d"/>
+<text x="2912.0" y="239.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">first3</text>
+<text x="2912.0" y="255.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">成品剧本试稿（连贯格式）</text>
+<text x="2912.0" y="267.0" fill="#667089" font-size="8.5" text-anchor="middle">script-final</text>
+</g>
+<g><title>polish ｜ agent ｜ 台词去AI味打磨 ｜ skill=dialogue-polish minitool=-</title>
+<rect x="3074" y="218.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="1.4"/>
+<text x="3162.0" y="239.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">polish</text>
+<text x="3162.0" y="255.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">台词去AI味打磨</text>
+<text x="3162.0" y="267.0" fill="#667089" font-size="8.5" text-anchor="middle">dialogue-polish</text>
+</g>
+<g><title>gate-r5 ｜ gate ｜ R5 · 成稿验收 ｜ skill=plot-redline minitool=-</title>
+<polygon points="3412.0,218.0 3500,244.0 3412.0,270.0 3324,244.0" fill="#2a2313" stroke="#e8b33d" stroke-width="1.4"/>
+<text x="3412.0" y="242.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">gate-r5</text>
+<text x="3412.0" y="258.0" fill="#b8bdc7" font-size="9.5" text-anchor="middle">红方验收 ◇</text>
+</g>
+<g><title>delivery ｜ core ｜ 选题交付页 ｜ skill=- minitool=render_html</title>
+<rect x="3574" y="218.0" width="176" height="52" rx="9" fill="#16233a" stroke="#3d5a80" stroke-width="2.6"/>
+<circle cx="3741" cy="227.0" r="5" fill="none" stroke="#3d5a80" stroke-width="1.2"/><circle cx="3741" cy="227.0" r="1.8" fill="#3d5a80"/>
+<text x="3662.0" y="239.0" fill="#a8c4e8" font-size="12.5" font-weight="700" text-anchor="middle">delivery</text>
+<text x="3662.0" y="255.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">选题交付页</text>
+<text x="3662.0" y="267.0" fill="#667089" font-size="8.5" text-anchor="middle">render_html</text>
+</g>
+</svg>

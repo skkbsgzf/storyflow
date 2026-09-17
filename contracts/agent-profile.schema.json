@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miniflow.dev/contracts/agent-profile.schema.json",
+  "title": "agent-profile · 子代理角色剖面（L2 领域资产）",
+  "description": "定义一类 subagent（编剧/审核/分析师/编排师…）的身份、三层绑定与隔离策略。宿主按剖面把任务包派发给对应的子代理实例。形制沿袭 v3 agent-profile-store：剖面对 runtime 是声明式的，宿主负责按剖面实例化。",
+  "type": "object",
+  "required": ["id", "title", "role", "version", "mission"],
+  "additionalProperties": true,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "剖面 id，如 plot-redline / scene-screenwriter" },
+    "title": { "type": "string" },
+    "role": {
+      "type": "string",
+      "description": "角色族：screenwriter(编剧) / red-reviewer(审核红方) / analyst(分析师) / choreographer(编排师) / polisher(润色) / chief-aesthetic(主美)…",
+      "pattern": "^[a-z-]+$"
+    },
+    "version": { "type": "string" },
+    "status": { "type": "string", "enum": ["active", "draft", "retired"], "default": "active" },
+    "mission": { "type": "string", "description": "角色使命一句话——宿主 spawn 子代理时的身份种子" },
+    "three_layer_binding": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "skill": { "type": "string", "description": "主技能（skills/*.md id）——flow 节点按此反向匹配剖面" },
+        "skills": { "type": "array", "items": { "type": "string" }, "description": "可承担的技能集合" },
+        "knowledge": { "type": "array", "items": { "type": "string" } },
+        "minitools": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "injection": {
+      "type": "object",
+      "description": "挂载策略：该剖面在哪些节点/门被注入",
+      "additionalProperties": true,
+      "properties": {
+        "gates": { "type": "array", "items": { "type": "string" } },
+        "policy": { "type": "string" },
+        "spot_check": { "type": "object" }
+      }
+    },
+    "context_independence": {
+      "type": "object",
+      "description": "子代理隔离策略：审核类角色不得读生产推理 journal，防被同化/锚定",
+      "additionalProperties": true,
+      "properties": {
+        "reads": { "type": "array", "items": { "type": "string" } },
+        "journal_read_policy": { "type": "string" },
+        "rationale": { "type": "string" }
+      }
+    },
+    "output_contract": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "该角色的产物形制（意见书/剧本/方案…）与裁决词汇（不越权：审核角色 verdict 仅供人工参考）"
+    },
+    "budget": { "type": "object", "additionalProperties": true },
+    "provenance": { "type": "object", "additionalProperties": true }
+  }
+}

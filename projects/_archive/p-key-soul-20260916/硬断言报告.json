@@ -1,0 +1,93 @@
+{
+  "id": "kb/aesthetic/assertions",
+  "run": "p-key-soul",
+  "scope": "对外交付/03-剧本试稿.md（拍魂 S4 产物）",
+  "tool": "check_aesthetic_asserts (simulated by host agent)",
+  "beats_scanned": 27,
+  "results": [
+    {
+      "assert": "AE-HOOK-EVENT",
+      "level": "block",
+      "pass": true,
+      "detail": "三集首拍钩型 ['反常', '反常', '危险']（四型之一）"
+    },
+    {
+      "assert": "AE-BEAT-FORMAT",
+      "level": "major",
+      "pass": true,
+      "detail": "27 拍三件套完整度 100%"
+    },
+    {
+      "assert": "AE-BEAT-FORMAT#dur",
+      "level": "major",
+      "pass": true,
+      "detail": "时长全部落在 6-15s"
+    },
+    {
+      "assert": "AE-STRUCT-CAUSE#tailhook",
+      "level": "block",
+      "pass": true,
+      "detail": "每拍尾钩在场（一环扣一环）"
+    },
+    {
+      "assert": "AE-DENSITY-WORDS@ep1",
+      "level": "major",
+      "pass": true,
+      "detail": "第1集台词字数≈172（规范 200-300）"
+    },
+    {
+      "assert": "AE-DENSITY-WORDS@ep2",
+      "level": "major",
+      "pass": true,
+      "detail": "第2集台词字数≈185（规范 200-300）"
+    },
+    {
+      "assert": "AE-DENSITY-WORDS@ep3",
+      "level": "major",
+      "pass": true,
+      "detail": "第3集台词字数≈192（规范 200-300）"
+    },
+    {
+      "assert": "AE-MEME-POINT@ep1",
+      "level": "major",
+      "pass": true,
+      "detail": "第1集梗点 ['拍子成精']"
+    },
+    {
+      "assert": "AE-MEME-POINT@ep2",
+      "level": "major",
+      "pass": true,
+      "detail": "第2集梗点 ['拍子成精', '双王', '热榜', '外卡']"
+    },
+    {
+      "assert": "AE-MEME-POINT@ep3",
+      "level": "major",
+      "pass": true,
+      "detail": "第3集梗点 ['拍子成精', '双王', '王之爆冲', '真王', '外卡']"
+    },
+    {
+      "assert": "AE-CARD-END",
+      "level": "major",
+      "pass": true,
+      "detail": "集末卡点体检位在场"
+    },
+    {
+      "assert": "AE-COMPLIANCE",
+      "level": "block",
+      "pass": true,
+      "detail": "无真实运动员/协会名（青川/王拾/陈听澜/王锐全虚构）"
+    },
+    {
+      "assert": "AE-SET-3MIN",
+      "level": "block",
+      "pass": true,
+      "detail": "自造专名（地名/组织名）['入球馆', '机里那', '青川']——≤3 个，无架空体系术语"
+    }
+  ],
+  "summary": {
+    "block_fail": 0,
+    "block_total": 4,
+    "major_fail": 0,
+    "verdict": "PASS"
+  }
+}

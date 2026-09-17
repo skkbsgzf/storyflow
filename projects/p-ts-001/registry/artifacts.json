@@ -1,0 +1,309 @@
+{
+  "artifacts": [
+    {
+      "path": "内部/kb-market.md",
+      "node": "market",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "4d11e6c973bb",
+      "ts": "2026-09-15T22:19:27.149Z"
+    },
+    {
+      "path": "选题素材.md",
+      "node": "src",
+      "producer": "kernel:novel-txt",
+      "inputs": {},
+      "round": 1,
+      "sha1": "76f6d5543d56",
+      "ts": "2026-09-15T22:19:27.151Z"
+    },
+    {
+      "path": "梗卡.md",
+      "node": "tropes",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "76f6d5543d56"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "5441 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "a97f70d1dd3d",
+      "ts": "2026-09-15T22:29:28.846Z"
+    },
+    {
+      "path": "内部/断言报告-combo.json",
+      "node": "combo",
+      "producer": "minitool:check_trope_combo",
+      "inputs": {
+        "梗卡.md": "a97f70d1dd3d"
+      },
+      "round": 1,
+      "sha1": "20aa7b59b66b",
+      "ts": "2026-09-15T22:29:28.853Z"
+    },
+    {
+      "path": "内部/kb-benchmark.md",
+      "node": "benchmark",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "86d2c6efcc01",
+      "ts": "2026-09-15T22:29:28.857Z"
+    },
+    {
+      "path": "热点素材.md",
+      "node": "zeitgeist",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "76f6d5543d56"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "4264 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "906476f4d3be",
+      "ts": "2026-09-15T22:29:29.964Z"
+    },
+    {
+      "path": "选题分析报告.md",
+      "node": "analysis",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "76f6d5543d56",
+        "梗卡.md": "a97f70d1dd3d",
+        "热点素材.md": "906476f4d3be"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "8221 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "f1e44177d073",
+      "ts": "2026-09-15T22:37:32.819Z"
+    },
+    {
+      "path": "选题方案-爽版-基线.md",
+      "node": "baseline",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "选题分析报告.md": "f1e44177d073"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "9664 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "d996d4c151ac",
+      "ts": "2026-09-15T23:06:56.040Z"
+    },
+    {
+      "path": "故事框架案.md",
+      "node": "structure",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "选题分析报告.md": "f1e44177d073"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "22682 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "971a57063613",
+      "ts": "2026-09-15T23:31:04.089Z"
+    },
+    {
+      "path": "选题方案.md",
+      "node": "proposal",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "故事框架案.md": "971a57063613"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "18673 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "c89ab985a03b",
+      "ts": "2026-09-15T23:47:06.338Z"
+    },
+    {
+      "path": "小纲-第1-3集.md",
+      "node": "miniguided",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "选题方案.md": "c89ab985a03b",
+        "选题方案-爽版-基线.md": "d996d4c151ac"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "9337 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "beat-count",
+          "status": "pass",
+          "detail": "32 beats"
+        },
+        {
+          "name": "ep-title",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "82220997498d",
+      "ts": "2026-09-15T23:58:53.295Z"
+    },
+    {
+      "path": "对外交付/04-成品剧本试稿.md",
+      "node": "first3",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "对外交付/03-小纲.docx": "2e0562609d7a"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "6027 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "6e81735257d4",
+      "ts": "2026-09-16T00:13:16.311Z"
+    },
+    {
+      "path": "对外交付/04-成品剧本试稿.md",
+      "node": "first3",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "对外交付/03-小纲.docx": "2e0562609d7a"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "6027 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "6e81735257d4",
+      "ts": "2026-09-16T00:13:45.225Z"
+    },
+    {
+      "path": "对外交付/03-剧本试稿.md",
+      "node": "polish",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "对外交付/04-成品剧本试稿.md": "6e81735257d4"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "6208 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "7a7876b69bfd",
+      "ts": "2026-09-16T00:24:03.191Z"
+    },
+    {
+      "path": "选题交付页.html",
+      "node": "delivery",
+      "producer": "minitool:render_html",
+      "inputs": {},
+      "delivery": true,
+      "round": 1,
+      "sha1": "60b09e92e793",
+      "ts": "2026-09-16T00:26:13.378Z"
+    }
+  ]
+}

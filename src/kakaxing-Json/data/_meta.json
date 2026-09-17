@@ -1,0 +1,28 @@
+{
+  "source": "kakaxing.com 公开接口",
+  "gateway": "https://gateway.kakaxing.com",
+  "startedAt": "2026-09-14T15:45:36.855Z",
+  "datasets": {
+    "scriptrawstone": {
+      "total": 7938,
+      "scraped": 7938
+    },
+    "queryConditions": "taxonomy",
+    "scriptwriter": {
+      "total": 95,
+      "scraped": 95
+    },
+    "news": 10,
+    "scriptcomment": {
+      "total": 267,
+      "scraped": 267
+    },
+    "shortfilm": {
+      "total": 1423,
+      "scraped": 1411
+    },
+    "style-list": "catalog",
+    "model-list": "catalog"
+  },
+  "finishedAt": "2026-09-14T15:45:46.127Z"
+}

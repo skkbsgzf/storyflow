@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1648 410" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
+<defs><marker id="arw" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
+<path d="M0,0 L9,4 L0,8 z" fill="#5a6478"/></marker></defs>
+<rect width="1648" height="410" fill="#0f1115" rx="10"/>
+<path d="M250,170.0 C287.0,170.0 287.0,170.0 324,170.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-load: src → constraints ｜ core.kb_load</title></path>
+<text x="287.0" y="166.0" fill="#7a8496" font-size="9" text-anchor="middle">core.kb_load</text>
+<path d="M500,170.0 C537.0,170.0 537.0,170.0 574,170.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-choreo: constraints → choreo ｜ skill.plot-choreographer</title></path>
+<text x="537.0" y="166.0" fill="#7a8496" font-size="9" text-anchor="middle">skill.plot-choreogra</text>
+<path d="M750,170.0 C787.0,170.0 787.0,170.0 824,170.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-assert: choreo → asserts ｜ core.check_aesthetic_asserts</title></path>
+<text x="787.0" y="166.0" fill="#7a8496" font-size="9" text-anchor="middle">core.check_aesthetic</text>
+<path d="M1000,170.0 C1037.0,170.0 1037.0,170.0 1074,170.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-red: asserts → redline ｜ sm.redline</title></path>
+<text x="1037.0" y="166.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.redline</text>
+<path d="M1250,170.0 C1287.0,170.0 1287.0,170.0 1324,170.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-fin: redline → fin ｜ sm.review</title></path>
+<text x="1287.0" y="166.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.review</text>
+<g><title>src ｜ novel-txt ｜ 选题方案（已验收） ｜ skill=- minitool=-</title>
+<rect x="74" y="144.0" width="176" height="52" rx="9" fill="#1d3323" stroke="#3d7a4f" stroke-width="1.4"/>
+<text x="162.0" y="165.0" fill="#8fd4a3" font-size="12.5" font-weight="700" text-anchor="middle">src</text>
+<text x="162.0" y="181.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">选题方案（已验收）</text>
+<text x="162.0" y="193.0" fill="#667089" font-size="8.5" text-anchor="middle">素材</text>
+</g>
+<g><title>constraints ｜ core ｜ 约束与标准装载 ｜ skill=- minitool=kb_load</title>
+<rect x="324" y="144.0" width="176" height="52" rx="9" fill="#16233a" stroke="#3d5a80" stroke-width="1.4"/>
+<text x="412.0" y="165.0" fill="#a8c4e8" font-size="12.5" font-weight="700" text-anchor="middle">constraints</text>
+<text x="412.0" y="181.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">约束与标准装载</text>
+<text x="412.0" y="193.0" fill="#667089" font-size="8.5" text-anchor="middle">kb_load</text>
+</g>
+<g><title>choreo ｜ agent ｜ 全剧编排 ｜ skill=plot-choreographer minitool=-</title>
+<rect x="574" y="144.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="1.4"/>
+<text x="662.0" y="165.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">choreo</text>
+<text x="662.0" y="181.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">全剧编排</text>
+<text x="662.0" y="193.0" fill="#667089" font-size="8.5" text-anchor="middle">plot-choreographer</text>
+</g>
+<g><title>asserts ｜ core ｜ 结构断言扫描 ｜ skill=- minitool=check_aesthetic_asserts</title>
+<rect x="824" y="144.0" width="176" height="52" rx="9" fill="#16233a" stroke="#3d5a80" stroke-width="1.4"/>
+<text x="912.0" y="165.0" fill="#a8c4e8" font-size="12.5" font-weight="700" text-anchor="middle">asserts</text>
+<text x="912.0" y="181.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">结构断言扫描</text>
+<text x="912.0" y="193.0" fill="#667089" font-size="8.5" text-anchor="middle">check_aesthetic_a…</text>
+</g>
+<g><title>redline ｜ agent ｜ 红队大纲评审 ｜ skill=plot-redline minitool=-</title>
+<rect x="1074" y="144.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="1.4"/>
+<text x="1162.0" y="165.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">redline</text>
+<text x="1162.0" y="181.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">红队大纲评审</text>
+<text x="1162.0" y="193.0" fill="#667089" font-size="8.5" text-anchor="middle">plot-redline</text>
+</g>
+<g><title>fin ｜ srd ｜ 人工验收 ｜ skill=- minitool=-</title>
+<rect x="1324" y="144.0" width="176" height="52" rx="9" fill="#2a1616" stroke="#a5433a" stroke-width="2.6"/>
+<circle cx="1491" cy="153.0" r="5" fill="none" stroke="#a5433a" stroke-width="1.2"/><circle cx="1491" cy="153.0" r="1.8" fill="#a5433a"/>
+<text x="1412.0" y="165.0" fill="#e8a49c" font-size="12.5" font-weight="700" text-anchor="middle">fin</text>
+<text x="1412.0" y="181.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">人工验收</text>
+<text x="1412.0" y="193.0" fill="#667089" font-size="8.5" text-anchor="middle">验收门</text>
+</g>
+</svg>

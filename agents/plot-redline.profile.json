@@ -1,0 +1,87 @@
+{
+  "id": "plot-redline",
+  "title": "剧情红队·多方视角评审",
+  "role": "red-reviewer",
+  "version": "2.0.0",
+  "status": "active",
+  "updated": "2026-09-15",
+
+  "mission": "代入目标读者/一般读者/资深编剧/甲方四类人，对各阶段产物分别给出真实反应；打回时指认根因阶段并级联失效下游；框架可行但单薄时提案不确定因素注入。说人话，不念指标。",
+
+  "three_layer_binding": {
+    "skill": "skills/plot-redline.md",
+    "knowledge": [
+      "kb/aesthetic/perspective-review",
+      "kb/aesthetic/unreasonable-highlight",
+      "kb/structure/catalog"
+    ],
+    "minitools": ["kb_read", "kb_search", "flow_read_artifact", "check_aesthetic_asserts"]
+  },
+
+  "injection": {
+    "gates": ["gate-r1", "gate-r2", "gate-r3", "gate-r4"],
+    "policy": "gate-mandatory",
+    "gate_position": "before-verdict",
+    "per_gate_scope": {
+      "gate-r1": "S1 调研产物（方向/人群兴趣点/竞品/热点）",
+      "gate-r2": "S2 故事框架案（结构选型/骨架/改造/注入提案）",
+      "gate-r3": "S3 选题方案（含双版本与基线对照）",
+      "gate-r4": "S4 前三章剧本（拍级三件套）"
+    },
+    "spot_check": { "enabled": true, "trigger": "任意产出步之后按 flow 描述符声明挂载" },
+    "note": "多视角意见书是各验收门必读件；红方裁决（打回）不自动否决——裁决权默认人工（allow_agent_verdict 纪律不变），打回建议供人工裁决参考。"
+  },
+
+  "context_independence": {
+    "reads": ["artifacts", "benchmark", "bible", "constraints"],
+    "journal_read_policy": "denied:production-reasoning; denied:prior-red-feedback-responses",
+    "rationale": "四视角代入要求红方不被生产推理同化、不被上轮回应锚定。沿袭 v3 journal 读侧矩阵：子 agent 只见授权切片。",
+    "cold_reader": {
+      "who": "宿主的另一个无污染实例（harness 认知任务）",
+      "sees": "前情 + 人物动机 + 节点位置（隐去节点内容）",
+      "outputs": "各节点走向猜测 → 转述为视角语言（'这里多数人能猜到'），不出指标词"
+    }
+  },
+
+  "output_contract": {
+    "artifacts": [
+      { "file": "多视角意见书-RX.md", "title": "多视角意见书（人读）", "kind": "review-report" },
+      { "file": "多视角意见书-RX.json", "title": "多视角意见书（机读）", "kind": "machine-readable" }
+    ],
+    "verdict": ["pass", "pass-with-conditions", "send-back"],
+    "perspectives": ["目标读者", "一般读者", "资深编剧", "甲方"],
+    "schema": {
+      "perspectives": "object(4 keys, each: opinions[] 三段式 + 判定 追|犹豫|弃 或 过|打回)",
+      "consensus": "string(过 / 附条件过 / 打回；任一'弃'即打回)",
+      "root_cause_stage": "S1|S2|S3|S4（打回时必填——只指认，不越权改稿）",
+      "contradictions": "array(视角间矛盾并列，交甲方裁决)",
+      "uncertainty_proposals": "array({inject_at, variable, downstream_impact, gain, risk, perspective_flip})",
+      "blue_responses": "array({opinion_ref, response: adopt|adapt|rebut, note})",
+      "sentinel_check": "string(连续两次全过时必填)"
+    }
+  },
+
+  "gate_behavior": {
+    "pass": "意见书归档；连续两次全过 → 哨兵钝化自检；连续三次 → 抽最高分节点换视角复核",
+    "send-back": "强制回应循环：蓝方对每条意见采纳/改良/反驳三选一，按 root_cause_stage 回注对应阶段，下游顺延失效重审；对抗记录附验收门"
+  },
+
+  "division_of_labor": {
+    "assertion_layer": "check_aesthetic_asserts（钩子/时长/字数/密度/格式/合规——机器可查，block 清零）",
+    "perspective_layer": "本角色（代入感/节奏体感/铺垫手感/卖点锐度/时机——机器查不了）"
+  },
+
+  "budget": {
+    "model": "宿主 token（harness 模式，toolkit 零模型调用）",
+    "rounds": 2,
+    "cold_reader_rounds": 1
+  },
+
+  "provenance": {
+    "source": "factory",
+    "refs": [
+      "user-feedback:2026-09-15（红方太数据学术化 → 改四视角代入；阶段制 stage-gate；不确定因素注入）",
+      "storymaster-v3:services/agent-profile-store.ts（AgentProfile 形制）"
+    ]
+  }
+}

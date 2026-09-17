@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "miniflow/metrics",
+  "title": "metric@1 · 单次 tool 执行的运行指标（R5）",
+  "description": "projects/<id>/registry/metrics.jsonl 的一行。生成式 flow 的唯一调优依据：tool 效率（ω 产出/成本）与上下文命中率（注入的标尺卡被产物真正引用了几张）。内核在 dispatch/submit/gate 三处自动落盘，宿主可用 flow_metric 补报 tokens/latency/toolCalls。",
+  "type": "object",
+  "required": ["ts", "runId", "nodeId", "phase"],
+  "additionalProperties": false,
+  "properties": {
+    "ts": { "type": "string" },
+    "runId": { "type": "string" },
+    "nodeId": { "type": "string" },
+    "kit": { "type": "string" },
+    "op": { "type": "string", "description": "kit.<op> —— 指标按 tool 聚合的主键" },
+    "phase": {
+      "enum": ["dispatch", "submit", "gate", "auto-gate", "boundary", "core"],
+      "description": "dispatch=派发（上下文装载量）/ submit=提交（产出与断言）/ gate=人工裁决 / auto-gate=R5 自动门 / boundary=kit 边界验收 / core=确定性步"
+    },
+    "round": { "type": "integer" },
+    "latencyMs": { "type": "number" },
+    "toolCalls": { "type": "integer", "description": "宿主执行中调用的工具次数（含 minitool/检索）" },
+    "tokensIn": { "type": "number" },
+    "tokensOut": { "type": "number" },
+    "ctx": {
+      "type": "object",
+      "description": "上下文命中率：offered=注入的标尺卡/上游产物件数；used=在产物 artifact@1 头部 upstream 或正文中出现过的件数",
+      "properties": {
+        "offered": { "type": "integer" },
+        "used": { "type": "integer" },
+        "ids": { "type": "array", "items": { "type": "string" }, "description": "被注入的 id（kb/... 或上游路径）" },
+        "hitIds": { "type": "array", "items": { "type": "string" }, "description": "被真正引用的 id" }
+      }
+    },
+    "asserts": {
+      "type": "object",
+      "description": "本次执行的断言裁决分布。declared/unverified 是「声明即契约」的诚实账：声明了 N 条断言，其中 unverified 条无机器校验器（语义层，未执行、不冒充通过）。",
+      "properties": {
+        "pass": { "type": "integer" },
+        "block": { "type": "integer" },
+        "warn": { "type": "integer" },
+        "names": { "type": "array", "items": { "type": "string" } },
+        "declared": { "type": "integer", "description": "本步有效断言声明数（node.asserts ∪ kit.op.asserts）" },
+        "unverified": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "声明了但无机器校验器的断言 id（语义层，归评审/红方剖面）"
+        }
+      }
+    },
+    "retries": { "type": "integer", "description": "本节点累计打回次数（failCount）" },
+    "verdict": { "type": "string" },
+    "config": { "type": "object", "description": "本次执行生效的 tool 内容配置（快照，便于归因：改了哪个旋钮导致指标变化）" },
+    "note": { "type": "string" }
+  }
+}

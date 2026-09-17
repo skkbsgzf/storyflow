@@ -1,0 +1,11 @@
+.refs/
+__pycache__/
+*.pyc
+node_modules/
+.DS_Store
+.obsidian/workspace.json
+core/dist/
+dist/
+.history/
+.zhuque-key
+.zhuque-usage.json

@@ -1,0 +1,2502 @@
+{
+ "characterType": [
+  {
+   "name": "live",
+   "count": 4615
+  },
+  {
+   "name": "animation",
+   "count": 3323
+  }
+ ],
+ "regionType": [
+  {
+   "name": "CN",
+   "count": 4345
+  },
+  {
+   "name": "NA",
+   "count": 3593
+  }
+ ],
+ "episodeNumber": [
+  {
+   "name": "60",
+   "count": 4963
+  },
+  {
+   "name": "50",
+   "count": 1109
+  },
+  {
+   "name": "80",
+   "count": 949
+  },
+  {
+   "name": "40",
+   "count": 785
+  },
+  {
+   "name": "30",
+   "count": 132
+  }
+ ],
+ "scriptGrade": [
+  {
+   "name": "S",
+   "count": 33
+  },
+  {
+   "name": "A+",
+   "count": 3951
+  },
+  {
+   "name": "A",
+   "count": 3954
+  }
+ ],
+ "scriptGenres": [
+  {
+   "name": "打脸虐渣",
+   "count": 2933
+  },
+  {
+   "name": "Revenge",
+   "count": 2181
+  },
+  {
+   "name": "都市",
+   "count": 1740
+  },
+  {
+   "name": "大女主",
+   "count": 1482
+  },
+  {
+   "name": "Billionaire",
+   "count": 1329
+  },
+  {
+   "name": "大男主",
+   "count": 1153
+  },
+  {
+   "name": "Secret-Identity",
+   "count": 1130
+  },
+  {
+   "name": "Underdog-Rise",
+   "count": 1012
+  },
+  {
+   "name": "商战",
+   "count": 1008
+  },
+  {
+   "name": "豪门",
+   "count": 649
+  },
+  {
+   "name": "Enemies-to-Lovers",
+   "count": 637
+  },
+  {
+   "name": "甜宠",
+   "count": 617
+  },
+  {
+   "name": "先婚后爱",
+   "count": 597
+  },
+  {
+   "name": "Corporate-Warfare",
+   "count": 553
+  },
+  {
+   "name": "Werewolf",
+   "count": 523
+  },
+  {
+   "name": "现代",
+   "count": 521
+  },
+  {
+   "name": "重生",
+   "count": 507
+  },
+  {
+   "name": "High-Society",
+   "count": 503
+  },
+  {
+   "name": "种田",
+   "count": 489
+  },
+  {
+   "name": "马甲",
+   "count": 483
+  },
+  {
+   "name": "双向救赎",
+   "count": 479
+  },
+  {
+   "name": "脑洞",
+   "count": 467
+  },
+  {
+   "name": "Marriage-of-Convenience",
+   "count": 439
+  },
+  {
+   "name": "Toxic-Love / Dark Romance",
+   "count": 436
+  },
+  {
+   "name": "女性成长",
+   "count": 393
+  },
+  {
+   "name": "穿越",
+   "count": 387
+  },
+  {
+   "name": "Forbidden-Love",
+   "count": 374
+  },
+  {
+   "name": "Transformation / Glow-Up",
+   "count": 355
+  },
+  {
+   "name": "现言",
+   "count": 350
+  },
+  {
+   "name": "Superpower",
+   "count": 339
+  },
+  {
+   "name": "强者回归",
+   "count": 306
+  },
+  {
+   "name": "奇幻",
+   "count": 301
+  },
+  {
+   "name": "High-Fantasy",
+   "count": 300
+  },
+  {
+   "name": "系统",
+   "count": 282
+  },
+  {
+   "name": "异能",
+   "count": 282
+  },
+  {
+   "name": "Urban-Fantasy",
+   "count": 275
+  },
+  {
+   "name": "玄幻",
+   "count": 270
+  },
+  {
+   "name": "Mafia",
+   "count": 266
+  },
+  {
+   "name": "强强联合",
+   "count": 249
+  },
+  {
+   "name": "悬疑",
+   "count": 246
+  },
+  {
+   "name": "Reincarnation",
+   "count": 244
+  },
+  {
+   "name": "科幻",
+   "count": 242
+  },
+  {
+   "name": "职场",
+   "count": 238
+  },
+  {
+   "name": "暴富",
+   "count": 236
+  },
+  {
+   "name": "年代",
+   "count": 234
+  },
+  {
+   "name": "Fake-Relationship",
+   "count": 233
+  },
+  {
+   "name": "Forced-Proximity",
+   "count": 230
+  },
+  {
+   "name": "小人物",
+   "count": 227
+  },
+  {
+   "name": "仙侠",
+   "count": 226
+  },
+  {
+   "name": "传承觉醒",
+   "count": 223
+  },
+  {
+   "name": "古代",
+   "count": 221
+  },
+  {
+   "name": "Secret-Baby",
+   "count": 213
+  },
+  {
+   "name": "Shifter (Non-Wolf)",
+   "count": 207
+  },
+  {
+   "name": "古言",
+   "count": 204
+  },
+  {
+   "name": "喜剧",
+   "count": 198
+  },
+  {
+   "name": "Divorce-Recovery",
+   "count": 193
+  },
+  {
+   "name": "Vampire",
+   "count": 191
+  },
+  {
+   "name": "求生",
+   "count": 189
+  },
+  {
+   "name": "乡村",
+   "count": 182
+  },
+  {
+   "name": "神医",
+   "count": 166
+  },
+  {
+   "name": "追妻火葬场",
+   "count": 159
+  },
+  {
+   "name": "Sports-Romance",
+   "count": 158
+  },
+  {
+   "name": "Military / Special-Ops Elite",
+   "count": 147
+  },
+  {
+   "name": "Office-Romance",
+   "count": 141
+  },
+  {
+   "name": "动作",
+   "count": 135
+  },
+  {
+   "name": "架空",
+   "count": 132
+  },
+  {
+   "name": "Second-Chance",
+   "count": 131
+  },
+  {
+   "name": "Soul-Bond / Fated-Mates (Non-Shifter)",
+   "count": 129
+  },
+  {
+   "name": "家长里短",
+   "count": 120
+  },
+  {
+   "name": "Mythological / Gods & Demigods",
+   "count": 118
+  },
+  {
+   "name": "业界精英",
+   "count": 113
+  },
+  {
+   "name": "Psychological-Thriller",
+   "count": 107
+  },
+  {
+   "name": "Survival-Adventure",
+   "count": 107
+  },
+  {
+   "name": "Campus-Romance",
+   "count": 105
+  },
+  {
+   "name": "Age-Gap",
+   "count": 95
+  },
+  {
+   "name": "神豪",
+   "count": 94
+  },
+  {
+   "name": "虐恋",
+   "count": 90
+  },
+  {
+   "name": "萌宠",
+   "count": 89
+  },
+  {
+   "name": "权谋",
+   "count": 84
+  },
+  {
+   "name": "Reverse-Harem",
+   "count": 82
+  },
+  {
+   "name": "Arranged-Marriage",
+   "count": 79
+  },
+  {
+   "name": "逆袭",
+   "count": 78
+  },
+  {
+   "name": "LGBTQ+ Romance",
+   "count": 77
+  },
+  {
+   "name": "Class Divide",
+   "count": 74
+  },
+  {
+   "name": "Post-Apocalyptic",
+   "count": 71
+  },
+  {
+   "name": "赘婿逆袭",
+   "count": 67
+  },
+  {
+   "name": "Toxic-Love",
+   "count": 65
+  },
+  {
+   "name": "Betrayal & Conspiracy",
+   "count": 63
+  },
+  {
+   "name": "Grumpy-Sunshine",
+   "count": 61
+  },
+  {
+   "name": "玄学",
+   "count": 60
+  },
+  {
+   "name": "Pregnancy & Motherhood Drama",
+   "count": 58
+  },
+  {
+   "name": "福宝",
+   "count": 58
+  },
+  {
+   "name": "Mistaken-Identity",
+   "count": 57
+  },
+  {
+   "name": "Framed / Wrongfully Accused",
+   "count": 57
+  },
+  {
+   "name": "Underground / Street Empire",
+   "count": 56
+  },
+  {
+   "name": "破镜重圆",
+   "count": 56
+  },
+  {
+   "name": "Sudden-Wealth",
+   "count": 52
+  },
+  {
+   "name": "Domestic-Drama",
+   "count": 49
+  },
+  {
+   "name": "Hidden Heir / Lost Royalty",
+   "count": 49
+  },
+  {
+   "name": "Dystopian",
+   "count": 48
+  },
+  {
+   "name": "法律",
+   "count": 39
+  },
+  {
+   "name": "Medical / Hospital",
+   "count": 38
+  },
+  {
+   "name": "病娇",
+   "count": 38
+  },
+  {
+   "name": "Music & Entertainment Industry",
+   "count": 35
+  },
+  {
+   "name": "家国情怀",
+   "count": 33
+  },
+  {
+   "name": "Rural / Ranch & Country",
+   "count": 33
+  },
+  {
+   "name": "Stolen Identity / Switched-at-Birth",
+   "count": 33
+  },
+  {
+   "name": "娱乐圈",
+   "count": 32
+  },
+  {
+   "name": "Witchcraft & Coven",
+   "count": 31
+  },
+  {
+   "name": "Revenge-Thriller",
+   "count": 29
+  },
+  {
+   "name": "Kidnapping / Captive",
+   "count": 29
+  },
+  {
+   "name": "年代爱情",
+   "count": 28
+  },
+  {
+   "name": "Dark Romance",
+   "count": 28
+  },
+  {
+   "name": "Amnesia / Lost Memory",
+   "count": 28
+  },
+  {
+   "name": "复仇",
+   "count": 27
+  },
+  {
+   "name": "Demon & Angel",
+   "count": 25
+  },
+  {
+   "name": "Toxic In-Laws",
+   "count": 24
+  },
+  {
+   "name": "民国",
+   "count": 23
+  },
+  {
+   "name": "战神",
+   "count": 23
+  },
+  {
+   "name": "Strong Female Lead",
+   "count": 23
+  },
+  {
+   "name": "Transformation",
+   "count": 23
+  },
+  {
+   "name": "Romantic-Comedy",
+   "count": 22
+  },
+  {
+   "name": "白月光",
+   "count": 22
+  },
+  {
+   "name": "Blended-Family",
+   "count": 21
+  },
+  {
+   "name": "Inheritance War",
+   "count": 21
+  },
+  {
+   "name": "Slow-Burn",
+   "count": 20
+  },
+  {
+   "name": "荒岛",
+   "count": 19
+  },
+  {
+   "name": "Legal Drama",
+   "count": 18
+  },
+  {
+   "name": "反派主角",
+   "count": 18
+  },
+  {
+   "name": "青春",
+   "count": 17
+  },
+  {
+   "name": "Hidden Heir",
+   "count": 17
+  },
+  {
+   "name": "校园",
+   "count": 16
+  },
+  {
+   "name": "Alien / Extraterrestrial Romance",
+   "count": 16
+  },
+  {
+   "name": "Time-Travel",
+   "count": 16
+  },
+  {
+   "name": "Flash Marriage",
+   "count": 15
+  },
+  {
+   "name": "AI / Robot Romance",
+   "count": 15
+  },
+  {
+   "name": "青梅竹马",
+   "count": 15
+  },
+  {
+   "name": "Hidden Identity",
+   "count": 14
+  },
+  {
+   "name": "Historical-Period",
+   "count": 14
+  },
+  {
+   "name": "隐藏身份",
+   "count": 14
+  },
+  {
+   "name": "狼人",
+   "count": 14
+  },
+  {
+   "name": "Virtual Reality / Simulation",
+   "count": 12
+  },
+  {
+   "name": "Suspense",
+   "count": 12
+  },
+  {
+   "name": "Single Parent Romance",
+   "count": 12
+  },
+  {
+   "name": "Murder-Mystery",
+   "count": 12
+  },
+  {
+   "name": "家庭伦理",
+   "count": 11
+  },
+  {
+   "name": "无限流",
+   "count": 11
+  },
+  {
+   "name": "蜕变逆袭",
+   "count": 11
+  },
+  {
+   "name": "Love-Triangle",
+   "count": 11
+  },
+  {
+   "name": "Bet / Dare Romance",
+   "count": 10
+  },
+  {
+   "name": "赛博朋克",
+   "count": 10
+  },
+  {
+   "name": "亿万富翁",
+   "count": 10
+  },
+  {
+   "name": "Political Power",
+   "count": 10
+  },
+  {
+   "name": "契约婚姻",
+   "count": 10
+  },
+  {
+   "name": "志怪",
+   "count": 10
+  },
+  {
+   "name": "Modern Romance",
+   "count": 9
+  },
+  {
+   "name": "民国传奇",
+   "count": 9
+  },
+  {
+   "name": "Face-slapping",
+   "count": 9
+  },
+  {
+   "name": "恐怖",
+   "count": 9
+  },
+  {
+   "name": "医生",
+   "count": 9
+  },
+  {
+   "name": "灵魂互换",
+   "count": 8
+  },
+  {
+   "name": "特种兵",
+   "count": 8
+  },
+  {
+   "name": "宫廷",
+   "count": 8
+  },
+  {
+   "name": "武侠",
+   "count": 8
+  },
+  {
+   "name": "扮猪吃虎",
+   "count": 8
+  },
+  {
+   "name": "逆袭崛起",
+   "count": 8
+  },
+  {
+   "name": "Creature Feature",
+   "count": 8
+  },
+  {
+   "name": "Rebirth",
+   "count": 7
+  },
+  {
+   "name": "规则怪谈",
+   "count": 7
+  },
+  {
+   "name": "禁忌之恋",
+   "count": 7
+  },
+  {
+   "name": "宫斗",
+   "count": 7
+  },
+  {
+   "name": "萌宝",
+   "count": 7
+  },
+  {
+   "name": "欢喜冤家",
+   "count": 7
+  },
+  {
+   "name": "极致复仇",
+   "count": 7
+  },
+  {
+   "name": "黑色幽默",
+   "count": 7
+  },
+  {
+   "name": "宿命伴侣",
+   "count": 7
+  },
+  {
+   "name": "Soul-Bond / Fated-Mates",
+   "count": 7
+  },
+  {
+   "name": "Urban",
+   "count": 6
+  },
+  {
+   "name": "末世",
+   "count": 6
+  },
+  {
+   "name": "Contract Lover(s) / Contract Marriage",
+   "count": 6
+  },
+  {
+   "name": "吸血鬼",
+   "count": 6
+  },
+  {
+   "name": "神秘身份",
+   "count": 6
+  },
+  {
+   "name": "Avenge / Revenge",
+   "count": 6
+  },
+  {
+   "name": "Sweet Pet",
+   "count": 6
+  },
+  {
+   "name": "Heist / Con-Artist",
+   "count": 6
+  },
+  {
+   "name": "姐弟恋",
+   "count": 6
+  },
+  {
+   "name": "鉴宝",
+   "count": 6
+  },
+  {
+   "name": "Unrequited-Love",
+   "count": 6
+  },
+  {
+   "name": "方言",
+   "count": 6
+  },
+  {
+   "name": "Fantasy",
+   "count": 5
+  },
+  {
+   "name": "非遗传承",
+   "count": 5
+  },
+  {
+   "name": "穿书",
+   "count": 5
+  },
+  {
+   "name": "末世废土",
+   "count": 5
+  },
+  {
+   "name": "Urban Romance",
+   "count": 5
+  },
+  {
+   "name": "民国爱情",
+   "count": 5
+  },
+  {
+   "name": "都市奇幻",
+   "count": 5
+  },
+  {
+   "name": "黑道",
+   "count": 5
+  },
+  {
+   "name": "治愈",
+   "count": 5
+  },
+  {
+   "name": "美食",
+   "count": 5
+  },
+  {
+   "name": "Billionaire / CEO",
+   "count": 5
+  },
+  {
+   "name": "Harem",
+   "count": 5
+  },
+  {
+   "name": "热血",
+   "count": 5
+  },
+  {
+   "name": "Disability & Chronic Illness",
+   "count": 5
+  },
+  {
+   "name": "Modern",
+   "count": 4
+  },
+  {
+   "name": "Fantasy / Paranormal",
+   "count": 4
+  },
+  {
+   "name": "Concealed Identity / Secret Identity",
+   "count": 4
+  },
+  {
+   "name": "Enemies to Lovers",
+   "count": 4
+  },
+  {
+   "name": "Biker / MC (Motorcycle Club)",
+   "count": 4
+  },
+  {
+   "name": "Business War",
+   "count": 4
+  },
+  {
+   "name": "Concealed Identity",
+   "count": 4
+  },
+  {
+   "name": "Destiny / Fated Lovers / Soulmate",
+   "count": 4
+  },
+  {
+   "name": "Conspiracy / Secret Society",
+   "count": 4
+  },
+  {
+   "name": "办公室恋情",
+   "count": 4
+  },
+  {
+   "name": "身份错位",
+   "count": 4
+  },
+  {
+   "name": "Stolen Identity",
+   "count": 4
+  },
+  {
+   "name": "Secret Identity",
+   "count": 4
+  },
+  {
+   "name": "日久生情",
+   "count": 4
+  },
+  {
+   "name": "Soul-Bond",
+   "count": 4
+  },
+  {
+   "name": "Werewolf / Werewolves",
+   "count": 3
+  },
+  {
+   "name": "末日求生",
+   "count": 3
+  },
+  {
+   "name": "末世科幻",
+   "count": 3
+  },
+  {
+   "name": "黑帮",
+   "count": 3
+  },
+  {
+   "name": "Ghost & Spirit",
+   "count": 3
+  },
+  {
+   "name": "高武",
+   "count": 3
+  },
+  {
+   "name": "Female Empowerment",
+   "count": 3
+  },
+  {
+   "name": "基建",
+   "count": 3
+  },
+  {
+   "name": "久别重逢",
+   "count": 3
+  },
+  {
+   "name": "Contract Marriage",
+   "count": 3
+  },
+  {
+   "name": "Dark-Romance",
+   "count": 3
+  },
+  {
+   "name": "System",
+   "count": 3
+  },
+  {
+   "name": "底层逆袭",
+   "count": 3
+  },
+  {
+   "name": "暗黑浪漫",
+   "count": 3
+  },
+  {
+   "name": "前世今生",
+   "count": 3
+  },
+  {
+   "name": "黑科技",
+   "count": 3
+  },
+  {
+   "name": "职场恋爱",
+   "count": 3
+  },
+  {
+   "name": "逆袭蜕变",
+   "count": 3
+  },
+  {
+   "name": "治愈系",
+   "count": 3
+  },
+  {
+   "name": "降维打击",
+   "count": 3
+  },
+  {
+   "name": "反差萌",
+   "count": 3
+  },
+  {
+   "name": "Stalker / Obsession",
+   "count": 3
+  },
+  {
+   "name": "Generational Curse / Family Secret",
+   "count": 3
+  },
+  {
+   "name": "强取豪夺",
+   "count": 3
+  },
+  {
+   "name": "Small-Town",
+   "count": 3
+  },
+  {
+   "name": "Cruise / Resort / Vacation",
+   "count": 3
+  },
+  {
+   "name": "暗恋成真",
+   "count": 3
+  },
+  {
+   "name": "Contract Lovers",
+   "count": 2
+  },
+  {
+   "name": "Childhood Sweethearts",
+   "count": 2
+  },
+  {
+   "name": "创业逆袭",
+   "count": 2
+  },
+  {
+   "name": "Mythological",
+   "count": 2
+  },
+  {
+   "name": "真假千金",
+   "count": 2
+  },
+  {
+   "name": "Urban Fantasy",
+   "count": 2
+  },
+  {
+   "name": "Ancient Romance",
+   "count": 2
+  },
+  {
+   "name": "末日废土",
+   "count": 2
+  },
+  {
+   "name": "末日避难",
+   "count": 2
+  },
+  {
+   "name": "都市日常",
+   "count": 2
+  },
+  {
+   "name": "Body-Swap / Gender-Swap",
+   "count": 2
+  },
+  {
+   "name": "Clone / Duplicate",
+   "count": 2
+  },
+  {
+   "name": "逆后宫",
+   "count": 2
+  },
+  {
+   "name": "心理惊悚",
+   "count": 2
+  },
+  {
+   "name": "霸道总裁",
+   "count": 2
+  },
+  {
+   "name": "商业商战",
+   "count": 2
+  },
+  {
+   "name": "职场商战",
+   "count": 2
+  },
+  {
+   "name": "黑手党",
+   "count": 2
+  },
+  {
+   "name": "亿万富豪",
+   "count": 2
+  },
+  {
+   "name": "龙族兽人",
+   "count": 2
+  },
+  {
+   "name": "Supernatural",
+   "count": 2
+  },
+  {
+   "name": "高阶奇幻",
+   "count": 2
+  },
+  {
+   "name": "Romance",
+   "count": 2
+  },
+  {
+   "name": "宅斗",
+   "count": 2
+  },
+  {
+   "name": "闪婚",
+   "count": 2
+  },
+  {
+   "name": "Power Struggle",
+   "count": 2
+  },
+  {
+   "name": "Marriage First Love Later",
+   "count": 2
+  },
+  {
+   "name": "Female Growth",
+   "count": 2
+  },
+  {
+   "name": "Female Lead",
+   "count": 2
+  },
+  {
+   "name": "背叛与阴谋",
+   "count": 2
+  },
+  {
+   "name": "暗黑罗曼史",
+   "count": 2
+  },
+  {
+   "name": "隐秘身份",
+   "count": 2
+  },
+  {
+   "name": "命定伴侣",
+   "count": 2
+  },
+  {
+   "name": "Counterattack",
+   "count": 2
+  },
+  {
+   "name": "Entertainment",
+   "count": 2
+  },
+  {
+   "name": "Love Triangle",
+   "count": 2
+  },
+  {
+   "name": "Counterattack / Underdog Rise",
+   "count": 2
+  },
+  {
+   "name": "种田基建",
+   "count": 2
+  },
+  {
+   "name": "Sweet Romance",
+   "count": 2
+  },
+  {
+   "name": "Mind Reading",
+   "count": 2
+  },
+  {
+   "name": "Conspiracy",
+   "count": 2
+  },
+  {
+   "name": "Miracle Doctor",
+   "count": 2
+  },
+  {
+   "name": "Rich and Powerful",
+   "count": 2
+  },
+  {
+   "name": "Fated-Mates (Non-Shifter)",
+   "count": 2
+  },
+  {
+   "name": "极致虐恋",
+   "count": 2
+  },
+  {
+   "name": "超能",
+   "count": 2
+  },
+  {
+   "name": "复仇 (Revenge)",
+   "count": 2
+  },
+  {
+   "name": "身份反转",
+   "count": 2
+  },
+  {
+   "name": "LGBTQ+-Romance",
+   "count": 2
+  },
+  {
+   "name": "职场逆袭",
+   "count": 2
+  },
+  {
+   "name": "心理博弈",
+   "count": 2
+  },
+  {
+   "name": "Strong Alliance",
+   "count": 2
+  },
+  {
+   "name": "Wealthy Family",
+   "count": 2
+  },
+  {
+   "name": "末日",
+   "count": 2
+  },
+  {
+   "name": "天灾逆袭",
+   "count": 2
+  },
+  {
+   "name": "Glow-Up",
+   "count": 2
+  },
+  {
+   "name": "Comedy",
+   "count": 2
+  },
+  {
+   "name": "Fated-Mates",
+   "count": 2
+  },
+  {
+   "name": "迪化流",
+   "count": 2
+  },
+  {
+   "name": "一见钟情",
+   "count": 2
+  },
+  {
+   "name": "灵魂契约",
+   "count": 2
+  },
+  {
+   "name": "废土",
+   "count": 2
+  },
+  {
+   "name": "极致拉扯",
+   "count": 2
+  },
+  {
+   "name": "Second Chance",
+   "count": 1
+  },
+  {
+   "name": "都市高武",
+   "count": 1
+  },
+  {
+   "name": "Sci-Fi",
+   "count": 1
+  },
+  {
+   "name": "赛博武侠",
+   "count": 1
+  },
+  {
+   "name": "竞技",
+   "count": 1
+  },
+  {
+   "name": "天灾",
+   "count": 1
+  },
+  {
+   "name": "双胎宝",
+   "count": 1
+  },
+  {
+   "name": "科技神豪",
+   "count": 1
+  },
+  {
+   "name": "末世生存",
+   "count": 1
+  },
+  {
+   "name": "西方奇幻",
+   "count": 1
+  },
+  {
+   "name": "极寒求生",
+   "count": 1
+  },
+  {
+   "name": "现代都市",
+   "count": 1
+  },
+  {
+   "name": "废土科幻",
+   "count": 1
+  },
+  {
+   "name": "年代情怀",
+   "count": 1
+  },
+  {
+   "name": "Cyberpunk",
+   "count": 1
+  },
+  {
+   "name": "都市爱情",
+   "count": 1
+  },
+  {
+   "name": "Revenen",
+   "count": 1
+  },
+  {
+   "name": "Reborn",
+   "count": 1
+  },
+  {
+   "name": "玄玄",
+   "count": 1
+  },
+  {
+   "name": "娱乐界",
+   "count": 1
+  },
+  {
+   "name": "神话奇幻",
+   "count": 1
+  },
+  {
+   "name": "非狼人变身 (Shifter)",
+   "count": 1
+  },
+  {
+   "name": "外星异类恋爱",
+   "count": 1
+  },
+  {
+   "name": "宿敌恋爱",
+   "count": 1
+  },
+  {
+   "name": "豪门 (Billionaire)",
+   "count": 1
+  },
+  {
+   "name": "总裁",
+   "count": 1
+  },
+  {
+   "name": "霸总",
+   "count": 1
+  },
+  {
+   "name": "狼人 (Werewolf)",
+   "count": 1
+  },
+  {
+   "name": "校园罗曼",
+   "count": 1
+  },
+  {
+   "name": "名流复仇",
+   "count": 1
+  },
+  {
+   "name": "律政悬疑",
+   "count": 1
+  },
+  {
+   "name": "亿万总裁",
+   "count": 1
+  },
+  {
+   "name": "重生流",
+   "count": 1
+  },
+  {
+   "name": "AI / 机器人恋情",
+   "count": 1
+  },
+  {
+   "name": "校园言情",
+   "count": 1
+  },
+  {
+   "name": "生存大逃杀",
+   "count": 1
+  },
+  {
+   "name": "商业复仇",
+   "count": 1
+  },
+  {
+   "name": "兽人/变体",
+   "count": 1
+  },
+  {
+   "name": "神话与神明",
+   "count": 1
+  },
+  {
+   "name": "豪门秘恋",
+   "count": 1
+  },
+  {
+   "name": "废土末世",
+   "count": 1
+  },
+  {
+   "name": "暗黑奇幻",
+   "count": 1
+  },
+  {
+   "name": "娱乐圈与演艺圈",
+   "count": 1
+  },
+  {
+   "name": "兽人",
+   "count": 1
+  },
+  {
+   "name": "都市玄幻",
+   "count": 1
+  },
+  {
+   "name": "豪门总裁",
+   "count": 1
+  },
+  {
+   "name": "狼人奇幻",
+   "count": 1
+  },
+  {
+   "name": "契约恋爱",
+   "count": 1
+  },
+  {
+   "name": "科技",
+   "count": 1
+  },
+  {
+   "name": "Fake Relationship",
+   "count": 1
+  },
+  {
+   "name": "商业逆袭",
+   "count": 1
+  },
+  {
+   "name": "Regretful Ex",
+   "count": 1
+  },
+  {
+   "name": "Super Power",
+   "count": 1
+  },
+  {
+   "name": "家族伦理",
+   "count": 1
+  },
+  {
+   "name": "末日天灾",
+   "count": 1
+  },
+  {
+   "name": "都市修真",
+   "count": 1
+  },
+  {
+   "name": "末日囤货",
+   "count": 1
+  },
+  {
+   "name": "重工基建",
+   "count": 1
+  },
+  {
+   "name": "科幻战争",
+   "count": 1
+  },
+  {
+   "name": "Identity Reveal",
+   "count": 1
+  },
+  {
+   "name": "天灾囤货",
+   "count": 1
+  },
+  {
+   "name": "治愈生活",
+   "count": 1
+  },
+  {
+   "name": "Rich Family",
+   "count": 1
+  },
+  {
+   "name": "Friends-to-Lovers",
+   "count": 1
+  },
+  {
+   "name": "Identity",
+   "count": 1
+  },
+  {
+   "name": "异兽变体",
+   "count": 1
+  },
+  {
+   "name": "废土生存",
+   "count": 1
+  },
+  {
+   "name": "女巫",
+   "count": 1
+  },
+  {
+   "name": "史诗奇幻 (High-Fantasy)",
+   "count": 1
+  },
+  {
+   "name": "宿敌挚爱",
+   "count": 1
+  },
+  {
+   "name": "都市职场",
+   "count": 1
+  },
+  {
+   "name": "校园恋爱",
+   "count": 1
+  },
+  {
+   "name": "体育竞技",
+   "count": 1
+  },
+  {
+   "name": "军事特战精英",
+   "count": 1
+  },
+  {
+   "name": "地下帝国 (Underground / Street Empire)",
+   "count": 1
+  },
+  {
+   "name": "蜕变逆袭 (Transformation / Glow-Up)",
+   "count": 1
+  },
+  {
+   "name": "被迫同居",
+   "count": 1
+  },
+  {
+   "name": "暗黑罗曼",
+   "count": 1
+  },
+  {
+   "name": "商战对决",
+   "count": 1
+  },
+  {
+   "name": "LGBTQ+浪漫",
+   "count": 1
+  },
+  {
+   "name": "复仇虐渣",
+   "count": 1
+  },
+  {
+   "name": "合约恋情",
+   "count": 1
+  },
+  {
+   "name": "职场打脸",
+   "count": 1
+  },
+  {
+   "name": "女巫魔法",
+   "count": 1
+  },
+  {
+   "name": "商业战争",
+   "count": 1
+  },
+  {
+   "name": "超自然言情",
+   "count": 1
+  },
+  {
+   "name": "顶级财阀",
+   "count": 1
+  },
+  {
+   "name": "隐瞒身份",
+   "count": 1
+  },
+  {
+   "name": "废柴逆袭",
+   "count": 1
+  },
+  {
+   "name": "人外救赎",
+   "count": 1
+  },
+  {
+   "name": "生存冒险",
+   "count": 1
+  },
+  {
+   "name": "打脸复仇",
+   "count": 1
+  },
+  {
+   "name": "灵魂羁绊",
+   "count": 1
+  },
+  {
+   "name": "LGBTQ+同性之恋",
+   "count": 1
+  },
+  {
+   "name": "现代奇幻",
+   "count": 1
+  },
+  {
+   "name": "绝境求生",
+   "count": 1
+  },
+  {
+   "name": "阶级鸿沟",
+   "count": 1
+  },
+  {
+   "name": "民间传奇",
+   "count": 1
+  },
+  {
+   "name": "龙族/兽人",
+   "count": 1
+  },
+  {
+   "name": "竞技体育",
+   "count": 1
+  },
+  {
+   "name": "Haunted House / Possession",
+   "count": 1
+  },
+  {
+   "name": "刑侦",
+   "count": 1
+  },
+  {
+   "name": "婚姻",
+   "count": 1
+  },
+  {
+   "name": "Playing Dumb",
+   "count": 1
+  },
+  {
+   "name": "硬核",
+   "count": 1
+  },
+  {
+   "name": "跑山寻宝",
+   "count": 1
+  },
+  {
+   "name": "Billionaire Romance",
+   "count": 1
+  },
+  {
+   "name": "Self-growth",
+   "count": 1
+  },
+  {
+   "name": "Love After Marriage",
+   "count": 1
+  },
+  {
+   "name": "空间囤货",
+   "count": 1
+  },
+  {
+   "name": "极速逆袭",
+   "count": 1
+  },
+  {
+   "name": "极致偏爱",
+   "count": 1
+  },
+  {
+   "name": "公路治愈",
+   "count": 1
+  },
+  {
+   "name": "废柴觉醒",
+   "count": 1
+  },
+  {
+   "name": "团宠",
+   "count": 1
+  },
+  {
+   "name": "深海奇观",
+   "count": 1
+  },
+  {
+   "name": "Regret Romance",
+   "count": 1
+  },
+  {
+   "name": "Marriage First",
+   "count": 1
+  },
+  {
+   "name": "Abusive Romance",
+   "count": 1
+  },
+  {
+   "name": "都市商战",
+   "count": 1
+  },
+  {
+   "name": "宅斗权谋",
+   "count": 1
+  },
+  {
+   "name": "黑色喜剧",
+   "count": 1
+  },
+  {
+   "name": "Action-Comedy",
+   "count": 1
+  },
+  {
+   "name": "Fierce Female Lead",
+   "count": 1
+  },
+  {
+   "name": "Femme Fatale",
+   "count": 1
+  },
+  {
+   "name": "Marriage-of-Confidence",
+   "count": 1
+  },
+  {
+   "name": "Betrayal & Vengeance",
+   "count": 1
+  },
+  {
+   "name": "战神回归",
+   "count": 1
+  },
+  {
+   "name": "异兽变形",
+   "count": 1
+  },
+  {
+   "name": "极致复仇 (Revenge)",
+   "count": 1
+  },
+  {
+   "name": "病娇/黑暗罗曼史",
+   "count": 1
+  },
+  {
+   "name": "契约关系",
+   "count": 1
+  },
+  {
+   "name": "契约婚姻 (Marriage-of-Convenience)",
+   "count": 1
+  },
+  {
+   "name": "暗黑言情",
+   "count": 1
+  },
+  {
+   "name": "身份互换",
+   "count": 1
+  },
+  {
+   "name": "运动竞技",
+   "count": 1
+  },
+  {
+   "name": "龙族异能",
+   "count": 1
+  },
+  {
+   "name": "被迫共处",
+   "count": 1
+  },
+  {
+   "name": "豪门权贵",
+   "count": 1
+  },
+  {
+   "name": "离婚反击",
+   "count": 1
+  },
+  {
+   "name": "逆袭复仇",
+   "count": 1
+  },
+  {
+   "name": "逆袭翻身",
+   "count": 1
+  },
+  {
+   "name": "契约/闪婚",
+   "count": 1
+  },
+  {
+   "name": "死对头变真爱",
+   "count": 1
+  },
+  {
+   "name": "退婚逆袭",
+   "count": 1
+  },
+  {
+   "name": "错位误会",
+   "count": 1
+  },
+  {
+   "name": "系统流",
+   "count": 1
+  },
+  {
+   "name": "公司商战",
+   "count": 1
+  },
+  {
+   "name": "逆袭降维",
+   "count": 1
+  },
+  {
+   "name": "奇幻基建",
+   "count": 1
+  },
+  {
+   "name": "极限复仇",
+   "count": 1
+  },
+  {
+   "name": "家族复仇",
+   "count": 1
+  },
+  {
+   "name": "替身身份",
+   "count": 1
+  },
+  {
+   "name": "宿敌变真爱",
+   "count": 1
+  },
+  {
+   "name": "契约",
+   "count": 1
+  },
+  {
+   "name": "医疗风云",
+   "count": 1
+  },
+  {
+   "name": "复仇逆袭",
+   "count": 1
+  },
+  {
+   "name": "复仇打脸",
+   "count": 1
+  },
+  {
+   "name": "温情",
+   "count": 1
+  },
+  {
+   "name": "Overpowered",
+   "count": 1
+  },
+  {
+   "name": "Tycoon",
+   "count": 1
+  },
+  {
+   "name": "Childhood Sweetheart",
+   "count": 1
+  },
+  {
+   "name": "Music",
+   "count": 1
+  },
+  {
+   "name": "草根逆袭",
+   "count": 1
+  },
+  {
+   "name": "废土重建",
+   "count": 1
+  },
+  {
+   "name": "Awakening",
+   "count": 1
+  },
+  {
+   "name": "Power Awakening",
+   "count": 1
+  },
+  {
+   "name": "Love After Marriage / Marriage Before Love",
+   "count": 1
+  },
+  {
+   "name": "Forbidden Love / Taboo",
+   "count": 1
+  },
+  {
+   "name": "美食竞技",
+   "count": 1
+  },
+  {
+   "name": "中医",
+   "count": 1
+  },
+  {
+   "name": "宿敌CP",
+   "count": 1
+  },
+  {
+   "name": "乡村求生",
+   "count": 1
+  },
+  {
+   "name": "命运重逢",
+   "count": 1
+  },
+  {
+   "name": "赛道打脸",
+   "count": 1
+  },
+  {
+   "name": "逆天改命",
+   "count": 1
+  },
+  {
+   "name": "神厨",
+   "count": 1
+  },
+  {
+   "name": "错位认知",
+   "count": 1
+  },
+  {
+   "name": "非遗鉴宝",
+   "count": 1
+  },
+  {
+   "name": "非遗逆袭",
+   "count": 1
+  },
+  {
+   "name": "爽快打脸",
+   "count": 1
+  },
+  {
+   "name": "基因进化",
+   "count": 1
+  },
+  {
+   "name": "美食治愈",
+   "count": 1
+  },
+  {
+   "name": "草根成长",
+   "count": 1
+  },
+  {
+   "name": "发家致富",
+   "count": 1
+  },
+  {
+   "name": "机械飞升",
+   "count": 1
+  },
+  {
+   "name": "末日生存",
+   "count": 1
+  },
+  {
+   "name": "Workplace Redemption",
+   "count": 1
+  },
+  {
+   "name": "爽剧逆袭",
+   "count": 1
+  },
+  {
+   "name": "CEO",
+   "count": 1
+  },
+  {
+   "name": "Vengeance",
+   "count": 1
+  },
+  {
+   "name": "Book Transmigration",
+   "count": 1
+  },
+  {
+   "name": "荒诞喜剧",
+   "count": 1
+  },
+  {
+   "name": "时空对话",
+   "count": 1
+  },
+  {
+   "name": "Black-Humor",
+   "count": 1
+  },
+  {
+   "name": "Amnesia",
+   "count": 1
+  },
+  {
+   "name": "Biker / MC",
+   "count": 1
+  },
+  {
+   "name": "丧尸",
+   "count": 1
+  },
+  {
+   "name": "Comedy & Lighthearted",
+   "count": 1
+  },
+  {
+   "name": "Slapping Trash",
+   "count": 1
+  },
+  {
+   "name": "Sadomasochism",
+   "count": 1
+  },
+  {
+   "name": "Smackdown",
+   "count": 1
+  },
+  {
+   "name": "Addiction & Recovery",
+   "count": 1
+  },
+  {
+   "name": "Folk Horror / Urban Legend",
+   "count": 1
+  },
+  {
+   "name": "宿敌恋人",
+   "count": 1
+  },
+  {
+   "name": "大女主动作",
+   "count": 1
+  },
+  {
+   "name": "黑暗罗曼史",
+   "count": 1
+  },
+  {
+   "name": "超能觉醒",
+   "count": 1
+  },
+  {
+   "name": "黑暗浪漫 (Toxic-Love / Dark Romance)",
+   "count": 1
+  },
+  {
+   "name": "科幻/末世生存",
+   "count": 1
+  },
+  {
+   "name": "变形者",
+   "count": 1
+  },
+  {
+   "name": "上流社会",
+   "count": 1
+  },
+  {
+   "name": "校园青春",
+   "count": 1
+  },
+  {
+   "name": "神明降临",
+   "count": 1
+  },
+  {
+   "name": "打脸逆渣",
+   "count": 1
+  },
+  {
+   "name": "女强",
+   "count": 1
+  },
+  {
+   "name": "暗黑向恋爱",
+   "count": 1
+  },
+  {
+   "name": "运动罗曼",
+   "count": 1
+  },
+  {
+   "name": "豪门阶级",
+   "count": 1
+  },
+  {
+   "name": "豪门名流",
+   "count": 1
+  },
+  {
+   "name": "双强博弈",
+   "count": 1
+  },
+  {
+   "name": "极致占有",
+   "count": 1
+  },
+  {
+   "name": "血脉觉醒",
+   "count": 1
+  },
+  {
+   "name": "神医流",
+   "count": 1
+  },
+  {
+   "name": "Fish-Out-of-Water",
+   "count": 1
+  },
+  {
+   "name": "暗黑虐恋",
+   "count": 1
+  },
+  {
+   "name": "豪门世家",
+   "count": 1
+  },
+  {
+   "name": "终极火葬场",
+   "count": 1
+  },
+  {
+   "name": "黑暗浪漫",
+   "count": 1
+  },
+  {
+   "name": "暗黑霸宠",
+   "count": 1
+  },
+  {
+   "name": "逆袭打脸",
+   "count": 1
+  },
+  {
+   "name": "宿命羁绊",
+   "count": 1
+  },
+  {
+   "name": "神话超能",
+   "count": 1
+  },
+  {
+   "name": "科幻机甲",
+   "count": 1
+  },
+  {
+   "name": "暗黑救赎",
+   "count": 1
+  },
+  {
+   "name": "阶级对抗",
+   "count": 1
+  },
+  {
+   "name": "宿敌变情人",
+   "count": 1
+  },
+  {
+   "name": "宿敌成双",
+   "count": 1
+  },
+  {
+   "name": "极致打脸",
+   "count": 1
+  },
+  {
+   "name": "血脉真相",
+   "count": 1
+  },
+  {
+   "name": "极致偏宠",
+   "count": 1
+  },
+  {
+   "name": "同性纯爱",
+   "count": 1
+  },
+  {
+   "name": "替身",
+   "count": 1
+  },
+  {
+   "name": "修仙",
+   "count": 1
+  },
+  {
+   "name": "技术逆袭",
+   "count": 1
+  },
+  {
+   "name": "Badass Female Lead",
+   "count": 1
+  },
+  {
+   "name": "Action",
+   "count": 1
+  },
+  {
+   "name": "Groveling Ex",
+   "count": 1
+  },
+  {
+   "name": "腹黑智斗",
+   "count": 1
+  },
+  {
+   "name": "硬核手艺",
+   "count": 1
+  },
+  {
+   "name": "Strong Duo",
+   "count": 1
+  },
+  {
+   "name": "Sweet Love",
+   "count": 1
+  },
+  {
+   "name": "行业黑幕",
+   "count": 1
+  },
+  {
+   "name": "爽文",
+   "count": 1
+  },
+  {
+   "name": "Regret",
+   "count": 1
+  },
+  {
+   "name": "Yandere",
+   "count": 1
+  },
+  {
+   "name": "Comeback",
+   "count": 1
+  },
+  {
+   "name": "Love-Hate",
+   "count": 1
+  },
+  {
+   "name": "亲情治愈",
+   "count": 1
+  },
+  {
+   "name": "母子情",
+   "count": 1
+  },
+  {
+   "name": "人性博弈",
+   "count": 1
+  },
+  {
+   "name": "双向隐瞒",
+   "count": 1
+  },
+  {
+   "name": "隐藏大佬",
+   "count": 1
+  },
+  {
+   "name": "时代逆袭",
+   "count": 1
+  },
+  {
+   "name": "技术称王",
+   "count": 1
+  },
+  {
+   "name": "热血搏击",
+   "count": 1
+  },
+  {
+   "name": "大国工匠",
+   "count": 1
+  },
+  {
+   "name": "美食复仇",
+   "count": 1
+  },
+  {
+   "name": "御兽",
+   "count": 1
+  },
+  {
+   "name": "Class-Divide",
+   "count": 1
+  },
+  {
+   "name": "人间清醒",
+   "count": 1
+  },
+  {
+   "name": "逆袭治愈",
+   "count": 1
+  },
+  {
+   "name": "科技逆袭",
+   "count": 1
+  },
+  {
+   "name": "萌宝治愈",
+   "count": 1
+  },
+  {
+   "name": "读心流",
+   "count": 1
+  },
+  {
+   "name": "地火奇观",
+   "count": 1
+  },
+  {
+   "name": "高冷禁欲",
+   "count": 1
+  },
+  {
+   "name": "重装动作",
+   "count": 1
+  },
+  {
+   "name": "Mind-reading",
+   "count": 1
+  },
+  {
+   "name": "蒸汽朋克",
+   "count": 1
+  },
+  {
+   "name": "幕后黑手",
+   "count": 1
+  },
+  {
+   "name": "逆向开挂",
+   "count": 1
+  },
+  {
+   "name": "生存",
+   "count": 1
+  },
+  {
+   "name": "爽剧",
+   "count": 1
+  },
+  {
+   "name": "生活流",
+   "count": 1
+  },
+  {
+   "name": "美食逆袭",
+   "count": 1
+  },
+  {
+   "name": "非遗酿酒",
+   "count": 1
+  },
+  {
+   "name": "Face Slapping",
+   "count": 1
+  },
+  {
+   "name": "Thriller & Suspense",
+   "count": 1
+  },
+  {
+   "name": "Double Rebirth",
+   "count": 1
+  },
+  {
+   "name": "Strong Leads",
+   "count": 1
+  },
+  {
+   "name": "行业精英",
+   "count": 1
+  },
+  {
+   "name": "职场恋情",
+   "count": 1
+  },
+  {
+   "name": "婚姻逆袭",
+   "count": 1
+  },
+  {
+   "name": "复仇爽剧",
+   "count": 1
+  },
+  {
+   "name": "捞偏门",
+   "count": 1
+  },
+  {
+   "name": "灾难",
+   "count": 1
+  },
+  {
+   "name": "逆袭爽剧",
+   "count": 1
+  },
+  {
+   "name": "极限追逃",
+   "count": 1
+  },
+  {
+   "name": "同性浪漫",
+   "count": 1
+  }
+ ],
+ "scriptCategory": [
+  {
+   "name": "F",
+   "count": 5384
+  },
+  {
+   "name": "M",
+   "count": 2554
+  }
+ ]
+}

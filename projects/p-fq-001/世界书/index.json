@@ -1,0 +1,354 @@
+{
+  "世界书": "p-fq-001 世界书（逆向 deepwrite：worldbuilding/characters/continuity/plot 四件 + 文件即真相）",
+  "version": "2026-09-17",
+  "note": "唯一 RAG 入口。写第 N 章：①查本索引按 tags 拉相关词条 ②读 编年/章账.md 末节（=上一章 handoff）③不重读全书。新名目/新人物先登记再进正文；章回交稿后由宿主按 纪律.md 结算五件。",
+  "状态机": "draft（设定中）→ active（已进正文）→ retired（被版本更新推翻；不删，留档）",
+  "sections": [
+    {
+      "id": "纪律",
+      "title": "更新纪律",
+      "format": "text",
+      "file": "世界书/纪律.md"
+    },
+    {
+      "id": "设定",
+      "title": "世界规则",
+      "format": "list",
+      "file": "世界书/设定/",
+      "entries": [
+        {
+          "id": "w-power",
+          "title": "力量体系",
+          "file": "世界书/设定/力量体系.md",
+          "tags": [
+            "力量体系",
+            "神恩",
+            "哈内丝",
+            "元石",
+            "吞三式"
+          ],
+          "status": "active"
+        },
+        {
+          "id": "w-sacrifice",
+          "title": "献祭双轨制",
+          "file": "世界书/设定/献祭双轨.md",
+          "tags": [
+            "献祭",
+            "肉祭",
+            "智祭",
+            "主题"
+          ],
+          "status": "active"
+        },
+        {
+          "id": "w-gods",
+          "title": "降临史与大断代",
+          "file": "世界书/设定/神系与天梯.md",
+          "tags": [
+            "神系",
+            "天梯",
+            "大断代",
+            "神殿"
+          ],
+          "status": "active"
+        },
+        {
+          "id": "w-chain",
+          "title": "思维链语法与吞结论细则",
+          "file": "世界书/设定/思维链语法.md",
+          "tags": [
+            "思维链",
+            "吞链",
+            "食灵",
+            "伦理"
+          ],
+          "status": "active"
+        },
+        {
+          "id": "w-price",
+          "title": "献祭制度与废土经济",
+          "file": "世界书/设定/祭品经济.md",
+          "tags": [
+            "经济",
+            "元石",
+            "真饭",
+            "神殿"
+          ],
+          "status": "active"
+        },
+        {
+          "id": "w-rules",
+          "title": "世界规则清单（不可违反合同）",
+          "file": "世界书/设定/世界规则清单.md",
+          "tags": [
+            "规则",
+            "合同",
+            "禁区"
+          ],
+          "status": "active"
+        },
+        {
+          "id": "w-slang",
+          "title": "名目与黑话",
+          "file": "世界书/设定/名目与黑话.md",
+          "tags": [
+            "名目",
+            "评定",
+            "勺语",
+            "黑话",
+            "变奏"
+          ],
+          "status": "active"
+        },
+        {
+          "id": "w-weather",
+          "title": "天气系统",
+          "file": "世界书/设定/天气系统.md",
+          "tags": [
+            "天气",
+            "智力雨天",
+            "司天监"
+          ],
+          "status": "active"
+        },
+        {
+          "id": "style-voice",
+          "title": "文风档（本书声音规范）",
+          "file": "世界书/设定/文风档.md",
+          "tags": [
+            "文风",
+            "声口",
+            "节奏",
+            "校准",
+            "样张"
+          ],
+          "status": "active",
+          "version": "2"
+        }
+      ]
+    },
+    {
+      "id": "人物",
+      "title": "人物卡（入场即建档）",
+      "format": "list",
+      "file": "世界书/人物/",
+      "entries": [
+        {
+          "id": "c-chaosheng",
+          "title": "陈潮生（主角）",
+          "file": "世界书/人物/陈潮生.md",
+          "tags": [
+            "主角",
+            "智祭",
+            "海记"
+          ],
+          "status": "active"
+        },
+        {
+          "id": "c-dahai",
+          "title": "陈大海（父）",
+          "file": "世界书/人物/陈大海.md",
+          "tags": [
+            "家人",
+            "肉祭",
+            "雷贯臂",
+            "旧罪"
+          ],
+          "status": "active"
+        },
+        {
+          "id": "c-mu",
+          "title": "陈母",
+          "file": "世界书/人物/陈母.md",
+          "tags": [
+            "家人",
+            "铁饭勺",
+            "管账"
+          ],
+          "status": "active"
+        },
+        {
+          "id": "c-kunzai",
+          "title": "鲲崽（北冥鲲君之崽）",
+          "file": "世界书/人物/鲲崽.md",
+          "tags": [
+            "神崽",
+            "吞",
+            "暗线",
+            "饭勺"
+          ],
+          "status": "active"
+        },
+        {
+          "id": "c-jianzui",
+          "title": "尖嘴哥（消息贩子）",
+          "file": "世界书/人物/尖嘴哥.md",
+          "tags": [
+            "配角",
+            "传讯"
+          ],
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "势力",
+      "title": "势力与组织",
+      "format": "list",
+      "file": "世界书/势力/",
+      "entries": [
+        {
+          "id": "f-shendian",
+          "title": "神殿",
+          "file": "世界书/势力/神殿.md",
+          "tags": [
+            "势力",
+            "献祭台",
+            "登记"
+          ],
+          "status": "active"
+        },
+        {
+          "id": "f-haiji",
+          "title": "海记食堂",
+          "file": "世界书/势力/海记食堂.md",
+          "tags": [
+            "势力",
+            "真饭",
+            "零献祭"
+          ],
+          "status": "active"
+        },
+        {
+          "id": "f-tiantiju",
+          "title": "天梯局",
+          "file": "世界书/势力/天梯局.md",
+          "tags": [
+            "势力",
+            "登记",
+            "结算"
+          ],
+          "status": "active"
+        },
+        {
+          "id": "f-kaiyuan",
+          "title": "开源神系社区",
+          "file": "世界书/势力/开源神系社区.md",
+          "tags": [
+            "势力",
+            "圣遗物",
+            "散装"
+          ],
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "地理",
+      "title": "地理",
+      "format": "list",
+      "file": "世界书/地理/",
+      "entries": [
+        {
+          "id": "l-qingjiao",
+          "title": "青礁聚落",
+          "file": "世界书/地理/青礁聚落.md",
+          "tags": [
+            "地理",
+            "主舞台"
+          ],
+          "status": "active"
+        },
+        {
+          "id": "l-feixu",
+          "title": "废墟海",
+          "file": "世界书/地理/废墟海.md",
+          "tags": [
+            "地理",
+            "鲲影",
+            "危险"
+          ],
+          "status": "active"
+        },
+        {
+          "id": "l-houyuan",
+          "title": "殿后荒地",
+          "file": "世界书/地理/殿后荒地.md",
+          "tags": [
+            "地理",
+            "退件山",
+            "禁地"
+          ],
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "编年",
+      "title": "编年与章账",
+      "format": "list",
+      "file": "世界书/编年/",
+      "entries": [
+        {
+          "id": "chronicle",
+          "title": "大事记（世界史）",
+          "file": "世界书/编年/大事记.md",
+          "tags": [
+            "编年",
+            "世界史"
+          ],
+          "status": "active"
+        },
+        {
+          "id": "ledger",
+          "title": "章账（逐章结算=handoff）",
+          "file": "世界书/编年/章账.md",
+          "tags": [
+            "章账",
+            "handoff",
+            "结算"
+          ],
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "伏笔",
+      "title": "伏笔台账",
+      "format": "list",
+      "file": "世界书/伏笔/",
+      "entries": [
+        {
+          "id": "foreshadow",
+          "title": "伏笔台账",
+          "file": "世界书/伏笔/台账.md",
+          "tags": [
+            "伏笔",
+            "回收"
+          ],
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "id": "底牌",
+      "title": "暗线底牌（作者专用·永不入正文）",
+      "format": "text",
+      "file": "世界书/底牌/暗线底牌.md",
+      "entries": [
+        {
+          "id": "w-secret",
+          "title": "暗线底牌",
+          "file": "世界书/底牌/暗线底牌.md",
+          "tags": [
+            "暗线",
+            "底牌",
+            "禁止入正文"
+          ],
+          "status": "draft"
+        }
+      ]
+    }
+  ]
+}

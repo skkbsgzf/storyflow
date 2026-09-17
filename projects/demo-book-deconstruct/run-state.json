@@ -1,0 +1,46 @@
+{
+  "nodes": {
+    "src": {
+      "status": "none",
+      "round": 0
+    },
+    "pre": {
+      "status": "none",
+      "round": 0
+    },
+    "read": {
+      "status": "none",
+      "round": 0
+    },
+    "refine": {
+      "status": "none",
+      "round": 0
+    },
+    "chars": {
+      "status": "none",
+      "round": 0
+    },
+    "style": {
+      "status": "none",
+      "round": 0
+    },
+    "dedup": {
+      "status": "none",
+      "round": 0
+    },
+    "promote": {
+      "status": "none",
+      "round": 0
+    },
+    "fin": {
+      "status": "none",
+      "round": 0
+    }
+  },
+  "notes": [],
+  "presets": {},
+  "comments": {},
+  "inputs": {},
+  "flowId": "book-deconstruct",
+  "flowVersion": "0.1.0-draft"
+}

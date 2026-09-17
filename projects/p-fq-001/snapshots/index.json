@@ -1,0 +1,786 @@
+{
+  "snapshots": {
+    "zeitgeist": [
+      {
+        "round": 1,
+        "ts": "2026-09-16T04:06:45.092Z",
+        "note": "submit r1",
+        "files": {
+          "热点素材.md": {
+            "hash": "6e17440be68a",
+            "path": "snapshots/zeitgeist/r1/热点素材.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-16T04:48:02.708Z",
+        "note": "submit r3",
+        "files": {
+          "热点素材.md": {
+            "hash": "44309e9d7448",
+            "path": "snapshots/zeitgeist/r2/热点素材.md"
+          }
+        }
+      },
+      {
+        "round": 3,
+        "ts": "2026-09-16T05:00:30.578Z",
+        "note": "submit r5",
+        "files": {
+          "热点素材.md": {
+            "hash": "44309e9d7448",
+            "path": "snapshots/zeitgeist/r3/热点素材.md"
+          }
+        }
+      },
+      {
+        "round": 4,
+        "ts": "2026-09-16T06:59:12.756Z",
+        "note": "submit r7",
+        "files": {
+          "热点素材.md": {
+            "hash": "385f30828de5",
+            "path": "snapshots/zeitgeist/r4/热点素材.md"
+          }
+        }
+      },
+      {
+        "round": 5,
+        "ts": "2026-09-16T08:51:28.704Z",
+        "note": "submit r9",
+        "files": {
+          "热点素材.md": {
+            "hash": "c9dd94e8becf",
+            "path": "snapshots/zeitgeist/r5/热点素材.md"
+          }
+        }
+      },
+      {
+        "round": 6,
+        "ts": "2026-09-16T09:03:29.554Z",
+        "note": "submit r11",
+        "files": {
+          "热点素材.md": {
+            "hash": "5688610b5933",
+            "path": "snapshots/zeitgeist/r6/热点素材.md"
+          }
+        }
+      },
+      {
+        "round": 7,
+        "ts": "2026-09-16T09:41:48.634Z",
+        "note": "submit r13",
+        "files": {
+          "热点素材.md": {
+            "hash": "6c016e86100d",
+            "path": "snapshots/zeitgeist/r7/热点素材.md"
+          }
+        }
+      },
+      {
+        "round": 8,
+        "ts": "2026-09-16T16:08:27.672Z",
+        "note": "submit r15",
+        "files": {
+          "热点素材.md": {
+            "hash": "2a09ffb205b1",
+            "path": "snapshots/zeitgeist/r8/热点素材.md"
+          }
+        }
+      },
+      {
+        "round": 9,
+        "ts": "2026-09-17 04:42",
+        "note": "flow-verify 红档收档：补留档当前工作版",
+        "files": {
+          "热点素材.md": {
+            "hash": "d1ffda2fcedb",
+            "path": "snapshots/zeitgeist/r9/热点素材.md"
+          }
+        }
+      }
+    ],
+    "tropes": [
+      {
+        "round": 1,
+        "ts": "2026-09-16T04:06:45.252Z",
+        "note": "submit r1",
+        "files": {
+          "梗卡.md": {
+            "hash": "725d620ff5e2",
+            "path": "snapshots/tropes/r1/梗卡.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-16T04:48:02.854Z",
+        "note": "submit r3",
+        "files": {
+          "梗卡.md": {
+            "hash": "f33585f088f0",
+            "path": "snapshots/tropes/r2/梗卡.md"
+          }
+        }
+      },
+      {
+        "round": 3,
+        "ts": "2026-09-16T05:00:30.728Z",
+        "note": "submit r5",
+        "files": {
+          "梗卡.md": {
+            "hash": "f33585f088f0",
+            "path": "snapshots/tropes/r3/梗卡.md"
+          }
+        }
+      },
+      {
+        "round": 4,
+        "ts": "2026-09-16T06:59:12.902Z",
+        "note": "submit r7",
+        "files": {
+          "梗卡.md": {
+            "hash": "ae4d6010a8c1",
+            "path": "snapshots/tropes/r4/梗卡.md"
+          }
+        }
+      },
+      {
+        "round": 5,
+        "ts": "2026-09-16T08:51:28.852Z",
+        "note": "submit r9",
+        "files": {
+          "梗卡.md": {
+            "hash": "b18d400af7f2",
+            "path": "snapshots/tropes/r5/梗卡.md"
+          }
+        }
+      },
+      {
+        "round": 6,
+        "ts": "2026-09-16T09:03:29.703Z",
+        "note": "submit r11",
+        "files": {
+          "梗卡.md": {
+            "hash": "2108594732bb",
+            "path": "snapshots/tropes/r6/梗卡.md"
+          }
+        }
+      },
+      {
+        "round": 7,
+        "ts": "2026-09-16T09:41:48.787Z",
+        "note": "submit r13",
+        "files": {
+          "梗卡.md": {
+            "hash": "08d76ae2a62f",
+            "path": "snapshots/tropes/r7/梗卡.md"
+          }
+        }
+      },
+      {
+        "round": 8,
+        "ts": "2026-09-16T16:08:27.851Z",
+        "note": "submit r15",
+        "files": {
+          "梗卡.md": {
+            "hash": "b932786b5bd1",
+            "path": "snapshots/tropes/r8/梗卡.md"
+          }
+        }
+      },
+      {
+        "round": 9,
+        "ts": "2026-09-17 02:58",
+        "note": "vendor 模式冒烟",
+        "files": {
+          "梗卡.md": {
+            "hash": null,
+            "path": null
+          }
+        }
+      },
+      {
+        "round": 10,
+        "ts": "2026-09-17 03:00",
+        "note": "vendor 冒烟2",
+        "files": {
+          "梗卡.md": {
+            "hash": "3f95ad646da4",
+            "path": "snapshots/tropes/r10/梗卡.md"
+          }
+        }
+      }
+    ],
+    "analysis": [
+      {
+        "round": 1,
+        "ts": "2026-09-16T04:10:08.255Z",
+        "note": "submit r1",
+        "files": {
+          "对外交付/01-选题报告.md": {
+            "hash": "4ca6ef603452",
+            "path": "snapshots/analysis/r1/对外交付/01-选题报告.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-16T04:49:16.427Z",
+        "note": "submit r3",
+        "files": {
+          "对外交付/01-选题报告.md": {
+            "hash": "837f5d98956c",
+            "path": "snapshots/analysis/r2/对外交付/01-选题报告.md"
+          }
+        }
+      },
+      {
+        "round": 3,
+        "ts": "2026-09-16T05:01:38.759Z",
+        "note": "submit r5",
+        "files": {
+          "对外交付/01-选题报告.md": {
+            "hash": "336bbb02bf0c",
+            "path": "snapshots/analysis/r3/对外交付/01-选题报告.md"
+          }
+        }
+      },
+      {
+        "round": 4,
+        "ts": "2026-09-16T07:00:22.452Z",
+        "note": "submit r7",
+        "files": {
+          "对外交付/01-选题报告.md": {
+            "hash": "6994b2889a57",
+            "path": "snapshots/analysis/r4/对外交付/01-选题报告.md"
+          }
+        }
+      },
+      {
+        "round": 5,
+        "ts": "2026-09-16T08:52:51.231Z",
+        "note": "submit r9",
+        "files": {
+          "对外交付/01-选题报告.md": {
+            "hash": "047770cf1158",
+            "path": "snapshots/analysis/r5/对外交付/01-选题报告.md"
+          }
+        }
+      },
+      {
+        "round": 6,
+        "ts": "2026-09-16T09:03:29.859Z",
+        "note": "submit r11",
+        "files": {
+          "对外交付/01-选题报告.md": {
+            "hash": "5ec4172d31c5",
+            "path": "snapshots/analysis/r6/对外交付/01-选题报告.md"
+          }
+        }
+      },
+      {
+        "round": 7,
+        "ts": "2026-09-16T09:41:48.945Z",
+        "note": "submit r13",
+        "files": {
+          "对外交付/01-选题报告.md": {
+            "hash": "8a49ffd4c14b",
+            "path": "snapshots/analysis/r7/对外交付/01-选题报告.md"
+          }
+        }
+      },
+      {
+        "round": 8,
+        "ts": "2026-09-16 23:22",
+        "note": "",
+        "files": {
+          "选题分析报告.md": {
+            "hash": null,
+            "path": null
+          }
+        }
+      },
+      {
+        "round": 9,
+        "ts": "2026-09-16T16:09:39.039Z",
+        "note": "submit r15",
+        "files": {
+          "对外交付/01-选题报告.md": {
+            "hash": "5919e0e03931",
+            "path": "snapshots/analysis/r9/对外交付/01-选题报告.md"
+          }
+        }
+      }
+    ],
+    "gate-r1": [
+      {
+        "round": 1,
+        "ts": "2026-09-16 12:11",
+        "note": "",
+        "files": {
+          "内部/多视角意见书-R1.md": {
+            "hash": "91f20c4f4cc2",
+            "path": "snapshots/gate-r1/r1/内部/多视角意见书-R1.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-16 12:49",
+        "note": "",
+        "files": {
+          "内部/多视角意见书-R1.md": {
+            "hash": "d19cba7b6c14",
+            "path": "snapshots/gate-r1/r2/内部/多视角意见书-R1.md"
+          }
+        }
+      },
+      {
+        "round": 3,
+        "ts": "2026-09-16 13:02",
+        "note": "",
+        "files": {
+          "内部/多视角意见书-R1.md": {
+            "hash": "4c43ec70e234",
+            "path": "snapshots/gate-r1/r3/内部/多视角意见书-R1.md"
+          }
+        }
+      },
+      {
+        "round": 4,
+        "ts": "2026-09-16 15:01",
+        "note": "",
+        "files": {
+          "内部/多视角意见书-R1.md": {
+            "hash": "13297582798f",
+            "path": "snapshots/gate-r1/r4/内部/多视角意见书-R1.md"
+          }
+        }
+      },
+      {
+        "round": 5,
+        "ts": "2026-09-16 16:53",
+        "note": "",
+        "files": {
+          "内部/多视角意见书-R1.md": {
+            "hash": "ed5010b1e2b7",
+            "path": "snapshots/gate-r1/r5/内部/多视角意见书-R1.md"
+          }
+        }
+      },
+      {
+        "round": 6,
+        "ts": "2026-09-16 17:04",
+        "note": "",
+        "files": {
+          "内部/多视角意见书-R1.md": {
+            "hash": "a535a20618dd",
+            "path": "snapshots/gate-r1/r6/内部/多视角意见书-R1.md"
+          }
+        }
+      },
+      {
+        "round": 7,
+        "ts": "2026-09-16 17:42",
+        "note": "",
+        "files": {
+          "内部/多视角意见书-R1.md": {
+            "hash": "52adef1b6c9d",
+            "path": "snapshots/gate-r1/r7/内部/多视角意见书-R1.md"
+          }
+        }
+      },
+      {
+        "round": 8,
+        "ts": "2026-09-17 00:10",
+        "note": "",
+        "files": {
+          "内部/多视角意见书-R1.md": {
+            "hash": "3a4d3280f0cf",
+            "path": "snapshots/gate-r1/r8/内部/多视角意见书-R1.md"
+          }
+        }
+      }
+    ],
+    "bible": [
+      {
+        "round": 1,
+        "ts": "2026-09-16T09:59:05.119Z",
+        "note": "submit r1",
+        "files": {
+          "世界观圣经.md": {
+            "hash": "a0f56a7a6e7c",
+            "path": "snapshots/bible/r1/世界观圣经.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-16T16:24:26.206Z",
+        "note": "submit r3",
+        "files": {
+          "世界观圣经.md": {
+            "hash": "fa9fd223d5fa",
+            "path": "snapshots/bible/r2/世界观圣经.md"
+          }
+        }
+      },
+      {
+        "round": 3,
+        "ts": "2026-09-17 04:42",
+        "note": "flow-verify 红档收档：补留档当前工作版",
+        "files": {
+          "世界观圣经.md": {
+            "hash": "33b60089ed61",
+            "path": "snapshots/bible/r3/世界观圣经.md"
+          }
+        }
+      }
+    ],
+    "red-s2": [
+      {
+        "round": 1,
+        "ts": "2026-09-16T10:00:09.370Z",
+        "note": "submit r1",
+        "files": {
+          "内部/多视角意见书-S2.md": {
+            "hash": "0b9aea0d8036",
+            "path": "snapshots/red-s2/r1/内部/多视角意见书-S2.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-16T16:25:07.470Z",
+        "note": "submit r3",
+        "files": {
+          "内部/多视角意见书-S2.md": {
+            "hash": "768cca0f9da5",
+            "path": "snapshots/red-s2/r2/内部/多视角意见书-S2.md"
+          }
+        }
+      }
+    ],
+    "outline3": [
+      {
+        "round": 1,
+        "ts": "2026-09-16T10:04:24.961Z",
+        "note": "submit r1",
+        "files": {
+          "单元剧大纲.md": {
+            "hash": "f41f454cfcee",
+            "path": "snapshots/outline3/r1/单元剧大纲.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-16T16:29:12.689Z",
+        "note": "submit r3",
+        "files": {
+          "单元剧大纲.md": {
+            "hash": "c7833591d3bc",
+            "path": "snapshots/outline3/r2/单元剧大纲.md"
+          }
+        }
+      },
+      {
+        "round": 3,
+        "ts": "2026-09-17 00:29",
+        "note": "",
+        "files": {
+          "单元剧大纲.md": {
+            "hash": "8cae552eb424",
+            "path": "snapshots/outline3/r3/单元剧大纲.md"
+          }
+        }
+      },
+      {
+        "round": 4,
+        "ts": "2026-09-17 01:12",
+        "note": "",
+        "files": {
+          "单元剧大纲.md": {
+            "hash": "467f6bd1525c",
+            "path": "snapshots/outline3/r4/单元剧大纲.md"
+          },
+          "内部/网文手法与编排速查.md": {
+            "hash": "ef8b731d3006",
+            "path": "snapshots/outline3/r4/内部/网文手法与编排速查.md"
+          },
+          "世界观/w-slang.md": {
+            "hash": "ef12d3c6a91d",
+            "path": "snapshots/outline3/r4/世界观/w-slang.md"
+          }
+        }
+      },
+      {
+        "round": 5,
+        "ts": "2026-09-17 01:30",
+        "note": "",
+        "files": {
+          "单元剧大纲.md": {
+            "hash": "54cdf55ab081",
+            "path": "snapshots/outline3/r5/单元剧大纲.md"
+          }
+        }
+      },
+      {
+        "round": 6,
+        "ts": "2026-09-17 04:42",
+        "note": "flow-verify 红档收档：补留档当前工作版",
+        "files": {
+          "单元剧大纲.md": {
+            "hash": "6e898232077f",
+            "path": "snapshots/outline3/r6/单元剧大纲.md"
+          }
+        }
+      }
+    ],
+    "red-s3": [
+      {
+        "round": 1,
+        "ts": "2026-09-16T10:05:14.222Z",
+        "note": "submit r1",
+        "files": {
+          "内部/多视角意见书-S3.md": {
+            "hash": "eb57d3fffb84",
+            "path": "snapshots/red-s3/r1/内部/多视角意见书-S3.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-16T16:29:57.613Z",
+        "note": "submit r3",
+        "files": {
+          "内部/多视角意见书-S3.md": {
+            "hash": "13210d64c69b",
+            "path": "snapshots/red-s3/r2/内部/多视角意见书-S3.md"
+          }
+        }
+      }
+    ],
+    "chapter": [
+      {
+        "round": 1,
+        "ts": "2026-09-16T19:01:52.071Z",
+        "note": "submit r1",
+        "files": {
+          "章节正文/第3章.md": {
+            "hash": "b2c3ebe28bbe",
+            "path": "snapshots/chapter/r1/章节正文/第3章.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-17 03:05",
+        "note": "",
+        "files": {
+          "世界书/编年/章账.md": {
+            "hash": "fd3259dfab41",
+            "path": "snapshots/chapter/r2/世界书/编年/章账.md"
+          },
+          "世界书/伏笔/台账.md": {
+            "hash": "d8db558dd34a",
+            "path": "snapshots/chapter/r2/世界书/伏笔/台账.md"
+          },
+          "世界书/人物/陈潮生.md": {
+            "hash": "70cb0e96f4cf",
+            "path": "snapshots/chapter/r2/世界书/人物/陈潮生.md"
+          },
+          "世界书/人物/鲲崽.md": {
+            "hash": "f8207371ed31",
+            "path": "snapshots/chapter/r2/世界书/人物/鲲崽.md"
+          },
+          "世界书/人物/陈大海.md": {
+            "hash": "874fee08921e",
+            "path": "snapshots/chapter/r2/世界书/人物/陈大海.md"
+          },
+          "世界书/人物/尖嘴哥.md": {
+            "hash": "e9cd728d282e",
+            "path": "snapshots/chapter/r2/世界书/人物/尖嘴哥.md"
+          },
+          "章节正文/第1章.md": {
+            "hash": "8646acc2f20b",
+            "path": "snapshots/chapter/r2/章节正文/第1章.md"
+          },
+          "章节正文/第2章.md": {
+            "hash": "9619842d2da3",
+            "path": "snapshots/chapter/r2/章节正文/第2章.md"
+          },
+          "章节正文/第3章.md": {
+            "hash": "b2c3ebe28bbe",
+            "path": "snapshots/chapter/r2/章节正文/第3章.md"
+          }
+        }
+      },
+      {
+        "round": 3,
+        "ts": "2026-09-17 03:45",
+        "note": "",
+        "files": {
+          "章节正文/第1章.md": {
+            "hash": "9de814414a6d",
+            "path": "snapshots/chapter/r3/章节正文/第1章.md"
+          },
+          "章节正文/第2章.md": {
+            "hash": "da43a36244a4",
+            "path": "snapshots/chapter/r3/章节正文/第2章.md"
+          },
+          "章节正文/第3章.md": {
+            "hash": "210426ca28ff",
+            "path": "snapshots/chapter/r3/章节正文/第3章.md"
+          }
+        }
+      },
+      {
+        "round": 4,
+        "ts": "2026-09-17 04:14",
+        "note": "",
+        "files": {
+          "章节正文/第1章.md": {
+            "hash": "8f5b21a380c9",
+            "path": "snapshots/chapter/r4/章节正文/第1章.md"
+          },
+          "世界书/编年/章账.md": {
+            "hash": "4454984a9b7c",
+            "path": "snapshots/chapter/r4/世界书/编年/章账.md"
+          },
+          "世界书/设定/名目与黑话.md": {
+            "hash": "d152694b5805",
+            "path": "snapshots/chapter/r4/世界书/设定/名目与黑话.md"
+          },
+          "世界书/设定/文风档.md": {
+            "hash": "dfa2c2ea5d6a",
+            "path": "snapshots/chapter/r4/世界书/设定/文风档.md"
+          },
+          "世界书/纪律.md": {
+            "hash": "c2fec8e02f56",
+            "path": "snapshots/chapter/r4/世界书/纪律.md"
+          }
+        }
+      },
+      {
+        "round": 5,
+        "ts": "2026-09-17 04:32",
+        "note": "",
+        "files": {
+          "章节正文/第1章.md": {
+            "hash": "71cc786e086d",
+            "path": "snapshots/chapter/r5/章节正文/第1章.md"
+          },
+          "章节正文/第3章.md": {
+            "hash": "e7983efc4773",
+            "path": "snapshots/chapter/r5/章节正文/第3章.md"
+          },
+          "世界书/设定/文风档.md": {
+            "hash": "80601a984112",
+            "path": "snapshots/chapter/r5/世界书/设定/文风档.md"
+          }
+        }
+      }
+    ],
+    "polish": [
+      {
+        "round": 1,
+        "ts": "2026-09-16T19:04:18.402Z",
+        "note": "submit r1",
+        "files": {
+          "对外交付/02-前三章终稿.md": {
+            "hash": "5b1d7e7423c2",
+            "path": "snapshots/polish/r1/对外交付/02-前三章终稿.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-17 04:14",
+        "note": "",
+        "files": {
+          "对外交付/02-前三章终稿.md": {
+            "hash": "4ec3c0a5e258",
+            "path": "snapshots/polish/r2/对外交付/02-前三章终稿.md"
+          }
+        }
+      },
+      {
+        "round": 3,
+        "ts": "2026-09-17 04:32",
+        "note": "",
+        "files": {
+          "对外交付/02-前三章终稿.md": {
+            "hash": "619063c1b90d",
+            "path": "snapshots/polish/r3/对外交付/02-前三章终稿.md"
+          }
+        }
+      },
+      {
+        "round": 4,
+        "ts": "2026-09-16T20:51:52.285Z",
+        "note": "submit r4",
+        "files": {
+          "对外交付/02-前三章终稿.md": {
+            "hash": "e9818f03ffa8",
+            "path": "snapshots/polish/r4/对外交付/02-前三章终稿.md"
+          }
+        }
+      }
+    ],
+    "gate-final": [
+      {
+        "round": 1,
+        "ts": "2026-09-17 03:06",
+        "note": "",
+        "files": {
+          "内部/多视角意见书-终稿.md": {
+            "hash": "773a789670a6",
+            "path": "snapshots/gate-final/r1/内部/多视角意见书-终稿.md"
+          },
+          "对外交付/02-前三章终稿.md": {
+            "hash": "5b1d7e7423c2",
+            "path": "snapshots/gate-final/r1/对外交付/02-前三章终稿.md"
+          }
+        }
+      }
+    ],
+    "src": [
+      {
+        "round": 1,
+        "ts": "2026-09-17 04:42",
+        "note": "flow-verify 红档收档：补留档当前工作版",
+        "files": {
+          "选题素材.md": {
+            "hash": "e7aeaffe9fc3",
+            "path": "snapshots/src/r1/选题素材.md"
+          }
+        }
+      }
+    ],
+    "audit": [
+      {
+        "round": 1,
+        "ts": "2026-09-17 04:52",
+        "note": "K7/K8 收据：内核prose断言三章全绿 + 机味扫描 + 脱流盘点",
+        "files": {
+          "内部/断言报告-audit.json": {
+            "hash": "8bedb401cd51",
+            "path": "snapshots/audit/r1/内部/断言报告-audit.json"
+          },
+          "内部/prose-scan-v6.md": {
+            "hash": "a1af301577b5",
+            "path": "snapshots/audit/r1/内部/prose-scan-v6.md"
+          },
+          "内部/flow-verify-首跑盘点.md": {
+            "hash": "defb63bde442",
+            "path": "snapshots/audit/r1/内部/flow-verify-首跑盘点.md"
+          }
+        }
+      }
+    ]
+  },
+  "inputs": {}
+}

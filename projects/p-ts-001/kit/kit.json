@@ -1,0 +1,31 @@
+{
+  "kitVersion": "1.0.0",
+  "project": "p-ts-001",
+  "vendoredAt": "2026-09-17T04:46:11",
+  "files": {
+    "check-purity.py": {
+      "source": "tools/check-purity.py",
+      "upstreamSha1": "c7670b66c9fc"
+    },
+    "worldbook.py": {
+      "source": "tools/worldbook.py",
+      "upstreamSha1": "bc0acc794ecd"
+    },
+    "export-doc.py": {
+      "source": "tools/export-doc.py",
+      "upstreamSha1": "10f30c5f6094"
+    },
+    "snapshot.py": {
+      "source": "tools/snapshot.py",
+      "upstreamSha1": "402c18b087dc"
+    },
+    "serve.py": {
+      "source": "tools/serve.py",
+      "upstreamSha1": "8fc84fec6963"
+    }
+  },
+  "flow": {
+    "id": "topic-selection",
+    "version": "5.1.2"
+  }
+}

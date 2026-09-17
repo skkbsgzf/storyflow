@@ -1,0 +1,1243 @@
+{
+  "artifacts": [
+    {
+      "path": "内部/kb-market.md",
+      "node": "market",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "a54a297d031e",
+      "ts": "2026-09-16T03:56:26.649Z"
+    },
+    {
+      "path": "选题素材.md",
+      "node": "src",
+      "producer": "kernel:novel-txt",
+      "inputs": {},
+      "round": 1,
+      "sha1": "057087048f96",
+      "ts": "2026-09-16T03:56:26.650Z"
+    },
+    {
+      "path": "热点素材.md",
+      "node": "zeitgeist",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "057087048f96"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "4425 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "6e17440be68a",
+      "ts": "2026-09-16T04:06:45.090Z"
+    },
+    {
+      "path": "梗卡.md",
+      "node": "tropes",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "057087048f96"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "3360 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "725d620ff5e2",
+      "ts": "2026-09-16T04:06:45.250Z"
+    },
+    {
+      "path": "内部/断言报告-combo.json",
+      "node": "combo",
+      "producer": "minitool:check_trope_combo",
+      "inputs": {
+        "梗卡.md": "725d620ff5e2"
+      },
+      "round": 1,
+      "sha1": "93b72d60274a",
+      "ts": "2026-09-16T04:06:45.255Z"
+    },
+    {
+      "path": "内部/kb-benchmark.md",
+      "node": "benchmark",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "86d2c6efcc01",
+      "ts": "2026-09-16T04:06:45.258Z"
+    },
+    {
+      "path": "对外交付/01-选题报告.md",
+      "node": "analysis",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "057087048f96",
+        "梗卡.md": "725d620ff5e2",
+        "热点素材.md": "6e17440be68a"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "4321 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "4ca6ef603452",
+      "ts": "2026-09-16T04:09:25.790Z"
+    },
+    {
+      "path": "对外交付/01-选题报告.md",
+      "node": "analysis",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "057087048f96",
+        "梗卡.md": "725d620ff5e2",
+        "热点素材.md": "6e17440be68a"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "4321 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "4ca6ef603452",
+      "ts": "2026-09-16T04:09:28.812Z"
+    },
+    {
+      "path": "对外交付/01-选题报告.md",
+      "node": "analysis",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "057087048f96",
+        "梗卡.md": "725d620ff5e2",
+        "热点素材.md": "6e17440be68a"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "4321 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "4ca6ef603452",
+      "ts": "2026-09-16T04:10:08.253Z"
+    },
+    {
+      "path": "内部/kb-market.md",
+      "node": "market",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "a54a297d031e",
+      "ts": "2026-09-16T04:45:09.121Z"
+    },
+    {
+      "path": "选题素材.md",
+      "node": "src",
+      "producer": "kernel:novel-txt",
+      "inputs": {},
+      "round": 1,
+      "sha1": "764e5d40a6db",
+      "ts": "2026-09-16T04:45:09.122Z"
+    },
+    {
+      "path": "热点素材.md",
+      "node": "zeitgeist",
+      "round": 3,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "764e5d40a6db"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2517 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "44309e9d7448",
+      "ts": "2026-09-16T04:48:02.706Z"
+    },
+    {
+      "path": "梗卡.md",
+      "node": "tropes",
+      "round": 3,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "764e5d40a6db"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "3812 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "f33585f088f0",
+      "ts": "2026-09-16T04:48:02.852Z"
+    },
+    {
+      "path": "内部/断言报告-combo.json",
+      "node": "combo",
+      "producer": "minitool:check_trope_combo",
+      "inputs": {
+        "梗卡.md": "f33585f088f0"
+      },
+      "round": 1,
+      "sha1": "d7d1f8bb881e",
+      "ts": "2026-09-16T04:48:02.857Z"
+    },
+    {
+      "path": "内部/kb-benchmark.md",
+      "node": "benchmark",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "86d2c6efcc01",
+      "ts": "2026-09-16T04:48:02.860Z"
+    },
+    {
+      "path": "对外交付/01-选题报告.md",
+      "node": "analysis",
+      "round": 3,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "764e5d40a6db",
+        "梗卡.md": "f33585f088f0",
+        "热点素材.md": "44309e9d7448"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "4133 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "837f5d98956c",
+      "ts": "2026-09-16T04:49:16.425Z"
+    },
+    {
+      "path": "内部/kb-market.md",
+      "node": "market",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "a54a297d031e",
+      "ts": "2026-09-16T04:59:49.259Z"
+    },
+    {
+      "path": "选题素材.md",
+      "node": "src",
+      "producer": "kernel:novel-txt",
+      "inputs": {},
+      "round": 1,
+      "sha1": "764e5d40a6db",
+      "ts": "2026-09-16T04:59:49.260Z"
+    },
+    {
+      "path": "热点素材.md",
+      "node": "zeitgeist",
+      "round": 5,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "764e5d40a6db"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2517 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "44309e9d7448",
+      "ts": "2026-09-16T05:00:30.576Z"
+    },
+    {
+      "path": "梗卡.md",
+      "node": "tropes",
+      "round": 5,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "764e5d40a6db"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "3812 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "f33585f088f0",
+      "ts": "2026-09-16T05:00:30.726Z"
+    },
+    {
+      "path": "内部/kb-benchmark.md",
+      "node": "benchmark",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "86d2c6efcc01",
+      "ts": "2026-09-16T05:00:30.734Z"
+    },
+    {
+      "path": "对外交付/01-选题报告.md",
+      "node": "analysis",
+      "round": 5,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "764e5d40a6db",
+        "梗卡.md": "f33585f088f0",
+        "热点素材.md": "44309e9d7448"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2568 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "336bbb02bf0c",
+      "ts": "2026-09-16T05:01:38.757Z"
+    },
+    {
+      "path": "内部/kb-market.md",
+      "node": "market",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "a54a297d031e",
+      "ts": "2026-09-16T06:53:16.972Z"
+    },
+    {
+      "path": "选题素材.md",
+      "node": "src",
+      "producer": "kernel:novel-txt",
+      "inputs": {},
+      "round": 1,
+      "sha1": "764e5d40a6db",
+      "ts": "2026-09-16T06:53:16.973Z"
+    },
+    {
+      "path": "热点素材.md",
+      "node": "zeitgeist",
+      "round": 7,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "764e5d40a6db"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "3049 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "385f30828de5",
+      "ts": "2026-09-16T06:59:12.754Z"
+    },
+    {
+      "path": "梗卡.md",
+      "node": "tropes",
+      "round": 7,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "764e5d40a6db"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2315 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "ae4d6010a8c1",
+      "ts": "2026-09-16T06:59:12.900Z"
+    },
+    {
+      "path": "内部/断言报告-combo.json",
+      "node": "combo",
+      "producer": "minitool:check_trope_combo",
+      "inputs": {
+        "梗卡.md": "ae4d6010a8c1"
+      },
+      "round": 1,
+      "sha1": "9302174c0f1d",
+      "ts": "2026-09-16T06:59:12.905Z"
+    },
+    {
+      "path": "内部/kb-benchmark.md",
+      "node": "benchmark",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "86d2c6efcc01",
+      "ts": "2026-09-16T06:59:12.908Z"
+    },
+    {
+      "path": "对外交付/01-选题报告.md",
+      "node": "analysis",
+      "round": 7,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "764e5d40a6db",
+        "梗卡.md": "ae4d6010a8c1",
+        "热点素材.md": "385f30828de5"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "3192 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "6994b2889a57",
+      "ts": "2026-09-16T07:00:22.450Z"
+    },
+    {
+      "path": "内部/kb-market.md",
+      "node": "market",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "a54a297d031e",
+      "ts": "2026-09-16T08:49:07.508Z"
+    },
+    {
+      "path": "选题素材.md",
+      "node": "src",
+      "producer": "kernel:novel-txt",
+      "inputs": {},
+      "round": 1,
+      "sha1": "8113e0094bdd",
+      "ts": "2026-09-16T08:49:07.509Z"
+    },
+    {
+      "path": "热点素材.md",
+      "node": "zeitgeist",
+      "round": 9,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "8113e0094bdd"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "3027 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "c9dd94e8becf",
+      "ts": "2026-09-16T08:51:28.702Z"
+    },
+    {
+      "path": "梗卡.md",
+      "node": "tropes",
+      "round": 9,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "8113e0094bdd"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2348 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "b18d400af7f2",
+      "ts": "2026-09-16T08:51:28.850Z"
+    },
+    {
+      "path": "内部/断言报告-combo.json",
+      "node": "combo",
+      "producer": "minitool:check_trope_combo",
+      "inputs": {
+        "梗卡.md": "b18d400af7f2"
+      },
+      "round": 1,
+      "sha1": "c3fe17c8c5b0",
+      "ts": "2026-09-16T08:51:28.855Z"
+    },
+    {
+      "path": "内部/kb-benchmark.md",
+      "node": "benchmark",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "86d2c6efcc01",
+      "ts": "2026-09-16T08:51:28.858Z"
+    },
+    {
+      "path": "对外交付/01-选题报告.md",
+      "node": "analysis",
+      "round": 9,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "8113e0094bdd",
+        "梗卡.md": "b18d400af7f2",
+        "热点素材.md": "c9dd94e8becf"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "3178 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "047770cf1158",
+      "ts": "2026-09-16T08:52:51.229Z"
+    },
+    {
+      "path": "内部/kb-market.md",
+      "node": "market",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "a54a297d031e",
+      "ts": "2026-09-16T09:01:02.959Z"
+    },
+    {
+      "path": "选题素材.md",
+      "node": "src",
+      "producer": "kernel:novel-txt",
+      "inputs": {},
+      "round": 1,
+      "sha1": "ea7299871477",
+      "ts": "2026-09-16T09:01:02.961Z"
+    },
+    {
+      "path": "热点素材.md",
+      "node": "zeitgeist",
+      "round": 11,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "ea7299871477"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2650 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "5688610b5933",
+      "ts": "2026-09-16T09:03:29.551Z"
+    },
+    {
+      "path": "梗卡.md",
+      "node": "tropes",
+      "round": 11,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "ea7299871477"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2556 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "2108594732bb",
+      "ts": "2026-09-16T09:03:29.701Z"
+    },
+    {
+      "path": "内部/断言报告-combo.json",
+      "node": "combo",
+      "producer": "minitool:check_trope_combo",
+      "inputs": {
+        "梗卡.md": "2108594732bb"
+      },
+      "round": 1,
+      "sha1": "f1934cb46cbe",
+      "ts": "2026-09-16T09:03:29.706Z"
+    },
+    {
+      "path": "内部/kb-benchmark.md",
+      "node": "benchmark",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "86d2c6efcc01",
+      "ts": "2026-09-16T09:03:29.710Z"
+    },
+    {
+      "path": "对外交付/01-选题报告.md",
+      "node": "analysis",
+      "round": 11,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "ea7299871477",
+        "梗卡.md": "2108594732bb",
+        "热点素材.md": "5688610b5933"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "3376 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "5ec4172d31c5",
+      "ts": "2026-09-16T09:03:29.857Z"
+    },
+    {
+      "path": "内部/kb-market.md",
+      "node": "market",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "a814e230d711",
+      "ts": "2026-09-16T09:40:30.508Z"
+    },
+    {
+      "path": "选题素材.md",
+      "node": "src",
+      "producer": "kernel:novel-txt",
+      "inputs": {},
+      "round": 1,
+      "sha1": "ea7299871477",
+      "ts": "2026-09-16T09:40:30.509Z"
+    },
+    {
+      "path": "热点素材.md",
+      "node": "zeitgeist",
+      "round": 13,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "ea7299871477"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2759 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "6c016e86100d",
+      "ts": "2026-09-16T09:41:48.632Z"
+    },
+    {
+      "path": "梗卡.md",
+      "node": "tropes",
+      "round": 13,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "ea7299871477"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2730 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "08d76ae2a62f",
+      "ts": "2026-09-16T09:41:48.785Z"
+    },
+    {
+      "path": "内部/断言报告-combo.json",
+      "node": "combo",
+      "producer": "minitool:check_trope_combo",
+      "inputs": {
+        "梗卡.md": "08d76ae2a62f"
+      },
+      "round": 1,
+      "sha1": "b339c7e26354",
+      "ts": "2026-09-16T09:41:48.790Z"
+    },
+    {
+      "path": "内部/kb-benchmark.md",
+      "node": "benchmark",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "86d2c6efcc01",
+      "ts": "2026-09-16T09:41:48.794Z"
+    },
+    {
+      "path": "对外交付/01-选题报告.md",
+      "node": "analysis",
+      "round": 13,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "ea7299871477",
+        "梗卡.md": "08d76ae2a62f",
+        "热点素材.md": "6c016e86100d"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2511 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "8a49ffd4c14b",
+      "ts": "2026-09-16T09:41:48.943Z"
+    },
+    {
+      "path": "世界观圣经.md",
+      "node": "bible",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "对外交付/01-选题报告.md": "8a49ffd4c14b"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2789 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "a0f56a7a6e7c",
+      "ts": "2026-09-16T09:59:05.117Z"
+    },
+    {
+      "path": "内部/多视角意见书-S2.md",
+      "node": "red-s2",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "世界观圣经.md": "a0f56a7a6e7c"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1239 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "0b9aea0d8036",
+      "ts": "2026-09-16T10:00:09.368Z"
+    },
+    {
+      "path": "单元剧大纲.md",
+      "node": "outline3",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/多视角意见书-S2.md": "0b9aea0d8036"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "5535 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "f41f454cfcee",
+      "ts": "2026-09-16T10:04:24.959Z"
+    },
+    {
+      "path": "内部/多视角意见书-S3.md",
+      "node": "red-s3",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "单元剧大纲.md": "f41f454cfcee"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1346 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "eb57d3fffb84",
+      "ts": "2026-09-16T10:05:14.219Z"
+    },
+    {
+      "path": "选题素材.md",
+      "node": "src",
+      "producer": "kernel:novel-txt",
+      "inputs": {},
+      "round": 1,
+      "sha1": "c5ad5e25609a",
+      "ts": "2026-09-16T16:03:45.267Z"
+    },
+    {
+      "path": "热点素材.md",
+      "node": "zeitgeist",
+      "round": 15,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "c5ad5e25609a"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2739 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "2a09ffb205b1",
+      "ts": "2026-09-16T16:08:27.669Z"
+    },
+    {
+      "path": "梗卡.md",
+      "node": "tropes",
+      "round": 15,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "c5ad5e25609a"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2237 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "b932786b5bd1",
+      "ts": "2026-09-16T16:08:27.849Z"
+    },
+    {
+      "path": "内部/断言报告-combo.json",
+      "node": "combo",
+      "producer": "minitool:check_trope_combo",
+      "inputs": {
+        "梗卡.md": "b932786b5bd1"
+      },
+      "round": 1,
+      "sha1": "7a52bcf9d189",
+      "ts": "2026-09-16T16:08:27.856Z"
+    },
+    {
+      "path": "内部/kb-benchmark.md",
+      "node": "benchmark",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "86d2c6efcc01",
+      "ts": "2026-09-16T16:08:27.859Z"
+    },
+    {
+      "path": "对外交付/01-选题报告.md",
+      "node": "analysis",
+      "round": 15,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "c5ad5e25609a",
+        "梗卡.md": "b932786b5bd1",
+        "热点素材.md": "2a09ffb205b1"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "3105 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "5919e0e03931",
+      "ts": "2026-09-16T16:09:39.036Z"
+    },
+    {
+      "path": "世界观圣经.md",
+      "node": "bible",
+      "round": 3,
+      "producer": "host-submit",
+      "inputs": {
+        "对外交付/01-选题报告.md": "5919e0e03931"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2780 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "fa9fd223d5fa",
+      "ts": "2026-09-16T16:24:26.204Z"
+    },
+    {
+      "path": "内部/多视角意见书-S2.md",
+      "node": "red-s2",
+      "round": 3,
+      "producer": "host-submit",
+      "inputs": {
+        "世界观圣经.md": "fa9fd223d5fa"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1180 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "768cca0f9da5",
+      "ts": "2026-09-16T16:25:07.468Z"
+    },
+    {
+      "path": "单元剧大纲.md",
+      "node": "outline3",
+      "round": 3,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/多视角意见书-S2.md": "768cca0f9da5"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "6039 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "c7833591d3bc",
+      "ts": "2026-09-16T16:29:12.685Z"
+    },
+    {
+      "path": "内部/多视角意见书-S3.md",
+      "node": "red-s3",
+      "round": 3,
+      "producer": "host-submit",
+      "inputs": {
+        "单元剧大纲.md": "c7833591d3bc"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1223 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "13210d64c69b",
+      "ts": "2026-09-16T16:29:57.610Z"
+    },
+    {
+      "path": "内部/断言报告-audit.json",
+      "node": "audit",
+      "producer": "minitool:check_aesthetic_asserts",
+      "inputs": {},
+      "round": 1,
+      "sha1": "6c3a174ec247",
+      "ts": "2026-09-16T18:51:50.542Z"
+    },
+    {
+      "path": "章节正文/第3章.md",
+      "node": "chapter",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/多视角意见书-S3.md": "13210d64c69b",
+        "世界观圣经.md": "6deb2a8c6f1b",
+        "单元剧大纲.md": "4502e3713c8d"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1764 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "b2c3ebe28bbe",
+      "ts": "2026-09-16T19:01:52.066Z"
+    },
+    {
+      "path": "内部/断言报告-audit.json",
+      "node": "audit",
+      "producer": "minitool:check_aesthetic_asserts",
+      "inputs": {
+        "章节正文/第1章.md": "8646acc2f20b"
+      },
+      "round": 1,
+      "sha1": "bc5d0eac0583",
+      "ts": "2026-09-16T19:01:52.077Z"
+    },
+    {
+      "path": "对外交付/02-前三章终稿.md",
+      "node": "polish",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "章节正文/第1章.md": "8646acc2f20b"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "5270 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "5b1d7e7423c2",
+      "ts": "2026-09-16T19:04:18.398Z"
+    },
+    {
+      "path": "内部/断言报告-audit.json",
+      "node": "audit",
+      "producer": "minitool:check_aesthetic_asserts",
+      "inputs": {
+        "章节正文/第1章.md": "71cc786e086d"
+      },
+      "round": 1,
+      "sha1": "a39f86e2d6c3",
+      "ts": "2026-09-16T20:50:05.021Z"
+    },
+    {
+      "path": "内部/断言报告-audit.json",
+      "node": "audit",
+      "producer": "minitool:check_aesthetic_asserts",
+      "inputs": {
+        "章节正文/第1章.md": "71cc786e086d",
+        "章节正文/第2章.md": "bbe903a9402b",
+        "章节正文/第3章.md": "badda63d4827"
+      },
+      "round": 1,
+      "sha1": "8bedb401cd51",
+      "ts": "2026-09-16T20:51:26.746Z"
+    },
+    {
+      "path": "对外交付/02-前三章终稿.md",
+      "node": "polish",
+      "round": 4,
+      "producer": "host-submit",
+      "inputs": {
+        "章节正文/第1章.md": "71cc786e086d"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "6235 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        },
+        {
+          "name": "AE-SKIP-NON-BEAT",
+          "status": "warn",
+          "detail": "非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "e9818f03ffa8",
+      "ts": "2026-09-16T20:51:52.281Z"
+    }
+  ]
+}

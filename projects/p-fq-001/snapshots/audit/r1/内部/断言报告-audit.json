@@ -1,0 +1,100 @@
+{
+  "mode": "aesthetic",
+  "node": "audit",
+  "minitool": "check_aesthetic_asserts",
+  "checked": [
+    "章节正文/第1章.md",
+    "章节正文/第2章.md",
+    "章节正文/第3章.md"
+  ],
+  "results": [
+    {
+      "name": "exists",
+      "status": "pass",
+      "detail": "2194 chars"
+    },
+    {
+      "name": "no-debris",
+      "status": "pass"
+    },
+    {
+      "name": "AE-PROSE-TRIPLET",
+      "status": "pass",
+      "detail": "无三连排比"
+    },
+    {
+      "name": "AE-PROSE-NOTBUT",
+      "status": "pass",
+      "detail": "「不是A(而)是B」2 处（配额 2）"
+    },
+    {
+      "name": "AE-PROSE-RHYTHM",
+      "status": "pass",
+      "detail": "突然/仿佛/似乎 0 处（≤2）"
+    },
+    {
+      "name": "AE-PROSE-SLOP",
+      "status": "pass",
+      "detail": "无 AI 高频词"
+    },
+    {
+      "name": "exists",
+      "status": "pass",
+      "detail": "1769 chars"
+    },
+    {
+      "name": "no-debris",
+      "status": "pass"
+    },
+    {
+      "name": "AE-PROSE-TRIPLET",
+      "status": "pass",
+      "detail": "无三连排比"
+    },
+    {
+      "name": "AE-PROSE-NOTBUT",
+      "status": "pass",
+      "detail": "「不是A(而)是B」1 处（配额 2）"
+    },
+    {
+      "name": "AE-PROSE-RHYTHM",
+      "status": "pass",
+      "detail": "突然/仿佛/似乎 0 处（≤2）"
+    },
+    {
+      "name": "AE-PROSE-SLOP",
+      "status": "pass",
+      "detail": "无 AI 高频词"
+    },
+    {
+      "name": "exists",
+      "status": "pass",
+      "detail": "1870 chars"
+    },
+    {
+      "name": "no-debris",
+      "status": "pass"
+    },
+    {
+      "name": "AE-PROSE-TRIPLET",
+      "status": "pass",
+      "detail": "三连排比 1 处（配额内，须为笑点/文书本体）: 编一条，念一条，改一条"
+    },
+    {
+      "name": "AE-PROSE-NOTBUT",
+      "status": "pass",
+      "detail": "「不是A(而)是B」2 处（配额 2）"
+    },
+    {
+      "name": "AE-PROSE-RHYTHM",
+      "status": "pass",
+      "detail": "突然/仿佛/似乎 0 处（≤2）"
+    },
+    {
+      "name": "AE-PROSE-SLOP",
+      "status": "pass",
+      "detail": "无 AI 高频词"
+    }
+  ],
+  "note": "check_aesthetic_asserts 机器可查维度（钩型/三件套/时长/密度/梗点/卡点/合规/编排表忠实性）；视角类维度归红方剖面"
+}

@@ -1,0 +1,106 @@
+{
+  "nodes": {
+    "src": {
+      "status": "done",
+      "round": 1
+    },
+    "market": {
+      "status": "done",
+      "round": 1
+    },
+    "tropes": {
+      "status": "done",
+      "round": 1
+    },
+    "combo": {
+      "status": "done",
+      "round": 1
+    },
+    "zeitgeist": {
+      "status": "done",
+      "round": 1
+    },
+    "benchmark": {
+      "status": "done",
+      "round": 1
+    },
+    "analysis": {
+      "status": "done",
+      "round": 1
+    },
+    "gate-r1": {
+      "status": "done",
+      "round": 1
+    },
+    "structure": {
+      "status": "done",
+      "round": 1
+    },
+    "gate-r2": {
+      "status": "done",
+      "round": 1
+    },
+    "proposal": {
+      "status": "done",
+      "round": 2
+    },
+    "baseline": {
+      "status": "done",
+      "round": 1
+    },
+    "gate-r3": {
+      "status": "done",
+      "round": 2
+    },
+    "first3": {
+      "status": "done",
+      "round": 1
+    },
+    "polish": {
+      "status": "none",
+      "round": 0
+    },
+    "gate-r4": {
+      "status": "none",
+      "round": 0
+    },
+    "delivery": {
+      "status": "done",
+      "round": 1
+    },
+    "miniguided": {
+      "status": "pending",
+      "round": 1,
+      "note": "S4 小纲待产出（scene-breakdown → 03-小纲.doc），交客户批注回流"
+    },
+    "intake": {
+      "status": "none",
+      "round": 0
+    },
+    "gate-r5": {
+      "status": "none",
+      "round": 0
+    }
+  },
+  "gate": {
+    "verdict": "awaiting",
+    "at": "2026-09-16",
+    "note": "S4 小纲待产出后进入批注回流"
+  },
+  "notes": [
+    "键魂项目：S1 调研+梗卡完成，R1 附条件过；停在选题阶段待甲方复核",
+    "2026-09-15 方向改道：电竞→乒乓（甲方），S1/梗卡/R1 全部重做；R1 附条件过（四条转 S2）",
+    "2026-09-15 S2 结构阶段过：框架案（乒乓版）含三段立意弧/高利益反派链/附体规则/梗融入（王之爆冲·真王vs姓王）；R2 pass",
+    "2026-09-15 S2 修订（R2 打回→v3 重制→复检过）：爽主立意辅 7:3、反派小丑化、爷爷发小暗线；S3 大纲过 R3；S4 待跑",
+    "2026-09-15 项目补全：S4 剧本试稿（27 拍）+ dialogue-polish + R4 四视角全过；断言 block=0；对外三件套齐套"
+  ],
+  "presets": {
+    "S1": "semi",
+    "S2": "manual",
+    "S3": "manual",
+    "S4": "semi",
+    "S5": "manual"
+  },
+  "comments": {},
+  "inputs": {}
+}

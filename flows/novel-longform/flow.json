@@ -1,0 +1,258 @@
+{
+  "format": "flow@2",
+  "id": "novel-longform",
+  "title": "长篇网文生产工作流（初稿）",
+  "desc": "需求 → 三层问答开书（World Bible）→ 卷纲与章功能序列 → 逐章流水（台账切片→章回写作→断言+台账双校验→红队抽检）→ 批次人工验收",
+  "version": "0.1.0-draft",
+  "status": "draft",
+  "upstream": "无（独立形态线；短剧线走 topic-selection → outline-production → episode-script）",
+  "inputs": {
+    "project": {
+      "type": "project",
+      "required": true,
+      "desc": "项目上下文"
+    },
+    "premise": {
+      "type": "string",
+      "required": true,
+      "desc": "一句话需求（题材方向 + 核心欲望）"
+    },
+    "platform": {
+      "type": "string",
+      "default": "番茄",
+      "desc": "目标平台（商业语境：保底节奏/更新频率/AI 检测口径）"
+    },
+    "batchSize": {
+      "type": "number",
+      "default": 10,
+      "min": 1,
+      "max": 50,
+      "desc": "单批章数（先出全段章功能序列再逐章执行）"
+    }
+  },
+  "outputs": [
+    {
+      "node": "bible",
+      "title": "World Bible（三层问答产物）"
+    },
+    {
+      "node": "volume",
+      "title": "卷纲 + 章功能序列"
+    },
+    {
+      "node": "ledger",
+      "title": "连续性台账（五类事实，滚动维护）"
+    },
+    {
+      "node": "chapter",
+      "title": "单章正文（章末钩子强制）"
+    },
+    {
+      "node": "redline",
+      "title": "红队抽检意见（每批 ≥1 章）"
+    }
+  ],
+  "graph": {
+    "format": "smwf@2",
+    "name": "novel-longform",
+    "nodes": {
+      "req": {
+        "kind": "novel-txt",
+        "title": "需求",
+        "output": "需求.md"
+      },
+      "market": {
+        "kind": "core",
+        "title": "市场与梗库装载",
+        "minitool": "kb_load",
+        "loads": [
+          "kb/market/snapshot",
+          "kb/trope/*",
+          "kb/formats/webnovel-longform"
+        ]
+      },
+      "tropes": {
+        "kind": "agent",
+        "title": "找梗定调",
+        "skill": "find-trope",
+        "kit": "search",
+        "op": "find-trope",
+        "output": "内部/稿本/梗卡.md",
+        "desc": "题材画像挂载：主梗/辅梗/饱和度/新变体落点"
+      },
+      "bible": {
+        "kind": "agent",
+        "title": "三层问答开书",
+        "skill": "novel-bible",
+        "kit": "plot",
+        "op": "novel-bible",
+        "assist": [
+          "internet-feel"
+        ],
+        "output": "世界书/世界观圣经.md",
+        "desc": "题材与核心情绪→主角与金手指四件套→前十事件链；知情范围初表 + 长期承诺清单（台账种子，机器可读）"
+      },
+      "volume": {
+        "kind": "agent",
+        "title": "卷纲与章功能序列",
+        "skill": "plot-choreographer",
+        "kit": "plot",
+        "op": "plot-choreographer",
+        "output": "内部/稿本/卷纲与章功能序列.md",
+        "desc": "AE-WNF-BATCH：先出全段章功能序列（避免逐章流水式偏航），标注付费卡点与卷末大节点"
+      },
+      "ledger": {
+        "kind": "core",
+        "title": "台账切片注入",
+        "minitool": "continuity_slice",
+        "desc": "确定性：本章人物状态/在场物品/知情范围/到期伏笔（kb/continuity/state-ledger 写前查账）",
+        "output": "内部/收据/连续性台账.json"
+      },
+      "chapter": {
+        "kind": "agent",
+        "title": "章回写作",
+        "skill": "novel-chapter",
+        "kit": "prose",
+        "op": "novel-chapter",
+        "output": "章节正文/正文-第XXX章.md",
+        "desc": "章末钩子强制（收束四型轮换）；笔墨密度随情绪波动；结构留毛刺（手法配额≤5）；交稿附待登记清单"
+      },
+      "audit": {
+        "kind": "core",
+        "title": "断言+台账双校验",
+        "minitool": "check_aesthetic_asserts",
+        "asserts": [
+          "AE-WNF-HOOK",
+          "AE-CONT-KNOW",
+          "AE-CONT-ITEM",
+          "AE-CONT-FORESHADOW"
+        ],
+        "onFail": "退回 chapter 定点修",
+        "desc": "确定性：钩子/越权/台账矛盾/伏笔逾期（文本层切片）。语义剖面（网络感/24 类/结构机味五指纹）归 redline 红队抽检（记账迁移 2026-09-17）"
+      },
+      "ledgerUp": {
+        "kind": "core",
+        "title": "台账结算",
+        "minitool": "continuity_commit",
+        "desc": "确定性：正文+台账增量原子提交"
+      },
+      "redline": {
+        "kind": "agent",
+        "title": "红队抽检",
+        "skill": "plot-redline",
+        "kit": "plot",
+        "op": "plot-redline",
+        "spotCheck": true,
+        "policy": "每批 ≥1 章",
+        "output": "内部/意见/红方意见书-redline.md",
+        "desc": "章级抽检：可预测死点 + 安全化磨平 + 结构机味｜语义剖面记账（自 audit 迁入 2026-09-17）：AE-NAT-HIT/AE-AI-STRUCT/AE-AI-QUOTA"
+      },
+      "fin": {
+        "kind": "srd",
+        "title": "批次人工验收",
+        "desc": "按批次裁决；过 AI 检测抽测（朱雀类，参考信号不作目标函数）"
+      }
+    },
+    "edges": [
+      {
+        "id": "e-market",
+        "from": "req",
+        "to": "market",
+        "role": "flow"
+      },
+      {
+        "id": "e-trope",
+        "from": "market",
+        "to": "tropes",
+        "role": "flow"
+      },
+      {
+        "id": "e-bible",
+        "from": "tropes",
+        "to": "bible",
+        "role": "flow"
+      },
+      {
+        "id": "e-volume",
+        "from": "bible",
+        "to": "volume",
+        "role": "flow"
+      },
+      {
+        "id": "e-ledg",
+        "from": "volume",
+        "to": "ledger",
+        "role": "flow"
+      },
+      {
+        "id": "e-chap",
+        "from": "ledger",
+        "to": "chapter",
+        "role": "flow"
+      },
+      {
+        "id": "e-audit",
+        "from": "chapter",
+        "to": "audit",
+        "role": "flow"
+      },
+      {
+        "id": "e-commit",
+        "from": "audit",
+        "to": "ledgerUp",
+        "role": "flow"
+      },
+      {
+        "id": "e-red",
+        "from": "ledgerUp",
+        "to": "redline",
+        "via": "sm.redline",
+        "role": "optional"
+      },
+      {
+        "id": "e-fin",
+        "from": "redline",
+        "to": "fin",
+        "via": "sm.review",
+        "role": "flow"
+      },
+      {
+        "id": "e-loop",
+        "from": "fin",
+        "to": "ledger",
+        "role": "loop",
+        "when": {
+          "loop": "pending"
+        }
+      }
+    ],
+    "outputs": [
+      "bible",
+      "volume",
+      "chapter",
+      "ledger"
+    ]
+  },
+  "quality": {
+    "assertions": "format（AE-WNF-*）+ continuity（AE-CONT-*）+ ai-trace（AE-AI-*）三维度是本 flow 生命线；24 类逐章抽扫",
+    "twoWars": "加规则治崩（台账零容忍）× 减规则治假（手法留白）——两仗同时打",
+    "allow_agent_verdict": false
+  },
+  "harness": {
+    "mode": "task-package",
+    "awaiting_input_at": [
+      "tropes",
+      "bible",
+      "volume",
+      "chapter",
+      "redline"
+    ],
+    "core_in_process": [
+      "market",
+      "ledger",
+      "audit",
+      "ledgerUp"
+    ],
+    "note": "初稿：e-loop 回边表达逐章循环（runtime 若不支持回边则展开为批次子图，每批一个子流程）；断点续跑按章落盘；依赖 minitool：continuity_slice / continuity_commit"
+  }
+}

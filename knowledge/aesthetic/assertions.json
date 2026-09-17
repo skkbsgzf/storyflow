@@ -1,0 +1,625 @@
+{
+  "id": "kb/aesthetic/assertions",
+  "type": "aesthetic-assertions",
+  "title": "审美硬断言表（机器可查）",
+  "version": "1.0.0",
+  "status": "active",
+  "updated": "2026-09-17",
+  "note": "正文与断言表不一致时，以断言表为准并回改正文（knowledge/README.md 治理纪律 4）。level: block | major | minor（语义见 kb/aesthetic/constitution §三）。routes 为空 = 全路线适用。",
+  "asserts": [
+    {
+      "id": "AE-HOOK-EVENT",
+      "dim": "hook",
+      "level": "block",
+      "rule": "前 3 秒 / 首 100 字出现四型钩子（悬念/反常/危险/承诺）之一的具体事件；氛围铺垫、世界观说明、人物自介判 block",
+      "target": "每集首拍"
+    },
+    {
+      "id": "AE-HOOK-BREVITY",
+      "dim": "hook",
+      "level": "minor",
+      "rule": "钩子 15 字内可复述",
+      "target": "每集首拍"
+    },
+    {
+      "id": "AE-HOOK-SOURCE",
+      "dim": "hook",
+      "level": "major",
+      "rule": "钩子与核心冲突同源；支线悬念判 major",
+      "target": "每集首拍"
+    },
+    {
+      "id": "AE-HOOK-PRIOR",
+      "dim": "hook",
+      "level": "block",
+      "rule": "钩子不得依赖观众不存在的先验知识（二刷视角）",
+      "target": "每集首拍"
+    },
+    {
+      "id": "AE-DENSITY-HOT",
+      "dim": "pacing",
+      "level": "major",
+      "rule": "爽版每集爽点 ≥3，每 3 拍一个小刺激，受辱→回击 ≤2 拍（机器校验经 AE-DENSITY-WORDS 统一区间执行）",
+      "routes": [
+        "hot"
+      ],
+      "checks_via": "AE-DENSITY-WORDS"
+    },
+    {
+      "id": "AE-DENSITY-CALM",
+      "dim": "pacing",
+      "level": "major",
+      "rule": "合理版每集爆点 ≤1 且为前 ≥20 拍铺垫的兑现；蓄力:引爆 ≈ 9:1（机器校验经 AE-DENSITY-WORDS 统一区间执行）",
+      "routes": [
+        "calm"
+      ],
+      "checks_via": "AE-DENSITY-WORDS"
+    },
+    {
+      "id": "AE-DESERT",
+      "dim": "pacing",
+      "level": "major",
+      "rule": "不允许连续 5 集无爆点的沙漠段",
+      "target": "全剧分布图"
+    },
+    {
+      "id": "AE-CUSHION",
+      "dim": "pacing",
+      "level": "major",
+      "rule": "两个大卡点之间 ≥2 个中型爽点垫场",
+      "target": "全剧分布图"
+    },
+    {
+      "id": "AE-BEAT-FORMAT",
+      "dim": "pacing",
+      "level": "major",
+      "rule": "分拍硬格式：场次编号规范、△动作 ≤3 行可拍摄、单集 600-900 字、拍号连续、首出人物完整标注",
+      "target": "分集剧本"
+    },
+    {
+      "id": "AE-INFO-LOAD",
+      "dim": "pacing",
+      "level": "major",
+      "rule": "一个场/拍只有一个主要认知更新；≥3 个互不相关新名词/规则/时间层需拆分",
+      "target": "每场"
+    },
+    {
+      "id": "AE-STRUCT-CAUSE",
+      "dim": "pacing",
+      "level": "block",
+      "rule": "因果咬合：上段抛出的动作/悬念/承诺，下段必须有回应",
+      "target": "相邻段/拍"
+    },
+    {
+      "id": "AE-STRUCT-REDUN",
+      "dim": "pacing",
+      "level": "block",
+      "rule": "不推动信息/关系/情绪任何一项的段落删除或合并",
+      "target": "全部段落"
+    },
+    {
+      "id": "AE-CURVE-TYPE",
+      "dim": "curve",
+      "level": "major",
+      "rule": "全稿情绪曲线可判明唯一主型（六型之一）",
+      "target": "全稿"
+    },
+    {
+      "id": "AE-CURVE-STALL",
+      "dim": "curve",
+      "level": "major",
+      "rule": "层层递进曲线中任何一级不高于上一级判失衡",
+      "target": "大纲"
+    },
+    {
+      "id": "AE-CURVE-CROSS",
+      "dim": "curve",
+      "level": "major",
+      "rule": "双线交叉曲线交叉点间距 >5 拍判失衡",
+      "target": "大纲"
+    },
+    {
+      "id": "AE-CURVE-FLOOR",
+      "dim": "curve",
+      "level": "major",
+      "rule": "螺旋下降曲线必须有至少一个微小反击（丧到底 = 弃剧点）",
+      "target": "大纲"
+    },
+    {
+      "id": "AE-CHAR-DIM",
+      "dim": "character",
+      "level": "major",
+      "rule": "主角为最多维人物（维=矛盾）；怪癖清单不算维",
+      "target": "人设"
+    },
+    {
+      "id": "AE-CHAR-COVER",
+      "dim": "character",
+      "level": "major",
+      "rule": "盖名测试：遮住人物名仍可根据策略/知识/语言选择辨认说话者",
+      "target": "对白全文"
+    },
+    {
+      "id": "AE-CHAR-VILLAIN",
+      "dim": "character",
+      "level": "major",
+      "rule": "对抗力量随主角行动学习适应；主反派在关键卡不得降智（hot 档非关键卡限额豁免）",
+      "target": "全剧"
+    },
+    {
+      "id": "AE-CHAR-MOTIVE",
+      "dim": "character",
+      "level": "major",
+      "rule": "主角人设能回答'为什么一定是她'（不可替代性证明）",
+      "target": "人设"
+    },
+    {
+      "id": "AE-CONFLICT-IRREV",
+      "dim": "conflict",
+      "level": "major",
+      "rule": "不可回头点必须包含主角的选择（不只是外界偶然封路）",
+      "target": "结构图"
+    },
+    {
+      "id": "AE-CONFLICT-CHOICE",
+      "dim": "conflict",
+      "level": "major",
+      "rule": "危机 = 互不兼容且均有代价的方案选择",
+      "target": "结构图"
+    },
+    {
+      "id": "AE-CONFLICT-ADAPT",
+      "dim": "conflict",
+      "level": "major",
+      "rule": "递进复杂化：代价/范围/不可逆性逐级上升且一次只动一到两个代价梯维度",
+      "target": "结构图"
+    },
+    {
+      "id": "AE-CONFLICT-JUMP",
+      "dim": "conflict",
+      "level": "major",
+      "rule": "禁止 jumping conflict（无过渡的冲突暴跳）；static conflict 超 2 拍判 minor",
+      "target": "分拍剧本"
+    },
+    {
+      "id": "AE-CONFLICT-MECH",
+      "dim": "conflict",
+      "level": "block",
+      "rule": "转折必须来自已建立的机制/人物/证据；凭空出现新机制判 block",
+      "target": "每场"
+    },
+    {
+      "id": "AE-SCENE-DELTA",
+      "dim": "scene",
+      "level": "block",
+      "rule": "入场价值与出场价值不得只是换一种说法；价值无变化的场合并/删除/重设计",
+      "target": "每场"
+    },
+    {
+      "id": "AE-SCENE-CHEAP",
+      "dim": "scene",
+      "level": "major",
+      "rule": "存在人物显然会选的更便宜方案时，必须建立不能使用它的原因",
+      "target": "每场"
+    },
+    {
+      "id": "AE-SCENE-GOAL",
+      "dim": "scene",
+      "level": "major",
+      "rule": "视点人物拥有本场可观察的场景目标；主冲突主动反制",
+      "target": "每场"
+    },
+    {
+      "id": "AE-SCENE-PRESSURE",
+      "dim": "scene",
+      "level": "major",
+      "rule": "下一场因本场后果而必要（非'然后又发生'）",
+      "target": "相邻场"
+    },
+    {
+      "id": "AE-REV-SETUP",
+      "dim": "reversal",
+      "level": "block",
+      "rule": "每次反转 ≥2 处前置暗埋（回看成立）",
+      "target": "每处反转"
+    },
+    {
+      "id": "AE-REV-TYPE",
+      "dim": "reversal",
+      "level": "minor",
+      "rule": "每处反转可判明四型之一（身份/立场/因果/预期）；类型模糊判 minor",
+      "target": "每处反转"
+    },
+    {
+      "id": "AE-REV-ADJACENT",
+      "dim": "reversal",
+      "level": "minor",
+      "rule": "相邻反转同类型判 minor；三连同型判 major",
+      "target": "反转序列"
+    },
+    {
+      "id": "AE-REV-MIDPOINT",
+      "dim": "reversal",
+      "level": "major",
+      "rule": "中点反转必须改写故事模型，只升烈度不改模型判 major",
+      "target": "全剧结构"
+    },
+    {
+      "id": "AE-DLG-ACTION",
+      "dim": "dialogue",
+      "level": "major",
+      "rule": "每句台词可标注动名词短语行动；标不出 → 删或重写（hot 档潜台词豁免条款见 kb/aesthetic/dialogue §五）",
+      "target": "对白全文"
+    },
+    {
+      "id": "AE-DLG-EXPO",
+      "dim": "dialogue",
+      "level": "major",
+      "rule": "禁止解释独白（角色停止行动向观众说明双方已知设定）",
+      "target": "对白全文"
+    },
+    {
+      "id": "AE-DLG-PINGPONG",
+      "dim": "dialogue",
+      "level": "major",
+      "rule": "禁止二人乒乓（只交换信息，无第三对象/秘密/制度/风险介入）",
+      "target": "对白场景"
+    },
+    {
+      "id": "AE-NAT-HIT",
+      "dim": "naturalness",
+      "level": "minor",
+      "rule": "24 类清单命中且损害动作/信息/关系/节奏/人物声音之一判 minor；五者皆不损保留",
+      "target": "全文"
+    },
+    {
+      "id": "AE-VIS-POSTER",
+      "dim": "visual",
+      "level": "major",
+      "rule": "每个关键爆点可画成海报级分镜（谁/在哪/对谁/做了什么/记忆点）；画不出 → 改写或换爆点",
+      "target": "大纲+前三集"
+    },
+    {
+      "id": "AE-VIS-EMPTY",
+      "dim": "visual",
+      "level": "block",
+      "rule": "禁空镜禁不可拍摄内容（心理描写/文学抒情/无画面信息）",
+      "target": "分拍剧本"
+    },
+    {
+      "id": "AE-VIS-MOTIF",
+      "dim": "visual",
+      "level": "major",
+      "rule": "calm 档 ≥2 个贯穿物件母题，爆点绑定物件；hot 档建议",
+      "routes": [
+        "calm"
+      ]
+    },
+    {
+      "id": "AE-COMPLIANCE",
+      "dim": "platform",
+      "level": "block",
+      "rule": "合规红线（露骨/真实人名品牌/医疗金融绝对化/未成年敏感/题材禁区）永不降档，宁可错报不可漏报",
+      "target": "全文"
+    },
+    {
+      "id": "AE-CARD-END",
+      "dim": "platform",
+      "level": "major",
+      "rule": "每集末卡点可回答'观众为什么必须看下一集'；卡点须在张力峰值不在情绪低谷",
+      "target": "每集末拍"
+    },
+    {
+      "id": "AE-CARD-PAID",
+      "dim": "platform",
+      "level": "major",
+      "rule": "付费卡点覆盖第 8-12 集首卡区间，强度到顶点",
+      "target": "分集结构"
+    },
+    {
+      "id": "AE-END-MECH",
+      "dim": "ending",
+      "level": "block",
+      "rule": "禁止高潮新规则/突然认罪/偶然救援/临时万能人物解决主冲突",
+      "target": "结局"
+    },
+    {
+      "id": "AE-END-PAYOFF",
+      "dim": "ending",
+      "level": "major",
+      "rule": "重要铺垫可感知回收（calm 档伏笔回收率 >60%）",
+      "target": "结局"
+    },
+    {
+      "id": "AE-END-AFTER",
+      "dim": "ending",
+      "level": "major",
+      "rule": "余波展示新秩序 + 损失 + 仍未消失的代价；代价归零判 major",
+      "target": "结局"
+    },
+    {
+      "id": "AE-OVER-CONTRACT",
+      "dim": "oversight",
+      "level": "block",
+      "rule": "创作约束移交单硬条款违反一票否决（合同优先于审美）；对账表三态不许'无法判定'蒙混",
+      "target": "方案全文"
+    },
+    {
+      "id": "AE-OVER-REWRITE",
+      "dim": "oversight",
+      "level": "block",
+      "rule": "监管判定-重写闭环：不达标段落重写到位，禁止带病放行；监管结果体现在正文而非整改意见",
+      "target": "方案全文"
+    },
+    {
+      "id": "AE-ROUTE-EXCLUSIVE",
+      "dim": "oversight",
+      "level": "major",
+      "rule": "hot/calm 两档互斥；dual 交付 = 并行双版本 + 无监管基线件，禁止同稿混档",
+      "target": "flow 输入与输出"
+    },
+    {
+      "id": "AE-RED-PREDICT",
+      "dim": "redline",
+      "level": "major",
+      "rule": "冷读者测试猜中率 ≥60% 的关键节点判可预测死点，每个死点必须附不合理亮点提案",
+      "target": "大纲/分集结构"
+    },
+    {
+      "id": "AE-RED-SAFE",
+      "dim": "redline",
+      "level": "major",
+      "rule": "连续 ≥3 个关键节点均为唯一安全解（零风险选择）判 challenge",
+      "target": "关键节点序列"
+    },
+    {
+      "id": "AE-RED-INVENTORY",
+      "dim": "redline",
+      "level": "major",
+      "rule": "全稿不合理亮点存量 = 0 判 challenge（平庸实锤）；每条提案须过四道合格过滤",
+      "target": "全稿"
+    },
+    {
+      "id": "AE-AI-STRUCT",
+      "dim": "ai-trace",
+      "level": "major",
+      "rule": "结构级机味指纹（章节功能等差节奏/过渡模式单一/情绪曲线平滑无毛刺/信息密度均匀/对话回合对称）逐项自查",
+      "target": "全稿"
+    },
+    {
+      "id": "AE-AI-QUOTA",
+      "dim": "ai-trace",
+      "level": "major",
+      "rule": "单篇叙事手法刻意使用 ≤5 种，其余留白（减规则治假）",
+      "target": "全稿"
+    },
+    {
+      "id": "AE-AI-BLIND",
+      "dim": "ai-trace",
+      "level": "minor",
+      "rule": "关键段落允许盲写再缝合以增加结构多样性；检测器分数只作参考信号不作目标函数",
+      "target": "修订流程"
+    },
+    {
+      "id": "AE-DEC-TRACE",
+      "dim": "deconstruct",
+      "level": "block",
+      "rule": "拆解判断必须可追溯至章节标题/范围；不得补写人物经历、虚构未读情节",
+      "target": "拆解交付物"
+    },
+    {
+      "id": "AE-DEC-SAMPLE",
+      "dim": "deconstruct",
+      "level": "block",
+      "rule": "三态区分（原文事实/合理推断/无法确认）显式标注；样本不足不归纳共性",
+      "target": "拆解交付物"
+    },
+    {
+      "id": "AE-DEC-SLOT",
+      "dim": "deconstruct",
+      "level": "major",
+      "rule": "拆解产物必须落入六槽位之一且带可迁移公式+替换变量+使用条件；混合多槽判 major",
+      "target": "拆解交付物"
+    },
+    {
+      "id": "AE-DEC-STYLE",
+      "dim": "deconstruct",
+      "level": "major",
+      "rule": "文风拆解产物须能直接指导写手生成新正文（含规则/模板/速查表/自检清单），纯评论判 major",
+      "target": "文风拆解件"
+    },
+    {
+      "id": "AE-CONT-LEDGER",
+      "dim": "continuity",
+      "level": "major",
+      "rule": "每章动笔前注入本章相关台账切片（人物状态/在场物品/知情范围/到期伏笔）",
+      "target": "逐章任务包"
+    },
+    {
+      "id": "AE-CONT-KNOW",
+      "dim": "continuity",
+      "level": "block",
+      "rule": "知识越权：人物说出/使用台账未登记的信息判 block",
+      "target": "新章正文"
+    },
+    {
+      "id": "AE-CONT-ITEM",
+      "dim": "continuity",
+      "level": "block",
+      "rule": "新章与台账已接受事实直接矛盾判 block；改历史须走修订影响评估",
+      "target": "新章正文"
+    },
+    {
+      "id": "AE-CONT-FORESHADOW",
+      "dim": "continuity",
+      "level": "major",
+      "rule": "promises 台账到期伏笔未回收判 major；卡点级关键伏笔逾期判 block",
+      "target": "伏笔台账"
+    },
+    {
+      "id": "AE-WNF-HOOK",
+      "dim": "format",
+      "level": "block",
+      "rule": "长篇每章结尾必须留下悬念/转折/情绪钩；连续同型钩判 major（收束四型轮换）",
+      "target": "每章末尾"
+    },
+    {
+      "id": "AE-WNF-BATCH",
+      "dim": "format",
+      "level": "major",
+      "rule": "批量生成（10-50 章）先出全段章功能序列再逐章执行；逐章流水式生成判 major",
+      "target": "批量章节"
+    },
+    {
+      "id": "AE-WNF-PLATFORM",
+      "dim": "format",
+      "level": "minor",
+      "rule": "开书前挂载题材画像并声明目标平台；过 AI 检测以结构自然度为准（联动 ai-trace 维度）",
+      "target": "开书前置"
+    },
+    {
+      "id": "AE-PR-VIEW",
+      "dim": "perspective",
+      "level": "block",
+      "rule": "红方意见书必须含四视角（目标读者/一般读者/资深编剧/甲方）独立意见，三段式人话表述；机器可查项归断言层，红方不念指标",
+      "target": "每份意见书"
+    },
+    {
+      "id": "AE-PR-CAUSE",
+      "dim": "perspective",
+      "level": "block",
+      "rule": "验收门打回必须指认根因阶段（调研/结构/方案/成稿），不许含混打回",
+      "target": "验收裁决"
+    },
+    {
+      "id": "AE-PR-ITER",
+      "dim": "perspective",
+      "level": "major",
+      "rule": "根因阶段之后的产物顺延失效重审（级联推演）；任一视角'弃'即整段打回",
+      "target": "流程推进"
+    },
+    {
+      "id": "AE-SET-ORIG",
+      "dim": "setting",
+      "level": "block",
+      "rule": "禁止原创科幻/架空世界观作为设定底座；设定来源须为实事新闻底子或市面验证体系（三级制）",
+      "target": "S1/S2 选题与框架"
+    },
+    {
+      "id": "AE-SET-3MIN",
+      "dim": "setting",
+      "level": "block",
+      "rule": "三分钟测试：观众 3 分钟内不依赖设定解释即可说出谁/要什么/为什么替他急；自造专名前三章 ≤2 个",
+      "target": "开局与前三章"
+    },
+    {
+      "id": "AE-MEME-DENSITY",
+      "dim": "meme",
+      "level": "major",
+      "rule": "S1 梗卡须附网络热梗素材表 ≥10 条（梗名/传播度评级/可挂接场景）；不足判 major",
+      "target": "S1 梗卡"
+    },
+    {
+      "id": "AE-MEME-SPREAD",
+      "dim": "meme",
+      "level": "major",
+      "rule": "每个主梗/新变体可拆 ≥3 个跨场景可复用梗用法；前三章每集 ≥1 个可切片传播的梗点",
+      "target": "S1 梗卡与前三章"
+    },
+    {
+      "id": "AE-OUTPUT-PURITY",
+      "dim": "format",
+      "level": "block",
+      "rule": "产物正文不含执行元数据：节点名/skill 名/rN 轮次/route 参数/kb 引用/输入清单/隔离声明/合规自查/数据快照口径等过程性标记（含首部元数据引用块）。过程信息只进宿主思维链与 journal；需要交代的数据转译成叙事。校验工具：tools/check-purity.py",
+      "target": "全部产物文件（节点产物 + 过程文件）"
+    },
+    {
+      "id": "AE-DENSITY-WORDS",
+      "dim": "pacing",
+      "level": "major",
+      "rule": "每集台词字数（去舞台提示）150-350；爽/合理两路线统一区间，路线差异由分镜节奏承担",
+      "target": "分拍剧本",
+      "checks_via": "self"
+    },
+    {
+      "id": "AE-MEME-POINT",
+      "dim": "meme",
+      "level": "major",
+      "rule": "每集 ≥1 梗点在场（项目梗表驱动；词汇表.json memes 未配置则本条不适用）",
+      "target": "分拍剧本",
+      "checks_via": "self"
+    },
+    {
+      "id": "AE-CHOREO-GAP",
+      "dim": "choreo",
+      "level": "block",
+      "rule": "成片集号连续，断档判 block（编排表忠实性）",
+      "target": "分拍剧本",
+      "checks_via": "self"
+    },
+    {
+      "id": "AE-CHOREO-BOUNDS",
+      "dim": "choreo",
+      "level": "block",
+      "rule": "集号必须落在大纲编排表（对外交付/02-大纲.md 的 |n-m| 行）范围内；越界判 block；无编排表则本条不适用",
+      "target": "分拍剧本",
+      "checks_via": "self"
+    },
+    {
+      "id": "AE-PROSE-TRIPLET",
+      "dim": "prose",
+      "level": "major",
+      "rule": "三连排比每章 ≤1（模板句三连/同句子句三连；配额内须为笑点/文书本体，豁免判人工）",
+      "target": "小说正文",
+      "checks_via": "self"
+    },
+    {
+      "id": "AE-PROSE-NOTBUT",
+      "dim": "prose",
+      "level": "major",
+      "rule": "「不是A(而)是B」假转折每章 ≤2",
+      "target": "小说正文",
+      "checks_via": "self"
+    },
+    {
+      "id": "AE-PROSE-RHYTHM",
+      "dim": "prose",
+      "level": "minor",
+      "rule": "突然/仿佛/似乎 每章 ≤2",
+      "target": "小说正文",
+      "checks_via": "self"
+    },
+    {
+      "id": "AE-PROSE-SLOP",
+      "dim": "prose",
+      "level": "major",
+      "rule": "AI 高频词（值得注意的是/综上/其实/赋能…）零容忍",
+      "target": "小说正文",
+      "checks_via": "self"
+    },
+    {
+      "id": "AE-SCRIPT-FRONT",
+      "dim": "format",
+      "level": "block",
+      "rule": "成品剧本前置件三件齐备（背景/主角/剧情概括）",
+      "target": "成品剧本",
+      "checks_via": "self"
+    },
+    {
+      "id": "AE-SCRIPT-PURITY",
+      "dim": "format",
+      "level": "block",
+      "rule": "成品剧本无过程标注泄漏（拍号/钩型/尾钩/卡点体检/质检附注等）",
+      "target": "成品剧本",
+      "checks_via": "self"
+    },
+    {
+      "id": "AE-SCRIPT-BRACKET",
+      "dim": "format",
+      "level": "block",
+      "rule": "场景与动作提示须用全角【】包裹（数量 ≥ max(3, 场景数)）",
+      "target": "成品剧本",
+      "checks_via": "self"
+    }
+  ]
+}

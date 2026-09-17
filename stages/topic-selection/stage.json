@@ -1,0 +1,36 @@
+{
+  "format": "stage@1",
+  "id": "topic-selection",
+  "name": "选题",
+  "version": "1.0.0",
+  "applicability": ["drama", "novel"],
+  "desc": "从素材与市场数据出发：市场装载、找梗、热点、竞品多路并行 → 聚合调研 → 验收门（用户定种子与主次）。剧本与小说通用。",
+  "entry": "src",
+  "gate": "gate-r1",
+  "inputs": [{ "key": "素材", "accept": ["novel-txt", "文本素材"] }],
+  "outputs": [{ "key": "选题调研报告", "node": "analysis" }],
+  "nodes": {
+    "src": { "kind": "novel-txt", "title": "选题素材", "desc": "甲方点子/灵感/命题" },
+    "market": { "kind": "core", "title": "市场快照装载", "minitool": "kb_load", "loads": ["kb/market/snapshot", "kb/market/structure", "kb/market/constraints", "kb/market/meme-rules"] },
+    "tropes": { "kind": "agent", "title": "找梗选梗", "skill": "find-trope", "output": "梗卡" },
+    "combo": { "kind": "core", "title": "梗组合相性校验", "minitool": "check_trope_combo" },
+    "zeitgeist": { "kind": "agent", "title": "热点/素材解剖", "skill": "topic-zeitgeist", "webSearch": true },
+    "benchmark": { "kind": "core", "title": "竞品对标装载", "minitool": "kb_load", "loads": ["kb/benchmark/*"] },
+    "analysis": { "kind": "agent", "title": "选题调研报告", "skill": "topic-analysis-report", "file": "选题调研报告.md" },
+    "gate-r1": { "kind": "gate", "title": "选题验收（用户定种子与主次）" }
+  },
+  "edges": [
+    { "id": "s1-market-tropes", "from": "market", "to": "tropes", "transform": "skill.find-trope" },
+    { "id": "s1-src-tropes", "from": "src", "to": "tropes", "transform": "skill.find-trope" },
+    { "id": "s1-src-zeitgeist", "from": "src", "to": "zeitgeist", "transform": "skill.topic-zeitgeist" },
+    { "id": "s1-tropes-combo", "from": "tropes", "to": "combo", "transform": "core.check_trope_combo" },
+    { "id": "s1-tropes-benchmark", "from": "tropes", "to": "benchmark", "transform": "core.kb_load" },
+    { "id": "s1-src-analysis", "from": "src", "to": "analysis", "transform": "sm.topic-analysis" },
+    { "id": "s1-market-analysis", "from": "market", "to": "analysis", "transform": "sm.topic-analysis" },
+    { "id": "s1-tropes-analysis", "from": "tropes", "to": "analysis", "transform": "sm.topic-analysis" },
+    { "id": "s1-combo-analysis", "from": "combo", "to": "analysis", "transform": "sm.topic-analysis" },
+    { "id": "s1-zeitgeist-analysis", "from": "zeitgeist", "to": "analysis", "transform": "sm.topic-analysis" },
+    { "id": "s1-benchmark-analysis", "from": "benchmark", "to": "analysis", "transform": "sm.topic-analysis" },
+    { "id": "s1-analysis-gate", "from": "analysis", "to": "gate-r1", "transform": "sm.review" }
+  ]
+}

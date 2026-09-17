@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "miniflow/artifact-header",
+  "title": "过程交付件头部（artifact@1）",
+  "description": "projects/**/*.md 的 YAML 头部解析结果。头部是版本与审核背景的唯一真相——正文不得复述轮次、上游清单与审核背景。见 docs/规范-项目文件与流程配置-R4.md 第二节。",
+  "type": "object",
+  "required": ["artifact", "id", "class", "node", "round", "state", "at", "by", "upstream"],
+  "additionalProperties": false,
+  "properties": {
+    "artifact": { "const": 1, "description": "格式版本，当前恒为 1" },
+    "id": {
+      "type": "string",
+      "pattern": "^(kit|[a-z]+)\\.[a-z0-9-]+(\\.[a-z0-9-]+)*$",
+      "description": "逻辑产物 id：<kit>.<op> | core.<minitool> | world.<类>.<名> | input.<名>"
+    },
+    "class": {
+      "enum": ["opinion", "receipt", "basis", "draft", "deliverable", "world", "input"],
+      "description": "产物类别。决定目录准入：opinion→内部/意见，receipt→内部/收据，basis→内部/依据，draft→内部/稿本，deliverable→对外交付，world→世界书，input→根级"
+    },
+    "node": { "type": "string", "description": "产它的 flow 节点 id（须存在于所属 flow）" },
+    "round": { "type": "integer", "minimum": 1, "description": "轮次，须等于 state.json nodes[<node>].round" },
+    "version": { "type": "string", "pattern": "^v\\d+$", "description": "人工可读版本，恒等于 round 的呈现" },
+    "state": { "enum": ["draft", "reviewed", "final", "superseded"] },
+    "at": { "type": "string", "description": "产出时间 YYYY-MM-DD HH:MM" },
+    "by": {
+      "type": "string",
+      "pattern": "^(kit/[a-z]+\\.[a-z0-9-]+|core/[a-z0-9_]+|user)$",
+      "description": "生产者：kit/<kit>.<op> | core/<minitool> | user"
+    },
+    "upstream": {
+      "type": "array",
+      "description": "上游依赖，元素形如 路径@sha1前12；无依赖为 []",
+      "items": { "type": "string", "pattern": "^[^@]+@[0-9a-f]{6,12}$" }
+    },
+    "review": {
+      "description": "审核背景：简化但清晰。未过门写 null",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["gate", "verdict"],
+          "additionalProperties": false,
+          "properties": {
+            "gate": { "type": "string" },
+            "verdict": { "enum": ["none", "awaiting", "pass", "pass-with-conditions", "send-back", "reject"] },
+            "at": { "type": "string" },
+            "by": { "enum": ["user", "plot-redline", "novel-judge", "agent"] },
+            "reason": { "type": "string", "maxLength": 80, "description": "≤40 字一句话结论" }
+          }
+        }
+      ]
+    },
+    "reviews": { "type": "string", "description": "被评对象与轮次，如 终稿@v10（评审表类专用）" },
+    "supersedes": { "type": "string", "description": "被本件替代的前一轮产物相对路径" }
+  }
+}

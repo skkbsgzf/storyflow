@@ -1,0 +1,108 @@
+{
+  "nodes": {
+    "src": {
+      "status": "done",
+      "round": 1
+    },
+    "market": {
+      "status": "done",
+      "round": 1
+    },
+    "tropes": {
+      "status": "done",
+      "round": 1
+    },
+    "combo": {
+      "status": "done",
+      "round": 1
+    },
+    "zeitgeist": {
+      "status": "done",
+      "round": 1
+    },
+    "benchmark": {
+      "status": "done",
+      "round": 1
+    },
+    "analysis": {
+      "status": "done",
+      "round": 1
+    },
+    "gate-r1": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass-with-conditions"
+    },
+    "structure": {
+      "status": "done",
+      "round": 2
+    },
+    "gate-r2": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass"
+    },
+    "proposal": {
+      "status": "done",
+      "round": 2
+    },
+    "baseline": {
+      "status": "done",
+      "round": 2
+    },
+    "gate-r3": {
+      "status": "done",
+      "round": 2,
+      "verdict": "pass-with-conditions"
+    },
+    "first3": {
+      "status": "done",
+      "round": 2
+    },
+    "gate-r4": {
+      "status": "done",
+      "round": 2,
+      "verdict": "pass"
+    },
+    "delivery": {
+      "status": "done",
+      "round": 2
+    },
+    "polish": {
+      "status": "done",
+      "round": 1
+    },
+    "miniguided": {
+      "status": "none",
+      "round": 0,
+      "note": "v4.4 新阶段，该项目按 v3.1 口径归档，不追溯"
+    },
+    "intake": {
+      "status": "none",
+      "round": 0
+    },
+    "gate-r5": {
+      "status": "done",
+      "round": 1
+    }
+  },
+  "gate": {
+    "verdict": "approved",
+    "at": "2026-09-15（水利版全链路）"
+  },
+  "notes": [
+    "v4 迁移：v3 单验收门拆为 R1-R4 阶段门；structure 节点为新增，待跑",
+    "v4 全流程跑通：R1 附条件过 → S2 框架案新增（提案A/B采纳）→ R3 第一轮打回（根因=方案未融合注入）→ 修订增补 → 复检过 → R4 过（ep2 伏笔回报验证）",
+    "2026-09-15 C10 约束触发级联：设定底座 AI→水利（甲方点子），S2 重做过，S3/S4 顺延失效待重做",
+    "2026-09-15 水利版全链路跑通：S1 调研重做 → R1 过(附条件) → S2 框架案 v2 过 → S3 方案重写 → R3 过(附条件: 苏晓声口已核销) → S4 剧本重写(27拍) → R4 过(附移交事项2条)"
+  ],
+  "presets": {
+    "S1": "semi",
+    "S2": "manual",
+    "S3": "manual",
+    "S4": "manual",
+    "S5": "manual"
+  },
+  "comments": {},
+  "inputs": {}
+}

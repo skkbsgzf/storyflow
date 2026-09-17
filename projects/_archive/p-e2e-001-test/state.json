@@ -1,0 +1,140 @@
+{
+  "runId": "run-mu36w7xy-qufuvb",
+  "projectId": "p-e2e-001",
+  "flowId": "topic-selection",
+  "flowVersion": "5.0.1",
+  "flowHash": "65d0a496",
+  "status": "awaiting_input",
+  "plan": {
+    "order": [
+      "src",
+      "market",
+      "tropes",
+      "combo",
+      "zeitgeist",
+      "benchmark",
+      "analysis",
+      "gate-r1",
+      "structure",
+      "gate-r2",
+      "proposal",
+      "gate-r3",
+      "miniguided"
+    ]
+  },
+  "nodes": {
+    "src": {
+      "status": "done",
+      "round": 3,
+      "lastArtifact": "选题素材.md",
+      "stale": true
+    },
+    "market": {
+      "status": "done",
+      "round": 3,
+      "lastArtifact": "内部/kb-market.md",
+      "stale": true
+    },
+    "tropes": {
+      "status": "done",
+      "round": 3,
+      "lastArtifact": "梗卡.md",
+      "stale": false
+    },
+    "combo": {
+      "status": "done",
+      "round": 3,
+      "lastArtifact": "内部/断言报告-combo.json",
+      "stale": false
+    },
+    "zeitgeist": {
+      "status": "done",
+      "round": 3,
+      "lastArtifact": "热点素材.md",
+      "stale": false
+    },
+    "benchmark": {
+      "status": "done",
+      "round": 3,
+      "lastArtifact": "内部/kb-benchmark.md",
+      "stale": false
+    },
+    "analysis": {
+      "status": "done",
+      "round": 3,
+      "lastArtifact": "选题分析报告.md",
+      "stale": false
+    },
+    "gate-r1": {
+      "status": "done",
+      "round": 2,
+      "stale": false,
+      "verdict": "pass",
+      "rootCauseStage": "S1"
+    },
+    "structure": {
+      "status": "awaiting",
+      "round": 0
+    },
+    "gate-r2": {
+      "status": "none",
+      "round": 0
+    },
+    "proposal": {
+      "status": "none",
+      "round": 0
+    },
+    "baseline": {
+      "status": "none",
+      "round": 0
+    },
+    "gate-r3": {
+      "status": "none",
+      "round": 0
+    },
+    "first3": {
+      "status": "none",
+      "round": 0
+    },
+    "gate-r4": {
+      "status": "none",
+      "round": 0
+    },
+    "delivery": {
+      "status": "none",
+      "round": 0
+    },
+    "polish": {
+      "status": "none",
+      "round": 0
+    },
+    "miniguided": {
+      "status": "none",
+      "round": 0
+    },
+    "intake": {
+      "status": "none",
+      "round": 0
+    },
+    "gate-r5": {
+      "status": "none",
+      "round": 0
+    }
+  },
+  "gate": {
+    "verdict": "pass",
+    "node": "gate-r1",
+    "at": "2026-09-15T21:35:52.228Z",
+    "note": "R1 附条件过"
+  },
+  "inputs": {
+    "project": "p-e2e-001",
+    "direction": "老牌发型师在连锁快剪店里坚持先洗后剪慢工出细活，被全店嘲笑，直到城市理发大赛",
+    "route": "hot",
+    "region": "CN",
+    "zeitgeist": true
+  },
+  "comments": {},
+  "focus": "structure",
+  "lastRejectReason": "梗选型与既有撞车"
+}

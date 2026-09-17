@@ -1,0 +1,152 @@
+import { describe, expect, it } from "vitest";
+import fs from "node:fs";
+import path from "node:path";
+import { ROOT } from "../src/schema.js";
+import { compilePlan, upstreamOf } from "../src/plan.js";
+import { edgeVia, edgeRole, isBackEdge, evalWhen, condContextOf, pendingInstancesOf } from "../src/cond.js";
+import { classOfPath } from "../src/asserts.js";
+import { artifactPathOf, nodeAsserts, nodeOutput } from "../src/minitools.js";
+import type { FlowDescriptor } from "../src/types.js";
+
+const FLOW_IDS = fs
+  .readdirSync(path.join(ROOT, "flows"))
+  .filter((d) => fs.existsSync(path.join(ROOT, "flows", d, "flow.json")))
+  .sort();
+
+const load = (id: string): FlowDescriptor =>
+  JSON.parse(fs.readFileSync(path.join(ROOT, "flows", id, "flow.json"), "utf-8")) as FlowDescriptor;
+
+/** 严格 JSON：重复键必须报错（文本级字段手术的经典事故）。 */
+function strictParseId(raw: string, ctx: string): unknown {
+  const dups: string[] = [];
+  const data = JSON.parse(raw, (key, value) => value) as unknown;
+  JSON.parse(raw);
+  const seen = new Set<string>();
+  const re = /"([A-Za-z_][A-Za-z0-9_]*)"\s*:/g;
+  // 只做行内粗检：同一对象内同键重复在 node/edge 单行排版下必然同现一行
+  for (const line of raw.split("\n")) {
+    const keys = [...line.matchAll(re)].map((m) => m[1]);
+    for (const k of new Set(keys)) if (keys.filter((x) => x === k).length > 1) dups.push(`${ctx}:${k}`);
+  }
+  if (dups.length) throw new Error(`重复键 ${[...new Set(dups)].join(", ")}`);
+  return data;
+}
+
+describe("flow@2 · 全量描述符体检（规范 R4 §5.1）", () => {
+  it("全部 flow 均为 flow@2，且无重复键 / 无旧字段名", () => {
+    expect(FLOW_IDS.length).toBeGreaterThan(0);
+    for (const id of FLOW_IDS) {
+      const raw = fs.readFileSync(path.join(ROOT, "flows", id, "flow.json"), "utf-8");
+      strictParseId(raw, id);
+      expect(JSON.parse(raw).format, id).toBe("flow@2");
+      expect(raw.includes('"transform"'), `${id} 残留 transform`).toBe(false);
+      expect(/^\s*"file"\s*:/m.test(raw), `${id} 残留 node.file`).toBe(false);
+      expect(/^\s*"check"\s*:/m.test(raw), `${id} 残留 node.check`).toBe(false);
+      expect(/^\s*"kb"\s*:/m.test(raw), `${id} 残留 node.kb`).toBe(false);
+      expect(/"when"\s*:\s*"/.test(raw), `${id} 残留字符串 when`).toBe(false);
+    }
+  });
+
+  it("每根线有 role，when 可求值，via 派生自目标节点执行体", () => {
+    for (const id of FLOW_IDS) {
+      const flow = load(id);
+      const ctx = condContextOf({ inputs: {} });
+      for (const e of flow.graph.edges) {
+        expect(e.role, `${id}/${e.id} 缺 role`).toBeDefined();
+        expect(isBackEdge(e), `${id}/${e.id} 回边判定`).toBe(edgeRole(e) === "loop" || edgeRole(e) === "reject");
+        // when 必须是可求值的谓词（结构化，或字段可解析的字符串）
+        const r = evalWhen(e.when, ctx);
+        if (typeof e.when === "string" && e.when) {
+          expect(r.reason ?? "", `${id}/${e.id} when 不可解析`).not.toContain("无法识别");
+        }
+        // via：派生值必须等于目标节点的执行体，否则应显式声明
+        const derived = edgeVia(flow, { ...e, via: undefined });
+        if (e.via === undefined) expect(derived, `${id}/${e.id}`).toBeTruthy();
+      }
+    }
+  });
+
+  it("打回边与回边都带角色语义；打回边必须带 params.scope（面板可渲染）", () => {
+    for (const id of FLOW_IDS) {
+      const flow = load(id);
+      for (const e of flow.graph.edges) {
+        if (edgeRole(e) !== "reject") continue;
+        expect((e.params ?? {}).scope, `${id}/${e.id} 缺 params.scope`).toBeTruthy();
+      }
+    }
+  });
+
+  it("agent 节点全部迁移到 kit+op 引用（漂移面归零）", () => {
+    for (const id of FLOW_IDS) {
+      const flow = load(id);
+      for (const [nid, n] of Object.entries(flow.graph.nodes)) {
+        if (!n.skill) continue;
+        expect(n.kit, `${id}/${nid} 缺 kit`).toBeTruthy();
+        expect(n.op, `${id}/${nid} 缺 op`).toBeTruthy();
+      }
+    }
+  });
+
+  it("产物路径全部落在准入目录内，或为根级输入材料", () => {
+    const ALLOWED = ["内部/意见/", "内部/收据/", "内部/依据/", "内部/稿本/", "对外交付/", "章节正文/", "世界书/"];
+    for (const id of FLOW_IDS) {
+      const flow = load(id);
+      for (const [nid, n] of Object.entries(flow.graph.nodes)) {
+        const out = nodeOutput(n);
+        if (!out) continue;
+        const rel = out.replaceAll("\\", "/");
+        const ok = ALLOWED.some((d) => rel.startsWith(d)) || (n.kind === "novel-txt" && !rel.includes("/"));
+        expect(ok, `${id}/${nid} 产物 ${rel} 不在准入目录`).toBe(true);
+        expect(classOfPath(rel), `${id}/${nid} class 反查`).toBeTruthy();
+      }
+      // 交付清单：path 缺省取节点产物；显式声明必须与 class 准入一致（交付名不算路径）
+      for (const o of flow.outputs ?? []) {
+        const p = o.path ?? artifactPathOf(flow, o.node ?? "");
+        if (!p) continue;
+        expect(p.includes("/"), `${id} 交付出口「${p}」不是合格路径（合格形态：对外交付/NN-名.ext）`).toBe(true);
+        expect(ALLOWED.some((d) => p.replaceAll("\\", "/").startsWith(d)), `${id} 交付出口 ${p}`).toBe(true);
+      }
+    }
+  });
+
+  it("每个 flow 都能编译计划（回边不计入前向 → 无环；前向边序保持）", () => {
+    for (const id of FLOW_IDS) {
+      const flow = load(id);
+      const order = compilePlan(flow, {});
+      expect(order.length, `${id} 计划为空`).toBeGreaterThan(0);
+      // 前向边的 from 必须排在 to 之前；回边不参与拓扑，不得据此判环
+      const pos = new Map(order.map((n, i) => [n, i]));
+      for (const e of flow.graph.edges.filter((x) => !isBackEdge(x))) {
+        if (!pos.has(e.from) || !pos.has(e.to)) continue;
+        expect(pos.get(e.from)! < pos.get(e.to)!, `${id}/${e.id} 前向边序颠倒（from 应在 to 前）`).toBe(true);
+      }
+    }
+  });
+
+  it("节点级 when：可选模块随输入进出计划（不再是死声明）", () => {
+    const flow = load("topic-selection");
+    const off = compilePlan(flow, { 批注回流: "off" });
+    const on = compilePlan(flow, { 批注回流: "on" });
+    expect(off.includes("intake"), "intake 应随 批注回流=off 退出计划").toBe(false);
+    expect(on.includes("intake"), "intake 应随 批注回流=on 进入计划").toBe(true);
+    // 下游照样可达：intake 是可选旁路，不是必经节点
+    expect(on.includes("first3")).toBe(true);
+  });
+
+  it("节点级 when 裁剪后不再作为上游注入上下文", () => {
+    const flow = load("topic-selection");
+    expect(upstreamOf(flow, "first3", { 批注回流: "off" })).not.toContain("intake");
+    expect(upstreamOf(flow, "first3", { 批注回流: "on" })).toContain("intake");
+  });
+
+  it("断言声明与 iterate 槽位可被面板消费", () => {
+    const flow = load("novel-fanqie");
+    expect(nodeAsserts(flow.graph.nodes["audit"]).length).toBeGreaterThan(0);
+    const chapter = flow.graph.nodes["chapter"];
+    expect(chapter.iterate?.artifact).toBeTruthy();
+    expect(artifactPathOf(flow, "chapter")).toBeTruthy();
+    // iterate 节点本身也算未收口实例（{loop:"pending"} 的取值来源）
+    expect(pendingInstancesOf(flow, { nodes: { chapter: { status: "awaiting" } } })).toBe(1);
+    expect(pendingInstancesOf(flow, { nodes: { chapter: { status: "done" } } })).toBe(0);
+  });
+});

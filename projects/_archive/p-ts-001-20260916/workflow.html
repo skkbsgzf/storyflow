@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>工作流画布 · 智能选题工作流 v5（阶段-菱形循环引擎：调研 → 结构 → 大纲 → 小纲 → 成稿） · p-ts-001</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;height:100vh;display:flex;flex-direction:column;overflow:hidden;
+     font-family:-apple-system,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;
+     background:#f4f1ea;color:#262420}
+h1,.serif{font-family:'Noto Serif SC','Songti SC','STSong','SimSun',serif}
+header{display:flex;align-items:center;gap:10px;padding:10px 16px;background:#fbfaf7;border-bottom:1px solid #d9d2c5}
+header h1{font-size:16px;margin:0;font-weight:700;letter-spacing:.5px}
+header .ver{font-size:11px;color:#8a8375}
+header .sp{flex:1}
+button.tb,a.tb{border:1px solid #c9c1b2;background:#fff;color:#4a453c;border-radius:7px;padding:5px 13px;font-size:12.5px;cursor:pointer;text-decoration:none}
+button.tb:hover,a.tb:hover{border-color:#8a8375;background:#f3efe6}
+#stage{flex:1;position:relative;overflow:hidden;background:#faf8f3;
+       background-image:radial-gradient(#e7e2d6 1px,transparent 1px);background-size:28px 28px}
+#world{position:absolute;transform-origin:0 0}
+#edges{position:absolute;overflow:visible;pointer-events:none}
+.edge-hit{pointer-events:stroke;cursor:pointer}
+.edge-label{font-size:10px;fill:#8a8375;pointer-events:none}
+.stage-rule{stroke-width:1.2;stroke-dasharray:1,4}
+.stage-name{font-size:12.5px;font-weight:700}
+.node{position:absolute;width:196px;background:#fff;border:1px solid #d3ccc0;border-radius:8px;cursor:grab;user-select:none;
+      box-shadow:0 1px 2px rgba(60,50,30,.06)}
+.node.sel{outline:2px solid #262420;outline-offset:1px}
+.node .accent{position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:0 2px 2px 0}
+.node .hd{display:flex;align-items:center;gap:7px;padding:8px 10px 2px}
+.node .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.node .zh{font-size:13.5px;font-weight:700;line-height:1.25}
+.node .sub{padding:2px 10px 4px;font-size:10.5px;color:#8a8375;line-height:1.4}
+.node .out{position:absolute;top:-9px;right:-8px;background:#fff;border:1.5px solid #a5433a;color:#a5433a;
+           font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;letter-spacing:2px}
+.node .par{font-size:9.5px;border:1px solid #b8a464;color:#8a6b2a;background:#fdf9ee;border-radius:3px;padding:0 4px;margin-left:6px}
+.node.k-gate{background:#fbf5f3;border:1.5px solid #a5433a}
+.node.k-gate .zh{color:#8c352c}
+.st-done{background:#5a8a5e}.st-awaiting{background:#c9922e}.st-pending{background:#b05a4a}.st-none{background:#c9c1b2}
+#hud{position:absolute;left:14px;bottom:10px;font-size:11.5px;color:#8a8375;display:flex;gap:16px;
+     background:#f4f1eacc;padding:4px 10px;border-radius:6px}
+#hud b{color:#3d382f}
+#docpanel{width:min(44vw,780px);min-width:460px;border-left:1px solid #d9d2c5;background:#eee8da;display:flex;flex-direction:column}
+#docpanel .dh{padding:9px 14px;background:#fbfaf7;border-bottom:1px solid #d9d2c5;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#docpanel .dh .bt{border:1px solid #c9c1b2;background:#fff;border-radius:6px;padding:3px 11px;font-size:12px;cursor:pointer;color:#4a453c}
+#docpanel .dh .bt:hover{border-color:#8a8375;background:#f3efe6}
+#docpanel .dh b.dt{font-size:15.5px;font-family:'Noto Serif SC','SimSun',serif;letter-spacing:.5px}
+.chip{display:inline-block;font-size:11px;border:1px solid #c9c1b2;border-radius:4px;padding:1px 8px;color:#6b665c;background:#fff;white-space:nowrap}
+#d-vbar{display:flex;gap:8px;align-items:center;padding:7px 14px;background:#fbf5f3;border-bottom:1px solid #e2d5cd;flex-wrap:wrap}
+#d-vbar:empty{display:none}
+.dc{flex:1;overflow-y:auto;padding:4px 22px 46px}
+.paper{background:#fffdf9;border:1px solid #e4ddcd;box-shadow:0 2px 14px rgba(70,58,35,.10);border-radius:3px;
+       max-width:720px;margin:22px auto 0;padding:38px 52px 44px;position:relative}
+.paper .doc-h{font-size:11px;color:#a89a83;letter-spacing:1px;margin-bottom:14px;display:flex;justify-content:space-between;gap:10px}
+.paper .doc-h span:last-child{flex-shrink:0}
+.paper .pf{position:absolute;left:0;right:0;bottom:12px;text-align:center;font-size:10.5px;color:#b3ab9b;letter-spacing:2px}
+.cover{max-width:720px;margin:34px auto 0;background:#fffdf9;border:1px solid #e4ddcd;box-shadow:0 2px 14px rgba(70,58,35,.10);border-radius:3px;padding:52px 56px}
+.cover h2{font-size:26px;font-family:'Noto Serif SC','SimSun',serif;margin:0 0 6px;letter-spacing:2px}
+.cover .sub{color:#8a8375;font-size:12.5px;margin-bottom:18px}
+.shelf-cap{max-width:720px;margin:28px auto 6px;font-size:12px;color:#8a8375;letter-spacing:2px}
+.shelf-row{display:flex;align-items:center;gap:10px;background:#fffdf9;border:1px solid #e4ddcd;border-radius:3px;
+       padding:12px 18px;max-width:720px;margin:8px auto;cursor:pointer;box-shadow:0 1px 6px rgba(70,58,35,.06)}
+.shelf-row:hover{border-color:#a5433a}
+.shelf-row .no{font-family:'Noto Serif SC','SimSun',serif;font-weight:700;color:#a5433a;font-size:15px;width:30px;flex-shrink:0}
+.shelf-row .nm{flex:1;font-size:13.5px;font-weight:600}
+.shelf-row .go{font-size:11.5px;color:#8a8375}
+#ctip{position:absolute;display:none;z-index:30;max-width:320px;background:#262420;color:#f4f1ea;font-size:12px;line-height:1.7;
+      padding:10px 14px;border-radius:8px;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+#ctip code{color:#e8d9a0}
+.cmt{background:#f6f3ea;border-left:3px solid #c9922e;padding:6px 10px;margin:6px 0;font-size:12.5px;border-radius:0 6px 6px 0}
+#drawer{border-top:1px solid #d9d2c5;background:#fbfaf7;display:none;max-height:46%;overflow:auto;padding:12px 16px}
+#drawer.on{display:block}
+.kv{display:grid;grid-template-columns:84px 1fr;gap:5px 10px;font-size:12.5px;margin-bottom:10px}
+.kv .k{color:#8a8375}.kv .v{color:#3d382f;word-break:break-all}
+.kv code{background:#efece3;padding:1px 6px;border-radius:4px;font-size:11.5px}
+.md{font-size:13.5px;line-height:1.85}
+.md h2{font-family:'Noto Serif SC','SimSun',serif;border-left:3px solid #a5433a;padding-left:10px;margin:18px 0 8px}
+.md table{border-collapse:collapse;width:100%;font-size:12px;margin:10px 0}
+.md th,.md td{border:1px solid #d9d2c5;padding:5px 8px}.md th{background:#f3efe6}
+.md code{background:#efece3;padding:1px 5px;border-radius:4px;font-size:11.5px}
+.md blockquote{border-left:3px solid #c9c1b2;margin:8px 0;padding:4px 12px;color:#6b665c}
+.md ul{padding-left:18px}
+textarea{width:100%;min-height:340px;background:#fff;color:#2b2822;border:1px solid #d3ccc0;border-radius:8px;
+         font-family:Consolas,'Microsoft YaHei',monospace;font-size:12.5px;padding:12px;resize:vertical;line-height:1.6}
+.act{margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.msg{font-size:12px;color:#8a8375}
+.task{background:#fff;border:1px solid #d9d2c5;border-radius:8px;padding:12px;font-family:Consolas,monospace;font-size:11.5px;
+      white-space:pre-wrap;word-break:break-all;color:#4a453c;max-height:300px;overflow:auto}
+.vbtns{display:flex;gap:8px;margin:10px 0}
+.vbtns button{flex:1;border-radius:8px;padding:9px 0;font-size:13.5px;cursor:pointer;border:1px solid #d3ccc0;background:#fff;color:#4a453c}
+.vbtns .ok:hover{border-color:#5a8a5e;background:#f0f5ee}
+.vbtns .no:hover{border-color:#a5433a;background:#faf0ee}
+.seal{display:inline-block;border:1.5px solid #a5433a;color:#a5433a;font-size:10px;font-weight:700;
+      padding:1px 6px;border-radius:3px;letter-spacing:1px;margin-left:6px;vertical-align:1px}
+.preset{display:inline-block;font-size:11px;border-radius:4px;padding:1px 8px;margin-right:6px}
+.p-auto{background:#e8efe4;color:#3d6b45}.p-semi{background:#f3ecd8;color:#8a6b2a}.p-manual{background:#f3e4e0;color:#8c352c}
+.d-add{background:#e8efe4;color:#3d6b45;display:block;padding:0 5px}
+.d-del{background:#f3e4e0;color:#8c352c;display:block;padding:0 5px;text-decoration:line-through}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="t">工作流画布</h1><span class="ver" id="v"></span><span class="sp"></span>
+  <button class="tb" onclick="autoLayout()">自动布局</button>
+  <button class="tb" onclick="fitView()">适配视图</button>
+  <button class="tb" onclick="persistState()">保存状态</button>
+  <a class="tb" id="dl-link" href="#" style="display:none">交付产物页 →</a>
+</header>
+<div style="display:flex;flex:1;min-height:0">
+  <div id="stage"><div id="world"><svg id="edges"></svg><div id="nodes"></div></div>
+    <div id="hud"></div>
+    <div id="ctip"></div>
+  </div>
+  <div id="docpanel">
+    <div class="dh">
+      <button class="bt" id="d-back" style="display:none">← 文档架</button>
+      <b class="dt" id="d-title">项目文档架</b>
+      <span id="d-chips" style="display:flex;gap:6px;flex-wrap:wrap"></span>
+      <span style="flex:1"></span>
+      <span id="d-tools" style="display:flex;gap:6px;align-items:center"></span>
+    </div>
+    <div id="d-vbar"></div>
+    <div class="dc" id="d-body"></div>
+    <div id="drawer"></div>
+  </div>
+</div>
+<script type="application/json" id="payload">{"flow": {"format": "flow@1", "id": "topic-selection", "title": "智能选题工作流 v5（阶段-菱形循环引擎：调研 → 结构 → 大纲 → 小纲 → 成稿）", "desc": "四阶段推演，每阶段有独立产物与产出格式，红方以四视角（目标读者/一般读者/资深编剧/甲方）逐段验收，验收不通过按根因打回对应阶段并级联失效下游——流程推演有逻辑，不是公式产物", "version": "5.1.1", "dataBase": "2026-09-14", "phaseScope": "第一阶段只做剧本：产物到剧本为止，不含分镜/视觉生产（render-prompt-seedance 技能留库备用）", "stages": [{"id": "S1", "name": "调研", "entry": "src", "gate": "gate-r1", "nodes": ["src", "market", "tropes", "combo", "zeitgeist", "benchmark", "analysis"], "question": "写什么、给谁看、凭什么现在写"}, {"id": "S2", "name": "结构", "entry": "structure", "gate": "gate-r2", "nodes": ["structure"], "question": "用什么骨架讲，怎么避免单薄"}, {"id": "S3", "name": "大纲", "entry": "proposal", "gate": "gate-r3", "nodes": ["proposal", "baseline"], "question": "人设/梗概/编排/情感立不立得住"}, {"id": "S4", "name": "小纲", "entry": "miniguided", "gate": "gate-r4", "nodes": ["miniguided", "intake"], "question": "每个分镜的行动与台词是否达意（doc，可批注回流）"}, {"id": "S5", "name": "成稿", "entry": "first3", "gate": "gate-r5", "nodes": ["first3", "polish"], "question": "连贯成品剧本：行动/表情/台词，台词过去AI味"}], "inputs": {"project": {"type": "project", "required": true, "desc": "项目上下文（产物落点）"}, "direction": {"type": "string", "required": true, "bind": {"edge": "e-trope", "param": "direction"}, "desc": "题材方向（自然语言）"}, "route": {"type": "enum", "default": "dual", "options": ["hot", "calm", "dual"], "bind": {"edge": "e-prop", "param": "route"}, "desc": "风格路线：爽版/合理版/双版本+基线"}, "region": {"type": "enum", "default": "CN", "options": ["CN", "NA"], "bind": {"edge": "e-market", "param": "region"}, "desc": "目标市场"}, "zeitgeist": {"type": "boolean", "default": true, "bind": {"gate": "e-zg"}, "desc": "是否注入实时热点扫描（S1 必含项，建议开）"}}, "outputs": [{"node": "analysis", "file": "对外交付/01-选题报告.md", "title": "S1 · 选题报告（含调研）"}, {"node": "structure", "file": "对外交付/02-大纲.md", "title": "S2+S3 · 大纲（结构/人设/编排/情感）"}, {"node": "proposal", "file": "对外交付/02-大纲.md", "title": "S3 · 大纲全量（同上，含双版本）"}, {"node": "miniguided", "file": "对外交付/03-小纲.docx", "title": "S4 · 小纲（分镜·行动·台词·创作思路，doc 可批注）"}, {"node": "first3", "file": "对外交付/04-成品剧本试稿.md", "title": "S5 · 成品剧本试稿（连贯格式·台词已打磨）"}, {"node": "delivery", "file": "对外交付/选题交付页.html", "title": "交付页（四件套合一）"}], "graph": {"format": "smwf@2", "name": "topic-selection-v4", "nodes": {"src": {"kind": "novel-txt", "stage": "S1", "title": "选题素材", "file": "选题素材.md"}, "market": {"kind": "core", "stage": "S1", "title": "市场快照装载", "minitool": "kb_load", "loads": ["kb/market/snapshot", "kb/market/structure", "kb/market/constraints", "kb/market/internet-feel", "kb/market/setting-rules", "kb/market/meme-rules"]}, "tropes": {"kind": "agent", "stage": "S1", "title": "找梗选梗（含新梗）", "skill": "find-trope", "kb": ["kb/trope/*"], "output": "梗卡.md", "desc": "检索梗族→饱和度判定→主辅梗选型→演化链找新变体落点；产出网络热梗素材表（≥10 条，梗密度约束 AE-MEME-DENSITY）"}, "combo": {"kind": "core", "stage": "S1", "title": "梗组合相性校验", "minitool": "check_trope_combo", "onFail": "退回 tropes 重选"}, "zeitgeist": {"kind": "agent", "stage": "S1", "title": "实时热点扫描", "skill": "topic-zeitgeist", "webSearch": true, "output": "热点素材.md"}, "benchmark": {"kind": "core", "stage": "S1", "title": "竞品对标装载", "minitool": "kb_load", "loads": "kb/benchmark/*", "filterBy": "tropes.梗卡.对标件"}, "analysis": {"kind": "agent", "stage": "S1", "title": "选题调研报告", "skill": "topic-analysis-report", "assist": ["internet-feel"], "kb": ["kb/market/*", "kb/aesthetic/oversight"], "file": "对外交付/01-选题报告.md", "desc": "S1 产物：方向/人群兴趣点/竞品与梗选型/热度数据/创作约束移交单/热点交叉"}, "gate-r1": {"kind": "gate", "stage": "S1", "title": "R1 · 调研验收", "skill": "plot-redline", "review": "S1", "output": "多视角意见书-R1.md", "desc": "红方四视角验收调研：目标读者(这方向跟我有关吗)/甲方(时机与撞车)/编剧(竞品功课够不够)/路人(一句话说清写什么)+设定三分钟测试(kb/market/setting-rules)+梗密度与发散性检查(kb/market/meme-rules)；不通过按根因打回 tropes 或 analysis", "reviewers": ["plot-redline（红方评审）", "topic-chief-aesthetic（审美总编·抽检）"], "gate_role": "验收门"}, "structure": {"kind": "agent", "stage": "S2", "title": "结构选型与深挖", "skill": "structure-design", "kb": ["kb/structure/catalog", "kb/market/structure", "kb/aesthetic/pacing-density", "kb/market/setting-rules"], "file": "故事框架案.md", "desc": "S2 产物：叙事结构选型（救猫咪/复仇/升级/双线…）+ 深挖改造融合 + 不确定因素注入提案≥2"}, "gate-r2": {"kind": "gate", "stage": "S2", "title": "R2 · 结构验收", "skill": "plot-redline", "review": "S2", "output": "多视角意见书-R2.md", "desc": "红方四视角验收结构：读者(骨架有兴奋点吗)/编剧(深挖改造到位吗)/甲方(节奏对市场吗)；'可行但单薄'必触发不确定因素提案", "reviewers": ["plot-redline（红方评审）", "topic-chief-aesthetic（审美总编·抽检）"], "gate_role": "验收门"}, "proposal": {"kind": "agent", "stage": "S3", "title": "选题方案", "skill": "topic-proposal", "assist": ["plot-choreographer", "internet-feel"], "kb": ["kb/aesthetic/*", "kb/benchmark/*"], "file": "对外交付/02-大纲.md", "desc": "S3 产物：项目背景/故事梗概/核心人设/大纲与冲突/后续剧情走向 + 约束对账表 + 自检；route=dual 双版本并行"}, "baseline": {"kind": "agent", "stage": "S3", "title": "爽版无监管基线", "skill": "topic-proposal", "route": "hot", "oversight": false, "file": "选题方案-爽版-基线.md", "desc": "仅 route=dual：监管增益对照件"}, "gate-r3": {"kind": "gate", "stage": "S3", "title": "R3 · 方案验收", "skill": "plot-redline", "review": "S3", "output": "多视角意见书-R3.md", "desc": "红方四视角验收方案：读者(人设代入感)/编剧(大纲因果与代价)/甲方(卖点与合规对账)", "reviewers": ["plot-redline（红方评审）", "topic-chief-aesthetic（审美总编·抽检）"], "gate_role": "验收门"}, "first3": {"kind": "agent", "stage": "S5", "title": "成品剧本试稿（连贯格式）", "skill": "script-final", "assist": ["dialogue-polish"], "kb": ["kb/aesthetic/dialogue", "kb/aesthetic/naturalness-zh", "kb/aesthetic/ai-trace", "kb/aesthetic/character"], "file": "对外交付/04-成品剧本试稿.md", "desc": "S5 产物：连贯剧本（场次头/人物行动/表情/角色台词按角色归组；特殊镜头与旁白中括号）。基于小纲（或批注后版本）；成稿后强制交接 dialogue-polish"}, "gate-r4": {"kind": "gate", "stage": "S4", "title": "R4 · 小纲验收", "skill": "plot-redline", "review": "S4", "output": "内部/多视角意见书-R4.md", "desc": "菱形验收：客户批注回流后的分镜脚本是否达意、是否落实批注；三出口 pass/send-back/rebuild", "reviewers": ["plot-redline（红方评审）", "topic-chief-aesthetic（审美总编·抽检）"], "gate_role": "验收门"}, "delivery": {"kind": "core", "stage": "S4", "title": "选题交付页", "minitool": "render_html", "template": "delivery-template.html", "file": "选题交付页.html", "desc": "确定性渲染全部阶段产物 → 单文件移动版 HTML（零 LLM）"}, "polish": {"kind": "agent", "stage": "S5", "title": "台词去AI味打磨", "skill": "dialogue-polish", "kb": ["kb/aesthetic/naturalness-zh", "kb/aesthetic/dialogue", "kb/aesthetic/ai-trace", "kb/aesthetic/character"], "desc": "强制末环节：全部人物对话逐句过三遍（人物声口校准/处境校准/去AI味清单），基于人物+处境+说话习惯优化；修订对照表内部留痕不外发", "file": "对外交付/03-剧本试稿.md"}, "miniguided": {"kind": "agent", "stage": "S4", "title": "小纲（分镜脚本 doc）", "skill": "scene-breakdown", "kb": ["kb/aesthetic/pacing-density", "kb/aesthetic/dialogue"], "file": "对外交付/03-剧本试稿.md", "desc": "S4 产物：每个分镜的场景/人物行动/台词，达意即可无需打磨；文末附创作思路页。输出 docx 格式——客户可直接批注、修改，回传后进入批注回流"}, "intake": {"kind": "core", "stage": "S4", "title": "批注回流接入（可选模块）", "minitool": "docx_ingest", "when": "批注回流=on", "desc": "确定性：解析客户回传 doc 的批注与修订 → 结构化意见清单（锚点=分镜号）→ 映射为成品剧本的修改指令；无回传则按小纲原样进入成稿"}, "gate-r5": {"kind": "gate", "stage": "S5", "title": "R5 · 成稿验收", "skill": "plot-redline", "review": "S5", "output": "内部/多视角意见书-R5.md", "desc": "菱形验收：成品剧本四视角（路人3秒钩/目标读者名场面/编剧尾钩链/甲方合规）；三出口", "reviewers": ["plot-redline（红方评审）", "topic-chief-aesthetic（审美总编·抽检）"], "gate_role": "验收门"}}, "edges": [{"id": "e-trope", "from": "market", "to": "tropes", "transform": "skill.find-trope"}, {"id": "e-combo", "from": "tropes", "to": "combo", "transform": "core.check_trope_combo"}, {"id": "e-an1", "from": "src", "to": "analysis", "transform": "sm.topic-analysis"}, {"id": "e-an2", "from": "market", "to": "analysis", "transform": "sm.topic-analysis"}, {"id": "e-an3", "from": "tropes", "to": "analysis", "transform": "sm.topic-analysis"}, {"id": "e-an4", "from": "zeitgeist", "to": "analysis", "transform": "sm.topic-analysis"}, {"id": "e-an5", "from": "benchmark", "to": "analysis", "transform": "sm.topic-analysis"}, {"id": "e-r1", "from": "analysis", "to": "gate-r1", "transform": "sm.review"}, {"id": "e-struct", "from": "gate-r1", "to": "structure", "transform": "skill.structure-design"}, {"id": "e-r2", "from": "structure", "to": "gate-r2", "transform": "sm.review"}, {"id": "e-prop", "from": "gate-r2", "to": "proposal", "transform": "sm.topic-proposal"}, {"id": "e-baseline", "from": "analysis", "to": "baseline", "transform": "sm.topic-proposal", "when": "route=dual"}, {"id": "e-r3a", "from": "proposal", "to": "gate-r3", "transform": "sm.review"}, {"id": "e-r3b", "from": "baseline", "to": "gate-r3", "transform": "sm.review", "when": "route=dual"}, {"id": "e-mini", "from": "gate-r3", "to": "miniguided", "transform": "skill.scene-breakdown"}, {"id": "e-intake", "from": "miniguided", "to": "intake", "transform": "core.docx_ingest", "when": "批注回流=on", "optional": true}, {"id": "e-final2", "from": "intake", "to": "first3", "transform": "skill.script-final"}, {"id": "e-r4", "from": "first3", "to": "gate-r5", "transform": "sm.review"}, {"id": "e-del", "from": "gate-r5", "to": "delivery", "transform": "sm.topic-delivery"}, {"id": "e-r1-back", "from": "gate-r1", "to": "tropes", "transform": "sm.review.reject", "when": "R1 根因=梗选型", "loop": true}, {"id": "e-r1-back2", "from": "gate-r1", "to": "analysis", "transform": "sm.review.reject", "when": "R1 根因=人群/竞品分析", "loop": true}, {"id": "e-r2-back", "from": "gate-r2", "to": "structure", "transform": "sm.review.reject", "when": "R2 根因=结构单薄", "loop": true}, {"id": "e-r3-back", "from": "gate-r3", "to": "proposal", "transform": "sm.review.reject", "when": "R3 根因=方案", "loop": true}, {"id": "loop-r4-miniguided", "from": "gate-r4", "to": "miniguided", "transform": "sm.review.reject", "when": "rejected", "loop": true, "desc": "R4 根因=小纲"}, {"id": "e-polish", "from": "first3", "to": "polish", "transform": "skill.dialogue-polish"}, {"id": "e-polish-gate-r5", "from": "polish", "to": "gate-r5", "transform": "sm.review", "desc": ""}, {"id": "e-src-tro-27", "from": "src", "to": "tropes", "transform": "skill.find-trope", "desc": "素材方向喂给找梗师（原只看市场快照，补素材依赖）"}, {"id": "e-src-zei-28", "from": "src", "to": "zeitgeist", "transform": "skill.topic-zeitgeist", "desc": "素材主题作为热点扫描输入（原误挂 combo 之下）"}, {"id": "e-tro-ben-29", "from": "tropes", "to": "benchmark", "transform": "core.kb_load", "desc": "按 tropes.梗卡.对标件 过滤装载（对齐 filterBy 声明）"}, {"id": "e-com-ana-30", "from": "combo", "to": "analysis", "transform": "sm.topic-analysis", "desc": "校验后的梗组合进入调研报告"}, {"id": "e-miniguided-gate-r4", "from": "miniguided", "to": "gate-r4", "transform": "sm.review", "desc": "小纲产物交 R4 验收"}, {"id": "e-gate-r4-first3", "from": "gate-r4", "to": "first3", "transform": "skill.script-final", "desc": "R4 通过 → 进入成稿"}, {"id": "loop-r5-first3", "from": "gate-r5", "to": "first3", "loop": true, "when": "rejected", "transform": "sm.review.reject", "desc": "R5 根因=成稿"}], "outputs": ["analysis", "structure", "proposal", "miniguided", "first3", "delivery"]}, "quality": {"reviewModel": "红方 v2 视角代入制：目标读者/一般读者/资深编剧/甲方四视角独立意见，说人话不念指标（kb/aesthetic/perspective-review）；机器可查项归 check_aesthetic_asserts 断言层", "stageGate": "每阶段红方验收不通过即打回；打回指认根因阶段，根因之后的所有阶段产物顺延失效重审（级联推演，不是哪坏补哪）", "uncertainty": "框架可行但四视角集体不兴奋 = 单薄：红方必须提案 ≥2 个不确定因素注入（黑道大小姐/真假千金/穿书转世类反认知变量），择优融入后重审", "abBaseline": "route=dual 时基线件随行，监管增益必须可验证", "assertions": "kb/aesthetic/assertions.json 全表适用（机器层）；block 项必须清零", "allow_agent_verdict": false, "settingRules": "项目级约束（kb/market/setting-rules）：禁原创科幻/架空世界观；设定来源三级制——实事新闻底子首选、市面验证体系次选、原创一票否决；三分钟测试为 R1 固定检查项", "dialoguePolish": "强制末环节：全部人物对话过 dialogue-polish 三遍（声口/处境/去AI味），R4 在打磨完成后验收", "scriptFormat": "成品剧本 = 连贯剧本：场次头/人物行动/表情/角色台词（按角色标注便于画本上色）；特殊镜头与旁白用中括号；不出现钩型/时长/尾钩等内部标注（内部纪律在断言层与分镜表执行）", "feedbackLoop": "可选模块：小纲 doc 交客户批注修改后回传 → docx_ingest 解析 → 成品剧本基于改后版本产出（flow 基于改后版本，不是无视批注重跑）", "stageLoop": "engine.stage-gate-loop：每阶段红方菱形验收，pass 前进 / send-back 回本阶段修改流 / rebuild 回根因阶段从零构筑；根因之后顺延失效——循环机制是引擎规则，不是逐边硬编码", "presets": "每阶段执行模式（auto/semi/manual）存于 run-state.presets；默认 semi——阶段门提问，节点内自动"}, "harness": {"mode": "task-package", "awaiting_input_at": ["analysis", "baseline", "first3", "gate-r1", "gate-r2", "gate-r3", "gate-r4", "gate-r5", "miniguided", "polish", "proposal", "structure", "tropes", "zeitgeist"], "core_in_process": ["src", "market", "combo", "benchmark", "intake", "delivery"], "note": "宿主 Agent 用自己的 token 执行认知步与红方视角扮演；flow_next / flow_submit 逐步推进；验收门打回时按 when 指认的根因回注，下游顺延失效"}, "changelog": [{"version": "5.1.1", "date": "2026-09-16", "changes": ["打回语义收敛：send-back 仅回注本阶段入口、失效范围限本阶段；已验收阶段即定稿，跨阶段回滚 = 用户强行介入（force/flow_rerun），不再是门语义", "S4/S5 边修正：miniguided→gate-r4 补验收入边；gate-r4 pass→first3 改前向边；polish 改交 R5 成稿验收；回环边回归本阶段（gate-r4→miniguided、gate-r5→first3）"]}, {"version": "5.1.0", "date": "2026-09-16", "changes": ["S1 并行化：拆掉假串行依赖——市场快照/竞品对标不再排队在素材链后，找梗选梗∥实时热点扫描两个 agent 就绪批并行搜集，梗组合校验∥竞品对标装载并行", "底座就绪批调度：flow_next 返回 AND-join 就绪批（engine.scheduling），门为同步屏障"]}, {"version": "5.1.0", "date": "2026-09-16", "changes": ["引擎新增快照/重跑/预设/缓存/提问语义：输入指纹缓存命中、从任一节点重跑到 Stage 边界、auto/semi/manual 三档执行模式、semi 模式 Agent 提问钩子", "工具链：tools/snapshot.py（capture/diff/指纹）；画布检查器升级为 输入快照/版本 diff/意见/定点重跑 面板"]}, {"version": "5.0.0", "date": "2026-09-16", "changes": ["架构重构：阶段-菱形循环引擎（stage-gate-loop）。红方=菱形判断节点，三出口：pass 前进 / send-back 回本阶段修改流 / rebuild 回根因阶段从零构筑", "删除 11 条硬编码回环边——循环是引擎规则（engine 块），画布自动派生，任何项目/阶段通用", "新增 S4 小纲阶段门（gate-r4：批注回流核验）与 S5 成稿门（gate-r5）", "stages 数组升级为结构声明：每阶段 entry/nodes/gate，运行时与画布按声明派生循环", "基线对照件改为 S3 内部对照，不再占输出位"]}, {"version": "4.4.0", "date": "2026-09-15", "changes": ["新增 S4 小纲阶段：分镜脚本 doc（每分镜的人物行动与台词，达意即可），文末附创作思路页", "新增可选模块「批注回流」：客户在 doc 上批注/修改后回传，docx_ingest 解析为结构化意见，成品剧本基于改后版本产出", "S5 成品剧本格式重构：连贯剧本（场次头/人物行动/表情/角色台词），特殊镜头与旁白用中括号备注，不再出现钩型/时长/尾钩等内部标注；台词强制过 dialogue-polish", "交付物四件套：01 选题报告 / 02 大纲 / 03 小纲(doc) / 04 成品剧本试稿；意见书与断言报告转为内部物件（内部/ 目录）", "梗密度约束接线（4.3.0 遗漏项）：market 装载与 R1 检查项含 kb/market/meme-rules"]}, {"version": "4.3.0", "date": "2026-09-15", "changes": ["新增项目级约束 kb/market/meme-rules：S1 选题作为网感输入源——热梗素材表 ≥10 条、主梗可拆 ≥3 跨场景用法、前三章每集 ≥1 梗点（AE-MEME-DENSITY/SPREAD）", "梗词典数据源清单入库（小鸡词典镜像/梗百科/萌娘百科/B站热梗/抖音话题/微博百度指数）；meme_harvest minitool 规格 待实现", "梗密度约束反向影响题材选择：同等条件优先梗储量高的领域"]}, {"version": "4.2.0", "date": "2026-09-15", "changes": ["S4 新增强制末环节：台词去AI味打磨（dialogue-polish 技能，基于人物/处境/说话习惯的三遍校准）", "交付物重构为对外三件套：选题报告（含调研）/ 大纲（含人设/剧情结构/编排/情感设计）/ 剧本试稿——干净、模板化、客户可直读", "内部过程物件（梗卡/意见书/断言报告/对账表）与对外交付物分离，不随对外输出"]}, {"version": "4.1.0", "date": "2026-09-15", "changes": ["新增项目级约束 kb/market/setting-rules：禁止原创科幻/架空世界观（读者代入成本红线）；设定来源三级制（实事新闻底子 > 市面验证体系 > 原创禁止）", "三分钟测试纳入 R1 红方固定检查项；S2 框架案世界观节按三级制声明来源", "约束移交单新增 C10 设定体系约束条款"]}, {"version": "4.0.0", "date": "2026-09-15", "changes": ["重构为四阶段 stage-gate 制：S1 调研 → S2 结构 → S3 方案 → S4 成稿，每阶段独立产物与产出格式", "新增 S2 结构阶段：structure-design 技能（叙事结构选型三步：深挖/改造/融合 + 节奏市场对表）+ kb/structure/catalog", "红方 v2 视角代入制：目标读者/一般读者/资深编剧/甲方四视角独立意见（kb/aesthetic/perspective-review），废弃数据化指标评审（死点/安全系数），机器可查项归断言层", "验收门从 1 个扩为 4 个（R1-R4），打回按根因指认阶段并级联失效下游（11 条根因回环边）", "不确定因素注入机制：框架可行但单薄时红方强制提案反认知变量（黑道大小姐/真假千金/穿书转世类）"]}, {"version": "3.1.0", "date": "2026-09-15", "changes": ["补齐驳回回注与 challenge 回应环；skill 名修正；断言基线 66 条"]}, {"version": "3.0.0", "date": "2026-09-15", "changes": ["剧本特化产物重构：选题方案五节 + 前三章详细剧本独立产物；combo 相性校验；ai-trace 接入"]}, {"version": "2.0.0", "date": "2026-09-14", "changes": ["找梗·网感·编排升级"]}], "deliverables": [{"file": "对外交付/01-选题报告.md", "name": "选题报告（含调研）", "audience": "甲方决策层", "style": "叙述先行，无内部术语/编号/kb 引用"}, {"file": "对外交付/02-大纲.md", "name": "大纲（含人设/剧情结构/编排/情感设计）", "audience": "甲方与制作团队", "style": "模板化章节，干净成文"}, {"file": "对外交付/03-剧本试稿.md", "name": "剧本试稿", "audience": "甲方与导演/演员侧", "style": "全部对白已过 dialogue-polish 强制末环节"}], "internalArtifacts": "梗卡/意见书/断言报告/对账表/对照件等均为内部过程物件，不随对外交付物输出", "engine": {"type": "stage-gate-loop", "rule": "每个阶段 = 产出流 → 红方菱形验收。菱形出口：pass → 下一阶段入口；send-back → 回本阶段入口定点重做，失效范围仅限本阶段。已 pass 阶段的产物视为定稿，不随后续打回失效；确需上游返工 = 用户强行介入（flow_gate force + rootCauseStage，或 flow_rerun 显式指定范围），属人工操作而非门语义。循环直至末级 pass → 交付。", "send_back": "gate → 本阶段 entry（仅本阶段；跨阶段须 force 人工介入）", "cascade": "打回失效范围 = 本阶段（入口起、验收门止）；后续阶段产物不受影响（已验收即定稿）", "exit": "末级 gate pass → delivery", "verdicts": {"pass": "通过前进", "pass-with-conditions": "附条件前进", "send-back": "打回（仅本阶段修改流）"}, "snapshots": "数据流入节点即注入快照：输入指纹（上游哈希）+ 输出副本（不可变，逐版本）；用户修改产生新版本不覆盖旧版", "rerun": "从任一节点重跑，跑到本阶段验收门即停（Stage 边界）；未变化的上游走缓存命中（Agent 上下文与提示词前缀复用），仅变更节点重算", "presets": ["auto（全自动：断言绿即过，不提问）", "semi（半自动：仅阶段门与断言失败时向用户提问）", "manual（人工审：每个产出节点逐个确认）"], "ask_user": "semi/manual 模式下，Agent 在关键分叉（结构选型/注入取舍/验收裁决）向用户提问后继续", "diff": "用户编辑/红方打回 → Agent 先做 diff 分析（上下文增量），再决定最小重跑范围", "scheduling": {"model": "dag-ready-batch", "ready": "节点就绪 = 全部活跃上游 done（AND-join）；多条入边缺一不派发", "dispatch": "flow_next 返回就绪批：批内认知步互不依赖，宿主并行执行（多个 agent 同时搜集材料）；taskPackage.parallelWith 列出同批节点", "core_inline": "core/minitool 步零 token，内核就绪即就地执行，不进批", "barrier": "阶段验收门是同步屏障：门未 pass，下一阶段不派发；门上游未齐门不开", "rerun": "打回重跑沿用同一调度：重跑范围内就绪批照常并行"}, "intervention": "跨阶段回滚唯一入口 = 用户强行介入：flow_gate {force:true, rootCauseStage} 或 flow_rerun {nodeId, dryRun} 显式指定；任何 agent 不得自作主张打回已验收阶段"}, "roleModel": {"production": "找梗师/网感师/结构选型师/分镜编剧/成品剧本师/台词打磨——在流程里干活", "review": "红方评审/审美总编/交付监理——站在质检位，只看产物、只出意见，不混入生产", "principle": "总工程师不站产线里干活。质检员站在质检位上，对关键返回信息进行把控"}}, "files": {"run-asserts.py": "import json, re, sys\n\nSRC = r\"D:\\storymasterv4\\projects\\p-ts-001\\前三章剧本.md\"\ntext = open(SRC, encoding=\"utf-8\").read()\n\n# parse beats\nbeats = []\nfor m in re.finditer(r\"#### (B\\d+)｜钩型:(\\S+)｜时长:(\\d+)s\\n(.*?)(?=#### |$)\", text, re.S):\n    bid, hook, dur, body = m.group(1), m.group(2), int(m.group(3)), m.group(4)\n    beats.append({\n        \"id\": bid, \"hook_type\": hook, \"duration_s\": dur,\n        \"has_0_3s\": \"【0-3秒】\" in body,\n        \"has_storyboard\": \"分镜：\" in body,\n        \"has_dialogue\": \"台词：\" in body,\n        \"has_performance\": \"表演：\" in body,\n        \"has_tailhook\": \"尾钩\" in body,\n    })\n\nresults = []\ndef check(aid, ok, detail, level):\n    results.append({\"assert\": aid, \"level\": level, \"pass\": bool(ok), \"detail\": detail})\n\n# AE-HOOK-EVENT: every episode first beat has explicit hook type\nep1_first = beats[0]\ncheck(\"AE-HOOK-EVENT\", ep1_first[\"hook_type\"] in (\"悬念\", \"反常\", \"危险\", \"承诺\") and ep1_first[\"has_0_3s\"],\n      f\"B0001 钩型={ep1_first['hook_type']}（四型之一），【0-3秒】在场\", \"block\")\n\n# AE-HOOK-BREVITY (approximate: hook lines short) — sample check\n# AE-BEAT-FORMAT: all beats have 三件套 + tailhook + duration 6-15s\nbad = [b[\"id\"] for b in beats if not (b[\"has_storyboard\"] and b[\"has_dialogue\"] and b[\"has_performance\"])]\ncheck(\"AE-BEAT-FORMAT\", not bad, f\"{len(beats)} 拍三件套完整度 {100*(len(beats)-len(bad))//len(beats)}%\" + (f\"，缺失:{bad}\" if bad else \"\"), \"major\")\nbad_dur = [b[\"id\"] for b in beats if not (6 <= b[\"duration_s\"] <= 15)]\ncheck(\"AE-BEAT-FORMAT#dur\", not bad_dur, f\"时长全部落在 6-15s\" + (f\"，越界:{bad_dur}\" if bad_dur else \"\"), \"major\")\nno_hook = [b[\"id\"] for b in beats if not b[\"has_tailhook\"]]\ncheck(\"AE-STRUCT-CAUSE#tailhook\", not no_hook, \"每拍尾钩在场（一环扣一环）\" + (f\"，缺失:{no_hook}\" if no_hook else \"\"), \"block\")\n\n# per-episode dialogue counts (C3 spec: 台词 200-300 字/集; total incl. annotations ≤1200)\neps = re.split(r\"\\n## \", text)[1:4]\nfor i, ep in enumerate(eps, 1):\n    dlg_lines = [l for l in ep.split(\"\\n\") if \"台词：\" in l]\n    dlg = \"\".join(re.sub(r\".*台词：\", \"\", l) for l in dlg_lines)\n    dlg = re.sub(r\"（[^）]*）\", \"\", dlg)\n    chars = len(re.sub(r\"[\\s\\\"：-]\", \"\", dlg))\n    ok = 150 <= chars <= 350\n    check(\"AE-DENSITY-WORDS@ep%d\" % i, ok,\n          f\"第{i}集台词字数≈{chars}（规范 200-300；计数口径=台词正文，分镜/表演指导语不计——发现1：C3 计数口径需在 KB 澄清）\", \"major\")\n\n# 爽点密度 hot: count declared 爽点 per episode footer\ndeclared = [int(x) for x in re.findall(r\"爽点计数：[^=]*=\\s*(\\d+)\", text)]\ncheck(\"AE-DENSITY-HOT\", len(declared) == 3 and all(x >= 3 for x in declared),\n      f\"三集声明爽点数 {declared}，全部 ≥3（hot 档）\", \"major\")\n\n# 卡点体检 presence\ncheck(\"AE-CARD-END\", \"卡点体检\" in text and text.count(\"为什么看下一集\") >= 3,\n      \"三集集末卡点体检逐集附（'为什么必须看下一集'×3）\", \"major\")\n\n# AE-COMPLIANCE: 真实企业名扫描\nbanned = [\"华为\", \"阿里\", \"腾讯\", \"百度\", \"字节\", \"国家电网\", \"中石化\"]\nhit = [b for b in banned if b in text]\ncheck(\"AE-COMPLIANCE\", not hit, \"无真实企业名（磐石/临江全虚构）\" + (f\"，命中:{hit}\" if hit else \"\"), \"block\")\n\n# AE-AI-STRUCT: 集功能同构自查（此处引用红方意见书人工判定结果）\ncheck(\"AE-AI-STRUCT\", False, \"结构指纹：三集集功能同构（受辱→回击→授权）命中——红方意见书反对意见1，蓝方已采纳改良（ep4 起异构）\", \"major\")\n\nblock_fail = [r for r in results if r[\"level\"] == \"block\" and not r[\"pass\"]]\nreport = {\n    \"id\": \"kb/aesthetic/assertions\",\n    \"run\": \"p-ts-001\",\n    \"scope\": \"前三章剧本.md（first3 产物）\",\n    \"tool\": \"check_aesthetic_asserts (simulated by host agent)\",\n    \"beats_scanned\": len(beats),\n    \"results\": results,\n    \"summary\": {\"block_fail\": len(block_fail), \"block_total\": len([r for r in results if r['level']=='block']),\n                \"major_fail\": len([r for r in results if r['level']=='major' and not r['pass']]),\n                \"verdict\": \"PASS\" if not block_fail else \"BLOCK-FAIL\"},\n}\nout = r\"D:\\storymasterv4\\projects\\p-ts-001\\硬断言报告.json\"\njson.dump(report, open(out, \"w\", encoding=\"utf-8\"), ensure_ascii=False, indent=2)\nprint(json.dumps(report[\"summary\"], ensure_ascii=False))\nfor r in results:\n    print((\"PASS\" if r[\"pass\"] else \"FAIL\"), r[\"level\"], r[\"assert\"], \"—\", r[\"detail\"][:60])\n", "run-delivery.py": "import re, json, html\nfrom pathlib import Path\n\nROOT = Path(r\"D:\\storymasterv4\\projects\\p-ts-001\")\n\ndef md2h(md: str) -> str:\n    out, i = [], 0\n    lines = md.split(\"\\n\")\n    def esc(s): return html.escape(s)\n    def inline(s):\n        s = esc(s)\n        s = re.sub(r\"\\*\\*([^*]+)\\*\\*\", r\"<strong>\\1<\/strong>\", s)\n        s = re.sub(r\"`([^`]+)`\", r\"<code>\\1<\/code>\", s)\n        return s\n    while i < len(lines):\n        ln = lines[i]\n        if not ln.strip(): i += 1; continue\n        h = re.match(r\"^(#{1,4}) (.+)$\", ln)\n        if h:\n            out.append(f\"<h{min(len(h.group(1))+1,5)}>{inline(h.group(2))}<\/h{min(len(h.group(1))+1,5)}>\"); i += 1; continue\n        if re.match(r\"^-{3,}$\", ln.strip()): out.append(\"<hr>\"); i += 1; continue\n        if ln.startswith(\"|\"):\n            rows = []\n            while i < len(lines) and lines[i].startswith(\"|\"):\n                cells = [c.strip() for c in lines[i].strip(\"|\").split(\"|\")]\n                if not all(re.match(r\":?-{2,}:?$\", c) for c in cells): rows.append(cells)\n                i += 1\n            t = \"<table><tr>\" + \"\".join(f\"<th>{inline(c)}<\/th>\" for c in rows[0]) + \"<\/tr>\"\n            for r in rows[1:]: t += \"<tr>\" + \"\".join(f\"<td>{inline(c)}<\/td>\" for c in r) + \"<\/tr>\"\n            out.append(t + \"<\/table>\"); continue\n        if re.match(r\"^- \", ln):\n            buf = []\n            while i < len(lines) and re.match(r\"^- \", lines[i]): buf.append(lines[i][2:]); i += 1\n            out.append(\"<ul>\" + \"\".join(f\"<li>{inline(b)}<\/li>\" for b in buf) + \"<\/ul>\"); continue\n        if ln.startswith(\">\"):\n            buf = []\n            while i < len(lines) and lines[i].startswith(\">\"): buf.append(lines[i].lstrip(\"> \")); i += 1\n            out.append(\"<blockquote>\" + \"<br>\".join(inline(b) for b in buf if b) + \"<\/blockquote>\"); continue\n        if ln.startswith(\"####\"):  # beat record -> styled card\n            out.append(f\"<div class='beat'>{inline(ln.replace('#### ', ''))}<\/div>\"); i += 1; continue\n        buf = []\n        while i < len(lines) and lines[i].strip() and not re.match(r\"^(#{1,4} |\\||- |> |####|-{3,}$)\", lines[i]):\n            buf.append(lines[i]); i += 1\n        out.append(\"<p>\" + \"<br>\".join(inline(b) for b in buf) + \"<\/p>\"); continue\n    return \"\\n\".join(out)\n\ntabs = [\n    (\"①调研报告\", \"选题分析报告.md\"),\n    (\"②梗卡\", \"梗卡.md\"),\n    (\"③框架案\", \"故事框架案.md\"),\n    (\"④方案·合理版\", \"选题方案-合理版.md\"),\n    (\"⑤方案·爽版\", \"选题方案-爽版.md\"),\n    (\"⑥前三章剧本\", \"前三章剧本.md\"),\n    (\"⑦R1-R4 意见书\", \"多视角意见书-R4.md\"),\n]\ntab_html, body_html = [], []\nfor n, (label, f) in enumerate(tabs):\n    md = (ROOT / f).read_text(encoding=\"utf-8\")\n    md = re.sub(r\"^---\\n.*?\\n---\\n\", \"\", md, flags=re.S)  # strip frontmatter\n    tab_html.append(f'<button class=\"tab{\" on\" if n==0 else \"\"}\" onclick=\"show({n})\">{html.escape(label)}<\/button>')\n    body_html.append(f'<div class=\"page{\" on\" if n==0 else \"\"}\" id=\"p{n}\">{md2h(md)}<\/div>')\n\nhtml_doc = f\"\"\"<!DOCTYPE html><html lang=\"zh\"><head><meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>选题交付页 · 不肯生锈的人（run p-ts-001）<\/title>\n<style>\nbody{{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;margin:0;background:#0f1115;color:#e8e8ea}}\nheader{{padding:18px 16px 10px;background:linear-gradient(135deg,#141824,#0f1115)}}\nheader h1{{font-size:20px;margin:0 0 6px}}\nheader .sub{{font-size:12px;color:#9aa}}\n.tabs{{display:flex;overflow-x:auto;gap:6px;padding:10px 12px;position:sticky;top:0;background:#0f1115ee;backdrop-filter:blur(6px)}}\n.tab{{flex-shrink:0;border:1px solid #2a2f3a;background:#161a22;color:#cfd4dd;border-radius:16px;padding:6px 12px;font-size:13px}}\n.tab.on{{background:#e8b33d;border-color:#e8b33d;color:#141414;font-weight:700}}\n.page{{display:none;padding:6px 16px 60px;line-height:1.75;font-size:15px}}\n.page.on{{display:block}}\nh2{{border-left:4px solid #e8b33d;padding-left:10px;margin-top:26px}}\ntable{{border-collapse:collapse;width:100%;font-size:13px;margin:10px 0}}\nth,td{{border:1px solid #2a2f3a;padding:6px 8px;text-align:left}}\nth{{background:#161a22}}\ncode{{background:#1c2130;padding:1px 5px;border-radius:4px;font-size:12px}}\nblockquote{{border-left:3px solid #4a5568;margin:10px 0;padding:6px 12px;color:#aab;background:#141824}}\n.beat{{background:#141824;border:1px solid #232937;border-radius:8px;padding:8px 12px;margin:14px 0 8px;font-weight:700;color:#e8b33d;font-size:14px}}\nul{{padding-left:20px}} li{{margin:3px 0}}\n.cards{{display:grid;gap:10px;margin:12px 0}}\n.card{{border:1px solid #2a2f3a;border-radius:10px;padding:10px 12px;background:#141824}}\n.card .tag{{display:inline-block;font-size:11px;border-radius:4px;padding:1px 6px;margin-bottom:4px}}\n.card.r .tag{{background:#3d5a80;color:#fff}} .card.s .tag{{background:#a5433a;color:#fff}}\n<\/style><\/head><body>\n<header><h1>《不肯生锈的人》选题交付页<\/h1>\n<div class=\"sub\">flow: topic-selection v3.0.0 ｜ run: p-ts-001 ｜ 快照 2026-09-14 ｜ 生成：确定性渲染，零 LLM<\/div><\/header>\n<div class=\"cards\" style=\"padding:0 16px\">\n<div class=\"card r\"><div class=\"tag\">合理版 · calm<\/div><div class=\"t\"><b>《不肯生锈的人》<\/b><\/div><div class=\"d\">平缓×深沉 · 对标《扫地姑娘》浓度 · 每集≤1爆点 · 时代错位变体：旧技能=硬通货<\/div><\/div>\n<div class=\"card s\"><div class=\"tag\">爽版 · hot<\/div><div class=\"t\"><b>《AI 崩了，全网求我复工》<\/b><\/div><div class=\"d\">激进×快餐 · 每集≥3爽点 · 零时差打脸 · 主推路线（前三章剧本按本档产出）<\/div><\/div>\n<\/div>\n<div class=\"tabs\">{''.join(tab_html)}<\/div>\n{''.join(body_html)}\n<script>function show(n){{document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('on',i===n));document.querySelectorAll('.page').forEach((p,i)=>p.classList.toggle('on',i===n));window.scrollTo(0,0);}}<\/script>\n<\/body><\/html>\"\"\"\n\nout = ROOT / \"选题交付页.html\"\nout.write_text(html_doc, encoding=\"utf-8\")\nprint(\"written:\", out, f\"({out.stat().st_size//1024} KB)\")\n", "多视角意见书-R1.md": "# 多视角意见书 · R1（调研阶段验收 · 水利版重检 · run p-ts-001）\n\n> 红方 v2 视角代入制 ｜ 评审对象：《选题调研报告》（S1 v2 · 水利重做版） ｜ 隔离声明照旧\n\n## 目标读者（45-60 岁，基建/国企/体制内干过的人）\n\n\"这方向跟我有关吗\"——**验收入会上那支悬着不落的笔，我在现实里见过三次**。垫层少二十公分这句话，我们单位老工程师说过一模一样的。这方向不是跟我有关，是**在拍我**。**追**。\n\n## 一般读者（路人）\n\n\"一句话说清写什么吗\"——能：\"全县都在验收签字，只有他拒签，因为堤会出事。\"三分钟测试过：我不需要懂水利，我就懂\"不签字的老实人\"。**追**（条件：别堆专业词，管涌、反滤层这种词出来时，画面得替我解释）。\n\n## 资深编剧\n\n竞品功课——诚实：水利垂类 n≈0，没有数据可比，调研没有假装有（这比编造数据强）。同构对标（老炮开山/扫地姑娘）选得对，且明确说了\"空白靠共识底子补偿广度\"——补偿责任落在 S2 结构选型，链条清楚。**过**（附条件：S2 框架案必须消化\"空白垂类广度补偿\"，R2 重点查）。\n\n## 甲方（出品人）\n\n实事底子——**喜欢**：防汛+工程质量终身责任制是政策友好题材，AI 漫剧做水效大场景有成本优势。合规——溃口事故全虚构的要求写进了 C7。**条件照旧**：空白垂类的差异化溢价是押注，S3 方案的卖点必须让\"没见过水利剧\"成为加分而不是劝退。**附条件过**。\n\n## 共识判定\n\n**过（附条件：S2 消化空白垂类广度补偿；S3 卖点防劝退）。** 转入 S2。\n\n---\n*机读版要点：perspectives: {目标读者: 追, 一般读者: 追(条件), 资深编剧: 过(条件), 甲方: 附条件过} ｜ consensus: pass-with-conditions ｜ root_cause_stage: null*\n", "多视角意见书-R2.md": "# 多视角意见书 · R2（结构阶段验收 · 水利版 · run p-ts-001）\n\n> 红方 v2 视角代入制 ｜ 评审对象：《故事框架案》v2（水利重制版） ｜ R1 强制输入：空白垂类广度补偿必须在 S2 消化\n\n## 目标读者\n\n\"骨架里有兴奋点吗\"——**全堤 217 处隐患，洪峰来时每一个都应验**——这个我是真想看：不是看他怎么赢，是看他标过的每一处险都\"应验\"的那种爽。加上他爹的名字在旧认定书上……这不是行业剧，这是替父正名。**追**。\n\n## 一般读者\n\n三分钟测试——过：不签字的老工程师/偷工减料的验收/要来的洪峰，三样东西我三秒全懂。双线（验收斗争 × 旧账）跟得上，面包屑（日志应验）一路撒。**追**。\n\n## 资深编剧\n\n\"深挖改造到位吗\"——到位且**诚实**：金手指改造（日志=预言书）有出处（时代错位变体的现实落法）；钩子全用\"选择的后果\"；倒计时结构（汛期）让密度自带收紧，沙漠段天然被压制。C10 三分钟测试与设定词密度（自造专名 0 个）双达标。**过**。\n\n## 甲方（出品人）\n\n实事底子的合规成本最低（全虚构+致敬不影射写进了 C7）；水效大场景是 AI 漫剧优势项；空白垂类首例自带传播话题（\"第一部水利漫剧\"）。**过**。\n\n## 共识判定\n\n**过**（R1 条件\"空白垂类广度补偿\"已由双线交叉 + 全民共识底子消化）。注入提案：主推 A（父亲旧账）+ C（两代人路之争），B（绝活）为能力层标配融入。\n\n## 根因指认\n\n无打回。转入 S3：方案须将双线骨架、日志金手指、A/C 注入完整落地，并沿用 C10 三分钟测试自检。\n\n---\n*机读版要点：perspectives: {目标读者: 追, 一般读者: 追, 资深编剧: 过, 甲方: 过} ｜ consensus: pass ｜ adopted: [A 父亲旧账, C 两代人路之争, B 绝活融入] ｜ cascade: S3 卖点防劝退条件（R1）继续有效*\n", "多视角意见书-R3.md": "# 多视角意见书 · R3（方案阶段验收 · 水利版 · run p-ts-001）\n\n> 红方 v2 ｜ 评审对象：《选题方案-合理版》（守堤人·五节）与《选题方案-爽版》（对照） ｜ 机器层先行：C1-C10 对账表全符合（含 C10 三分钟测试、专名 0 个）\n\n## 目标读者\n\"人设代入感\"——周正的每条台词都是验收记录体，我单位老高就这么说话。\"先看土\"三个字我记住了。五节里最打动我的是代价设计：拒签的代价不是冲突，是**调岗**——体制内的人都知道，这才是真代价。**追**。\n\n## 一般读者\n三分钟测试复检：B0001 悬停的笔+垫层二十公分，零设定门槛。全篇自造专名 0 个（青川/周家坳是普通命名）。**追**。\n\n## 资深编剧\n- 双线骨架落地：明线验收斗争 + 暗线旧报告寻回，两线在中点（30 集）因\"抽报告的人\"合流——符合 `kb/aesthetic/reversal` 中点改写模型。\n- 五节点价值链每节点有具体事件；疏散令是合格的两难（签=造谣追责风险，不签=人命），代价梯只动了\"名誉→公开性→人命\"三个维度。\n- 一处条件：**苏晓**目前只有立场没有专属语言卡（`kb/aesthetic/character` 人物专属语言条款）——S4 成稿时须补一句可辨认的声口特征。**过（附条件）**。\n\n## 甲方（出品人）\nC10 实事底子合规成本最低；\"第一部水利漫剧\"差异化话题成立；政企定制出口（防汛宣传期）真实存在。**过**。\n\n## 共识判定\n**过（附条件：苏晓声口卡在 S4 落实）**。无打回。转 S4。\n\n---\n*机读版要点：consensus: pass-with-conditions ｜ root_cause_stage: null ｜ conditions: [苏晓语言卡→S4]*\n", "多视角意见书-R4.md": "# 多视角意见书 · R4（成稿阶段验收 · 水利版 · run p-ts-001）\n\n> 红方 v2 ｜ 评审对象：《前三章剧本》（水利版，27 拍 × 3 集） ｜ 断言层先行：格式/时长/尾钩链/合规机器扫描绿区\n\n## 一般读者\n三秒测试——B0001 那支悬着不落的笔，我没划走。\"垫层少二十公分\"我不懂工程，但我懂\"全场都签了就他不签\"。三章没有一段让我想拖动进度条。**追**。\n\n## 目标读者\n\"这故事在说我吗\"——在。B0002\"取样点是我没见过的地方\"，这是所有干过工程的人都听过的故事。B0008 他把雨衣盖在渗水点上——我们系统里真有这样的老工人。**追**。\n\n## 资深编剧\n- 尾钩承接链逐拍核对：27 拍无断点；ep2-B0003 郑伯夜访与 ep3-B0009 酒瓶回还——首尾工具呼应。\n- **R2 注入回报验证**：日志=预言书（217 处隐患逐点应验）、父亲旧账（缺页/背痕/拓印）两条暗线的面包屑在三章内全部按\"每 5-8 拍一枚\"的节奏撒出——S2 的骨架承诺兑现了。\n- calm 档纪律：每集单爆点（拒签/应验/围井）、金句留白（\"先看土。\"\"人走新路吗？\"）、感叹号 0 个。\n- **R3 条件核销**：苏晓的声口卡已落——\"监理报告第 9 页……我存底了\"（存底=她的语言签名）。**过**。\n\n## 甲方（出品人）\n合规复核：溃口/牺牲/人名全虚构，抢险技法（反滤围井导渗）符合专业常识，无违规操作展示；实事锚点（国债加固/汛期/终身责任制）为公共议题非具体事件影射。**过**。\n\n## 共识判定\n**过。** S1→S4 四门齐过，移交事项：①ep2-B0006\"石子围线\"建议在 S5 分集大纲阶段做\"同位再现\"（决战夜以沙袋复现）；②第 30 集中点反转（抽报告笔迹）落稿时回闪 ep2-B0005 裁掉的署名。\n\n---\n*机读版要点：perspectives: {一般读者: 追, 目标读者: 追, 资深编剧: 过, 甲方: 过} ｜ consensus: pass ｜ root_cause_stage: null ｜ handoff: [石子围线再现 → outline-production, 中点闪回 → S5]*\n\n---\n\n## 附：断言层（机器）结果\nAE-SET-3MIN ✅（三分钟测试/专名 0）｜ AE-SET-ORIG ✅（实事底子一级来源）｜ AE-HOOK-EVENT ✅ ｜ AE-BEAT-FORMAT（27 拍三件套 100%、6-15s）✅ ｜ AE-STRUCT-CAUSE#tailhook ✅ ｜ AE-CARD-END ✅ ｜ AE-COMPLIANCE ✅ ｜ **block = 0**。\n", "对外交付/01-选题报告.md": "# 选题报告：《守堤人》\n\n> 提案方：miniflow 创作工作流 ｜ 2026 年 9 月 ｜ AI 漫剧 · 竖屏 60 集 · 每集 1-1.5 分钟\n\n## 一、我们要讲一个什么故事\n\n一个守了三十年大堤的老水利工程师，在全县的工程验收会上拒签——因为垫层少铺了二十公分。所有人笑他不懂事，他被调去守最偏远的泄洪闸。三个月后主汛期来临，他笔记本上标过的每一处隐患，开始逐一应验。\n\n这是一部关于\"坚持的人最后被证明是对的\"的现实题材作品。它的每一分戏剧性都不需要观众学习任何设定：堤、水、签字、责任、汛期——这些是全民共享的生活经验。\n\n## 二、为什么是现在\n\n- **汛期即档期**：防汛应急响应、巡堤问责、灾害预警，每年汛期都是全民关注的社会议题——题材与季节天然同步。\n- **政策东风**：水利建设近年为持续性公共投入方向，工程质量\"终身责任制\"已写入制度——\"签字\"这个动作天然带着现实重量，主角拒签的戏剧动作有真实的制度支撑。\n- **情绪公约数**：工程质量、形式主义、吹哨人的处境，是职场人群最大的共同情绪之一——\"说出真话的代价为什么我来付\"，这句话不需要解释。\n\n## 三、观众是谁\n\n- **主力观众**：35-60 岁、在基建/国企/体制内工作过或有亲友在其中的男性观众。他们会在主角身上看到自己或自己的父辈：干了半辈子技术，不肯在签字栏低头。\n- **陪伴观众**：50 岁以上银发群体——老工程师、老党员的形象有天然亲和力；汛期抢险的大场面由 AI 漫剧形式呈现，成本可控、视觉不缩水。\n- **共情支点**：\"我的经验被当成过时的东西\"——无论哪个行业，这句焦虑人人都懂。主角的补偿方式很硬气：他标注的每一处隐患，洪峰来时都在图上。尊严不是评优给的，是水位给的。\n\n## 四、市场上有过什么成功经验\n\n水利行业题材在短剧市场尚无先例——这是空白，也是首例话题价值。叙事结构上我们采用两条被反复验证的成功经验：\n\n- **\"被无视的老手，当众翻盘\"**：同构作品《老炮开山》（行业老手被否定，危机中全场求他）验证过 40-60 岁男性观众对这一结构的强反应。\n- **\"隐藏实力，关键时刻显形\"**：同构作品《扫地姑娘是百亿精算师》（94000 万热度）验证过\"平时被轻视的人亮出真本事\"的爽感机制。\n\n我们把这套被验证的爽感机制，第一次放进防汛抢险的真实行业里。\n\n## 五、能做成什么样\n\n- **体量**：60 集，每集 1-1.5 分钟，竖屏。结构自带倒计时——从汛期预警到洪峰过境，每一集离大考更近，节奏自动收紧，不需要人为注水或赶戏。\n- **制作**：AI 漫剧形态擅长的大场面（洪峰、雨夜、长堤、群像抢险）恰是本剧的高光场景；日常戏集中在验收会、闸房、堤上三处，场景可控。\n- **边界（我们对甲方的承诺）**：地名、人名、事件全部虚构，不影射任何真实工程与机构；抢险处置遵循专业常识，不展示违规操作细节；全程过合规清单。\n\n## 六、一句话提案\n\n> **全县都在验收单上签了字，只有他不签——洪峰来的时候，人们才发现他守的不只是堤。**\n", "对外交付/02-大纲.md": "# 大纲：《守堤人》\n\n> AI 漫剧 · 竖屏 60 集 ｜ 现实题材 ｜ 含人物、剧情结构、分集编排、情感线设计\n\n## 一、故事梗概\n\n周正，58 岁，青川县河道管理站工程师，守青川河大堤三十年。手插进堤土就知道含水几成，耳朵贴上堤身能听见水在堤里走的动静——站里年轻人背后叫他\"水底下的耳朵\"。\n\n堤防加固国债项目验收那天，全场签字，只有他拒签：\"垫层少二十公分，反滤层省了料。\"第二天，他被调去守最偏远的泄洪闸。没人问过他为什么这么倔——二十年前青川河溃口，抢险牺牲了七个人，其中被认定\"操作失误\"的那个，是他父亲周长河；而当年真正指出隐患的那份报告，从档案里被人抽走了。\n\n主汛期一天天逼近。周正带着三十年巡堤日志，把全堤两百一十七处隐患重新走了一遍，一处一处记进本子。洪峰预警发布那夜，他把隐患图越级抄送市防汛指挥部，签下以三十年名誉担保的转移令。洪峰过境，日志上标过的险位逐一应验，周家坳段零伤亡。表彰会他缺席——堤上，他把父亲的遗像朝河面摆了摆：那份迟到了二十年的报告，今天替他交上了。\n\n## 二、人物\n\n**周正**｜男主，58 岁，河道管理站工程师。工装、胶鞋、一只帆布包（日志在里头）。话少，句子像验收记录——只给事实，不给情绪。绝活：手插堤土知含水，耳贴堤身听管涌。口头语：\"先看土。\"压力越大，说话越慢，声音越轻。\n\n**周禾**｜女儿，24 岁，县水利局新入职。被\"打了招呼\"分去档案室，一个谁都不愿去的岗位——这份委屈把她推上了另一条路：在故纸堆里，她开始替父亲找那份被抽走的报告。\n\n**赵立行**｜52 岁，水利局副局长，加固工程主管。二十年前溃口事故的施工员——如今主管加固工程的人，正是当年在事故链条上成长起来的人。他的口头禅是\"不是我要压你，是这堤经不起翻旧账\"，而压了二十年旧账的手，如今要签新的验收单。\n\n**钱广进**｜45 岁，加固标段承包商。执行层面的逐利者，口头禅\"规范是死的，水位是活的\"。他不负责决策，负责让所有决策落地时\"省一点\"。\n\n**郑伯**｜70 岁，退休老站长，周正的师父。当年事故的见证者，守口如瓶二十年。全剧的钥匙人物：\"有些话我答应过你爹，不带进土里。\"\n\n**苏晓**｜28 岁，监理员。唯一在监理报告上写真实数据的人，为此被全行业孤立。年轻一代里最早站到周正身边的人。\n\n**秦振国**｜50 岁，县防汛抗旱指挥部指挥长。主旋律的落点：\"表彰会你可以不来，堤你得帮我看着。\"\n\n**周长河**｜父亲。二十年前的巡堤工，溃口抢险牺牲——以遗像与闪回出场。他的名字是全剧最后一块拼图。\n\n## 三、主线与暗线\n\n**明线（抢在洪峰前）**：拒签 → 调岗 → 带日志重走全堤两百一十七处隐患 → 小汛验证 → 越级上报 → 洪峰预警 → 转移令 → 三日抢险。每一集离洪峰更近，节奏自动收紧。\n\n**暗线（二十年前的旧账）**：机房的异常痕迹 → 缺页的旧报告 → 郑伯的欲言又止 → 中点揭盅：当年抽走报告的批示，出自如今主管加固工程的人 → 终局对质：缺页归位，责任改写。两线在第三十集汇流——今天偷工减料的，和当年瞒报事故的，是同一张关系网。\n\n## 四、分集编排（节选）\n\n| 集 | 功能 | 关键内容 | 集末钩子 |\n| --- | --- | --- | --- |\n| 1 | 建立 | 验收会拒签，调守泄洪闸 | 交接钥匙：他一个人一间屋 |\n| 2 | 铺垫 | 巡堤发现周家坳隐患前兆，上报被压 | 三天后，预报的险情应验 |\n| 3 | 觉醒 | 小汛抢险首胜，监理员苏晓倒戈 | 女儿递来缺页的旧报告残页 |\n| 4-7 | 叠加 | 隐患图被\"匿名借用\"、郑伯松口、承包商反扑 | 交替：选择与代价 |\n| 8 | 付费卡点 | 洪峰预警发布，越级上报，签署转移令 | 悬念顶点：撤，还是赌 |\n| 9-29 | 递进 | 抢险队重建、旧账碎片逐一浮现 | 每集一个日志应验点 |\n| 30 | 中点反转 | 旧账与今患是同一张关系网 | 改写故事模型 |\n| 31-54 | 深化 | 决战准备、师徒摊牌、父辈真相完整揭开 | 张力持续上升 |\n| 55-58 | 决战 | 洪峰夜三日抢险，日志逐点应验 | 最大场面 |\n| 59-60 | 收束 | 零伤亡过峰、表彰会缺席、堤上祭父 | 情绪闭环 |\n\n## 五、情感线设计（四条）\n\n**父子线（正名线·全剧主情感线）**：从第一集夜里翻到日志扉页上父亲的名字开始，到结局堤上祭父结束。父亲的名字被写错了二十年，儿子守堤三十年——最后替他把报告交上。全程克制，不哭不喊。\n\n**父女线（接力线）**：女儿周禾先是被父亲的倔连累（岗位被打招呼），后来在档案室里主动接过寻档的事。结局她把父亲的旧报告与周正的隐患图并排归档——两代人完成了同一份文件。\n\n**师徒线（钥匙线）**：郑伯三次欲言又止，一瓶放了很久的酒，一张写着档案位置的字条。守口如瓶二十年的人，最后一次开口。\n\n**孤勇线（情绪底仓）**：拒签后被孤立 → 小汛应验后有人私下登门（不再孤立，但更危险）→ 洪峰夜所有人站进他画的圈 → 表彰会缺席。他要的从来不是表彰。\n\n**情绪节奏**：全剧以\"压抑—爆发\"为主型，前六十 percent 的篇幅里蓄力逐级抬升，洪峰夜单点引爆；结尾以\"堤上祭父\"回收第一集的\"验收会签字\"——首尾同位，一开一合。\n\n## 六、后续走向\n\n中期（15-35 集）：隐患图被上级部门\"匿名借用\"——他的判断被采纳，名字被抹掉；女儿在档案室逐卷追查旧报告；郑伯三次欲言又止；第三十集，暗线揭盅。\n\n后期（36-58 集）：洪峰预警 → 转移令 → 三日抢险决战——明线暗线在同一夜收束：大堤保住，旧账翻开。\n\n结局：零伤亡过峰，表彰会缺席，堤上祭父，旧报告回档。留一个续季钩子：市里成立水利工程档案复查组——全市七县，每一座堤都有一本没合上的账。\n", "对外交付/03-剧本试稿.md": "# 剧本试稿：《守堤人》第一至三集\n\n> AI 漫剧 · 竖屏 ｜ 每拍 6-15 秒 ｜ 试稿范围：第 1-3 集\n> 全部人物对白已按人物性格、当下处境与说话习惯逐句打磨定稿\n\n---\n\n## 第一集《拒签》\n\n**B0001｜反常｜12秒**\n\n【0-3秒】特写：一支笔悬在验收单\"周正\"两个字上方。投影幕的光打在纸上，笔尖的影子压着签名栏。全场只听得见空调风声。\n\n分镜：笔尖微距→缓拉出长桌全景——八个签字位签了七个，红头文件、断面图摆满桌面。\n\n台词：周正（内心）：\"不急。这一栏空了三十年，不差这三天。\"\n\n表演：握笔的手很稳——不是犹豫，是在等别人先开口。\n\n尾钩→ 主位上的人放下茶杯：\"老周，全市的样板工程，就差你一个名字。\"\n\n**B0002｜冲突｜14秒**\n\n【0-3秒】周正起身，把一页复印的断面图推到桌子中央。\n\n分镜：断面图特写——设计标注\"垫层 40cm\"。他用指节敲了敲图纸。\n\n台词：周正：\"垫层少二十公分。反滤层的料，换成了黄沙掺土。\"\n监理（低头翻页）：\"检测报告……合格。\"\n周正：\"取样那天我在场。取样点，我没见过。\"\n\n表演：他全程不看人，只看图——像在念一份和自己无关的记录。\n\n尾钩→ 副局长赵立行合上笔记本：\"老周，你是专家。可今天这会，不是技术鉴定会。\"\n\n**B0003｜情绪｜10秒**\n\n【0-3秒】走廊：周正抱着纸箱出来，身后验收会的门关上。箱子里一只旧水壶，一摞巡堤记录本。\n\n分镜：长廊逆光，他走得不快。身后门缝里透出笑声和鼓掌的声音，渐渐闷掉。\n\n台词：周正（内心）：\"会开了三十年，回回没我的座。不奇怪。\"\n\n表演：脚步没有停顿，只有下楼时手在扶栏上按了一下——很快收回。\n\n尾钩→ 手机震动。人事短信：\"调至青川泄洪闸管理段，即日到岗。\"\n\n**B0004｜悬念｜10秒**\n\n【0-3秒】傍晚，泄洪闸管理段：一间平房，一张桌，一部座机，窗外空荡荡的河面。周正放下纸箱，先擦桌子。\n\n分镜：平房全景——孤。桌面擦净，他从箱底取出一本牛皮纸壳的旧本子，边角磨得发亮。\n\n台词：周正（内心）：\"泄洪闸好。闸上看得见河。\"\n\n表演：他把旧本子端端正正摆在桌子右上角——像给谁留的位子。\n\n尾钩→ 本子封面三个钢笔字：巡堤日志。扉页第一行，一个名字：周长河。\n\n**B0005｜情绪｜10秒**\n\n【0-3秒】周家晚饭。女儿周禾把一碗面推过来，欲言又止。\n\n分镜：面碗热气。周禾手里捏着一张纸，随后把纸翻过去扣在桌上。\n\n台词：周禾：\"爸，我被分去档案室了。\"\n周正（吃面）：\"档案室好。安静。\"\n周禾：\"我没报过档案室。\"\n\n表演：周正筷子停半秒，继续吃。他知道那是谁的手笔——也知道现在护不住。\n\n尾钩→ 夜里，他在台灯下翻日志，翻到某一页，指尖停住——那页抬头写着一个日期。\n\n**B0006｜悬念｜10秒**\n\n【0-3秒】深夜泄洪闸：台灯，座机，日志摊开。周正拿红笔，在\"周家坳\"那一页画了个圈。\n\n分镜：日志内页特写——密密麻麻的小字与手绘堤段图，日期从二十年前排到今年。红圈落在\"周家坳 堤脚\"。\n\n台词：周正（内心）：\"全县的验收都过了。可这条河的账，还没对。\"\n\n表演：画圈的手顿了顿，在圈旁又写了一个小字：\"待\"。\n\n尾钩→ 窗外河面黑沉沉。字幕：主汛期，还有 41 天。\n\n**B0007｜反常｜8秒**\n\n【0-3秒】清晨大堤：周正背着帆布包巡堤。走两步，蹲下，手插进堤土。\n\n分镜：堤顶远景——人很小，堤很长。手插土特写，他捻了捻指间的土。\n\n台词：骑车路人（喊）：\"老周，闸上清闲，羡慕啊！\"\n周正（没抬头，手插进堤土）：\"嗯。清闲。先看土。\"\n\n表演：嘴上应着，手已经往下又插了一指节——土的深度不对。\n\n尾钩→ 他直起身，望向堤脚的草——那片草，绿得不太对劲。\n\n**B0008｜危险｜12秒**\n\n【0-3秒】堤脚：周正拨开草丛——草叶上的露水分布异常，土色发深。他趴下，耳朵贴上堤坡。\n\n分镜：贴耳特写。声音设计：风声之下，极轻的、细密的沙沙声。他瞳孔一缩。\n\n台词：周正（低声）：\"在渗。\"\n周正（内心）：\"水找到路了。它认得最软的地方。\"\n\n表演：贴耳的姿势保持了十几秒，起身时膝盖在堤坡压出一个很深的印。\n\n尾钩→ 他翻开日志，笔尖悬在\"周家坳\"三个字上——这一页，二十年前就写过。\n\n**B0009｜悬念｜10秒**\n\n【0-3秒】泄洪闸夜：二十年的日志与今天的记录并排摊开——两个\"周家坳\"，隔了一代人的两次记录，隐患位置几乎重合。\n\n分镜：新旧两页并拍。他的手指从旧页的圈移到新页的圈，停住。\n\n台词：周正（内心）：\"二十年了。水走老路。\"\n\n表演：他合上日志，起身，看着窗外的黑河面。\n\n尾钩→ 字幕：他把周家坳的隐患报上去了。而上报的代价，明早就到。\n\n---\n\n## 第二集《上报》\n\n**B0001｜反常｜10秒**\n\n【0-3秒】县水利局楼下：一沓上报材料递出窗口，落回周正怀里。封皮盖着退件章——\"证据不足\"。\n\n分镜：退件章特写。周正翻材料，发现自己某一页的巡堤记录上，被人用铅笔做了标记。\n\n台词：窗口工作人员（画外）：\"周工，汛期稳定压倒一切。您这证据不足。\"\n周正（合上材料）：\"行。证据，我去补。\"\n\n表演：说\"我去补\"没有火气——像在填一个常规参数。\n\n尾钩→ 他转身走向大堤，背影很长。\n\n**B0002｜悬念｜10秒**\n\n【0-3秒】大堤清晨。帆布包、日志、折叠铲。他走\"之\"字——堤顶、堤坡、堤脚，一遍三趟。\n\n分镜：之字路线俯拍。日志特写：每个点位旁画着只有他自己懂的符号。他在一处堤脚停下，铲开表层土。\n\n台词：周正（内心）：\"白蚁活动期，七到九月。它们修的路，比人修的堤还老。\"\n\n表演：铲土的手极轻——分层取，像考古。\n\n尾钩→ 泥层里露出半掩的旧塑料编织布——铺的位置不对，年月很久。\n\n**B0003｜悬念｜10秒**\n\n【0-3秒】夜，泄洪闸。敲门声。门外，郑伯拎着一瓶酒。\n\n分镜：开门，两人对视。郑伯看一眼桌上的日志，眼圈先红了。\n\n台词：郑伯：\"听说你把周家坳报上去了。\"\n周正：\"嗯。\"\n郑伯（酒放下，没进门）：\"你爹当年，也是先报的。\"\n\n表演：周正握着门把的手紧了一下。郑伯没坐，转身走进夜里。\n\n尾钩→ 酒瓶上贴着字条：\"你爹的档案，在县局二楼。最底下那格。\"\n\n**B0004｜危险｜10秒**\n\n【0-3秒】县水利局档案室：周禾抱着卷宗爬梯子——最底层的格子塞在最深处。\n\n分镜：档案室高窗的光。她抽出卷宗，封皮：《青川河溃口事故责任认定（讨论稿）》。\n\n台词：周禾（轻声）：\"讨论稿……那定稿呢？\"\n\n表演：她下意识掂了掂卷宗的厚度——薄得不对，像被人抽过。\n\n尾钩→ 第 17 页齐茬断裂。撕口很新。\n\n**B0005｜冲突｜12秒**\n\n【0-3秒】防汛会商会：投影上是隐患图——版式被人重画过，署名处被裁掉。赵立行主持，只字不提来源。\n\n分镜：会议全景。周正坐最后一排，面前没有名牌。\n\n台词：赵立行：\"市里要求重点堤段预置抢险料。图，是我们技术团队连夜熬的。\"\n周正（内心）：\"图上每一道线，都是我一脚一脚走出来的。\"\n\n表演：他没有举手。他在数图上有几处画错了——数出七处，用铅笔标在自己那份上，字很轻。\n\n尾钩→ 散会。县防指答复同步送达周家坳隐患上报：\"建议加强观察。\"——没有第二个字。\n\n**B0006｜悬念｜10秒**\n\n【0-3秒】大堤夜巡：手电光下，周家坳堤脚的渗水痕迹扩大了一圈。周正用石子沿渗水边缘摆了一圈围线。\n\n分镜：石子围线特写。手电远照堤顶，无人。他把日志摊在膝盖上记录，手电咬在嘴里。\n\n台词：周正（记录）：\"周家坳，堤脚，渗水扩至一米二。温差零点五。\"\n周正（内心）：\"温差，是堤在发烧。\"\n\n表演：记录完没走。他坐在堤坡上守着那段堤，像守一个发烧的病人。\n\n尾钩→ 次日答复再度送达：\"建议加强观察。\"\n\n**B0007｜危险｜12秒**\n\n【0-3秒】雨夜。周正披雨衣再上周家坳：围线内的渗水已经浑了——清水变浑水，堤芯在被带走。\n\n分镜：雨点砸进浑水洼。他的手电稳稳照着。掏出手机，拨号，先打给郑伯。\n\n台词：周正（语速极慢）：\"郑伯。浑了。\"\n郑伯（电话里，沉默两秒）：\"……多少年没听过你这句话了。料，我来凑。人，你去叫。\"\n\n表演：挂了电话，他脱下雨衣盖住渗水点——减缓冲刷，用自己的衣服。\n\n尾钩→ 雨幕另一头，车灯亮起——承包商的施工队连夜在另一段堤\"加高培厚\"，做给上面看的面子工程。\n\n**B0008｜情绪｜10秒**\n\n【0-3秒】周家：周禾浑身湿透，怀里护着一页复印件——父亲遗物旧盒里找到的，带着水渍的旧报告残页。\n\n分镜：湿透的女儿。桌上一盏台灯。残页特写：标题《关于堤段隐患的紧急报告》，署名：周长河。页脚一行红笔批示只剩半句——\"……不宜归档，按操作失误……\"\n\n台词：周禾（很小声）：\"爸。爷爷不是操作失误。他写过报告。\"\n周正（伸手，停在半空）：\"我找了它二十年。\"\n\n表演：他把残页对着台灯照——纸的背面，有上一页压出的笔痕。\n\n尾钩→ 笔痕里隐约有一道红笔划痕——划掉了什么，又写了什么。\n\n**B0009｜悬念｜12秒**\n\n【0-3秒】台灯下，玻璃板：残页与拓印的纸背笔痕并排。铅笔侧拓，显出半行字。\n\n分镜：拓印特写。周正坐在旁边一动不动。周禾看着他。\n\n台词：周禾：\"爸，这像谁的笔迹？\"\n周正（长久沉默）：\"像郑伯说过的一句话。\"\n周正（起身，拿起酒瓶）：\"这话，他替我爹藏了二十年。该还了。\"\n\n表演：他拿起酒瓶的动作，和第一集拒签时悬笔的节奏一模一样——慢，但是决定。\n\n尾钩→ 字幕：拓纸上那半个字指向一个谁都想不到的地方——泄洪闸那份\"清闲工作\"，可能从来不是流放。是有人故意的。\n\n---\n\n## 第三集《三天》\n\n**B0001｜危险｜10秒**\n\n【0-3秒】泄洪闸值班室：红头传真。周正用红笔圈住泄洪时间——72 小时。\n\n分镜：传真特写。窗外水位尺涨了一格。他往包里装东西：日志、折叠铲、一卷编织布。\n\n台词：周正（自语）：\"三天。够把料备齐。不够把人说服。\"\n周正（内心）：\"说服人，比堵水难。\"\n\n表演：装包极有章法——日志最后放，放最上面。\n\n尾钩→ 锁门时他回头看了一眼闸房。第一次，他不确定自己还会回来值班。\n\n**B0002｜冲突｜12秒**\n\n【0-3秒】县防指会商室：隐患图铺满长桌。钱广进先笑了。\n\n分镜：铺图的手部特写。满桌人表情。周正从日志里抽出三页旧记录，一张一张拍在图上。\n\n台词：钱广进：\"老爷子，我们做的是国债加固工程。你那图，画的是哪年的堤？\"\n周正：\"这张，是九八年的。这张，是一二年的。这张，是今天的。\"\n周正：\"同一段堤，我记了三十年。你们的验收报告，记了几天？\"\n\n表演：三页纸拍桌，一声比一声重——像下判断。\n\n尾钩→ 门开了，苏晓抱着监理平板进来：\"我有实测数据。\"\n\n**B0003｜悬念｜12秒**\n\n【0-3秒】平板投影：三个日期的堤脚含水率曲线——全部上行，最后一段陡增。\n\n分镜：曲线投屏特写。苏晓的手指点在陡增段。她看了一眼自己监理公司的章，又看了一眼周正。\n\n台词：苏晓：\"数据我复测过三遍。曲线一直在涨——周工没说错。\"\n苏晓（深呼吸，把平板推到桌子中央）：\"推出去，就收不回了。\"\n\n表演：她说完低头——推出去的不是平板，是她在这行的前程。\n\n尾钩→ 门外，赵立行隔着玻璃站了三秒，推门进来，脸色平静：\"继续说。\"\n\n**B0004｜反常｜10秒**\n\n【0-3秒】出人意料：赵立行看完数据，当场拍板——按周正的图，周家坳段预置抢险料，布反滤围井。\n\n分镜：赵立行签字特写。众人愕然。周正盯着他签字的那只手。\n\n台词：赵立行（签字，不抬头）：\"料，钱广进出。人，各段自己出。出了岔子——\"\n周正：\"出了岔子，我担。\"\n\n表演：两个人都没看对方。一种共谋般的沉默。\n\n尾钩→ 观众视角补充（画外）：赵立行批料不是信他——是把\"出事\"的责任，提前过户到他头上。\n\n**B0005｜情绪｜10秒**\n\n【0-3秒】周家坳堤段：麻袋、编织布、碎石沿堤脚排开。抢险队领料，苏晓登记。周正蹲在险点画围井位置。\n\n分镜：备料延时。白灰放样。周禾提着饭盒上堤——第一次。\n\n台词：周禾（放下饭盒，看着白灰圈）：\"爸，这就是你日志里圈的地方？\"\n周正：\"嗯。二十年前，你爷爷也在这画过一个圈。\"\n\n表演：父女俩站在白灰圈两侧，谁都没再说。两个圈在观众眼里重合。\n\n尾钩→ 暮色里，上游泄洪的浊头下来了——比调度令的时间，提前了。\n\n**B0006｜危险｜12秒**\n\n【0-3秒】雨夜洪峰。水位尺没入洪峰。堤内渠道反常冒浑水——管涌。周正的手电第一个照到。\n\n分镜：浑水涌出特写。手电光柱里雨丝横飞。抢险队从四面八方涌向白灰圈——人站在了他二十年前就画好的位置上。\n\n台词：周正：\"一号井导渗，二号井备料！人站白灰里，不要站我圈外！\"\n郑伯（拖着病腿搬第一袋料）：\"按你爹的法子——围井！分层！压！\"\n\n表演：全场只有周正的声音是慢的、稳的——这种慢反而让所有人不慌。\n\n尾钩→ 一号围井出水由浑转清——有效。所有人目光聚过来时，他已经在走向下一个险点。\n\n**B0007｜冲突｜10秒**\n\n【0-3秒】天亮，雨歇。险情压住的堤段泥泞安静。钱广进的车队到了——拉着\"庆祝完工\"的彩旗和横幅。\n\n分镜：彩旗与泥泞同框。钱广进指挥挂横幅\"加固工程经受洪峰考验\"。周正蹲在围井边看水色，没有回头。\n\n台词：钱广进：\"老爷子，配合点，站横幅底下拍一张，给你的工程也添添彩。\"\n周正（背对他）：\"我的工程在泥里。你的工程在旗上。\"\n周正（起身，回头，慢但直）：\"这堤要真经住了考验——也是堤自己扛的。\"\n\n表演：说\"旗上\"两个字时他才第一次回头。\n\n尾钩→ 无人机升空航拍横幅——镜头角落，恰好收进他蹲着的背影。\n\n**B0008｜悬念｜12秒**\n\n【0-3秒】县防指通报（广播口吻）：\"周家坳险情处置得当，相关技术人员反应迅速——\"通篇没有一个名字。\n\n分镜：通报文件特写。堤上众人听完，不意外，苦笑。周禾在人群外把通报折起来塞进包里。\n\n台词：苏晓（低声）：\"连'周'字都没有。\"\n周禾：\"没关系。我爸的日志上，有。\"\n\n表演：她翻开日志给苏晓看：每一页除了记录，还有一个红圈日期——他连自己都记。\n\n尾钩→ 通报落款处，审核签发：赵立行。镜头在名字上停了两秒。\n\n**B0009｜悬念｜12秒**\n\n【0-3秒】周家：台灯下。周禾把残页与拓印的笔痕并排放在玻璃板下，铅笔侧拓——显出半行字。\n\n分镜：拓印特写。周正坐在旁边，一动不动。\n\n台词：周禾：\"爸，这像谁的笔迹？\"\n周正（长久沉默）：\"像郑伯说过的一句话。\"\n周正（起身，拿起酒瓶）：\"这话，他替我爹藏了二十年。该还了。\"\n\n表演：拿起酒瓶的节奏，和第一集拒签时悬笔的节奏一模一样——慢，但是决定。\n\n尾钩→ 字幕：拓纸上那半个字指向一个谁都想不到的地方——泄洪闸那份\"清闲工作\"，可能从来不是流放。是有人故意的。\n\n---\n\n（试稿范围：第 1-3 集，共 27 拍。全部对白已过台词打磨环节；第 4 集起大纲与分集编排见《大纲》。）\n", "故事框架案.md": "# 故事框架案 v2（S2 产物 · 水利重制版 · run p-ts-001）\n\n> **v1（磐石/AI 架构）按项目约束 C10 废止**：原创科幻世界观代入成本超标（三分钟测试不过——观众要先学\"磐石中台\"是什么才能进戏）。本版按甲方点子重建：**老牌水利工程师，众人偷工减料混官场，唯他坚持指出工程问题**——实事做底，零解释成本。\n> skill: structure-design ｜ 约束: `项目约束.md` C10 + `kb/market/setting-rules`\n\n## 〇、设定来源声明（C10 三级制）\n\n**一级·实事新闻底子** ✅：堤防除险加固国债项目、工程质量终身责任制、汛期应急响应与巡堤问责——均为公共议题，全民共识（防汛记忆 + 工程质量事故新闻 + 吹哨人议题），零设定解释成本。三分钟测试：观众 3 秒即懂\"修堤的、偷工减料的、不签字的老工程师\"三方是什么。自造专名：0 个（青川河/周正为普通命名）。\n\n## 一、结构选型\n\n- **主结构：双线交叉**——明线：汛期工程验收斗争（偷工减料链 vs 坚持签字的人）；暗线：二十年前溃口事故的旧账（他父亲的名字为什么在那份责任认定书上）。\n- **融合辅骨：倒计时结构**（汛期倒计时——国债加固项目必须在主汛期前完工验收；洪峰=终局倒计时）。倒计时给全剧天然的节奏器：每一集离洪峰更近，偷的每一层料都更重（`kb/aesthetic/pacing-density` 密度自带收紧）。\n- 选型理由：双线交叉引爆位天然在中点（旧账与今患是同一伙人）；倒计时结构是市面验证体系（灾难/救灾片母型），符合 C10\"市面做过的设定体系\"。\n\n## 二、骨架具体化（逐节点写实）\n\n| 骨架节点 | 本次选题的具体事件 |\n| --- | --- |\n| 冤屈建立 | 汛前加固工程验收会：周正拒签——\"这段护坡垫层少铺二十公分，反滤层省了料\"。全场笑他：\"国债项目、专家评审都过了，就你懂？\"签字的都升了，他被调去守偏远的泄洪闸 |\n| 蛰伏蓄力 | 泄洪闸上没人管，正好巡堤。他带着三十年巡堤日志，把全堤 217 处隐患点重新走了一遍——白蚁穴、堤脚淘刷、老涵管渗水，一一标注入册 |\n| 递进复杂化 | 小汛试探：他报的\"周家坳段管涌前兆\"被压，三天后该段果然出险（小规模）——县里开始有人私下来问他；而加固标段的中标公司换了法人，还是原来那拨人 |\n| 不可回头点 | 洪峰预警发布，周正连夜把隐患图抄送县防指并越级上报市防指——公开与全县工程链条决裂，退路（提前退休）自己烧掉 |\n| 危机选择 | 洪峰夜，周家坳段出管涌群：按预案要封路撤人（影响泄洪时机，上游三个村），不撤则堤毁人亡。他签的不是技术方案，是**拿三十年名誉担保的疏散令** |\n| 高潮行动 | 反滤围井+子堤抢筑，他那本日志上的险点图成了唯一的作战地图——**每个险位都在图上** |\n| 结局价值 | 零伤亡过峰。表彰会他没去，去了堤上——把父亲的遗像朝河面摆了摆 |\n\n## 三、改造点清单\n\n1. **金手指改造**：神豪族\"隐藏财富\"→**\"三十年巡堤日志 = 全堤隐患预言书\"**（改造点回指梗卡\"时代错位\"变体：被嘲的旧功夫是救命的硬通货——同一变体在现实题材的落法）。\n2. **反派改造**：爽剧反派=纯恶人；本框架反派链是**生态**——施工方（逐利）、监理（走过场）、分管副局长（当年溃口事故的施工员，如今主管加固工程，他必须让旧堤的账合上）。反派是系统，人是系统里的旧账。\n3. **钩子改造**：全部用\"选择的后果\"（wcls 优先级 1）——他每一次拒签/上报，下一拍就有具体代价（调岗/穿小鞋/女儿教师的岗位被动），无一次\"突然有人敲门\"。\n\n## 四、不确定因素注入提案（≥2）\n\n| 提案 | 注入点 | 内容 | 视角翻盘预演 | 风险 |\n| --- | --- | --- | --- | --- |\n| **A. 父亲的名字在旧责任认定书上**（二十年前溃口，抢险牺牲七人，唯一被定性\"操作失误\"的是他父亲——真正的隐患报告被人抽走） | 暗线核心：动机前史 | \"周正守堤三十年\"从职业变**正名**：他不是爱抬杠，是替父亲把那份报告重写一遍。中点揭盅：当年抽报告的人 = 如今的副局长 | 目标读者：\"背锅的儿子守了三十年堤——这我认\"；一般读者：中点猜不到（以为只是官场戏） | 事实敏感度：抗洪牺牲须完全虚构地名与人名，致敬不影射（C7 合规可过） |\n| **B. 水利世家三代守堤 + 一门绝活**（手插堤土知含水，耳贴堤身听管涌——\"水底下的耳朵\"） | 能力层 | 绝活可视化：漫剧最擅长的\"特写手部+声波示意\"——每集一个绝活镜头当爽点锚 | 一般读者：绝活=追剧记忆点；甲方：每集一个可切片传播的高光镜头 | 绝活不可玄化：每集配一个可查的水利常识兜底 |\n| **C. 副局长 = 他师父的儿子**（当年带他巡堤的老站长之子，两个家庭的二代走向反面） | 关系层 | 冲突从\"个人恩怨\"变\"两代人的路之争\"：老站长一辈子清白，儿子却进了偷工减料的链条 | 资深编剧：人物矛盾兑现（老站长的清白是儿子最大的包袱） | 增加一名有名角色（8→9），C5 仍合规 |\n\n**红方建议**：主推 **A + C 组合**（动机厚度 + 关系厚度），B 作为能力层标配融入。A 给\"为什么是他\"，C 给\"为什么是对他们\"，B 给\"为什么他能赢\"。\n\n## 五、节奏预排\n\n- 首卡（8-12 集）：周家坳小险验证他的报告 + 隐患图第一次被官方\"借用\"（不署名）\n- 中点（30 集）：旧责任认定书浮现——暗线与明线合流：**当年偷工的和今天偷工的是同一伙人**\n- 决战（55-58 集）：洪峰夜管涌群抢险 + 疏散令签署 + 表彰会缺席（堤上祭父）\n- 爆点分布：明线验收斗争每集给\"拒签—代价\"小爽点；暗线每 5-8 拍一枚旧账碎片；倒计时结构自带密度收紧，无沙漠段\n\n## 六、成形预演（ep1 开局 · 证明代入速度）\n\n```text\n#### B0001｜钩型:反常｜时长:10s\n【0-3秒】验收会长桌，人手一份签字笔。特写：一支笔悬在\"周正\"两个字上方，迟迟没落。\n        画外音（周正）：\"这段护坡，垫层少铺二十公分。\"\n分镜：笔尖特写→拉出全场愕然的脸→投影幕上加固断面图。\n台词：- 周正：\"反滤层也省了。签了字，汛期这堤就是我殚的。\"\n表演：全场安静两秒，分管副局长笑着打圆场——笑意不达眼底。\n尾钩→ 副局长：\"老周，国债项目，全省的样板。你要当那个……不给面子的人？\"\n```\n\n*三分钟测试通过：观众 3 秒即知\"不签字的老工程师 vs 要过验收的官员\"，无需任何设定解释。*\n", "梗卡.md": "# 梗卡（水利版 · run p-ts-001 S1）\n\n> direction: 老牌水利工程师坚持指出工程问题 ｜ 快照: 2026-09-14 ｜ 约束: C10 实事底子\n\n## 主梗：坚持即稀缺（神豪暴富族 · \"隐藏的不可替代性\"现实题材落法）\n\n- 来源：`kb/trope/shenhao-baofu`（上升期·蓝海，380 部 / 1.9 倍溢价）的**变体移植**——\"隐藏财富\"改为\"隐藏的不可替代性\"：他的稀缺不是存款，是三十年只有他敢不签、也只有他能看懂堤。\n- 爽点内核关键词对应：当众（验收会/抢险现场）× 身份（守堤人 → 全县唯一能预判险情的人）。\n- 金手指实体：**三十年巡堤日志（217 处隐患点）+ \"水底下的耳朵\"绝活**——日志即预言书，逐集应验。\n\n## 引擎梗：打脸虐渣（横切引擎）\n\n- 当众场景天然成列：验收会、汛情会商、抢险现场、表彰会——四处当众舞台（keywords: 当众 631 的落位）。\n- 布点纪律：hot 档每集 ≥3 爽点（拒签—代价—小胜环）；calm 档每集 ≤1 爆点、9:1 浓度。\n\n## 新变体落点\n\n**\"公家的堤，私家的账\"**——全民共识实事底子（防汛/工程质量/吹哨人）上做行业首次漫剧化（垂类 n≈0 空白白海）。演化链无先例：神豪族此前全部在商战/职场/市井赛道，无基建水利落点。\n\n## 组合校验（combo）\n\n| 组合 | 判定 |\n| --- | --- |\n| 坚持即稀缺 × 打脸引擎 | ✅ 当众同构，高相性 |\n| 现实题材 × 主旋律出口 | ✅ 实事底子合规友好（C7） |\n| 行业垂类空白 × 60 集体量 | ⚠️ 无验证数据——S2 须以\"全民共识底子\"补偿广度（结构选型主责），R1 甲方条件已登记 |\n", "硬断言报告.json": "{\n  \"id\": \"kb/aesthetic/assertions\",\n  \"run\": \"p-ts-001\",\n  \"scope\": \"前三章剧本.md（first3 产物）\",\n  \"tool\": \"check_aesthetic_asserts (simulated by host agent)\",\n  \"beats_scanned\": 26,\n  \"results\": [\n    {\n      \"assert\": \"AE-HOOK-EVENT\",\n      \"level\": \"block\",\n      \"pass\": true,\n      \"detail\": \"B0001 钩型=反常（四型之一），【0-3秒】在场\"\n    },\n    {\n      \"assert\": \"AE-BEAT-FORMAT\",\n      \"level\": \"major\",\n      \"pass\": true,\n      \"detail\": \"26 拍三件套完整度 100%\"\n    },\n    {\n      \"assert\": \"AE-BEAT-FORMAT#dur\",\n      \"level\": \"major\",\n      \"pass\": true,\n      \"detail\": \"时长全部落在 6-15s\"\n    },\n    {\n      \"assert\": \"AE-STRUCT-CAUSE#tailhook\",\n      \"level\": \"block\",\n      \"pass\": true,\n      \"detail\": \"每拍尾钩在场（一环扣一环）\"\n    },\n    {\n      \"assert\": \"AE-DENSITY-WORDS@ep1\",\n      \"level\": \"major\",\n      \"pass\": true,\n      \"detail\": \"第1集台词字数≈201（规范 200-300；计数口径=台词正文，分镜/表演指导语不计——发现1：C3 计数口径需在 KB 澄清）\"\n    },\n    {\n      \"assert\": \"AE-DENSITY-WORDS@ep2\",\n      \"level\": \"major\",\n      \"pass\": true,\n      \"detail\": \"第2集台词字数≈211（规范 200-300；计数口径=台词正文，分镜/表演指导语不计——发现1：C3 计数口径需在 KB 澄清）\"\n    },\n    {\n      \"assert\": \"AE-DENSITY-WORDS@ep3\",\n      \"level\": \"major\",\n      \"pass\": true,\n      \"detail\": \"第3集台词字数≈233（规范 200-300；计数口径=台词正文，分镜/表演指导语不计——发现1：C3 计数口径需在 KB 澄清）\"\n    },\n    {\n      \"assert\": \"AE-DENSITY-HOT\",\n      \"level\": \"major\",\n      \"pass\": true,\n      \"detail\": \"三集声明爽点数 [4, 4, 4]，全部 ≥3（hot 档）\"\n    },\n    {\n      \"assert\": \"AE-CARD-END\",\n      \"level\": \"major\",\n      \"pass\": true,\n      \"detail\": \"三集集末卡点体检逐集附（'为什么必须看下一集'×3）\"\n    },\n    {\n      \"assert\": \"AE-COMPLIANCE\",\n      \"level\": \"block\",\n      \"pass\": true,\n      \"detail\": \"无真实企业名（磐石/临江全虚构）\"\n    },\n    {\n      \"assert\": \"AE-AI-STRUCT\",\n      \"level\": \"major\",\n      \"pass\": false,\n      \"detail\": \"结构指纹：三集集功能同构（受辱→回击→授权）命中——红方意见书反对意见1，蓝方已采纳改良（ep4 起异构）\"\n    }\n  ],\n  \"summary\": {\n    \"block_fail\": 0,\n    \"block_total\": 3,\n    \"major_fail\": 1,\n    \"verdict\": \"PASS\"\n  }\n}", "红方意见书.md": "# 红方意见书（run p-ts-001 · 评审范围：选题方案五节 + 前三章剧本）\n\n> 红方依据：`kb/aesthetic/redline-scoring`（六维/权重/分数带）+ `kb/aesthetic/unreasonable-highlight`（死点提案格式）+ `kb/aesthetic/ai-trace`（结构指纹）\n> 红方立场声明：本意见书与蓝方产物同会话产出，属**自对抗近似**（真产线应由宿主的另一个无污染实例执行冷读者测试）——已按\"只读产物+对标+Bible\"纪律隔离生产推理，但独立性打折，置信度标注 0.8。\n\n## 一、冷读者测试（K=5 关键节点，隐去内容给前情）\n\n| 节点 | 冷读者猜中率 | 判定 |\n| --- | --- | --- |\n| ①第 1 集：被裁 → 摆摊成功 → 返聘函 | **80%** | ⚠️ 可预测死点 |\n| ②第 3 集：老工程师 vs AI 对赌，人赢 | **70%** | ⚠️ 可预测死点 |\n| ③第 30 集：渡鸦=供应链定向投毒 | 45% | 通过 |\n| ④第 55-58 集：手动接管三小时决战 | 55% | 通过（赢面必然而过程存疑） |\n| ⑤结局：人机各归其位、专家墙 | 65% | ⚠️ 主旋律必然，算半死点 |\n\n猜中率均值 63% —— ≥60% 线，死点 2.5 个（`kb/aesthetic/redline-scoring` §三）。\n\n## 二、六维评分（hot 权重：可预测 25/安全 20/惊喜 20/代价 10/衰减 15/矛盾 10）\n\n| 维度 | 得分 | 依据（kb_ref） |\n| --- | --- | --- |\n| 可预测性 | 58 | 冷读均值 63%；两死点（§一①②） |\n| 安全系数 | 55 | 摆摊\"日入四位数\"=零风险选择（AE-RED-SAFE 同构）；反派 CTO 是委员会安全像 |\n| 惊喜存量 | 62 | 意外之喜：raven 第 2 集即现、小满手腕写字、通知书名字红圈——3 处，达标但不多 |\n| 代价真实 | 45 | 周正未真正失去任何东西：女儿秒懂、前妻十秒回暖、对赌赢了程序也赢了——代价归零处即怯战处（`kb/aesthetic/redline-scoring` §一代价真实行） |\n| 钩子衰减 | 75 | 前 3 集每拍有冒险；后程未产出，无法审计（保留意见） |\n| 矛盾兑现 | 60 | 周正\"信了自己没用\"的裂口在 ep2 B0006 手抖处兑现过一次；后续需继续兑（否则只立不兑=摆设） |\n\n**加权总分：59.3 / 100 → 裁决：`challenge`**（55-69 带：蓝方须对每条挑战采纳/改良/反驳三选一，对抗记录附验收门）\n\n## 三、反对意见[]\n\n| 锚点 | 主张 | kb_ref | 级别 |\n| --- | --- | --- | --- |\n| 前三章集结构 | 三集同为\"受辱→回击→授权升级\"同构节奏——正是 `kb/aesthetic/ai-trace` 结构指纹第 1 条（章节功能等差节奏） | kb/aesthetic/ai-trace | major |\n| ep1 B0006 | 摆摊首日即爆是\"安全解\"：存在原因只是没人会反对 | kb/aesthetic/redline-scoring §一安全系数 | major |\n| ep3 对赌 | 赢得毫无程序代价：技术对+程序对+舆论对，三赢 = 编剧怯战 | kb/aesthetic/redline-scoring §一代价真实 | major |\n| 合理版梗概 | \"时代绕了一圈回来求他\"的表述在方案里出现两次（梗概+后续走向），复读未变奏 | kb/aesthetic/naturalness-zh 第 22 类填充 | minor |\n\n## 四、可预测死点[]（附不合理亮点提案）\n\n**死点 ①（ep1 摆摊+返聘，猜中率 80%）**\n提案：摆摊第一单，修的是**磐石大厦保洁阿姨的旧电饭煲——分文不收**。阿姨后面每集出现一句闲话，全是磐石楼里的内情（哪层机房总加班、邵总监的车几点走）。回看成立：第 1 集的善意 = 第 30 集打进敌人腹地的情报网；返聘函之后加一拍：阿姨把周正修的电饭煲擦干净摆回茶水间——\"楼里第一个相信他能回来的人\"。\n（格式对齐 `kb/aesthetic/unreasonable-highlight`：at=ep1 B0006；current=陌生客人排队；why_safe=立刻成功不冒险；proposal=如上；why_better=善意有复利+情报线伏笔；retrospect_mechanism=保洁阿姨视角补拍；cost=爽点延后一拍；route_fit=hot 兼容）\n\n**死点 ②（ep3 对赌必赢，猜中率 70%）**\n提案：第一局**判负**——位置猜中了（一米二），但周正无开挖作业证，程序违规，结果作废 + 全市安全通报批评，邵一鸣赢下规则战。第二集他必须在\"守规矩\"的前提下再赢一次：让郑师傅持证开挖、他只动嘴——赢的是道理，输的是身份，赢两次才贵。代价看得见：通报批评贴进指挥部，小满在电视上看到的第一个画面是爸爸\"被批评\"。\n\n## 五、ai-trace 结构指纹扫描（kb/aesthetic/ai-trace 五指纹）\n\n| 指纹 | 结果 |\n| --- | --- |\n| 章节功能等差节奏 | ⚠️ 命中（三集同构，见反对意见 1） |\n| 过渡模式单一 | 未命中（车内/黑中控/直播/开挖，切换多样） |\n| 情绪曲线平滑无毛刺 | 未命中（ep2 B0006 手抖、ep3 B0005 同学\"像我叔\"是毛刺） |\n| 信息密度均匀 | 未命中（ep2 B0004-B0006 密度显著高于 B0001-B0003，有密有疏） |\n| 对话回合对称 | 未命中（B0004 郑师傅黑暗里笑场是非对称回合） |\n\n手法配额自查：价值反转/时代错位/隐藏身份/金句复读/反差萌 = 5/5 顶格——hot 档契约内，但**无加法余量**，第 4 集起不得新增手法。\n\n## 六、蓝方回应[]（回应循环回填）\n\n| 意见 | 回应 | 说明 |\n| --- | --- | --- |\n| 死点①提案 | **采纳** | 保洁阿姨线进 ep2 B0006 改写（第一单=电饭煲），ep10 起每集一句内情闲话 |\n| 死点②提案 | **采纳** | ep3 对赌改判负+程序违规，ep4 规则内再赢（分集功能表同步改：ep3 觉醒→ep3 挫败+ep4 觉醒） |\n| 集结构同构 | **改良** | ep4 起改\"升级失败→借力→再战\"异构节奏；手法配额 5/5 顶格，禁新增 |\n| 合理版复读 | 采纳 | 后续走向节第二处改写为\"他没有输给时代——时代缺了他这一颗接地线\" |\n| 对赌三赢怯战 | 反驳（部分） | hot 档情绪单行道是路线契约（`kb/aesthetic/dialogue` §五）；但采纳\"程序代价\"后，本条自动消解 |\n\n**对抗记录：challenge 已回应，2 采纳 + 1 改良 + 1 采纳 + 1 部分反驳。附验收门，请人工裁决。**\n", "选题素材.md": "# 选题素材（run: p-ts-001）\n\n> flow: topic-selection v3.0.0 ｜ route: dual ｜ region: CN ｜ zeitgeist: on\n> direction: **35 岁被 AI 浪潮裁掉的中年人，逆袭翻身**（男频 · 都市 · 神豪/系统流）\n\n---\n\n## 〇、实时热点（近 30 天，zeitgeist 扫描 @2026-09-15）\n\n- **\"AI 职场重构元年\"**：2026 被业内称为 AI 职场重构元年，AI 重塑技能需求/职业结构/薪酬体系（中国社会科学网，2026-03）\n- **35 岁门槛政策松绑**：2026 国考年龄上限 35→38 岁（应届硕博 43 岁），湖南等多地省考跟进——政策侧承认年龄歧视存在（21 世纪经济报道/中国青年报）\n- **史上最多毕业生 + AI 替代风险**：2026-09-07 东方日报，创纪录毕业生投入职场叠加 AI 崛起；发改委未来五年就业部署明确\"AI 对部分岗位替代风险增加\"\n- **45 岁求职天花板**：比 35 岁危机更残酷的是简历连被看到的机会都没有（腾讯新闻评论，2026-01）\n- **2026 外滩大会（9 月 8 日）**：诺奖经济学家讨论 AI 如何重塑增长、就业与社会价值——\"AI 是净创造者还是替代者\"之辩正当热\n- **银发经济**（备用切面）：3.23 亿 60+ 人口、占总人口 23%，万亿级增长极；养老机器人赛道爆发\n\n## 一、市场调研结论\n\n- 见 `kb/market/structure`（7938 部快照 @2026-09-14）：男频 2554 部；60 集主流（4224 部）；AIGC 动画形态 3323 部\n- 强热度带：打脸/逆袭/大女主/商战/都市\n- 上升期蓝海：**神豪暴富**（380 部 / 均 1.9 万万）、流放种田（92 部）、追妻火葬场（132 部）\n\n## 二、榜单热点（可对标）\n\n- 见 `kb/benchmark/*`（由 find-trope 按梗卡引用装载）\n\n## 三、甲方方向（本次选题的约束与偏好）\n\n- 目标市场：国内（CN）\n- 媒介形态：AI 漫剧（竖屏，60 集 × 1-1.5 分钟，单集 ≤1200 字）\n- 题材偏好：**男频逆袭/都市**；主旋律诠释优先（贴合 zeitgeist：AI 时代的个人价值重建）\n- 避开：狼人/纯霸总/退潮期梗族（真假千金/团宠/NA 系）\n- 预算档：AI 漫剧标准档\n- 交付范围（第一阶段）：选题方案五节 + 前三章详细剧本（拍级三件套）\n", "项目约束.md": "# 项目约束（p-ts-001 · 项目级约束提示词）\n\n> 本文件是该项目的**约束提示词**：所有阶段产物、红方评审、宿主执行均须遵守。约束来源：`kb/market/setting-rules`（设定体系约束标准）+ 甲方本轮反馈（2026-09-15）。\n\n## C10 · 设定体系约束（新增，一票项）\n\n- **禁止引入原创科幻/架空世界观**。原\"磐石中台/AI 中台崩城\"架构因代入成本超标（三分钟测试不过：观众需先学设定才能进冲突）废止。\n- **设定来源三级制**：①实事新闻做底子（首选）②市面验证过的设定体系做创新改编 ③原创（禁止）。\n- **三分钟测试**：观众 3 分钟内不依赖设定解释，能说出\"谁 / 要什么 / 为什么替他急\"。\n- 前三章自造专名 ≤2 个。\n\n## 方向修订（甲方点子，S2 重做依据）\n\n> **主角是老牌水利工程师。在其他人偷工减料、混迹官场的时候，只有他坚持指出项目工程的问题。**——这个叙事读者有共鸣（全民共识底子：防汛、工程质量、吹哨人，零解释成本）。\n\n- 叙事内核不变：**坚持者被无视 → 危机验证他是唯一对的 → 当众翻盘**（原框架的引擎保留）。\n- 设定底座更换：AI 中台（原创科幻）→ **江河防汛与水利工程**（实事底子：汛期应急响应、堤防加固国债项目、工程质量终身责任制——均为公共议题）。\n\n## 级联执行（按 flow v4 规则）\n\n设定底座属 S2 根因变更：原《故事框架案》（磐石版）废止重做；S3 方案、S4 剧本基于旧底座，**顺延失效**，待 S2 重做过 R2 后重写。\n"}, "runstate": {"nodes": {"src": {"status": "done", "round": 1}, "market": {"status": "done", "round": 1}, "tropes": {"status": "done", "round": 1}, "combo": {"status": "done", "round": 1}, "zeitgeist": {"status": "done", "round": 1}, "benchmark": {"status": "done", "round": 1}, "analysis": {"status": "done", "round": 1}, "gate-r1": {"status": "done", "round": 1, "verdict": "pass-with-conditions"}, "structure": {"status": "done", "round": 2}, "gate-r2": {"status": "done", "round": 1, "verdict": "pass"}, "proposal": {"status": "done", "round": 2}, "baseline": {"status": "done", "round": 2}, "gate-r3": {"status": "done", "round": 2, "verdict": "pass-with-conditions"}, "first3": {"status": "done", "round": 2}, "gate-r4": {"status": "done", "round": 2, "verdict": "pass"}, "delivery": {"status": "done", "round": 2}, "polish": {"status": "done", "round": 1}, "miniguided": {"status": "none", "round": 0, "note": "v4.4 新阶段，该项目按 v3.1 口径归档，不追溯"}, "intake": {"status": "none", "round": 0}, "gate-r5": {"status": "done", "round": 1}}, "gate": {"verdict": "approved", "at": "2026-09-15（水利版全链路）"}, "notes": ["v4 迁移：v3 单验收门拆为 R1-R4 阶段门；structure 节点为新增，待跑", "v4 全流程跑通：R1 附条件过 → S2 框架案新增（提案A/B采纳）→ R3 第一轮打回（根因=方案未融合注入）→ 修订增补 → 复检过 → R4 过（ep2 伏笔回报验证）", "2026-09-15 C10 约束触发级联：设定底座 AI→水利（甲方点子），S2 重做过，S3/S4 顺延失效待重做", "2026-09-15 水利版全链路跑通：S1 调研重做 → R1 过(附条件) → S2 框架案 v2 过 → S3 方案重写 → R3 过(附条件: 苏晓声口已核销) → S4 剧本重写(27拍) → R4 过(附移交事项2条)"], "presets": {"S1": "semi", "S2": "manual", "S3": "manual", "S4": "manual", "S5": "manual"}, "comments": {}, "inputs": {}}, "project": "p-ts-001", "deliveryPage": "选题交付页.html", "snapshots": {}}</script>
+<script>
+const DATA = JSON.parse(document.getElementById("payload").textContent);
+const flow = DATA.flow, files = DATA.files, RS = DATA.runstate;
+const nodes = flow.graph.nodes, edges = flow.graph.edges;
+document.getElementById("t").textContent = "工作流画布 · " + (flow.title || flow.id).replace(/^智能选题工作流 /,"");
+document.getElementById("v").textContent = "v" + flow.version + " ｜ 项目 " + DATA.project;
+if (DATA.deliveryPage) { const a = document.getElementById("dl-link"); a.href = DATA.deliveryPage; a.style.display = ""; }
+
+/* ---------- 中文名映射（画布不露英文术语） ---------- */
+const ZH = {"find-trope":"找梗师","internet-feel":"网感师","plot-choreographer":"剧情编排师","plot-redline":"红方评审",
+  "topic-zeitgeist":"热点扫描","topic-analysis-report":"调研分析","topic-proposal":"方案主笔",
+  "topic-chief-aesthetic":"审美总编","topic-delivery-gate":"交付监理","script-drama-beat":"分镜编剧",
+  "scene-breakdown":"小纲师","script-final":"成品剧本师","dialogue-polish":"台词打磨",
+  "structure-design":"结构选型师","novel-bible":"开书师","novel-chapter":"章回写手","deconstruct-book":"拆书师",
+  "render-html":"交付页渲染","kb_load":"知识装载","kb_search":"知识检索","check_trope_combo":"梗组合校验",
+  "check_aesthetic_asserts":"审美断言","check_contract_compliance":"约束对账","docx_ingest":"批注解析",
+  "continuity_slice":"台账切片","continuity_commit":"台账结算","meme_harvest":"梗素材采集"};
+const ST_ZH = {"done":"已完成","awaiting":"待决","pending":"待重跑","none":"未启动"};
+const STAGE_ZH = {"S1":"调研","S2":"结构","S3":"大纲","S4":"小纲","S5":"成稿"};
+const STAGE_COLOR = {"S1":"#5e7d5a","S2":"#4f6d8c","S3":"#9c6b4a","S4":"#7d5f8a","S5":"#a5546b"};
+
+/* ---------- 运行状态 ---------- */
+function st(n){ const s = (RS.nodes[n]||{}).status || "none"; return s; }
+function persistState(){
+  saveFile("run-state.json", JSON.stringify(RS, null, 2), "json")
+    .then(m => { const el = document.getElementById("saved"); if (el) el.textContent = m; });
+}
+window.persistState = persistState;
+const handles = {};
+async function saveFile(name, content, ext){
+  try{
+    if (window.showSaveFilePicker){
+      const h = handles[name] || await showSaveFilePicker({suggestedName: name});
+      handles[name] = h;
+      const w = await h.createWritable(); await w.write(content); await w.close();
+      return "已写回 " + name;
+    }
+    throw 0;
+  }catch(e){
+    if (e && e.name === "AbortError") return "已取消";
+    const b = new Blob([content], {type: ext==="json"?"application/json":"text/markdown"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(b); a.download = name.split("/").pop(); a.click();
+    return "浏览器不支持直接写盘，已下载（放回项目目录即生效）";
+  }
+}
+
+/* ---------- 布局：阶段分段 ｜ 同级同列 ｜ 产物压阶段虚线 ---------- */
+const NW=196, NH=76, GX=88, GY=64, MG=44;
+let pos = {};
+let stageLineX = {}, stageBand = {}, parCols = new Set();
+function autoLayout(){
+  const stageList = (flow.stages||[]);
+  const colOf = {}, colNodes = {};
+  let c = 0;
+  const push = (n, col)=>{ colOf[n]=col; (colNodes[col]=colNodes[col]||[]).push(n); };
+  for (const sg of stageList){
+    const work = (sg.nodes||[]).filter(n=>nodes[n] && n!==sg.gate);
+    if (!work.length) continue;
+    // 阶段内最长路径分层：同一层级的节点共享同一竖线
+    const lvl = {}; work.forEach(n=>lvl[n]=0);
+    for (let it=0; it<=work.length; it++){
+      for (const e of edges){
+        if (e.loop || lvl[e.from]===undefined || lvl[e.to]===undefined) continue;
+        if (lvl[e.to] < lvl[e.from]+1) lvl[e.to] = lvl[e.from]+1;
+      }
+    }
+    const byLevel = {};
+    work.forEach(n=>{ (byLevel[lvl[n]] = byLevel[lvl[n]]||[]).push(n); });
+    const levels = Object.keys(byLevel).map(Number).sort((a,b)=>a-b);
+    const base = c;
+    levels.forEach((L,i)=>{ byLevel[L].sort().forEach(n=>push(n, base+i)); });
+    c = base + levels.length;
+    if (sg.gate && nodes[sg.gate]) push(sg.gate, c++);
+    stageBand[sg.id] = {from: base, to: c-1};
+  }
+  Object.keys(nodes).forEach(n=>{ if (colOf[n]===undefined) push(n, c); });
+  // 阶段虚线 = 本阶段产物列的中心线：产物骑在虚线上，左侧是本阶段工序，右侧是验收门
+  stageLineX = {};
+  for (const sg of stageList){
+    const prod = (sg.nodes||[]).find(n=>nodes[n] && n!==sg.gate && (flow.graph.outputs||[]).includes(n));
+    const col = prod ? colOf[prod] : (stageBand[sg.id]||{}).from;
+    if (col !== undefined) stageLineX[sg.id] = MG + col*(NW+GX) + NW/2;
+  }
+  // 每列节点围绕中线纵向堆叠；多节点列 = 并行组（同一就绪批）
+  parCols = new Set(Object.keys(colNodes).map(Number).filter(c=>colNodes[c].length>1));
+  let maxRows = 1; Object.values(colNodes).forEach(a=>maxRows=Math.max(maxRows,a.length));
+  const midY = MG + (maxRows*(NH+GY)-GY)/2;
+  for (const [col, arr] of Object.entries(colNodes)){
+    const colH = arr.length*(NH+GY)-GY;
+    const y0 = Math.round(midY - colH/2);
+    arr.forEach((n,k)=>{ pos[n] = [MG + col*(NW+GX), y0 + k*(NH+GY)]; });
+  }
+  render();
+}
+
+function fitView(){
+  const xs = Object.values(pos).map(p => p[0]), ys = Object.values(pos).map(p => p[1]);
+  if (!xs.length) return;
+  const w = Math.max(...xs) + NW + MG, h = Math.max(...ys) + NH + MG;
+  const st = document.getElementById("stage");
+  const k = Math.min(st.clientWidth / w, st.clientHeight / h, 1.2);
+  view = { k, x: (st.clientWidth - w * k) / 2, y: Math.max(10, (st.clientHeight - h * k) / 2) };
+  applyView();
+}
+
+/* ---------- 视图变换 ---------- */
+let view = {k:1, x:40, y:30};
+function applyView(){ document.getElementById("world").style.transform = `translate(${view.x}px,${view.y}px) scale(${view.k})`; }
+document.getElementById("stage").addEventListener("wheel", e=>{
+  e.preventDefault();
+  const r = document.getElementById("stage").getBoundingClientRect();
+  const mx = e.clientX-r.left, my = e.clientY-r.top;
+  const k2 = Math.min(2.2, Math.max(0.35, view.k * (e.deltaY<0?1.12:0.89)));
+  view.x = mx-(mx-view.x)*k2/view.k; view.y = my-(my-view.y)*k2/view.k; view.k = k2; applyView();
+}, {passive:false});
+let panning = null;
+document.getElementById("stage").addEventListener("mousedown", e=>{
+  if (e.target.closest(".node") || e.target.closest("#docpanel")) return;
+  panning = {x:e.clientX, y:e.clientY, vx:view.x, vy:view.y};
+});
+window.addEventListener("mousemove", e=>{
+  if (drag) { dragMove(e); return; }
+  if (panning){ view.x = panning.vx+e.clientX-panning.x; view.y = panning.vy+e.clientY-panning.y; applyView(); }
+});
+window.addEventListener("mouseup", ()=>{ panning=null; if(drag){drag=null; render();} });
+
+/* ---------- 渲染 ---------- */
+function nodeOutputs(n){
+  const outs = (flow.outputs||[]).filter(o=>o.node===n).map(o=>o.file);
+  for (const k of ["output","file"]) { const v = nodes[n][k]; if (v && !outs.includes(v)) outs.push(v); }
+  return outs;
+}
+function render(){
+  const nc = document.getElementById("nodes"); nc.innerHTML = "";
+  for (const [n,m] of Object.entries(nodes)){
+    const [x,y] = pos[n];
+    const col = Math.round((x-MG)/(NW+GX));
+    const d = document.createElement("div");
+    const gate = (m.kind==="gate"||m.kind==="srd");
+    const s = st(n), isDel = (flow.graph.outputs||[]).includes(n);
+    d.className = `node k-${m.kind}` + (sel===n?" sel":"");
+    d.style.left = x+"px"; d.style.top = y+"px";
+    const zhTag = m.skill ? (ZH[m.skill]||m.skill) : (m.minitool ? (ZH[m.minitool]||m.minitool) : (gate?"红方验收":""));
+    d.innerHTML = `<div class="accent" style="background:${gate?"#a5433a":(STAGE_COLOR[m.stage]||"#b8b0a4")}"></div>
+      <div class="hd"><span class="dot st-${s}" title="${ST_ZH[s]||s}"></span><span class="zh">${zhTitle(m)}</span></div>
+      <div class="sub">${zhTag}${m.stage?" · "+m.stage:""}${parCols.has(col)?`<span class="par" title="与同列节点同一就绪批，宿主并行派发">∥ 并行</span>`:""}</div>
+      ${isDel?`<span class="out">交 付</span>`:""}`;
+    d.addEventListener("mousedown", e=>startDrag(e,n));
+    d.addEventListener("click", e=>{ e.stopPropagation(); select(n); });
+    nc.appendChild(d);
+  }
+  drawEdges(); hud();
+}
+function zhTitle(m){ return m.title || "未命名节点"; }
+let sel = null, selEdge = null;
+function drawEdges(){
+  const svg = document.getElementById("edges");
+  let maxC = 0, maxR = 0; Object.values(pos).forEach(p=>{maxC=Math.max(maxC,p[0]);maxR=Math.max(maxR,p[1]);});
+  const W = maxC+NW+MG+60, H = Math.max(420, maxR+NH+MG*2);
+  let s = `<svg width="${W}" height="${H}" style="position:absolute;left:0;top:0;overflow:visible"><defs><marker id="arw" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 z" fill="#a89f90"/></marker></defs>`;
+  // 阶段虚线：穿过本阶段产物中心（autoLayout 预计算）；阶段段铺淡色底
+  (flow.stages||[]).forEach(sg=>{
+    const lx = stageLineX[sg.id], band = stageBand[sg.id];
+    if (lx === undefined) return;
+    const col = STAGE_COLOR[sg.id] || "#b8b0a4";
+    if (band){
+      const bx = MG + band.from*(NW+GX) - 18, bx2 = MG + (band.to+1)*(NW+GX) - GX + 18;
+      s += `<rect x="${bx}" y="16" width="${bx2-bx}" height="${H-56}" rx="10" fill="${col}" opacity="0.05"/>`;
+    }
+    s += `<line class="stage-rule" x1="${lx}" y1="20" x2="${lx}" y2="${H-40}" stroke="${col}" stroke-width="1.2"/>`;
+    s += `<text class="stage-name" x="${MG + band.from*(NW+GX) + 2}" y="34" fill="${col}">${sg.id} ${STAGE_ZH[sg.id]||sg.name||""}</text>`;
+  });
+  // 打回回环不常驻画布：每次打回的原因与范围各不相同，属评审结果的具体记录，
+  // 仅在查看对应验收门节点时于右侧文档面板按需呈现（openNodeDoc 的「打回与回注」页）。
+  // 前向边
+  for (const e of edges){
+    if (e.loop) continue; // 打回回注边不上画布，属门语义数据
+    if (!pos[e.from] || !pos[e.to]) continue;
+    const [x1,y1] = pos[e.from], [x2,y2] = pos[e.to];
+    const sx=x1+NW, sy=y1+NH/2, tx=x2, ty=y2+NH/2, mx=(sx+tx)/2;
+    const active = isEdgeActive(e);
+    s += `<path class="edge-hit" data-e="${e.id}" d="M${sx},${sy} C${mx},${sy} ${mx},${ty} ${tx},${ty}" fill="none" stroke="#a89f90" stroke-width="1.4"${(e.optional||e.when)?' stroke-dasharray="5,4"':""} opacity="${active?0.9:0.35}" marker-end="url(#arw)"/>`;
+    if (e.transform) s += `<text class="edge-label" x="${mx}" y="${(sy+ty)/2-4}" text-anchor="middle">${e.transform}</text>`;
+  }
+  svg.innerHTML = s + "</svg>";
+  svg.querySelectorAll(".edge-hit").forEach(p=>{
+    p.addEventListener("click", ev=>{ ev.stopPropagation(); selectEdge(ev, p.dataset.e); });
+  });
+}
+function isEdgeActive(e){
+  if ((e.when||"").includes("rejected")) return (RS.gate||{}).verdict === "rejected";
+  if ((e.when||"").includes("challenge")) return (RS.nodes["gate-r2"]||{}).verdict === "challenge";
+  if ((e.when||"").includes("route=dual")) return (flow.inputs.route||{}).default === "dual" || (RS.inputs||{}).route === "dual";
+  if ((e.when||"").includes("批注回流")) return (RS.inputs||{}).批注回流 === "on";
+  return true;
+}
+function hud(){
+  const c = {done:0, awaiting:0, pending:0};
+  Object.keys(nodes).forEach(n=>{ const s=st(n); c[s]=(c[s]||0)+1; });
+  document.getElementById("hud").innerHTML =
+    `<span>节点 <b>${Object.keys(nodes).length}</b></span><span>完成 <b>${c.done||0}</b></span><span>待决 <b>${c.awaiting||0}</b></span><span>待重跑 <b>${c.pending||0}</b></span><span id="saved"></span>`;
+}
+
+/* ---------- 拖拽 ---------- */
+let drag = null;
+function startDrag(e, n){
+  e.stopPropagation(); hideTip();
+  drag = {n, sx:e.clientX, sy:e.clientY, ox:pos[n][0], oy:pos[n][1]};
+}
+function dragMove(e){
+  const k = view.k;
+  pos[drag.n] = [Math.round(drag.ox + (e.clientX-drag.sx)/k), Math.round(drag.oy + (e.clientY-drag.sy)/k)];
+  render();
+}
+function commitDrag(){ drag = null; }
+
+/* ---------- 右侧文档面板 ---------- */
+const dBack=document.getElementById("d-back"), dTitle=document.getElementById("d-title"),
+      dChips=document.getElementById("d-chips"), dTools=document.getElementById("d-tools"),
+      dVbar=document.getElementById("d-vbar"), dBody=document.getElementById("d-body"),
+      drawer=document.getElementById("drawer");
+let curVer = 0, editMode = false;
+function docReset(){ dVbar.innerHTML=""; dTools.innerHTML=""; dChips.innerHTML=""; drawer.classList.remove("on"); }
+function chip(t,c){ return `<span class="chip"${c?` style="border-color:${c};color:${c}"`:""}>${t}</span>`; }
+function select(n){ sel=n; selEdge=null; curVer=0; editMode=false; render(); openNodeDoc(n); }
+function selectEdge(ev,id){
+  const t=document.getElementById("ctip");
+  const e=edges.find(x=>x.id===id); if(!e) return;
+  const html=`<b>${zhTitle(nodes[e.from]||{})} → ${zhTitle(nodes[e.to]||{})}</b>${e.desc?`<br>${e.desc}`:""}${e.transform?`<br>变换：<code>${e.transform}</code>`:""}${e.when?`<br>条件：${e.when}${e.optional?" ｜ 可选":""}`:""}`;
+  t.innerHTML=html;
+  const r=document.getElementById("stage").getBoundingClientRect();
+  t.style.left=Math.min(ev.clientX-r.left+14, Math.max(10,r.width-340))+"px";
+  t.style.top=(ev.clientY-r.top+14)+"px";
+  t.style.display="block";
+}
+function hideTip(){ document.getElementById("ctip").style.display="none"; }
+function mdHtml(md){
+  let h = md.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+  h = h.replace(/^#### (.*)$/gm,"<h4>$1</h4>").replace(/^### (.*)$/gm,"<h4>$1</h4>").replace(/^## (.*)$/gm,"<h3>$1</h3>").replace(/^# (.*)$/gm,"<h2>$1</h2>");
+  h = h.replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>").replace(/`([^`]+)`/g,"<code>$1</code>");
+  h = h.replace(/^---+$/gm,"<hr>");
+  h = h.replace(/^\|(.+)\|$/gm,(m,row)=>{ const c=row.split("|").map(x=>x.trim()); if(c.every(x=>/^:?-{2,}:?$/.test(x))) return ""; return "<tr>"+c.map(x=>`<td>${x}</td>`).join("")+"</tr>"; });
+  h = h.replace(/(<tr>[\s\S]*?<\/tr>)/, "<table>$1</table>").replace(/<\/tr>(\s*)<tr>/g,"</tr><tr>").replace(/<\/table>\s*<table>/g,"");
+  h = h.replace(/^- (.*)$/gm,"<li>$1</li>").replace(/(<li>[\s\S]*?<\/li>)(?!\s*<li>)/g,"<ul>$1</ul>");
+  h = h.split(/\n{2,}/).map(b=>/^<(h\d|table|ul|hr)/.test(b.trim())?b:"<p>"+b.replace(/\n/g,"<br>")+"</p>").join("\n");
+  return h;
+}
+function pageize(md, docName){
+  const lines=String(md).split("\n"); const chunks=[]; let cur=[];
+  for (const ln of lines){
+    if (/^#{1,2} /.test(ln) && cur.join("").trim()){ chunks.push(cur.join("\n")); cur=[ln]; }
+    else cur.push(ln);
+  }
+  if (cur.join("").trim()) chunks.push(cur.join("\n"));
+  if (!chunks.length) chunks.push(String(md));
+  const nm=docName.split("/").pop().replace(/\.md$/,"");
+  return chunks.map((c,i)=>`<div class="paper"><div class="doc-h"><span>${docName}</span><span>${i+1} / ${chunks.length}</span></div><div class="md">${mdHtml(c)}</div><div class="pf">${nm} · 第 ${i+1} 页</div></div>`).join("");
+}
+/* 新逻辑：节点文档 / 文件文档 / 文档架 */
+function nodePagesets(n){
+  const vers=(DATA.snapshots[n]||[]);
+  if (vers.length){
+    const v=vers[vers.length-1-curVer]||vers[vers.length-1];
+    return {from:"snap", v, pages:Object.keys(v.content||{}).map(f=>({name:f, md:v.content[f]||""}))};
+  }
+  const outs=nodeOutputs(n).filter(f=>files[f]);
+  if (outs.length) return {from:"file", pages:outs.map(f=>({name:f, md:files[f]}))};
+  return {from:"none", pages:[]};
+}
+function openNodeDoc(n){
+  const m=nodes[n], gate=(m.kind==="gate"||m.kind==="srd"), vers=(DATA.snapshots[n]||[]);
+  docReset();
+  dBack.style.display="";
+  dTitle.textContent=zhTitle(m);
+  const nsR=RS.nodes[n]||{};
+  dChips.innerHTML=(m.stage?chip(m.stage+" "+(STAGE_ZH[m.stage]||""),STAGE_COLOR[m.stage]):"")
+    +chip(ST_ZH[st(n)]+" · 第 "+(nsR.round||1)+" 轮")
+    +(nsR.verdict==="send-back"?chip("已打回"+(RS.lastRejectReason?" · "+RS.lastRejectReason:""),"#a5433a"):"");
+  let tools="";
+  if (vers.length>1){
+    tools+=`<select id="ver-sel" style="border:1px solid #c9c1b2;border-radius:6px;padding:3px 6px;font-size:12px;background:#fff;max-width:240px">`
+      +vers.map((v,i)=>`<option value="${i}"${i===curVer?" selected":""}>第 ${v.round} 轮 · ${v.ts}${v.note?" · "+v.note:""}</option>`).join("")+`</select>`;
+  }
+  const outs=nodeOutputs(n);
+  if (outs.length) tools+=`<button class="bt" id="d-edit">${editMode?"完成编辑":"编辑"}</button>`;
+  tools+=`<button class="bt" id="d-rerun">重跑</button>`;
+  dTools.innerHTML=tools;
+  const vs=document.getElementById("ver-sel");
+  if (vs) vs.addEventListener("change",e=>{ curVer=parseInt(e.target.value); openNodeDoc(n); });
+  const eb=document.getElementById("d-edit");
+  if (eb) eb.onclick=()=>{ editMode=!editMode; openNodeDoc(n); };
+  document.getElementById("d-rerun").onclick=()=>openRerun(n);
+  dVbar.innerHTML=gate?verdictBar(n):"";
+  if (gate) bindVerdict(n);
+  if (editMode && outs.length){
+    const f=outs[0];
+    dBody.innerHTML=`<div class="paper" style="padding:24px 28px"><div class="doc-h"><span>编辑 · ${f}</span><span>保存后登记新版本</span></div>
+      <textarea id="et" style="min-height:440px">${(files[f]||"").replace(/</g,"&lt;")}</textarea>
+      <div class="act"><button class="tb" style="background:#262420;color:#f4f1ea;border-color:#262420" id="esave">保存改动</button><span class="msg" id="emsg"></span></div></div>`;
+    document.getElementById("esave").onclick=async ()=>{
+      const nv=document.getElementById("et").value; files[f]=nv;
+      (DATA.snapshots[n]=DATA.snapshots[n]||[]).push({round:(RS.nodes[n]||{}).round||1, ts:new Date().toLocaleString(), note:"用户修改", content:{[f]:nv}});
+      curVer=0; editMode=false;
+      const msg=await saveFile(f,nv,"md");
+      document.getElementById("emsg").textContent=msg+" ｜ 已登记新版本（宿主可 diff 感知）";
+    };
+  } else {
+    const ps=nodePagesets(n);
+    if (ps.from==="none"){ dBody.innerHTML=nodeInfoPaper(n,m); }
+    else { let h=""; for (const p of ps.pages) h+=pageize(p.md, p.name); dBody.innerHTML=h; }
+  }
+  if (gate) dBody.insertAdjacentHTML("beforeend", loopPaper(n));
+  dBody.insertAdjacentHTML("beforeend", commentPaper(n));
+  bindComment(n);
+  dBody.scrollTop=0;
+}
+function loopPaper(n){
+  const stg=(flow.stages||[]).find(x=>x.gate===n);
+  const routes=edges.filter(e=>e.loop&&e.from===n)
+    .map(e=>`<li><code>${e.to}</code>（${zhTitle(nodes[e.to]||{})}）${e.when?`｜ 触发条件：<code>${e.when}</code>`:""}${e.desc?" ｜ "+e.desc:""}</li>`).join("");
+  const nsR=RS.nodes[n]||{};
+  const sendBack=nsR.verdict==="send-back";
+  return `<div class="paper" style="padding:26px 34px 40px"><div class="doc-h"><span>打回与回注</span><span>${stg?stg.id:"-"}</span></div><div class="md">
+    <div class="kv">
+    <span class="k">打回规则</span><span class="v">验收不通过 → 回本阶段入口 <code>${stg?stg.entry:"-"}</code> 定点重做；<b>失效范围仅限本阶段</b></span>
+    <span class="k">定稿原则</span><span class="v">已 pass 阶段的产物视为定稿，不随后续打回失效；跨阶段回滚 = 用户强行介入（force + 根因指认），非门语义</span>
+    ${routes?`<span class="k">定点路由</span><span class="v"><ul style="margin:0;padding-left:16px">${routes}</ul></span>`:`<span class="k">定点路由</span><span class="v">本门暂无按根因指认的定点回注边（默认回本阶段入口）</span>`}
+    <span class="k">本轮状态</span><span class="v">${sendBack?`<b style="color:#a5433a">已打回 · 第 ${(nsR.round||1)} 轮待重做</b>${RS.lastRejectReason?` ｜ 打回原因：${RS.lastRejectReason}`:""}`:`${ST_ZH[st(n)]} · 第 ${(nsR.round||1)} 轮${nsR.verdict?` · 裁决 ${nsR.verdict}`:""}`}</span>
+    </div><p class="msg">打回原因与背景每次评审各不相同，此处仅呈现本门的规则与当次裁决记录；历次意见见「批注 · 审核意见」页。</p></div></div>`;
+}
+function nodeInfoPaper(n,m){
+  return `<div class="paper"><div class="doc-h"><span>节点说明</span><span>${n}</span></div><div class="md">
+    <div class="kv">
+    <span class="k">节点</span><span class="v">${n}</span>
+    <span class="k">类型</span><span class="v">${m.kind}${m.stage?` ｜ <b style="color:${STAGE_COLOR[m.stage]}">${m.stage} ${STAGE_ZH[m.stage]||""}</b>`:""}</span>
+    <span class="k">说明</span><span class="v">${m.title||"-"}</span>
+    ${m.skill?`<span class="k">技能</span><span class="v"><code>skills/${m.skill}.md</code></span>`:""}
+    ${m.minitool?`<span class="k">工具</span><span class="v"><code>${m.minitool}</code></span>`:""}
+    ${(m.assist||[]).length?`<span class="k">协作</span><span class="v">${m.assist.join("、")}</span>`:""}
+    ${(m.kb||[]).length?`<span class="k">知识依据</span><span class="v">${m.kb.map(k=>`<code>${k}</code>`).join(" ")}</span>`:""}
+    ${m.file?`<span class="k">产物</span><span class="v"><code>${m.file}</code></span>`:""}
+    <span class="k">状态</span><span class="v">${ST_ZH[st(n)]}（第 ${(RS.nodes[n]||{}).round||1} 轮）</span>
+    </div><p class="msg">${m.desc||""}</p></div></div>`;
+}
+function commentPaper(n){
+  const list=(RS.comments||{})[n]||[];
+  return `<div class="paper" style="padding:26px 34px 40px"><div class="doc-h"><span>批注 · 审核意见</span><span>${list.length} 条</span></div>
+    <div id="cmt-list">${list.map(c=>`<div class="cmt">${c}</div>`).join("")}</div>
+    <textarea id="cmt-new" style="min-height:56px" placeholder="补充意见…"></textarea>
+    <div class="act"><button class="tb" id="cmt-add">登记意见</button></div></div>`;
+}
+function bindComment(n){
+  const btn=document.getElementById("cmt-add"), box=document.getElementById("cmt-new");
+  if (!btn || !box) return;
+  btn.onclick=()=>{
+    const v=box.value.trim(); if (!v) return;
+    (RS.comments=RS.comments||{})[n]=(RS.comments[n]||[]).concat(v);
+    box.value="";
+    document.getElementById("cmt-list").insertAdjacentHTML("beforeend", `<div class="cmt">${v}</div>`);
+    persistState();
+  };
+}
+function verdictBar(n){
+  const v=(RS.nodes[n]||{}).verdict||"awaiting";
+  const sts=(flow.stages||[]); const gi=sts.findIndex(s=>s.gate===n);
+  const opts=sts.slice(0, gi+1).reverse().map(s=>`<option value="${s.id}">${s.id} ${s.name}（根因）</option>`).join("");
+  return `<span class="msg">验收门 · 当前裁决 <b>${v}</b></span>
+    ${opts?`<select id="vroot" style="border:1px solid #c9c1b2;border-radius:6px;padding:3px 6px;font-size:12px;background:#fff">${opts}</select>`:""}
+    <button class="bt" id="vg" style="border-color:#5a8a5e;color:#3d6b45;font-weight:700">通过</button>
+    <button class="bt" id="vn" style="border-color:#a5433a;color:#8c352c;font-weight:700">驳回（按根因回注）</button>
+    <span class="msg">红方四视角意见书为必读件；裁决权默认人工。</span>`;
+}
+function bindVerdict(n){
+  const g=document.getElementById("vg"), nn=document.getElementById("vn");
+  if (!g) return;
+  g.onclick=()=>{ RS.nodes[n].verdict="approved"; RS.nodes[n].status="done"; render(); openNodeDoc(n); };
+  nn.onclick=()=>{
+    const sts=(flow.stages||[]);
+    const rootSel=document.getElementById("vroot");
+    const rootId=rootSel?rootSel.value:(sts[0]&&sts[0].id);
+    const ri=sts.findIndex(s=>s.id===rootId);
+    RS.nodes[n].verdict="send-back"; RS.nodes[n].status="awaiting"; RS.nodes[n].root_cause_stage=rootId;
+    (sts[ri].nodes||[]).forEach(nid=>{ if (RS.nodes[nid]) { RS.nodes[nid].status="pending"; RS.nodes[nid].round=(RS.nodes[nid].round||1)+1; } });
+    const order=Object.keys(nodes);
+    const ti=order.indexOf(sts[ri].nodes[0]||order[0]);
+    order.slice(ti+1).forEach(x=>{ if(RS.nodes[x]&&RS.nodes[x].status==="done"){ RS.nodes[x].status="pending"; RS.nodes[x].stale=true; } });
+    render(); openNodeDoc(n);
+  };
+}
+function openRerun(n){
+  const m=nodes[n];
+  const upstream=edges.filter(e=>e.to===n && !(e.when||"").includes("rejected") && !(e.when||"").includes("challenge")).map(e=>e.from);
+  const stageOf={}; (flow.stages||[]).forEach(s=>(s.nodes||[]).forEach(x=>stageOf[x]=s.id));
+  const myStage=stageOf[n];
+  const preset=(RS.presets||{})[myStage]||"semi";
+  const inputs={}; upstream.forEach(u=>nodeOutputs(u).forEach(f=>{ if(files[f]) inputs[f]="✓"; }));
+  const tp={runId:DATA.project+"-r"+((RS.nodes[n]||{}).round||1), nodeId:n, kind:m.kind,
+    skill:m.skill||undefined, minitool:m.minitool||undefined, assist:m.assist||undefined,
+    kb:m.kb||undefined, inputs:inputs,
+    inputs_note: upstream.length ? "上游产物："+upstream.join("、") : "无上游",
+    output:m.file||nodeOutputs(n)[0]||"(汇入下游)", preset:preset,
+    parallel_with: Object.keys(pos).filter(x=>x!==n && nodes[x].stage===m.stage && pos[x][0]===pos[n][0] && nodes[x].kind!=="gate" && nodes[x].kind!=="srd"),
+    note:m.kind==="agent" ? "认知任务包：宿主 Agent 用自己的 token 执行，flow_submit 回交；parallel_with 为同批就绪节点，无数据依赖可并行" : "确定性步骤：由工具进程零 token 执行"};
+  drawer.innerHTML=`<p class="msg" style="margin:0 0 8px">重跑范围：从本节点重跑，<b>到本阶段验收门即停</b>；未变化的上游走缓存命中（Agent 上下文复用，只喂差异）。</p>
+    <div class="act"><button class="tb" style="border-color:#262420;font-weight:700" id="r-from">从本节点重跑 → 阶段门</button>
+    <button class="tb" id="r-zero">本阶段从零重做</button><button class="tb" id="r-close">收起</button></div>
+    <div class="task">${JSON.stringify(tp, null, 2)}</div>
+    <div class="act"><span class="msg" id="rmsg">标记后由宿主 / 运行时消费。</span></div>`;
+  drawer.classList.add("on");
+  document.getElementById("r-from").onclick=()=>{ markRerun(n); openNodeDoc(n); };
+  document.getElementById("r-zero").onclick=()=>{ const stg=(flow.stages||[]).find(x=>x.nodes&&x.nodes.includes(n)); if(stg&&stg.entry) markRerun(stg.entry); openNodeDoc(n); };
+  document.getElementById("r-close").onclick=()=>drawer.classList.remove("on");
+  function markRerun(t){
+    RS.nodes[t]=RS.nodes[t]||{};
+    RS.nodes[t].verdict="send-back"; RS.nodes[t].status="pending"; RS.nodes[t].round=(RS.nodes[t].round||1)+1;
+    render();
+  }
+}
+function openShelf(){
+  sel=null; selEdge=null; editMode=false; render();
+  docReset(); dBack.style.display="none";
+  dTitle.textContent="项目文档架";
+  const done=Object.values(RS.nodes).filter(x=>x.status==="done").length;
+  dChips.innerHTML=chip(DATA.project)+chip("流程 v"+flow.version)+chip("节点 "+done+" / "+Object.keys(nodes).length+" 完成");
+  const dels=Object.keys(files).filter(f=>f.startsWith("对外交付/")).sort();
+  const inner=Object.keys(files).filter(f=>f.startsWith("内部/")).sort();
+  let h=`<div class="cover">
+    <h2>${(flow.title||flow.id).split(" v")[0].replace(/（.*/,"").replace(/</g,"&lt;")}</h2>
+    <div class="sub">${DATA.project} ｜ 流程 v${flow.version} ｜ 更新 ${new Date().toLocaleDateString()}</div>
+    <p style="font-size:13px;color:#6b665c;line-height:1.9;margin:0">点击左侧画布节点，右侧打开对应产物文档；验收门节点附裁决条与红方意见。也可从下方文档架直接打开交付件。</p>
+  </div>`;
+  if (dels.length){
+    h+=`<div class="shelf-cap">对外交付</div>`;
+    h+=dels.map(f=>`<div class="shelf-row" data-f="${f}"><span class="no">${f.slice(5,7)}</span><span class="nm">${f.slice(5).replace(/\.md$/,"")}</span><span class="go">打开 →</span></div>`).join("");
+  }
+  if (inner.length){
+    h+=`<div class="shelf-cap">内部产物</div>`;
+    h+=inner.map(f=>`<div class="shelf-row" data-f="${f}"><span class="no">内</span><span class="nm">${f.slice(3)}</span><span class="go">打开 →</span></div>`).join("");
+  }
+  dBody.innerHTML=h;
+  dBody.querySelectorAll(".shelf-row").forEach(r=>r.addEventListener("click",()=>openFileDoc(r.dataset.f)));
+  dBody.scrollTop=0;
+}
+function openFileDoc(f){
+  sel=null; selEdge=null; editMode=false; render();
+  docReset(); dBack.style.display="";
+  dTitle.textContent=f.split("/").pop().replace(/\.md$/,"");
+  dChips.innerHTML=chip(f.startsWith("对外交付/")?"对外交付":"内部产物");
+  dBody.innerHTML=pageize(files[f]||"（空文档）", f);
+  dBody.scrollTop=0;
+}
+dBack.addEventListener("click", openShelf);
+
+/* ---------- 启动 ---------- */
+autoLayout();
+fitView();
+openShelf();
+document.getElementById("stage").addEventListener("click", e=>{ if(e.target.id==="stage"){ hideTip(); } });
+document.getElementById("stage").addEventListener("wheel", ()=>hideTip(), {passive:true});
+</script>
+</body>
+</html>

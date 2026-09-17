@@ -1,0 +1,64 @@
+{"ts":"2026-09-15T22:19:27.144Z","runId":"run-mu38i90o-r1ytln","event":"run-start","actor":"kernel","detail":"topic-selection@5.1.1 计划 19 节点"}
+{"ts":"2026-09-15T22:19:27.150Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","nodeId":"market","detail":"内部/kb-market.md","refs":["内部/kb-market.md"]}
+{"ts":"2026-09-15T22:19:27.151Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","nodeId":"src","detail":"源步 选题素材.md"}
+{"ts":"2026-09-15T22:19:27.153Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","nodeId":"tropes","detail":"任务包产出（skill=find-trope，上下文 2 件）"}
+{"ts":"2026-09-15T22:19:27.154Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","nodeId":"zeitgeist","detail":"任务包产出（skill=topic-zeitgeist，上下文 1 件）"}
+{"ts":"2026-09-15T22:19:27.154Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","detail":"就绪批派发 2 项：tropes、zeitgeist（并行）"}
+{"ts":"2026-09-15T22:29:28.848Z","runId":"run-mu38i90o-r1ytln","event":"submit","actor":"kernel","nodeId":"tropes","detail":"梗卡.md","refs":["梗卡.md"]}
+{"ts":"2026-09-15T22:29:28.848Z","runId":"run-mu38i90o-r1ytln","event":"snapshot","actor":"kernel","nodeId":"tropes","detail":"r1","refs":["梗卡.md"]}
+{"ts":"2026-09-15T22:29:28.854Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","nodeId":"combo","detail":"内部/断言报告-combo.json","refs":["内部/断言报告-combo.json"]}
+{"ts":"2026-09-15T22:29:28.858Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","nodeId":"benchmark","detail":"内部/kb-benchmark.md","refs":["内部/kb-benchmark.md"]}
+{"ts":"2026-09-15T22:29:28.859Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：zeitgeist（并行）"}
+{"ts":"2026-09-15T22:29:29.967Z","runId":"run-mu38i90o-r1ytln","event":"submit","actor":"kernel","nodeId":"zeitgeist","detail":"热点素材.md","refs":["热点素材.md"]}
+{"ts":"2026-09-15T22:29:29.967Z","runId":"run-mu38i90o-r1ytln","event":"snapshot","actor":"kernel","nodeId":"zeitgeist","detail":"r1","refs":["热点素材.md"]}
+{"ts":"2026-09-15T22:29:29.973Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","nodeId":"analysis","detail":"任务包产出（skill=topic-analysis-report，上下文 6 件）"}
+{"ts":"2026-09-15T22:29:29.973Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：analysis（并行）"}
+{"ts":"2026-09-15T22:29:31.054Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：analysis（并行）"}
+{"ts":"2026-09-15T22:37:32.822Z","runId":"run-mu38i90o-r1ytln","event":"submit","actor":"kernel","nodeId":"analysis","detail":"选题分析报告.md","refs":["选题分析报告.md"]}
+{"ts":"2026-09-15T22:37:32.822Z","runId":"run-mu38i90o-r1ytln","event":"snapshot","actor":"kernel","nodeId":"analysis","detail":"r1","refs":["选题分析报告.md"]}
+{"ts":"2026-09-15T22:37:32.824Z","runId":"run-mu38i90o-r1ytln","event":"gate-open","actor":"kernel","nodeId":"gate-r1","detail":"R1 · 调研验收"}
+{"ts":"2026-09-15T22:51:26.325Z","runId":"run-mu38i90o-r1ytln","event":"verdict","actor":"kernel","nodeId":"gate-r1","detail":"pass-with-conditions：附条件过（红方4条）：前三集加一次小验证；洪水戏可视；一堤两制分屏早露脸；付费对标预研"}
+{"ts":"2026-09-15T22:51:26.330Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","nodeId":"baseline","detail":"任务包产出（skill=topic-proposal，上下文 1 件）"}
+{"ts":"2026-09-15T22:51:26.330Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","nodeId":"structure","detail":"任务包产出（skill=structure-design，上下文 1 件）"}
+{"ts":"2026-09-15T22:51:26.330Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","detail":"就绪批派发 2 项：baseline、structure（并行）"}
+{"ts":"2026-09-15T22:51:28.506Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","detail":"就绪批派发 2 项：baseline、structure（并行）"}
+{"ts":"2026-09-15T23:06:56.042Z","runId":"run-mu38i90o-r1ytln","event":"submit","actor":"kernel","nodeId":"baseline","detail":"选题方案-爽版-基线.md","refs":["选题方案-爽版-基线.md"]}
+{"ts":"2026-09-15T23:06:56.043Z","runId":"run-mu38i90o-r1ytln","event":"snapshot","actor":"kernel","nodeId":"baseline","detail":"r1","refs":["选题方案-爽版-基线.md"]}
+{"ts":"2026-09-15T23:06:56.046Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：structure（并行）"}
+{"ts":"2026-09-15T23:06:57.097Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：structure（并行）"}
+{"ts":"2026-09-15T23:31:04.092Z","runId":"run-mu38i90o-r1ytln","event":"submit","actor":"kernel","nodeId":"structure","detail":"故事框架案.md","refs":["故事框架案.md"]}
+{"ts":"2026-09-15T23:31:04.093Z","runId":"run-mu38i90o-r1ytln","event":"snapshot","actor":"kernel","nodeId":"structure","detail":"r1","refs":["故事框架案.md"]}
+{"ts":"2026-09-15T23:31:04.096Z","runId":"run-mu38i90o-r1ytln","event":"gate-open","actor":"kernel","nodeId":"gate-r2","detail":"R2 · 结构验收"}
+{"ts":"2026-09-15T23:31:06.330Z","runId":"run-mu38i90o-r1ytln","event":"verdict","actor":"kernel","nodeId":"gate-r2","detail":"pass-with-conditions：附条件过：诱签变体与空库令两提案需R3复核；甲方行动项移交"}
+{"ts":"2026-09-15T23:31:06.336Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","nodeId":"proposal","detail":"任务包产出（skill=topic-proposal，上下文 1 件）"}
+{"ts":"2026-09-15T23:31:06.336Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：proposal（并行）"}
+{"ts":"2026-09-15T23:31:08.605Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：proposal（并行）"}
+{"ts":"2026-09-15T23:47:06.344Z","runId":"run-mu38i90o-r1ytln","event":"submit","actor":"kernel","nodeId":"proposal","detail":"选题方案.md","refs":["选题方案.md"]}
+{"ts":"2026-09-15T23:47:06.344Z","runId":"run-mu38i90o-r1ytln","event":"snapshot","actor":"kernel","nodeId":"proposal","detail":"r1","refs":["选题方案.md"]}
+{"ts":"2026-09-15T23:47:06.346Z","runId":"run-mu38i90o-r1ytln","event":"gate-open","actor":"kernel","nodeId":"gate-r3","detail":"R3 · 方案验收"}
+{"ts":"2026-09-15T23:47:08.498Z","runId":"run-mu38i90o-r1ytln","event":"verdict","actor":"kernel","nodeId":"gate-r3","detail":"pass-with-conditions：附条件过：诱签变体/空库令融入复核通过；A/B计量回填确认"}
+{"ts":"2026-09-15T23:47:08.504Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","nodeId":"miniguided","detail":"任务包产出（skill=scene-breakdown，上下文 2 件）"}
+{"ts":"2026-09-15T23:47:08.504Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：miniguided（并行）"}
+{"ts":"2026-09-15T23:47:10.546Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：miniguided（并行）"}
+{"ts":"2026-09-15T23:58:13.744Z","runId":"run-mu38i90o-r1ytln","event":"reject","actor":"kernel","nodeId":"miniguided","detail":"ep-title: L298: ### 第一集《这单我不签》——为什么这么拆; L305: ### 第二集《水不要你觉得》——为什么这么拆; L313: ### 第三集《这方混凝土，保熟吗》——为什么这么拆; L321: ### 三集连续性自查","refs":["小纲-第1-3集.md"]}
+{"ts":"2026-09-15T23:58:16.320Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：miniguided（并行）"}
+{"ts":"2026-09-15T23:58:53.297Z","runId":"run-mu38i90o-r1ytln","event":"submit","actor":"kernel","nodeId":"miniguided","detail":"小纲-第1-3集.md","refs":["小纲-第1-3集.md"]}
+{"ts":"2026-09-15T23:58:53.298Z","runId":"run-mu38i90o-r1ytln","event":"snapshot","actor":"kernel","nodeId":"miniguided","detail":"r1","refs":["小纲-第1-3集.md"]}
+{"ts":"2026-09-15T23:58:53.300Z","runId":"run-mu38i90o-r1ytln","event":"gate-open","actor":"kernel","nodeId":"gate-r4","detail":"R4 · 小纲验收"}
+{"ts":"2026-09-15T23:59:08.361Z","runId":"run-mu38i90o-r1ytln","event":"verdict","actor":"kernel","nodeId":"gate-r4","detail":"pass：本轮默认通过；小纲已出批注版docx"}
+{"ts":"2026-09-15T23:59:08.366Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","nodeId":"first3","detail":"任务包产出（skill=script-final，上下文 1 件）"}
+{"ts":"2026-09-15T23:59:08.366Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：first3（并行）"}
+{"ts":"2026-09-15T23:59:10.300Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：first3（并行）"}
+{"ts":"2026-09-16T00:13:17.078Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：first3（并行）"}
+{"ts":"2026-09-16T00:13:45.227Z","runId":"run-mu38i90o-r1ytln","event":"submit","actor":"kernel","nodeId":"first3","detail":"对外交付/04-成品剧本试稿.md","refs":["对外交付/04-成品剧本试稿.md"]}
+{"ts":"2026-09-16T00:13:45.227Z","runId":"run-mu38i90o-r1ytln","event":"snapshot","actor":"kernel","nodeId":"first3","detail":"r1","refs":["对外交付/04-成品剧本试稿.md"]}
+{"ts":"2026-09-16T00:13:45.230Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","nodeId":"polish","detail":"任务包产出（skill=dialogue-polish，上下文 1 件）"}
+{"ts":"2026-09-16T00:13:45.231Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：polish（并行）"}
+{"ts":"2026-09-16T00:13:45.957Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：polish（并行）"}
+{"ts":"2026-09-16T00:24:03.193Z","runId":"run-mu38i90o-r1ytln","event":"submit","actor":"kernel","nodeId":"polish","detail":"对外交付/03-剧本试稿.md","refs":["对外交付/03-剧本试稿.md"]}
+{"ts":"2026-09-16T00:24:03.194Z","runId":"run-mu38i90o-r1ytln","event":"snapshot","actor":"kernel","nodeId":"polish","detail":"r1","refs":["对外交付/03-剧本试稿.md"]}
+{"ts":"2026-09-16T00:24:03.195Z","runId":"run-mu38i90o-r1ytln","event":"gate-open","actor":"kernel","nodeId":"gate-r5","detail":"R5 · 成稿验收"}
+{"ts":"2026-09-16T00:24:16.017Z","runId":"run-mu38i90o-r1ytln","event":"verdict","actor":"kernel","nodeId":"gate-r5","detail":"pass：本轮默认通过"}
+{"ts":"2026-09-16T00:24:16.019Z","runId":"run-mu38i90o-r1ytln","event":"warn","actor":"kernel","nodeId":"delivery","detail":"minitool「render_html」未实现（M1 边界）——节点 delivery 保持未执行，不静默放行"}
+{"ts":"2026-09-16T00:26:13.379Z","runId":"run-mu38i90o-r1ytln","event":"advance","actor":"kernel","nodeId":"delivery","detail":"选题交付页.html","refs":["选题交付页.html"]}
+{"ts":"2026-09-16T00:26:13.381Z","runId":"run-mu38i90o-r1ytln","event":"run-end","actor":"kernel","detail":"全部节点 done"}

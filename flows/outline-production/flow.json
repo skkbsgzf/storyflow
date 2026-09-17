@@ -1,0 +1,156 @@
+{
+  "format": "flow@2",
+  "id": "outline-production",
+  "title": "分集大纲与编排工作流（初稿）",
+  "desc": "已过验收的选题方案 → 三线骨架与分集功能表（60 集）→ 红队冷读者测试（节点可预测死点）→ 人工验收 → 可拍分集大纲",
+  "version": "0.1.0-draft",
+  "status": "draft",
+  "upstream": "topic-selection v3（取其选题方案/梗卡/约束移交单产物为输入）",
+  "inputs": {
+    "project": {
+      "type": "project",
+      "required": true,
+      "desc": "项目上下文"
+    },
+    "route": {
+      "type": "enum",
+      "default": "dual",
+      "options": [
+        "hot",
+        "calm",
+        "dual"
+      ],
+      "desc": "沿用选题阶段路线"
+    },
+    "episodes": {
+      "type": "number",
+      "default": 60,
+      "min": 24,
+      "max": 100,
+      "bind": {
+        "edge": "e-choreo",
+        "param": "episodes"
+      },
+      "desc": "总集数（默认实盘值 60）"
+    }
+  },
+  "outputs": [
+    {
+      "node": "choreo",
+      "title": "分集大纲（逐集：功能/三线状态/关键选择/集末钩）"
+    },
+    {
+      "node": "redline",
+      "title": "红方意见书（大纲级冷读者测试）"
+    }
+  ],
+  "graph": {
+    "format": "smwf@2",
+    "name": "outline-production",
+    "nodes": {
+      "src": {
+        "kind": "novel-txt",
+        "title": "选题方案（已验收）",
+        "output": "选题方案.md"
+      },
+      "constraints": {
+        "kind": "core",
+        "title": "约束与标准装载",
+        "minitool": "kb_load",
+        "loads": [
+          "kb/market/constraints",
+          "kb/aesthetic/pacing-density",
+          "kb/aesthetic/reversal",
+          "kb/aesthetic/emotion-curve",
+          "kb/aesthetic/scene-value",
+          "kb/aesthetic/ending"
+        ]
+      },
+      "choreo": {
+        "kind": "agent",
+        "title": "全剧编排",
+        "skill": "plot-choreographer",
+        "kit": "plot",
+        "op": "plot-choreographer",
+        "output": "内部/稿本/分集大纲.md",
+        "desc": "主线骨架（五节点价值链，每节点=选择+后果）→ 逐集功能表 → 卡点编排表 → 场景复用表；cost ladder 一次只动一到两个维度"
+      },
+      "asserts": {
+        "kind": "core",
+        "title": "结构断言扫描",
+        "minitool": "check_aesthetic_asserts",
+        "asserts": [],
+        "onFail": "退回 choreo 定点修",
+        "desc": "产物为大纲（非拍级非正文），引擎机器层不适用（AE-SKIP-NON-BEAT）；原 7 条语义断言（沙漠段/垫场/曲线/反转铺垫/结局禁止项）已迁 redline 记账（2026-09-17）"
+      },
+      "redline": {
+        "kind": "agent",
+        "title": "红队大纲评审",
+        "skill": "plot-redline",
+        "kit": "plot",
+        "op": "plot-redline",
+        "output": "内部/意见/红方意见书-redline.md",
+        "desc": "大纲级冷读者测试（节点走向猜中率）+ 死点挖掘 + 不合理亮点提案；challenge 时蓝方三选一回应后重审｜语义剖面记账（自 asserts 步迁入 2026-09-17）：AE-DESERT/AE-CUSHION/AE-CURVE-TYPE/AE-CURVE-STALL/AE-REV-SETUP/AE-REV-MIDPOINT/AE-END-MECH"
+      },
+      "fin": {
+        "kind": "srd",
+        "title": "人工验收",
+        "desc": "红方意见书 + 断言报告为必读件"
+      }
+    },
+    "edges": [
+      {
+        "id": "e-load",
+        "from": "src",
+        "to": "constraints",
+        "role": "flow"
+      },
+      {
+        "id": "e-choreo",
+        "from": "constraints",
+        "to": "choreo",
+        "role": "flow"
+      },
+      {
+        "id": "e-assert",
+        "from": "choreo",
+        "to": "asserts",
+        "role": "flow"
+      },
+      {
+        "id": "e-red",
+        "from": "asserts",
+        "to": "redline",
+        "via": "sm.redline",
+        "role": "flow"
+      },
+      {
+        "id": "e-fin",
+        "from": "redline",
+        "to": "fin",
+        "via": "sm.review",
+        "role": "flow"
+      }
+    ],
+    "outputs": [
+      "fin"
+    ]
+  },
+  "quality": {
+    "assertions": "重点维度：pacing（沙漠段/垫场）、reversal（中点反转改模型）、curve（主型判明）、ending（禁止项）",
+    "redlineFocus": "大纲级红队主查可预测死点（冷读者测试 ≥60% 即死点）与安全化磨平",
+    "allow_agent_verdict": false
+  },
+  "harness": {
+    "mode": "task-package",
+    "awaiting_input_at": [
+      "choreo",
+      "redline"
+    ],
+    "core_in_process": [
+      "constraints",
+      "asserts"
+    ],
+    "note": "初稿：M1 运行时就绪后联调；编排步建议按幕分段提交（每 20 集一个任务包）控制单包体量"
+  }
+}
