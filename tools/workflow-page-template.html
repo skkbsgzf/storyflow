@@ -484,12 +484,13 @@ function autoLayout(){
   pos = {}; moduleBand = {}; moduleLinks = []; nodeMeta = {}; parCols = new Set();
   const insts = DATA.modules || [];
   insts.forEach((inst, i) => {
-    const seq = inst.spine || [];
+    const spineSet = new Set(inst.spine || []);
     const pluginSet = new Set(inst.plugins || []);
+    const allNodes = [...new Set([...(inst.nodes || inst.spine || []), ...(inst.plugins || [])])];
     const bx = MG + i*(SPINE_DX+NW+MOD_GAP);
     moduleBand[inst.id] = {from: bx, to: bx + SPINE_DX + NW, index: i, inst,
                            color: moduleColor(i)};
-    seq.forEach((nid, k) => {
+    allNodes.forEach((nid, k) => {
       const plugin = pluginSet.has(nid);
       nodeMeta[nid] = {instId: inst.id, index: i, plugin, color: moduleColor(i)};
       pos[nid] = [bx + (plugin ? PLUGIN_DX : SPINE_DX), MG + 56 + k*(NH+GY)];
