@@ -1542,7 +1542,10 @@ function openShelf(){
     <div class="sub">${DATA.project} ｜ 流程 v${flow.version} ｜ 更新 ${new Date().toLocaleDateString()}</div>
     <p style="font-size:calc(13px*var(--fs,1));color:var(--ink-3);line-height:1.9;margin:0">点击左侧画布节点打开对应产物文档；验收门节点附裁决条。下方文档架收录全部过程文件与交付件，所有文件可直接编辑保存。</p>
   </div>`;
-  h+=`<div class="shelf-row" id="open-wb" style="border-color:var(--accent)"><span class="no">书</span><span class="nm">中间件 · 设定真相库（世界书）</span><span class="go">打开 →</span></div>`;
+  // 中间件卡片按实际产出条件显示：世界书只在流程真的产出 世界书/ 目录时出现
+  // （R6 模块流的设定职能可能由 novel-bible 等过程件承担，空面板是错位不是缺货）
+  const hasWB = Object.keys(files).some(f=>f.startsWith("世界书/"));
+  if (hasWB) h+=`<div class="shelf-row" id="open-wb" style="border-color:var(--accent)"><span class="no">书</span><span class="nm">中间件 · 设定真相库（世界书）</span><span class="go">打开 →</span></div>`;
   h+=`<div class="shelf-row" id="open-ledger" style="border-color:var(--accent)"><span class="no">审</span><span class="nm">审核意见簿 · 验收裁决 + 全部批注（可导出回流）</span><span class="go">打开 →</span></div>`;
   // 交付件：DATA.deliverables（生成器从 交付/ 对外交付/ 章节正文/ R6 <NN>-交付/ 收集；含二进制 docx/pdf）
   const dlvAll = DATA.deliverables || [];
