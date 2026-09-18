@@ -105,7 +105,7 @@
             "type": "object",
             "required": ["type", "desc"],
             "properties": {
-              "type": { "enum": ["number", "string", "boolean", "enum"] },
+              "type": { "enum": ["number", "string", "boolean", "enum", "array"] },
               "default": {},
               "desc": { "type": "string" },
               "enum": { "type": "array" }
