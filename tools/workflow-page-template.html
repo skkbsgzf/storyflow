@@ -2162,16 +2162,30 @@ document.addEventListener("mouseup", e=>{
     const el=(se.nodeType===1?se:se.parentElement);
     if (el) rect=el.getBoundingClientRect();
   }
-  pendingMark=document.createElement("span");
-  pendingMark.className="anno-mark draft"; pendingMark.title="批注草稿（提交后生效）";
-  pendingMark.appendChild(r.extractContents());
-  r.insertNode(pendingMark);
-  s.removeAllRanges();
+  // 安全检查：选区在表格内或跨元素边界时，不做 extractContents/insertNode——
+  // 表格行被 span 包裹后不再是合法 <tr> 子元素，多次叠加即崩坏（实测 bug）。
+  // 此时只弹浮层不拆 DOM，提交后由 findWrapQuote 的文字搜索路径安全上色。
+  const startEl = r.startContainer.nodeType===1 ? r.startContainer : r.startContainer.parentElement;
+  const endEl = r.endContainer.nodeType===1 ? r.endContainer : r.endContainer.parentElement;
+  const unsafe = startEl && endEl && startEl !== endEl && (
+    startEl.closest("table") || endEl.closest("table") ||
+    !startEl.parentElement?.contains(endEl) || !endEl.parentElement?.contains(startEl)
+  );
+  const isSingleTextNode = r.startContainer === r.endContainer && r.startContainer.nodeType === 3;
+  if (!unsafe || isSingleTextNode) {
+    pendingMark=document.createElement("span");
+    pendingMark.className="anno-mark draft"; pendingMark.title="批注草稿（提交后生效）";
+    pendingMark.appendChild(r.extractContents());
+    r.insertNode(pendingMark);
+    s.removeAllRanges();
+  } else {
+    // 不安全选区：不拆 DOM，仅记录文字并弹浮层
+    s.removeAllRanges();
+  }
   pendingQuote=raw.length>300 ? raw.slice(0,300)+"…" : raw;
   const pr=document.getElementById("docpanel").getBoundingClientRect();
   pop.dataset.quote=pendingQuote;
   document.getElementById("anno-input").value="";
-  // 浮层贴着选区末端；越界收进面板
   pop.style.left=Math.round(Math.min(Math.max(8, rect.left-pr.left), Math.max(8, pr.width-290)))+"px";
   pop.style.top=Math.round(Math.min(Math.max(8, rect.bottom-pr.top+8), Math.max(8, pr.height-150)))+"px";
   pop.style.display="block";
