@@ -1,0 +1,17 @@
+{"ts":"2026-09-18T21:21:58.446Z","runId":"run-mu7grvzg-yrdb60","event":"run-start","actor":"kernel","detail":"caocao-wudalang@1.1.0 计划 8 节点"}
+{"ts":"2026-09-18T21:21:58.473Z","runId":"run-mu7grvzg-yrdb60","event":"advance","actor":"kernel","nodeId":"m1.topic-report","detail":"任务包产出（skill=topic-report，上下文 0 件）"}
+{"ts":"2026-09-18T21:21:58.473Z","runId":"run-mu7grvzg-yrdb60","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.topic-report（并行）"}
+{"ts":"2026-09-18T21:22:21.096Z","runId":"run-mu7grvzg-yrdb60","event":"stale","actor":"kernel","nodeId":"m1.topic-report","detail":"rerun 级联失效"}
+{"ts":"2026-09-18T21:22:21.098Z","runId":"run-mu7grvzg-yrdb60","event":"rerun","actor":"kernel","nodeId":"m1.topic-report","detail":"scope 8 节点","refs":["m1.topic-report","m2.link","m2.script-forge","m3.link","m3.ghostwrite","m3.novel-deai","m4.link","m4.export-doc"]}
+{"ts":"2026-09-18T21:22:21.101Z","runId":"run-mu7grvzg-yrdb60","event":"note","actor":"kernel:overlay","detail":"编排变更 → 重编译计划：8 → 11 节点；新增 itb-m2.script-forge、itb-m3.ghostwrite、itb-m4.export-doc；裁撤 无；失效 无","refs":["itb-m2.script-forge","itb-m3.ghostwrite","itb-m4.export-doc"]}
+{"ts":"2026-09-18T21:22:21.102Z","runId":"run-mu7grvzg-yrdb60","event":"note","actor":"kernel:overlay","detail":"派生边界验收 itb-m2.script-forge：topic → plot（接管 1 条跨界入边 e-link-m2）"}
+{"ts":"2026-09-18T21:22:21.102Z","runId":"run-mu7grvzg-yrdb60","event":"note","actor":"kernel:overlay","detail":"派生边界验收 itb-m3.ghostwrite：plot → prose（接管 1 条跨界入边 e-link-m3）"}
+{"ts":"2026-09-18T21:22:21.102Z","runId":"run-mu7grvzg-yrdb60","event":"note","actor":"kernel:overlay","detail":"派生边界验收 itb-m4.export-doc：prose → delivery（接管 1 条跨界入边 e-link-m4）"}
+{"ts":"2026-09-18T21:22:21.108Z","runId":"run-mu7grvzg-yrdb60","event":"advance","actor":"kernel","nodeId":"m1.topic-report","detail":"任务包产出（skill=topic-report，上下文 0 件）"}
+{"ts":"2026-09-18T21:22:21.109Z","runId":"run-mu7grvzg-yrdb60","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.topic-report（并行）"}
+{"ts":"2026-09-18T21:22:22.292Z","runId":"run-mu7grvzg-yrdb60","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.topic-report（并行）"}
+{"ts":"2026-09-18T21:24:43.531Z","runId":"run-mu7grvzg-yrdb60","event":"reject","actor":"kernel","nodeId":"m1.topic-report","detail":"AE-REPORT-DENSITY: 梗/话题/对标行 1 < 8（梗密度不足）","refs":["01-选题/选题报告.md"]}
+{"ts":"2026-09-18T21:24:52.282Z","runId":"run-mu7grvzg-yrdb60","event":"reject","actor":"kernel","nodeId":"m1.topic-report","detail":"AE-REPORT-DENSITY: 梗/话题/对标行 1 < 8（梗密度不足）","refs":["01-选题/选题报告.md"]}
+{"ts":"2026-09-18T21:25:25.936Z","runId":"run-mu7grvzg-yrdb60","event":"submit","actor":"kernel","nodeId":"m1.topic-report","detail":"01-选题/选题报告.md","refs":["01-选题/选题报告.md"]}
+{"ts":"2026-09-18T21:25:25.936Z","runId":"run-mu7grvzg-yrdb60","event":"snapshot","actor":"kernel","nodeId":"m1.topic-report","detail":"r2·选题报告.md","refs":["01-选题/选题报告.md"]}
+{"ts":"2026-09-18T21:25:25.941Z","runId":"run-mu7grvzg-yrdb60","event":"gate-open","actor":"kernel","nodeId":"m2.link","detail":"连接 · 编剧（待人工批准）"}

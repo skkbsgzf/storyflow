@@ -1,0 +1,288 @@
+{
+  "format": "effective@2",
+  "flowId": "caocao-wudalang",
+  "flowVersion": "1.1.0",
+  "policy": {
+    "link_default": "auto",
+    "adapt": "propose"
+  },
+  "overlayHash": "314efa96",
+  "planHash": "c6ae12f8",
+  "links": [],
+  "composition": [],
+  "moduleDirs": {},
+  "nodes": {
+    "m1.topic-report": {
+      "kind": "agent",
+      "title": "选题报告师",
+      "stage": "m1",
+      "module": "m1",
+      "kit": "topic",
+      "op": "topic-report",
+      "output": "01-选题/选题报告.md",
+      "skill": "topic-report",
+      "minitool": "kb_search",
+      "asserts": [
+        "AE-REPORT-DENSITY"
+      ],
+      "config": {
+        "maxChars": "@default:maxChars",
+        "minTropeRows": "@default:minTropeRows"
+      },
+      "desc": "选题模块唯一交付工具：输入灵感 → 选题报告（梗选型+竞品对标+结构解剖+可用话题）。输入职责=灵感；输出职责=选题报告单件；验收职责=AE-REPORT-DENSITY"
+    },
+    "m2.script-forge": {
+      "kind": "agent",
+      "title": "剧本师",
+      "stage": "m2",
+      "module": "m2",
+      "kit": "plot",
+      "op": "script-forge",
+      "output": "02-编剧/剧本.md",
+      "skill": "script-forge",
+      "asserts": [
+        "AE-SCRIPT-FIELDS"
+      ],
+      "config": {
+        "minScenes": "@default:minScenes",
+        "maxChars": "@default:maxChars"
+      },
+      "desc": "编剧模块唯一交付工具：输入选题报告 → 结构化剧本 IR（逐场 5W1H/行动/台词/价值/钩 + 人物卡 + 伏笔登记）。输入职责=选题报告；输出职责=剧本单件；验收职责=AE-SCRIPT-FIELDS"
+    },
+    "m2.link": {
+      "kind": "gate",
+      "gate_role": "link",
+      "link_mode": "manual",
+      "title": "连接 · 编剧（待人工批准）",
+      "stage": "m2",
+      "module": "m2"
+    },
+    "m3.ghostwrite": {
+      "kind": "agent",
+      "title": "文学化师",
+      "stage": "m3",
+      "module": "m3",
+      "kit": "prose",
+      "op": "ghostwrite",
+      "output": "03-写作/正文.md",
+      "skill": "ghostwrite",
+      "config": {
+        "chapterMin": "@default:chapterMin",
+        "chapterMax": "@default:chapterMax"
+      },
+      "desc": "写作模块主交付工具：输入剧本 → 逐场文学化为正文（六维盖章自查/章末钩/纯净度）。输入职责=剧本；输出职责=正文单件；验收职责=既有 prose 断言表（章长/钩/纯度/台账）"
+    },
+    "m3.novel-deai": {
+      "kind": "agent",
+      "title": "novel-deai",
+      "stage": "m3",
+      "module": "m3",
+      "kit": "prose",
+      "op": "novel-deai",
+      "output": "03-写作/终稿.md",
+      "skill": "novel-deai",
+      "minitool": "check_aesthetic_asserts",
+      "config": {
+        "passes": "@default:passes",
+        "innerLoops": "@default:innerLoops",
+        "coverageLaw": "@default:coverageLaw",
+        "metaphorBudget": "@default:metaphorBudget"
+      },
+      "desc": "快餐网文终稿打磨技能——四遍法打磨（声口校准→处境校准→比喻意象→节奏去机味）+ 多轮精修内环（评审官判分→定向修订→防劣化收敛），诊断先行、覆盖律硬门槛、盲读内环验收；产出可发布终稿与全套收据。"
+    },
+    "m3.link": {
+      "kind": "gate",
+      "gate_role": "link",
+      "link_mode": "auto",
+      "title": "连接 · 写作（自动批准）",
+      "stage": "m3",
+      "module": "m3"
+    },
+    "m4.export-doc": {
+      "kind": "core",
+      "title": "export-doc.py",
+      "stage": "m4",
+      "module": "m4",
+      "kit": "delivery",
+      "op": "export-doc",
+      "output": "04-交付/export-doc.docx",
+      "script": "tools/export-doc.py",
+      "config": {
+        "style": "@default:style",
+        "verify": "@default:verify",
+        "outDir": "@default:outDir"
+      },
+      "desc": "export-doc · 小纲/剧本 → Word doc 导出器（export_doc minitool 实现）"
+    },
+    "m4.link": {
+      "kind": "gate",
+      "gate_role": "link",
+      "link_mode": "auto",
+      "title": "连接 · 交付（自动批准）",
+      "stage": "m4",
+      "module": "m4"
+    },
+    "itb-m2.script-forge": {
+      "kind": "gate",
+      "gate_role": "kit-boundary",
+      "title": "跨域交接验收：topic → plot",
+      "desc": "R5 唯一保留的人工验收点：topic 域的产物交给 plot 域执行前，由人确认交接口径（范围/术语/依据）。域内质量由各 tool 自己的 asserts 与 config 负责。"
+    },
+    "itb-m3.ghostwrite": {
+      "kind": "gate",
+      "gate_role": "kit-boundary",
+      "title": "跨域交接验收：plot → prose",
+      "desc": "R5 唯一保留的人工验收点：plot 域的产物交给 prose 域执行前，由人确认交接口径（范围/术语/依据）。域内质量由各 tool 自己的 asserts 与 config 负责。"
+    },
+    "itb-m4.export-doc": {
+      "kind": "gate",
+      "gate_role": "kit-boundary",
+      "title": "跨域交接验收：prose → delivery",
+      "desc": "R5 唯一保留的人工验收点：prose 域的产物交给 delivery 域执行前，由人确认交接口径（范围/术语/依据）。域内质量由各 tool 自己的 asserts 与 config 负责。"
+    }
+  },
+  "edges": [
+    {
+      "id": "e-m1-link",
+      "from": "m1.topic-report",
+      "to": "m2.link",
+      "role": "flow"
+    },
+    {
+      "id": "e-link-m2",
+      "from": "m2.link",
+      "to": "itb-m2.script-forge",
+      "role": "flow"
+    },
+    {
+      "id": "e-m3-ghostwrite-novel-deai",
+      "from": "m3.ghostwrite",
+      "to": "m3.novel-deai",
+      "role": "flow",
+      "via": "skill.novel-deai"
+    },
+    {
+      "id": "e-m2-link",
+      "from": "m2.script-forge",
+      "to": "m3.link",
+      "role": "flow"
+    },
+    {
+      "id": "e-link-m3",
+      "from": "m3.link",
+      "to": "itb-m3.ghostwrite",
+      "role": "flow"
+    },
+    {
+      "id": "e-m3-link",
+      "from": "m3.novel-deai",
+      "to": "m4.link",
+      "role": "flow"
+    },
+    {
+      "id": "e-link-m4",
+      "from": "m4.link",
+      "to": "itb-m4.export-doc",
+      "role": "flow"
+    },
+    {
+      "id": "e-itb-m2.script-forge-out",
+      "from": "itb-m2.script-forge",
+      "to": "m2.script-forge",
+      "role": "flow",
+      "desc": "边界验收通过后放行"
+    },
+    {
+      "id": "e-itb-m3.ghostwrite-out",
+      "from": "itb-m3.ghostwrite",
+      "to": "m3.ghostwrite",
+      "role": "flow",
+      "desc": "边界验收通过后放行"
+    },
+    {
+      "id": "e-itb-m4.export-doc-out",
+      "from": "itb-m4.export-doc",
+      "to": "m4.export-doc",
+      "role": "flow",
+      "desc": "边界验收通过后放行"
+    }
+  ],
+  "nodeConfig": {
+    "m1.topic-report": {
+      "module": "m1",
+      "output": "01-选题/选题报告.md",
+      "skill": "topic-report",
+      "minitool": "kb_search",
+      "nodeConfig": {
+        "maxChars": "@default:maxChars",
+        "minTropeRows": "@default:minTropeRows"
+      }
+    },
+    "m2.script-forge": {
+      "module": "m2",
+      "output": "02-编剧/剧本.md",
+      "skill": "script-forge",
+      "nodeConfig": {
+        "minScenes": "@default:minScenes",
+        "maxChars": "@default:maxChars"
+      }
+    },
+    "m2.link": {
+      "module": "m2",
+      "gateRole": "link",
+      "nodeConfig": {}
+    },
+    "m3.ghostwrite": {
+      "module": "m3",
+      "output": "03-写作/正文.md",
+      "skill": "ghostwrite",
+      "nodeConfig": {
+        "chapterMin": "@default:chapterMin",
+        "chapterMax": "@default:chapterMax"
+      }
+    },
+    "m3.novel-deai": {
+      "module": "m3",
+      "output": "03-写作/终稿.md",
+      "skill": "novel-deai",
+      "minitool": "check_aesthetic_asserts",
+      "nodeConfig": {
+        "passes": "@default:passes",
+        "innerLoops": "@default:innerLoops",
+        "coverageLaw": "@default:coverageLaw",
+        "metaphorBudget": "@default:metaphorBudget"
+      }
+    },
+    "m3.link": {
+      "module": "m3",
+      "gateRole": "link",
+      "nodeConfig": {}
+    },
+    "m4.export-doc": {
+      "module": "m4",
+      "output": "04-交付/export-doc.docx",
+      "nodeConfig": {
+        "style": "@default:style",
+        "verify": "@default:verify",
+        "outDir": "@default:outDir"
+      }
+    },
+    "m4.link": {
+      "module": "m4",
+      "gateRole": "link",
+      "nodeConfig": {}
+    },
+    "itb-m2.script-forge": {
+      "gateRole": "kit-boundary",
+      "nodeConfig": {}
+    },
+    "itb-m3.ghostwrite": {
+      "gateRole": "kit-boundary",
+      "nodeConfig": {}
+    },
+    "itb-m4.export-doc": {
+      "gateRole": "kit-boundary",
+      "nodeConfig": {}
+    }
+  }
+}

@@ -3,7 +3,7 @@
   "id": "prose",
   "name": "写作",
   "desc": "文学域：三专科层稿 + 成文师逐段六维盖章 + 终稿打磨——文学质量内置在成文流水线，剧情前置锁定后成文层无权改戏",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "ops": {
     "layer-voices": {
       "skill": "layer-voices",
@@ -69,7 +69,8 @@
         "asserts": [],
         "knowledge": [],
         "config": {}
-      }
+      },
+      "slot": "end"
     },
     "layer-scenes": {
       "skill": "layer-scenes",
@@ -135,7 +136,8 @@
         "asserts": [],
         "knowledge": [],
         "config": {}
-      }
+      },
+      "slot": "end"
     },
     "layer-canon": {
       "skill": "layer-canon",
@@ -198,7 +200,8 @@
         "asserts": [],
         "knowledge": [],
         "config": {}
-      }
+      },
+      "slot": "end"
     },
     "prose-assembler": {
       "skill": "prose-assembler",
@@ -268,7 +271,8 @@
         "asserts": [],
         "knowledge": [],
         "config": {}
-      }
+      },
+      "slot": "end"
     },
     "novel-deai": {
       "skill": "novel-deai",
@@ -346,7 +350,8 @@
         "asserts": [],
         "knowledge": [],
         "config": {}
-      }
+      },
+      "output": "终稿.md"
     },
     "novel-chapter": {
       "skill": "novel-chapter",
@@ -739,31 +744,62 @@
         "knowledge": [],
         "config": {}
       }
+    },
+    "ghostwrite": {
+      "skill": "ghostwrite",
+      "title": "文学化师",
+      "desc": "写作模块主交付工具：输入剧本 → 逐场文学化为正文（六维盖章自查/章末钩/纯净度）。输入职责=剧本；输出职责=正文单件；验收职责=既有 prose 断言表（章长/钩/纯度/台账）",
+      "kind": "produce",
+      "knowledge": [
+        "kb/craft/prose-constraints",
+        "kb/aesthetic/slop-list",
+        "kb/aesthetic/ai-trace",
+        "kb/aesthetic/metaphor-zh",
+        "kb/craft/user-style-rules"
+      ],
+      "capability": [
+        "正文"
+      ],
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "asserts": [],
+        "knowledge": [],
+        "config": {}
+      },
+      "config": {
+        "chapterMin": {
+          "type": "number",
+          "default": 1500,
+          "desc": "章长下限（CJK）",
+          "effect": "低于=断言打回",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "chapterMax": {
+          "type": "number",
+          "default": 1800,
+          "desc": "章长上限（CJK）",
+          "effect": "超=节奏拖",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "output": "正文.md"
     }
   },
   "skeleton": {
     "spine": [
-      "layer-voices",
-      "layer-scenes",
-      "layer-canon",
-      "prose-assembler",
+      "ghostwrite",
       "novel-deai"
     ],
     "edges": [
       [
-        "layer-voices",
-        "layer-scenes"
-      ],
-      [
-        "layer-scenes",
-        "layer-canon"
-      ],
-      [
-        "layer-canon",
-        "prose-assembler"
-      ],
-      [
-        "prose-assembler",
+        "ghostwrite",
         "novel-deai"
       ]
     ]
@@ -779,6 +815,7 @@
     "剧本成稿",
     "对话打磨",
     "文学评审",
-    "视频提示词"
+    "视频提示词",
+    "正文"
   ]
 }

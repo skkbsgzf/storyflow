@@ -3,7 +3,7 @@
   "id": "topic",
   "name": "选题",
   "desc": "选题域：市场盘面调研取数——找梗/素材解剖/时代情绪/热点采集，产出结构化选题素材包",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "ops": {
     "find-trope": {
       "skill": "find-trope",
@@ -77,7 +77,8 @@
         "asserts": [],
         "knowledge": [],
         "config": {}
-      }
+      },
+      "slot": "end"
     },
     "material-dissect": {
       "skill": "material-dissect",
@@ -135,7 +136,8 @@
         "asserts": [],
         "knowledge": [],
         "config": {}
-      }
+      },
+      "slot": "end"
     },
     "topic-zeitgeist": {
       "skill": "topic-zeitgeist",
@@ -322,26 +324,73 @@
         "knowledge": [],
         "config": {}
       }
+    },
+    "topic-report": {
+      "skill": "topic-report",
+      "title": "选题报告师",
+      "desc": "选题模块唯一交付工具：输入灵感 → 选题报告（梗选型+竞品对标+结构解剖+可用话题）。输入职责=灵感；输出职责=选题报告单件；验收职责=AE-REPORT-DENSITY",
+      "kind": "produce",
+      "knowledge": [
+        "kb/trope/chongsheng-fuchou",
+        "kb/trope/dalian-nuezha",
+        "kb/market/topic-anatomy",
+        "kb/market/meme-rules",
+        "kb/aesthetic/pacing-density"
+      ],
+      "minitools": [
+        "kb_search",
+        "check_trope_combo"
+      ],
+      "asserts": [
+        "AE-REPORT-DENSITY"
+      ],
+      "capability": [
+        "选题报告"
+      ],
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "asserts": [],
+        "knowledge": [],
+        "config": {}
+      },
+      "config": {
+        "maxChars": {
+          "type": "number",
+          "default": 4000,
+          "desc": "报告篇幅上限",
+          "effect": "超限视为未收敛",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "minTropeRows": {
+          "type": "number",
+          "default": 8,
+          "desc": "梗/话题行数下限（AE-REPORT-DENSITY 阈值）",
+          "effect": "调低=验收放松",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "output": "选题报告.md"
     }
-
   },
   "skeleton": {
     "spine": [
-      "find-trope",
-      "material-dissect"
+      "topic-report"
     ],
-    "edges": [
-      [
-        "find-trope",
-        "material-dissect"
-      ]
-    ]
+    "edges": []
   },
   "caps": [
     "找梗",
     "素材解剖",
     "时代情绪锚",
     "网感文案",
-    "拆书入库"
+    "拆书入库",
+    "选题报告"
   ]
 }

@@ -1,0 +1,99 @@
+{
+  "runId": "run-mu7grvzg-yrdb60",
+  "projectId": "ccwd-fq3",
+  "flowId": "caocao-wudalang",
+  "flowVersion": "1.1.0",
+  "flowHash": "4e5d4bf7",
+  "status": "suspended",
+  "plan": {
+    "order": [
+      "m1.topic-report",
+      "m2.link",
+      "itb-m2.script-forge",
+      "m2.script-forge",
+      "m3.link",
+      "itb-m3.ghostwrite",
+      "m3.ghostwrite",
+      "m3.novel-deai",
+      "m4.link",
+      "itb-m4.export-doc",
+      "m4.export-doc"
+    ]
+  },
+  "nodes": {
+    "m1.topic-report": {
+      "status": "done",
+      "round": 2,
+      "stale": false,
+      "committed": [],
+      "failCount": 2,
+      "lastArtifact": "01-选题/选题报告.md"
+    },
+    "m2.script-forge": {
+      "status": "none",
+      "round": 0
+    },
+    "m2.link": {
+      "status": "awaiting",
+      "round": 0
+    },
+    "m3.ghostwrite": {
+      "status": "none",
+      "round": 0
+    },
+    "m3.novel-deai": {
+      "status": "none",
+      "round": 0
+    },
+    "m3.link": {
+      "status": "none",
+      "round": 0
+    },
+    "m4.export-doc": {
+      "status": "none",
+      "round": 0
+    },
+    "m4.link": {
+      "status": "none",
+      "round": 0
+    },
+    "itb-m2.script-forge": {
+      "status": "none",
+      "round": 0
+    },
+    "itb-m3.ghostwrite": {
+      "status": "none",
+      "round": 0
+    },
+    "itb-m4.export-doc": {
+      "status": "none",
+      "round": 0
+    }
+  },
+  "gate": {
+    "verdict": "awaiting",
+    "node": "m2.link",
+    "round": 0,
+    "token": "approval:ccwd-fq3:run-mu7grvzg-yrdb60:m2.link",
+    "at": "2026-09-18T21:25:25.941Z",
+    "note": "连接 · 编剧（待人工批准）"
+  },
+  "inputs": {
+    "project": "ccwd-fq3",
+    "direction": "曹操魂穿武大郎：用兵法做炊饼、以权谋治小店；当武松推门而入时，发现弟弟已非吴下阿蒙",
+    "chapters": 3,
+    "题材": "历史穿越 + 美食（快餐抽象向）",
+    "需求": "曹操穿越成武大郎，从被鄙视的炊饼郎到权谋厨房之王的快餐爽文；前三章试稿",
+    "灵感": "三国最强枭雄的灵魂困在北宋最卑微的躯壳里；用兵法做炊饼、以权谋待客官",
+    "严肃性": "探索"
+  },
+  "comments": {},
+  "overlayHash": "314efa96",
+  "policy": {
+    "kit_boundary": "always",
+    "gate_mode": "auto",
+    "adapt": "propose"
+  },
+  "planHash": "c6ae12f8",
+  "focus": "m2.link"
+}

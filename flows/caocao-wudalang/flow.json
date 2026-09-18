@@ -2,22 +2,84 @@
   "format": "flow@3",
   "id": "caocao-wudalang",
   "title": "曹操穿越武大郎",
-  "desc": "R6 模块序列演示：选题→编剧(暗线+伏笔插件)→写作(3章iterate)→交付",
-  "version": "1.0.0",
+  "desc": "小说流 v2 精细化：模块职责三件套（输入/输出/验收）——m1 灵感→选题报告；m2 报告→剧本 IR；m3 剧本→正文；m4 交付 docx",
+  "version": "1.1.0",
   "status": "draft",
   "inputs": {
-    "direction": { "type": "string", "required": true, "desc": "题材方向" },
-    "chapters": { "type": "number", "default": 3, "desc": "试稿章数" }
+    "direction": {
+      "type": "string",
+      "required": true,
+      "desc": "题材方向"
+    },
+    "chapters": {
+      "type": "number",
+      "default": 3,
+      "desc": "试稿章数"
+    }
   },
-  "defaults": { "link": "auto" },
-  "policy": { "link_default": "auto", "adapt": "off" },
+  "defaults": {
+    "link": "auto"
+  },
+  "policy": {
+    "link_default": "auto",
+    "adapt": "off"
+  },
   "modules": [
-    { "id": "m1", "module": "topic", "link": "auto", "caps": ["找梗", "素材解剖"] },
-    { "id": "m2", "module": "plot", "link": "manual", "caps": ["主线", "人设", "暗线", "伏笔"] },
-    { "id": "m3", "module": "prose", "link": "auto", "caps": ["正文"], "iterate": { "unit": "chapter", "over": "大纲", "first": 1 } },
-    { "id": "m4", "module": "delivery", "link": "auto" }
+    {
+      "id": "m1",
+      "module": "topic",
+      "link": "auto",
+      "caps": [
+        "选题报告"
+      ]
+    },
+    {
+      "id": "m2",
+      "module": "plot",
+      "link": "manual",
+      "caps": [
+        "编剧"
+      ]
+    },
+    {
+      "id": "m3",
+      "module": "prose",
+      "link": "auto",
+      "caps": [
+        "正文"
+      ],
+      "iterate": {
+        "unit": "chapter",
+        "over": "大纲",
+        "first": 1
+      }
+    },
+    {
+      "id": "m4",
+      "module": "delivery",
+      "link": "auto"
+    }
   ],
   "outputs": [
-    { "module": "m3", "title": "三章终稿", "audience": "番茄编辑" }
+    {
+      "module": "m1",
+      "title": "选题报告",
+      "audience": "用户批注回流"
+    },
+    {
+      "module": "m2",
+      "title": "剧本",
+      "audience": "用户批注回流"
+    },
+    {
+      "module": "m3",
+      "title": "正文终稿",
+      "audience": "番茄编辑"
+    },
+    {
+      "module": "m4",
+      "title": "交付 docx",
+      "audience": "番茄编辑"
+    }
   ]
 }

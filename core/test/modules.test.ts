@@ -163,10 +163,20 @@ describe("R6 · 模块展开器（expandFlow3）", () => {
     expect(b).toBe(a);
   });
 
-  it("真仓模块：plot 模块对齐钦定形态（工具箱 10 / 骨架 4 / 可玩空间 7）", () => {
+  it("真仓模块：plot 模块对齐钦定形态（v2 精细化：工具箱 11 / 骨架 1 = script-forge）", () => {
     const mod = JSON.parse(fs.readFileSync(path.join(ROOT, "modules", "plot", "module.json"), "utf-8"));
-    expect(Object.keys(mod.ops).length).toBe(10);
-    expect(mod.skeleton.spine).toEqual(["structure-design", "plot-choreographer", "novel-bible", "scene-breakdown"]);
-    expect(mod.caps.length - mod.skeleton.spine.length).toBe(7);
+    expect(Object.keys(mod.ops).length).toBe(11);
+    expect(mod.skeleton.spine).toEqual(["script-forge"]);
+    expect(mod.ops["script-forge"].asserts).toContain("AE-SCRIPT-FIELDS");
+  });
+  it("真仓模块：topic/prose v2 精细化（单件交付 spine + 输出职责落盘名）", () => {
+    const topic = JSON.parse(fs.readFileSync(path.join(ROOT, "modules", "topic", "module.json"), "utf-8"));
+    expect(topic.skeleton.spine).toEqual(["topic-report"]);
+    expect(topic.ops["topic-report"].output).toBe("选题报告.md");
+    expect(topic.ops["topic-report"].asserts).toContain("AE-REPORT-DENSITY");
+    const prose = JSON.parse(fs.readFileSync(path.join(ROOT, "modules", "prose", "module.json"), "utf-8"));
+    expect(prose.skeleton.spine).toEqual(["ghostwrite", "novel-deai"]);
+    expect(prose.ops["ghostwrite"].output).toBe("正文.md");
+    expect(prose.ops["novel-deai"].output).toBe("终稿.md");
   });
 });

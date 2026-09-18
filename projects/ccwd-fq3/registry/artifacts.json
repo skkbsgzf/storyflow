@@ -1,0 +1,29 @@
+{
+  "artifacts": [
+    {
+      "path": "01-选题/选题报告.md",
+      "node": "m1.topic-report",
+      "round": 2,
+      "producer": "host-submit",
+      "inputs": {},
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1750 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "AE-REPORT-DENSITY",
+          "status": "pass",
+          "detail": "梗/话题行 8、对标 6、热度数据 4 处"
+        }
+      ],
+      "sha1": "374545d8a421",
+      "ts": "2026-09-18T21:25:25.821Z"
+    }
+  ]
+}

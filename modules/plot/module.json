@@ -3,7 +3,7 @@
   "id": "plot",
   "name": "编剧",
   "desc": "编剧域：主线剧情、人设、世界观、暗线、伏笔悬念的编排——剧情在成文前锁定，成文层无权改戏",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "ops": {
     "structure-design": {
       "skill": "structure-design",
@@ -68,7 +68,8 @@
         "asserts": [],
         "knowledge": [],
         "config": {}
-      }
+      },
+      "slot": "end"
     },
     "plot-choreographer": {
       "skill": "plot-choreographer",
@@ -163,7 +164,8 @@
         "asserts": [],
         "knowledge": [],
         "config": {}
-      }
+      },
+      "slot": "end"
     },
     "novel-bible": {
       "skill": "novel-bible",
@@ -228,7 +230,8 @@
         "asserts": [],
         "knowledge": [],
         "config": {}
-      }
+      },
+      "slot": "end"
     },
     "scene-breakdown": {
       "skill": "scene-breakdown",
@@ -292,7 +295,8 @@
         "asserts": [],
         "knowledge": [],
         "config": {}
-      }
+      },
+      "slot": "end"
     },
     "world-forge": {
       "skill": "world-forge",
@@ -713,29 +717,62 @@
         "knowledge": [],
         "config": {}
       }
+    },
+    "script-forge": {
+      "skill": "script-forge",
+      "title": "剧本师",
+      "desc": "编剧模块唯一交付工具：输入选题报告 → 结构化剧本 IR（逐场 5W1H/行动/台词/价值/钩 + 人物卡 + 伏笔登记）。输入职责=选题报告；输出职责=剧本单件；验收职责=AE-SCRIPT-FIELDS",
+      "kind": "produce",
+      "knowledge": [
+        "kb/aesthetic/scene-value",
+        "kb/aesthetic/conflict-escalation",
+        "kb/aesthetic/reversal",
+        "kb/aesthetic/character",
+        "kb/craft/highlight-loop"
+      ],
+      "asserts": [
+        "AE-SCRIPT-FIELDS"
+      ],
+      "capability": [
+        "编剧"
+      ],
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "asserts": [],
+        "knowledge": [],
+        "config": {}
+      },
+      "config": {
+        "minScenes": {
+          "type": "number",
+          "default": 6,
+          "desc": "场数下限（AE-SCRIPT-FIELDS 阈值）",
+          "effect": "调高=分场更细",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "maxChars": {
+          "type": "number",
+          "default": 6000,
+          "desc": "剧本篇幅上限",
+          "effect": "超限视为未收敛",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "output": "剧本.md"
     }
   },
   "skeleton": {
     "spine": [
-      "structure-design",
-      "plot-choreographer",
-      "novel-bible",
-      "scene-breakdown"
+      "script-forge"
     ],
-    "edges": [
-      [
-        "structure-design",
-        "plot-choreographer"
-      ],
-      [
-        "novel-bible",
-        "plot-choreographer"
-      ],
-      [
-        "plot-choreographer",
-        "scene-breakdown"
-      ]
-    ]
+    "edges": []
   },
   "caps": [
     "结构",
@@ -748,6 +785,7 @@
     "暗线",
     "伏笔",
     "悬念",
-    "红队评审"
+    "红队评审",
+    "编剧"
   ]
 }

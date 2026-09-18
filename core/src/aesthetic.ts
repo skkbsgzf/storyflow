@@ -207,7 +207,7 @@ function projectOwnTerms(projectDir: string): string[] {
  *  只在成文产物路径上生效（小纲/大纲是过程件，合法承载流程词汇，切片不适用 → 返回空）。 */
 function ledgerSliceAsserts(projectDir: string, relPath: string, text: string): Validation[] {
   const rel = relPath.replaceAll("\\", "/");
-  const prosePath = /章节正文|第\d+章|正文-|剧本|试稿|对外交付/.test(rel) && !/小纲|大纲|意见书/.test(rel);
+  const prosePath = /章节正文|第\d+章|正文|终稿|剧本|试稿|对外交付/.test(rel) && !/小纲|大纲|意见书/.test(rel);
   if (!prosePath) return [];
   return [
     continuityKnownAssert(projectDir, text),
@@ -360,6 +360,57 @@ export function foreshadowAssert(projectDir: string, relPath: string): Validatio
 }
 
 /**
+ * AE-REPORT-DENSITY（block）· 小说流 v2 m1「选题报告」验收职责：
+ * 梗密度（高传播梗素材 ≥8 条）、竞品对标（≥2 部，带借鉴点）、可用话题（清单在场）、热度数据（n/万 在场）。
+ * 用户口径：「验收标准则是梗的密度，可以用的话题以及剧情，可以借鉴的东西」。
+ */
+export function reportDensityAssert(text: string): Validation {
+  const problems: string[] = [];
+  // 表格内容行 = 以 | 开头且非纯分隔行；语义行 = 行内含 梗/话题/对标/素材/借鉴 关键词
+  const rows = text.split("\n").filter((l) => {
+    const t = l.trim();
+    return t.startsWith("|") && !/^\|[\s:|-]+\|$/.test(t);
+  });
+  const tropeRows = rows.filter((l) => /梗|话题|对标|素材|借鉴/.test(l)).length;
+  const bench = (text.match(/[《「][^》」]{2,30}[》」]/g) ?? []).length;
+  const heat = (text.match(/\d{2,6}(\.\d+)?\s*万/g) ?? []).length;
+  if (tropeRows < 8) problems.push(`梗/话题/对标行 ${tropeRows} < 8（梗密度不足）`);
+  if (bench < 2) problems.push(`竞品对标引用 ${bench} < 2（缺可借鉴件）`);
+  if (!/话题/.test(text)) problems.push("缺「可用话题」清单节");
+  if (heat < 3) problems.push(`热度数据（n/万）${heat} < 3 处（结论必须挂数据）`);
+  return problems.length === 0
+    ? { name: "AE-REPORT-DENSITY", status: "pass", detail: `梗/话题行 ${tropeRows}、对标 ${bench}、热度数据 ${heat} 处` }
+    : { name: "AE-REPORT-DENSITY", status: "block", detail: problems.join("；") };
+}
+
+/**
+ * AE-SCRIPT-FIELDS（block）· 小说流 v2 m2「剧本」验收职责：
+ * 结构化 IR 字段齐备——每场须有 5W 行 / 行动 / 台词 / 价值 / 钩；场数 ≥6（三章 × ≥3 场）。
+ * 剧本是格式化数据（5W1H/行动/背景/场景/台词），写作模块据此文学化。
+ */
+export function scriptFieldsAssert(text: string): Validation {
+  const problems: string[] = [];
+  const scenes = text.split(/^###\s*场/gm).slice(1);
+  if (scenes.length < 6) problems.push(`场数 ${scenes.length} < 6（三章每章至少 3 场）`);
+  const miss = { w: 0, act: 0, dlg: 0, val: 0, hook: 0 };
+  for (const [i, s] of scenes.entries()) {
+    if (!/5W|谁[=：]/.test(s)) miss.w++;
+    if (!/行动[:：]/.test(s)) miss.act++;
+    if (!/台词[:：]/.test(s)) miss.dlg++;
+    if (!/价值[:：]/.test(s)) miss.val++;
+    if (!/钩[:：]/.test(s) && i === scenes.length - 1) miss.hook++;
+  }
+  if (miss.w) problems.push(`${miss.w} 场缺 5W 行`);
+  if (miss.act) problems.push(`${miss.act} 场缺「行动」`);
+  if (miss.dlg) problems.push(`${miss.dlg} 场缺「台词」`);
+  if (miss.val) problems.push(`${miss.val} 场缺「价值」`);
+  if (miss.hook) problems.push("末场缺「钩」（全剧收束钩必填，章末钩另在行动/价值里体现）");
+  return problems.length === 0
+    ? { name: "AE-SCRIPT-FIELDS", status: "pass", detail: `${scenes.length} 场字段齐备（5W/行动/台词/价值）` }
+    : { name: "AE-SCRIPT-FIELDS", status: "block", detail: problems.join("；") };
+}
+
+/**
  * check_aesthetic_asserts 的内核实现（M2 正式版）。
  * 机器可查维度：钩型四型/拍三件套/时长区间/尾钩在场/台词密度/梗点/卡点位/合规禁词/自造专名限额/编排表忠实性。
  * 视角类维度（代入感/节奏体感…）机器查不了——不在此表，归红方剖面。
@@ -372,6 +423,16 @@ export function runAestheticAsserts(projectDir: string, relPath: string): Valida
   } catch {
     return [{ name: "AE-EXISTS", status: "block", detail: `产物缺失: ${relPath}` }];
   }
+  // 选题报告（小说流 v2·m1 模块交付）：验收职责 = 梗密度 / 竞品对标 / 可用话题，全为文本层可查。
+  // 路由用 R6 精确路径——老 flow@2 的 对外交付/01-选题报告.md 不适用此验收（职责契约不同，勿误伤）
+  const relNorm = relPath.replaceAll("\\", "/");
+  if (/^01-选题\/选题报告\.md$/.test(relNorm)) {
+    return [reportDensityAssert(text), ...ledgerSliceAsserts(projectDir, relPath, text)];
+  }
+  // 剧本 IR（小说流 v2·m2 模块交付）：验收职责 = 每场 5W1H/行动/台词/价值/钩 字段齐备
+  if (/^02-编剧\/剧本\.md$/.test(relNorm) && /###\s*场/.test(text)) {
+    return [scriptFieldsAssert(text), ...ledgerSliceAsserts(projectDir, relPath, text)];
+  }
   // 剧本类产物（成品剧本/试稿）：脚本格式专项断言（M2.5，客户版式契约）+ 连续性切片
   if (/剧本|试稿/.test(relPath) && !/\*\*B\d{4}｜/.test(text)) {
     return [...scriptFormatAsserts(text, projectDir), ...ledgerSliceAsserts(projectDir, relPath, text)];
@@ -380,7 +441,7 @@ export function runAestheticAsserts(projectDir: string, relPath: string): Valida
   // + WO-A② 文本层校验器：章末钩/越权切片/台账矛盾切片/伏笔逾期/纯净度
   const allBeats = [...text.matchAll(/\*\*B(\d+)｜([^｜]+)｜(\d+)秒\*\*[\s\S]*?(?=\*\*B\d+｜|$)/g)];
   if (allBeats.length === 0) {
-    if (/章节正文|第\d+章|正文-/.test(relPath)) {
+    if (/章节正文|第\d+章|正文|终稿/.test(relPath)) {
       return [
         ...proseAsserts(text),
         chapterHookAssert(projectDir, relPath, text),

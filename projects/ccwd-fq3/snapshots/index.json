@@ -1,0 +1,18 @@
+{
+  "snapshots": {
+    "m1.topic-report": [
+      {
+        "round": 1,
+        "ts": "2026-09-18T21:25:25.824Z",
+        "note": "submit r2·选题报告.md",
+        "files": {
+          "01-选题/选题报告.md": {
+            "hash": "374545d8a421",
+            "path": "snapshots/m1.topic-report/r1/01-选题/选题报告.md"
+          }
+        }
+      }
+    ]
+  },
+  "inputs": {}
+}

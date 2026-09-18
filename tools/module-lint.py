@@ -60,7 +60,7 @@ SLOT_RE = re.compile(r"^(after|before):([a-z][a-z0-9-]*)$|^end$")
 TOOL_FIELDS = {
     "title", "desc", "skill", "minitools", "script", "kind", "model_tier",
     "knowledge", "asserts", "config", "capability", "slot", "also_fits",
-    "requires", "adds",
+    "requires", "adds", "output",
 }
 KINDS = {"produce", "review", "check"}
 TIERS = {"high", "low"}
