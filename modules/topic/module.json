@@ -9,6 +9,7 @@
       "skill": "find-trope",
       "title": "find-trope",
       "desc": "找梗技能——从市场梗库检索梗族、判定饱和度、选主梗辅梗、沿演化链找新变体落点；梗卡是选题方案的前置件。",
+      "kind": "produce",
       "knowledge": [
         "kb/market/snapshot",
         "kb/market/structure",
@@ -82,6 +83,7 @@
       "skill": "material-dissect",
       "title": "material-dissect",
       "desc": "选题素材解剖技能——申论式四层剥离（现象/利益/权力/结构），把热点事件聚合成关系结构与权力不对称，从关系逆位生成爽点候选，产出材料落位表。素材不解剖=假材料，梗不落位=装饰品。",
+      "kind": "produce",
       "knowledge": [
         "kb/market/meme-rules",
         "kb/market/topic-anatomy"
@@ -139,6 +141,7 @@
       "skill": "topic-zeitgeist",
       "title": "时代情绪锚",
       "desc": "主旋律与实时性技能——选题必须锚定一个近 30 天可举证的社会情绪，故事是该情绪的具象化；无锚点的选题是经典母题复读，缺共鸣乘数。",
+      "kind": "produce",
       "config": {
         "windowDays": {
           "type": "number",
@@ -192,6 +195,7 @@
       "skill": "internet-feel",
       "title": "internet-feel",
       "desc": "网感技能——按市场公式产标题、一句话卖点、共情点与所有对外文案；每个字都在传递钩子或爽点，产出过 24 类去模板化自检。",
+      "kind": "produce",
       "knowledge": [
         "kb/aesthetic/hook-3s",
         "kb/aesthetic/naturalness-zh",
@@ -259,6 +263,7 @@
       "skill": "deconstruct-book",
       "title": "deconstruct-book",
       "desc": "拆书技能——按拆书总协议把参考作品拆成六槽位可入库素材（梗/人设/剧情设计/导语/细化/片段），产出带替换变量与使用条件的 KB 候选条目；溯源纪律全程硬约束。",
+      "kind": "produce",
       "knowledge": [
         "kb/aesthetic/character",
         "kb/aesthetic/pacing-density",
@@ -324,6 +329,7 @@
         "meme_harvest"
       ],
       "desc": "（planned，内核未实现，触达即 blocked）外部热点/梗源采集（现由宿主 agent 步承担）",
+      "kind": "produce",
       "config": {
         "sinceDays": {
           "type": "number",

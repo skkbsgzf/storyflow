@@ -11,6 +11,7 @@
         "check_aesthetic_asserts"
       ],
       "desc": "钩型/三件套/时长/密度/梗点/卡点/合规/编排表忠实性（M2 正式版）",
+      "kind": "produce",
       "config": {
         "scope": {
           "type": "enum",
@@ -70,6 +71,7 @@
         "check_trope_combo"
       ],
       "desc": "走 check_* integrity 模式：产物存在性/结构完整/断言子集",
+      "kind": "produce",
       "config": {
         "mode": {
           "type": "enum",
@@ -106,6 +108,7 @@
         "continuity_slice"
       ],
       "desc": "（planned，内核未实现，触达即 blocked）世界书 台账/章账 按章切片供写手",
+      "kind": "produce",
       "config": {
         "sliceUnit": {
           "type": "enum",
@@ -154,6 +157,7 @@
         "continuity_commit"
       ],
       "desc": "（planned，内核未实现，触达即 blocked）章回写手待登记清单回写世界书词条（状态机 draft/active/retired）",
+      "kind": "produce",
       "config": {
         "stateMachine": {
           "type": "enum",
@@ -190,6 +194,7 @@
         "continuity_check"
       ],
       "desc": "（planned，内核未实现，触达即 blocked）台账矛盾/知情范围越权/伏笔逾期——当前由 check_aesthetic_asserts 的 AE-CONT-* 承担，待拆为独立 minitool",
+      "kind": "produce",
       "config": {
         "dims": {
           "type": "array",
@@ -228,6 +233,7 @@
       "script": "tools/analyze-kakaxing.py",
       "title": "analyze-kakaxing.py",
       "desc": "kakaxing 语料分析：题材×热度、八段式策划案解析、句式与梗族挖掘。确定性、零 LLM。",
+      "kind": "check",
       "config": {
         "topN": {
           "type": "number",
@@ -259,6 +265,7 @@
       "script": "tools/artifact-lint.py",
       "title": "artifact-lint.py",
       "desc": "artifact-lint · 过程交付件格式体检（规范 R4 §二/§三/§四）",
+      "kind": "check",
       "config": {},
       "capability": [
         "产物准入"
@@ -268,6 +275,7 @@
       "script": "tools/check-purity.py",
       "title": "check-purity.py",
       "desc": "产物正文纯净度检查（AE-OUTPUT-PURITY）。",
+      "kind": "check",
       "config": {
         "severityFloor": {
           "type": "enum",
@@ -302,6 +310,7 @@
       "script": "tools/flow-kit-apply.py",
       "title": "flow-kit-apply.py",
       "desc": "flow-kit-apply · flow 节点声明迁移：skill + kb → kit + op（kit@1）",
+      "kind": "check",
       "config": {
         "dryRun": {
           "type": "boolean",
@@ -332,6 +341,7 @@
       "script": "tools/flow-lint.py",
       "title": "flow-lint.py",
       "desc": "flow-lint · flow@2 配置体检（规范 R4 §五/§六）",
+      "kind": "check",
       "config": {
         "strict": {
           "type": "boolean",
@@ -352,6 +362,7 @@
       "script": "tools/flow-normalize.py",
       "title": "flow-normalize.py",
       "desc": "flow@1 → flow@2 迁移器（规范 R4 §五）。纯 stdlib。",
+      "kind": "check",
       "config": {},
       "capability": [
         "flow工具"
@@ -361,6 +372,7 @@
       "script": "tools/flow-verify.py",
       "title": "flow-verify.py",
       "desc": "flow-verify.py · 产物脱流改动探测器（K7 · 2026-09-17 事故 R2 落地件）",
+      "kind": "check",
       "config": {
         "since": {
           "type": "string",
@@ -391,6 +403,7 @@
       "script": "tools/kit-config-init.py",
       "title": "kit-config-init.py",
       "desc": "kit-config-init · 为全部 tool（kit op）注入内容配置项声明（R5 §二）",
+      "kind": "check",
       "config": {},
       "capability": [
         "flow工具"
@@ -400,6 +413,7 @@
       "script": "tools/kit.py",
       "title": "kit.py",
       "desc": "kit · 创作者工具链 vendor 器（拷贝自治模型）",
+      "kind": "check",
       "config": {
         "dest": {
           "type": "string",
@@ -430,6 +444,7 @@
       "script": "tools/project-pages.py",
       "title": "project-pages.py",
       "desc": "每项目工作流页生成器（复用 v3 Canvas 语义：拖拽画布 / 检查器 / 节点快照查看·修改·重跑）",
+      "kind": "check",
       "config": {
         "theme": {
           "type": "enum",
@@ -465,6 +480,7 @@
       "script": "tools/r5-migrate.py",
       "title": "r5-migrate.py",
       "desc": "r5-migrate · 门降级迁移（规范 R5 §四）",
+      "kind": "check",
       "config": {},
       "capability": [
         "flow工具"
@@ -474,6 +490,7 @@
       "script": "tools/render-flow.py",
       "title": "render-flow.py",
       "desc": "flow.json -> 图示渲染器（零依赖，确定性）",
+      "kind": "check",
       "config": {
         "layout": {
           "type": "enum",
@@ -512,6 +529,7 @@
       "script": "tools/serve.py",
       "title": "serve.py",
       "desc": "本地应用服务器（替代 python -m http.server）：",
+      "kind": "check",
       "config": {
         "port": {
           "type": "number",
@@ -543,6 +561,7 @@
       "script": "tools/snapshot.py",
       "title": "snapshot.py",
       "desc": "快照与重跑工具链（snapshot / diff / rerun-scope）",
+      "kind": "check",
       "config": {
         "keep": {
           "type": "number",
@@ -574,6 +593,7 @@
       "script": "tools/stage.py",
       "title": "stage.py",
       "desc": "stage · Stage 封装包管理（list / validate / tree）",
+      "kind": "check",
       "config": {
         "action": {
           "type": "enum",
@@ -599,6 +619,7 @@
       "script": "tools/validate-kb.py",
       "title": "validate-kb.py",
       "desc": "",
+      "kind": "check",
       "config": {
         "strict": {
           "type": "boolean",
@@ -619,6 +640,7 @@
       "script": "tools/whereami.py",
       "title": "whereami.py",
       "desc": "whereami · 开工自检（AGENTS.md 铁律 #1）",
+      "kind": "check",
       "config": {
         "verbose": {
           "type": "boolean",
@@ -639,6 +661,7 @@
       "script": "tools/worldbook.py",
       "title": "worldbook.py",
       "desc": "世界书 · 脚手架与校验（零依赖，所有叙事项目通用）",
+      "kind": "check",
       "config": {
         "entries": {
           "type": "number",
@@ -670,6 +693,7 @@
       "title": "编排挖掘",
       "skill": "orchestration-miner",
       "desc": "事后挖掘（R5 §六质性通道）：journal/打回/批注/中间文件 → findings@1 证据化提案；flow_mine 组装任务包，flow_optimize 并入（非结构类 risk=medium 待批，结构类只进拍板清单）",
+      "kind": "produce",
       "config": {
         "maxFindings": {
           "type": "number",

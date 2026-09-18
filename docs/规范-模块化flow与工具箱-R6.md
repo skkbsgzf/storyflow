@@ -359,6 +359,14 @@ review:                     # 可选：只在经由 manual 连接件放行后写
 6. **payload 冻结口径**：顶层五键 `DATA / EFF / OVERLAY / OPTIMIZE / METRICS`；`EFF` 为 `effective@2`（`links` 取代 R5 的 `boundaries`；`gates` 相位指标更名 `links`）；`DATA.toolbox` 形状 = `toolbox@1`（contracts/toolbox.schema.json）。键集冻结后新增键须立新 WO。
 7. **flow@3 保留 `changelog`**（可选）：版本记录随 flow 走，历史信息不因模块化丢失。
 8. **`by` 字段口径**：artifact 头部 `by` 在 R6 为 `module/<实例id>.<tool>`（R5 为 `kit/<kit>.<op>`）——转换脚本需同步改写。
+9. **§一 空骨架合法（WO-02/03 实现回写）**：`skeleton.spine` 允许空数组——纯能力包模块（检索/检测/底座：只有机器件、无常驻流水线节点）合法；`caps` 驱动按需取用，flow 引用这类模块时不产出模块内节点。
+10. **§一 minitools 为数组**：tool 与机器件的绑定字段定名 `minitools`（数组，原 kit@1 形态，一个 tool 可挂多个内核 minitool，如 novel-bible 挂 kb_search + check_trope_combo）；单数 `minitool` 字段废弃。
+11. **§一 script 壳入箱**：tools/ 脚本壳 tool（whereami/snapshot/export-doc 等开发与交付基建）通过 `script` 字段进入模块工具箱（kind=check）；「工具只增不删」，脚本基建不因模块化失家。
+12. **§一 slot 必填范围收窄**：「非骨架成员必填 slot」收窄为**非骨架成员的 skill 类 tool 必填**；`script`/`minitools` 类机器件不可被「插入」（无 skill 驱动的流水线位置），免填 slot——module-lint 对机器件缺 slot 记 W（不可玩=事实）不记 E。
+13. **§一 model_tier 档位声明（内核侧回写）**：tool 可声明 `model_tier: high | low`——high=文学判断节点（novel-deai/novel-judge/dialogue-polish/评审类）必须在强模型档执行（AGENTS 模型档位纪律的数据化载体）；缺省 = 无档位约束。内核 buildTaskPackage 装载时消费。
+14. **§一 kind 入 required**：tool 必填三件定为 `title/kind/capability`（`skill|minitools|script` 绑定字段三选一为语义约束，不在 required 内）；旧 kit@1 未显式写 kind 的 op 一律视为 `produce`，脚本壳为 `check`——转换时补齐，不靠缺省隐含。
+15. **§一 通用 Skill 免 slot（module-lint 回写）**：绑定通用 Skill 的 tool（`orchestration-miner` 等 R5 §6.0 轮末复盘入口，脱离 flow 运行）与机器件同待遇：不占流水线位、免填 slot，lint 记 W 不记 E。
+16. **§二 vary.caps 不得越界（flow-lint 回写）**：`vary`/`caps` 都只能请求**本实例模块**提供的能力（示例中 prose 实例的 `vary.13.caps:["伏笔回收"]` 为笔误——伏笔能力归 plot 模块；跨模块诉求开新实例或改模块 caps）；`insert` 对「caps 已自动触发的 tool」钉到**不同 slot** 是合法的位置覆盖，钉到同 slot 才是冗余。
 
 ## 十二 · WO-00 冻结清单（本波产物）
 

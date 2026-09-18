@@ -9,6 +9,7 @@
       "skill": "layer-voices",
       "title": "layer-voices",
       "desc": "成文流水线专科层一——从分场卡逐拍产出对白层稿：每句台词标注说话人/目的/潜台词，全员过遮名三句测试；只管台词，不写叙述。",
+      "kind": "produce",
       "model_tier": "high",
       "knowledge": [
         "kb/aesthetic/character",
@@ -74,6 +75,7 @@
       "skill": "layer-scenes",
       "title": "layer-scenes",
       "desc": "成文流水线专科层二——从分场卡逐拍产出场景层稿：五感计划、身体反应、布景道具、笔墨密度配比；只管让读者站进场景，不写台词不推情节。",
+      "kind": "produce",
       "model_tier": "high",
       "knowledge": [
         "kb/aesthetic/metaphor-zh",
@@ -139,6 +141,7 @@
       "skill": "layer-canon",
       "title": "layer-canon",
       "desc": "成文流水线专科层三——从分场卡逐拍产出设定层稿：知情范围切片、新词首现方案、台账增量、人设矛盾提示；只管世界观一致性与读者认知边界，不碰文笔。",
+      "kind": "produce",
       "knowledge": [
         "kb/aesthetic/character",
         "kb/continuity/state-ledger",
@@ -204,6 +207,7 @@
       "skill": "prose-assembler",
       "title": "prose-assembler",
       "desc": "成文流水线末环——把台词/场景/设定三层稿按节拍拼装成正文：逐段六维盖章（台词/场景/设定/人设/节奏/机味），全过才下推；产出正文+盖章单。无分场卡不开工。",
+      "kind": "produce",
       "model_tier": "high",
       "knowledge": [
         "kb/aesthetic/ai-trace",
@@ -276,6 +280,7 @@
       "skill": "novel-deai",
       "title": "novel-deai",
       "desc": "快餐网文终稿打磨技能——四遍法打磨（声口校准→处境校准→比喻意象→节奏去机味）+ 多轮精修内环（评审官判分→定向修订→防劣化收敛），诊断先行、覆盖律硬门槛、盲读内环验收；产出可发布终稿与全套收据。",
+      "kind": "produce",
       "model_tier": "high",
       "knowledge": [
         "kb/aesthetic/ai-trace",
@@ -291,10 +296,6 @@
       ],
       "minitools": [
         "check_aesthetic_asserts"
-      ],
-      "assist": [
-        "dialogue-polish",
-        "novel-judge"
       ],
       "config": {
         "passes": {
@@ -357,6 +358,7 @@
       "skill": "novel-chapter",
       "title": "novel-chapter",
       "desc": "长篇网文逐章写作技能——按章功能与台账切片写单章：章末钩子强制、笔墨密度随情绪波动、连续性零越权；交稿即过断言与台账校验。",
+      "kind": "produce",
       "knowledge": [
         "kb/aesthetic/ai-trace",
         "kb/aesthetic/naturalness-zh",
@@ -456,6 +458,7 @@
       "skill": "script-final",
       "title": "script-final",
       "desc": "成稿阶段技能——基于小纲（或客户批注后版本）产出连贯成品剧本：场次头+人物行动/表情+角色台词；特殊镜头与旁白用中括号备注；不出现钩型/时长/尾钩等内部标注。成稿后强制交接台词去AI味打磨。",
+      "kind": "produce",
       "knowledge": [
         "kb/aesthetic/ai-trace",
         "kb/aesthetic/character",
@@ -466,9 +469,6 @@
       ],
       "minitools": [
         "check_aesthetic_asserts"
-      ],
-      "assist": [
-        "dialogue-polish"
       ],
       "config": {
         "annotationLevel": {
@@ -528,6 +528,7 @@
       "skill": "dialogue-polish",
       "title": "dialogue-polish",
       "desc": "剧本强制末环节技能——全部人物对话逐句过三遍：人物声口校准（遮名可辨+说话习惯一致）、处境校准（压力与关系下的语言变化）、去AI味清单（24类+结构指纹）；基于人物和处境优化，不做通用润色。",
+      "kind": "produce",
       "model_tier": "high",
       "knowledge": [
         "kb/aesthetic/ai-trace",
@@ -682,6 +683,7 @@
       "skill": "render-prompt-seedance",
       "title": "Seedance 分镜提示词",
       "desc": "AI 生成视频的画面调度指令：@素材点名定岗/固定运镜词库/分时段描述/角色一致性锁图。",
+      "kind": "produce",
       "knowledge": [
         "kb/aesthetic/visual-poster",
         "kb/deconstruct/style-learning"

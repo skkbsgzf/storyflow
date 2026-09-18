@@ -9,6 +9,7 @@
       "skill": "structure-design",
       "title": "structure-design",
       "desc": "第二阶段技能——从结构目录选型并完成深挖/改造/融合三步，产出故事框架案（结构选型理由+骨架具体化+改造点+不确定因素注入提案），确保节奏对齐市场实盘。",
+      "kind": "produce",
       "knowledge": [
         "kb/aesthetic/conflict-escalation",
         "kb/aesthetic/pacing-density",
@@ -73,6 +74,7 @@
       "skill": "plot-choreographer",
       "title": "plot-choreographer",
       "desc": "剧情编排技能——把八段式策划案升级为可拍的三线骨架×分集功能表×卡点编排表；数据骨架（市场实盘）与美学标准（kb/aesthetic）双驱动。",
+      "kind": "produce",
       "knowledge": [
         "kb/aesthetic/conflict-escalation",
         "kb/aesthetic/emotion-curve",
@@ -167,6 +169,7 @@
       "skill": "novel-bible",
       "title": "novel-bible",
       "desc": "长篇网文开书技能——三层问答定书（题材与核心情绪→主角与核心欲望→前十事件链），产出 World Bible 与卷纲前置件；三问答完才许开书。",
+      "kind": "produce",
       "knowledge": [
         "kb/aesthetic/character",
         "kb/aesthetic/conflict-escalation",
@@ -176,9 +179,6 @@
       "minitools": [
         "kb_search",
         "check_trope_combo"
-      ],
-      "assist": [
-        "internet-feel"
       ],
       "config": {
         "quests": {
@@ -234,6 +234,7 @@
       "skill": "scene-breakdown",
       "title": "scene-breakdown",
       "desc": "小纲阶段技能——把大纲拆成逐分镜的脚本 doc：每个分镜的场景/人物行动/台词，达意即可无需打磨；文末附创作思路页。输出 doc 格式供客户批注修改后回传。",
+      "kind": "produce",
       "knowledge": [
         "kb/aesthetic/character",
         "kb/aesthetic/dialogue",
@@ -297,6 +298,7 @@
       "skill": "world-forge",
       "title": "world-forge",
       "desc": "网文开书技能（单元剧标准）——选题后先搞世界观：力量体系/势力矛盾/主角力量来源与代价/世界规则四件套；产出世界观圣经（人读）+ wiki 词条库（RAG，index.json+条目交叉链接）；人物动机从世界观长出来，不硬安。",
+      "kind": "produce",
       "knowledge": [
         "kb/aesthetic/character",
         "kb/aesthetic/conflict-escalation",
@@ -357,6 +359,7 @@
       "skill": "episodic-outline",
       "title": "episodic-outline",
       "desc": "网文大纲技能（单元剧标准·轻量）——暗线节点表 + 单元剧序列 + 首批单元细纲；不搞编剧式重型结构。大纲→成稿的重心在五问：人设立得住/冲突自然/梗多/节目效果足/没有AI味。",
+      "kind": "produce",
       "knowledge": [
         "kb/aesthetic/pacing-density",
         "kb/formats/webnovel-fastfood",
@@ -434,6 +437,7 @@
       "skill": "script-drama-beat",
       "title": "短剧节拍表",
       "desc": "竖屏短剧一集的硬格式：场次编号/△动作/台词内联情绪/前3秒钩子/结尾付费卡点体检；剧本是生产工具，不可拍摄内容是禁手。",
+      "kind": "produce",
       "knowledge": [
         "kb/aesthetic/dialogue",
         "kb/aesthetic/hook-3s",

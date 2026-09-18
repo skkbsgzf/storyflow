@@ -11,6 +11,7 @@
         "kb_load"
       ],
       "desc": "按节点 loads 清单聚合知识文件，产出带来源注记的装载件",
+      "kind": "produce",
       "config": {
         "dedupe": {
           "type": "boolean",
@@ -54,6 +55,7 @@
         "kb_search"
       ],
       "desc": "（planned，内核未实现，触达即 blocked）按 tags/关键词检索知识库条目",
+      "kind": "produce",
       "config": {
         "limit": {
           "type": "number",
@@ -102,6 +104,7 @@
         "kb_read"
       ],
       "desc": "按条目 id 读取知识库内容——agent 节点场景已由 kit 标尺装载统一承担（assembler.loadKnowledge）",
+      "kind": "produce",
       "config": {
         "mode": {
           "type": "enum",
@@ -139,6 +142,7 @@
         "flow_read_artifact"
       ],
       "desc": "读取上游产物——已由任务包 context 上游摘录承担（assembler.buildTaskPackage）",
+      "kind": "produce",
       "config": {
         "which": {
           "type": "enum",

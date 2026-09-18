@@ -1,39 +1,69 @@
-"""flow-lint · flow@2 配置体检（规范 R4 §五/§六）
+"""flow-lint · flow@3 配置体检（R6 模块序列形态）
 
-单一事实源：contracts/flow.schema.json（字段白名单） + tools/minitools.json（core 工具注册表）
-            + kits/*/kit.json（kit.op 注册表） + skills/*.md（技能档案）
+单一事实源：contracts/flow.schema.json（flow@3 字段白名单） + modules/*/module.json（模块库，
+经 tools/module-lint.py 体检）。flow@3 只写「模块序列」：走哪几个模块、每个模块要什么能力（caps）、
+模块之间怎么放行（link）——节点与边由内核 modules.ts::expandFlow 派生，本工具不派生图，
+只做**序列与引用的静态核账**。
 
 检查项（E=error 阻断，W=warning 提示）：
-  E1 严格 JSON：重复键即错（文本级字段手术的经典事故：role 双写、loop 语义丢失）
-  E2 旧字段名全面退场：node.file/check/review/kb、edge.transform/optional/loop、当字符串
-  E3 边：id 形态、role 合法、reject 带 params.scope、when 可解析（与 cond.ts 同源规则）
-  E4 via 与目标节点执行体一致时为冗余声明（应删）；显式声明须登记为 skill/core/sm
-  E5 节点：kind 合法、stage ∈ 顶层 stages[].id、agent 必须 kit+op 且 kit 内存在该 op
-  E6 产物路径准入：内部/{意见,收据,依据,稿本} · 对外交付 · 章节正文 · 世界书 · 根级仅输入材料
-  E7 交付清单：node 必须存在、path（若声明）必须是合格路径、节点不得重复
-  W1 字符串 when（可解析，建议结构化）；W2 iterate 缺 artifact；W3 graph.outputs 与交付清单不一致
-用法：python tools/flow-lint.py [flowId ...]      # 缺省校验全部 flow
-退出码：有 error=1（warning 不算失败）；--strict 让 warning 也失败
+  E-JSON      严格 JSON：重复键即错（前端与内核会读到不同值）
+  E-FORMAT    format 非 flow@3 / 残留 graph·stages → 报错并附迁移命令（一次性转换，规范 R6 §八）
+  E-ID        流程 id 缺失/非法
+  E-TITLE     title 缺失
+  E-VERSION   version 缺失
+  E-STATUS    status 缺失或不在 draft|official|retired
+  E-FIELD     顶层字段不在 flow@3 白名单
+  E-LINK      link / defaults.link / policy.link_default / policy.adapt 非法
+  E-MODULES   modules 缺失/非数组/为空
+  E-INSTANCE  实例缺 id/module；id 非法；id 含「.」（与连接件派生 id 冲突）；实例 id 重复
+  E-MODULE-REF  引用的模块在 modules/ 库不存在（附可用清单）
+  E-CAPS      caps 请求了模块不提供的能力（附缺口与可用能力——差值没有工具承载）
+  E-INSERT    insert 的 slot 键非法 / 锚点或 tool 不在目标模块 / 同一 tool 被钉进多个插槽
+  E-REQUIRES-UNSAT  启用集（骨架 ∪ caps 触发 ∪ insert）不满足某 tool 的 requires——展开器会硬报错
+  E-ITERATE   iterate 缺 unit/over；unit 不在 chapter|volume|episode
+  E-VARY      vary 结构非法；内嵌 caps/insert 同款规则
+  E-OUTPUTS   outputs 元素缺 module/title；module 未引用本 flow 的实例 id
+  W-REG       模块库缺失/为空——引用与能力检查退化（显式提示，不静默）
+  W-INSERT-REDUNDANT  insert 的 tool 已在骨架或会被 caps 自动触发——冗余声明，应删
+  W-MANUAL-NONE     全 flow 无 manual 连接件（全自动流水线——确认是有意为之）
+
+用法：
+  python tools/flow-lint.py [flowId ...]      # 缺省校验全部 flow
+  python tools/flow-lint.py --json            # 结构化输出（agent 消费）
+退出码：有 error=1（warning 不算失败）；--strict 让 warning 也失败。
 """
-import json, sys, glob, re
+import json
+import sys
+import glob
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 STRICT = "--strict" in sys.argv
-REG = json.loads((ROOT / "tools" / "minitools.json").read_text(encoding="utf-8"))
+ASJSON = "--json" in sys.argv
 
-KINDS = ("novel-txt", "core", "agent", "gate", "srd")
-ROLES = ("flow", "reject", "optional", "loop", "batch")
-ADMITTED = ("内部/意见/", "内部/收据/", "内部/依据/", "内部/稿本/", "对外交付/", "章节正文/", "世界书/")
-LEGACY_NODE = ("file", "check", "review", "kb")
-LEGACY_EDGE = ("transform", "optional", "loop")
-MIGRATE_HINT = "；迁移：kit-migrate → flow-kit-apply → flow-normalize → r5-migrate（见 docs/迁移链-flow@1到R5.md）"
-WHEN_KEYS = ("verdict", "challenge", "cause", "input", "eq", "gt", "lt", "loop", "any", "all")
-VERDICT_ALIAS = {"rejected": "send-back", "send_back": "send-back"}
+ID_RE = re.compile(r"^[a-z][a-z0-9-]*$")
+SLOT_RE = re.compile(r"^(after|before):([a-z][a-z0-9-]*)$|^end$")
+TOP_FIELDS = {
+    "format", "id", "title", "desc", "version", "status", "inputs",
+    "defaults", "policy", "modules", "outputs", "changelog",
+}
+MIGRATE_SCRIPT = ROOT / "tools" / "flow-v3-migrate.py"
+
+
+def migrate_hint(flow_path: Path) -> str:
+    try:
+        rel = flow_path.relative_to(ROOT).as_posix()
+    except ValueError:
+        rel = str(flow_path)
+    if MIGRATE_SCRIPT.exists():
+        return f"；迁移：python tools/flow-v3-migrate.py --flow {rel}"
+    return (f"；迁移：python tools/flow-v3-migrate.py --flow {rel}"
+            f"（工具由 WO-08 交付，当前未落地——转换规则见 docs/规范-模块化flow与工具箱-R6.md §八）")
 
 
 def strict_load(path: Path):
-    """解析并拒绝重复键——前端看到的字段与内核读到的字段必须一致。"""
+    """解析并拒绝重复键——文本级字段手术的经典事故。"""
     text = path.read_text(encoding="utf-8")
     dups = []
 
@@ -48,199 +78,250 @@ def strict_load(path: Path):
     return data, dups
 
 
-def when_parsable(w) -> bool:
-    """与 core/src/cond.ts::evalWhen 同源的"能不能求值"判定。"""
-    if w is None or w == "":
-        return True
-    if isinstance(w, dict):
-        keys = [k for k in w if k in WHEN_KEYS]
-        if not keys:
-            return True  # 空谓词 = 无条件
-        for k in ("any", "all"):
-            if k in w and not all(when_parsable(x) for x in (w[k] or [])):
-                return False
-        return True
-    s = str(w).strip()
-    if s in ("rejected", "challenge"):
-        return True
-    if re.search(r"根因[=：:]\s*\S+", s):
-        return True
-    if re.match(r"^[^=]+=[^=]+$", s):
-        return True
-    return False
+def load_module(mid):
+    p = ROOT / "modules" / mid / "module.json"
+    if not p.exists():
+        return None
+    return json.loads(p.read_text(encoding="utf-8"))
 
 
-def node_output(n: dict) -> str:
-    return str(n.get("output") or n.get("file") or "").replace("\\", "/")
-
-
-def via_of(flow: dict, e: dict) -> str:
-    """边执行语义：显式 via 优先，否则派生自目标节点。"""
-    if e.get("via"):
-        return str(e["via"])
-    to = flow["graph"]["nodes"].get(e.get("to")) or {}
-    if to.get("kit") and to.get("op"):
-        return f"{to['kit']}.{to['op']}"
-    if to.get("minitool"):
-        return f"core.{to['minitool']}"
-    return str(to.get("kind") or "")
-
-
-def lint_flow(flow_id, kits, have_skill):
-    errors, warnings = [], []
-    fp = ROOT / "flows" / flow_id / "flow.json"
-    try:
-        f, dups = strict_load(fp)
-    except Exception as ex:
-        return [f"[{flow_id}] JSON 解析失败：{ex}"], []
-    if dups:
-        errors.append(f"[{flow_id}] JSON 重复键 {sorted(set(dups))}（前端与内核会读到不同值）")
-
-    tag = f"[{flow_id}]"
-    if f.get("format") != "flow@2":
-        warnings.append(f"{tag} format={f.get('format')}（当前规范为 flow@2）")
-    if not f.get("status"):
-        errors.append(f"{tag} 缺顶层 status（页面按状态发布/归档）")
-    if f.get("deliverables"):
-        errors.append(f"{tag} 残留 deliverables[]（已并入 outputs[]）")
-
-    g = f.get("graph") or {}
-    nodes = g.get("nodes") or {}
-    edges = g.get("edges") or []
-    stage_ids = {s.get("id") for s in f.get("stages") or []}
-
-    for nid, n in nodes.items():
-        nt = f"{tag} 节点 {nid}"
-        if n.get("kind") not in KINDS:
-            errors.append(f"{nt}: kind 非法 {n.get('kind')}")
-        if not n.get("title"):
-            warnings.append(f"{nt}: 缺 title（页面/画布无标签）")
-        for k in LEGACY_NODE:
-            if k in n:
-                errors.append(f"{nt}: 残留旧字段 {k}（flow@2 唯一名见规范 §5.1）{MIGRATE_HINT}")
-        if n.get("stage") and stage_ids and n["stage"] not in stage_ids:
-            errors.append(f"{nt}: stage={n['stage']} 不在顶层 stages[].id")
-        if isinstance(n.get("when"), str):
-            warnings.append(f"{nt}: when 为字符串「{n['when']}」（建议结构化）")
-        if n.get("when") is not None and not when_parsable(n["when"]):
-            errors.append(f"{nt}: when 不可求值「{n['when']}」——永久死条件")
-        # agent/gate：kit + op 引用
-        if n.get("kind") in ("agent", "gate"):
-            kit, op = n.get("kit"), n.get("op")
-            if not kit or not op:
-                errors.append(f"{nt}: 缺 kit/op（agent 节点必须引用 kit.op，单一事实源）")
-            elif op not in (kits.get(kit) or {}).get("ops", {}):
-                errors.append(f"{nt}: kit 引用无效 {kit}/{op}")
-            elif n.get("skill") and (kits[kit]["ops"][op].get("skill") != n["skill"]):
-                errors.append(
-                    f"{nt}: 漂移 node.skill={n['skill']} 但 {kit}/{op}.skill={kits[kit]['ops'][op].get('skill')}"
-                )
-        if n.get("minitool") and n["minitool"] not in REG.get("minitools", {}):
-            errors.append(f"{nt}: minitool 未登记 {n['minitool']}")
-        # 执行体缺失 = 能力声明了但触达即 blocked（本轮最有价值的一条拦截）
-        if n.get("kind") == "core" and not n.get("minitool"):
-            errors.append(f"{nt}: core 节点无 minitool —— 触达即 blocked（能力声明了、执行体不存在）")
-        if n.get("iterate"):
-            if not n["iterate"].get("artifact"):
-                warnings.append(f"{nt}: iterate 缺 artifact（实例产物无槽位模板）")
-            if not n["iterate"].get("unit"):
-                errors.append(f"{nt}: iterate 缺 unit")
-        # 产物路径准入
-        out = node_output(n)
-        if out:
-            ok = out.startswith(ADMITTED) or (n.get("kind") == "novel-txt" and "/" not in out)
-            if not ok:
-                errors.append(f"{nt}: 产物 {out} 不在准入目录（规范 §一）")
-
-    for e in edges:
-        et = f"{tag} 边 {e.get('id','?')}"
-        if not re.match(r"^e-[a-z0-9-]+$", str(e.get("id", ""))):
-            errors.append(f"{et}: id 须形如 e-<slug>")
-        for side in ("from", "to"):
-            if e.get(side) not in nodes:
-                errors.append(f"{et}: {side} 端点不存在 {e.get(side)}")
-        if e.get("role") not in ROLES:
-            errors.append(f"{et}: role 非法/缺失 {e.get('role')}（合法：{'|'.join(ROLES)}）")
-        for k in LEGACY_EDGE:
-            if k in e:
-                errors.append(f"{et}: 残留旧字段 {k}（role 单值化后不应存在）{MIGRATE_HINT}")
-        if isinstance(e.get("when"), str):
-            if when_parsable(e["when"]):
-                warnings.append(f"{et}: when 为字符串「{e['when']}」（建议结构化）")
-            else:
-                errors.append(f"{et}: when 不可求值「{e['when']}」——前端看得见、内核判不动的死线")
-        elif e.get("when") is not None and not when_parsable(e["when"]):
-            errors.append(f"{et}: when 结构非法 {e['when']}")
-        if e.get("role") == "reject" and not (e.get("params") or {}).get("scope"):
-            errors.append(f"{et}: 打回边必须带 params.scope（面板要渲染失效范围）")
-        if e.get("via"):
-            want = via_of(f, {k: v for k, v in e.items() if k != "via"})
-            if e["via"] == want:
-                warnings.append(f"{et}: via={e['via']} 与目标节点执行体一致 → 冗余声明，应删")
-            else:
-                pre, _, rest = str(e["via"]).partition(".")
-                if pre == "sm":
-                    if e["via"] not in REG.get("edgeSemantics", {}) and e["via"] not in (f.get("semantics") or {}):
-                        warnings.append(f"{et}: 编排语义 '{e['via']}' 未登记（注册表 edgeSemantics 或 flow.semantics）——读者看不懂")
-                elif pre in kits:
-                    if rest and rest not in (kits[pre].get("ops") or {}):
-                        errors.append(f"{et}: via={e['via']} 的 op 不存在于 kit {pre}")
-                elif pre == "core":
-                    if rest not in REG.get("minitools", {}):
-                        errors.append(f"{et}: via minitool '{rest}' 未登记")
-                elif pre == "skill":
-                    if not (ROOT / "skills" / f"{rest}.md").exists():
-                        errors.append(f"{et}: via skill '{rest}' 无档案（flow@2 应改用 <kit>.<op>）")
-                else:
-                    errors.append(f"{et}: via '{e['via']}' 无法解析（合法：<kit>.<op> | core.<minitool> | sm.<语义>）")
-
-    # 交付清单
-    seen_nodes = set()
-    for o in f.get("outputs") or []:
-        nid = o.get("node") if isinstance(o, dict) else o
-        ot = f"{tag} 交付清单 {nid or '(无节点)'}"
-        if not nid or nid not in nodes:
-            errors.append(f"{ot}: node 不存在于 graph.nodes（清单早于节点拆分的典型漂移）")
+def check_insert(module, insert, spine_set, enabled, where, E):
+    """insert 与 vary.insert 共用的核账；返回冗余声明清单（交由调用方转 W）"""
+    redundant = []
+    if not isinstance(insert, dict):
+        E("E-INSERT", f"{where}.insert 必须是 object")
+        return redundant
+    claimed = {}
+    for slot, tools in insert.items():
+        m = SLOT_RE.match(slot)
+        if not m:
+            E("E-INSERT", f"{where}.insert slot 非法（合法 after:<tool>/before:<tool>/end）：{slot!r}")
             continue
-        if nid in seen_nodes:
-            errors.append(f"{ot}: 节点重复声明（一条即可，多产物走 iterate.artifact）")
-        seen_nodes.add(nid)
-        if isinstance(o, dict):
-            p = str(o.get("path") or o.get("file") or "").replace("\\", "/")
-            if p and ("/" not in p or not p.startswith(ADMITTED)):
-                errors.append(f"{ot}: path「{p}」不是合格路径（合格形态：对外交付/NN-名.ext 或 内部/…）")
-            if "file" in o:
-                errors.append(f"{ot}: 残留 file（改用 path，缺省回落节点 output）")
-            if "order" in o:
-                warnings.append(f"{ot}: 残留 order（定序由 对外交付/NN- 前缀承担）")
+        if m.group(2) and m.group(2) not in module.get("ops", {}):
+            E("E-INSERT", f"{where}.insert slot 锚点不在目标模块：{slot!r}")
+        if not isinstance(tools, list):
+            E("E-INSERT", f"{where}.insert[{slot!r}] 值必须是 tool id 数组")
+            continue
+        for t in tools:
+            if t not in module.get("ops", {}):
+                E("E-INSERT", f"{where}.insert 引用目标模块不存在的 tool：{t}（slot {slot!r}）")
+                continue
+            if t in claimed:
+                E("E-INSERT", f"同一 tool 被钉进多个插槽：{t}（{claimed[t]} 与 {slot!r}）")
+            claimed[t] = slot
+            if t in spine_set:
+                redundant.append(f"{where}: {t} 已在骨架（slot {slot!r}）——冗余声明，应删")
+            elif t in enabled:
+                # caps 已自动触发：同 slot = 纯冗余；不同 slot = 合法的位置覆盖（insert 的精细控制用途）
+                default_slot = module["ops"][t].get("slot")
+                if slot == default_slot or default_slot is None:
+                    redundant.append(f"{where}: {t} 已被 caps 自动触发且 slot 与默认一致（{slot!r}）——冗余声明，应删")
+            else:
+                enabled.add(t)
+    return redundant
 
-    for nid in g.get("outputs") or []:
-        if nid not in nodes:
-            errors.append(f"{tag} graph.outputs 引用不存在节点 {nid}")
 
-    return errors, warnings
+def lint_flow(path: Path, lib_available, lib_ids):
+    result = {"file": path.as_posix(), "errors": [], "warnings": []}
+
+    def E(code, msg):
+        result["errors"].append({"code": code, "msg": msg})
+
+    def W(code, msg):
+        result["warnings"].append({"code": code, "msg": msg})
+
+    try:
+        d, dups = strict_load(path)
+    except Exception as ex:
+        E("E-JSON", f"解析失败：{ex}")
+        return result
+    if dups:
+        E("E-JSON", f"JSON 重复键 {sorted(set(dups))}")
+
+    fmt = d.get("format")
+    if fmt != "flow@3" or "graph" in d or "stages" in d:
+        E("E-FORMAT", f"format 必须=flow@3（实际 {fmt!r}），手写 graph/stages 已废弃{migrate_hint(path)}")
+
+    if not ID_RE.match(d.get("id", "")):
+        E("E-ID", f"id 缺失或非法（{ID_RE.pattern}）：{d.get('id')!r}")
+    if not d.get("title"):
+        E("E-TITLE", "title 缺失")
+    if not d.get("version"):
+        E("E-VERSION", "version 缺失")
+    if d.get("status") not in ("draft", "official", "retired"):
+        E("E-STATUS", f"status 缺失或非法：{d.get('status')!r}（draft|official|retired）")
+
+    unknown_top = set(d.keys()) - TOP_FIELDS
+    if unknown_top:
+        E("E-FIELD", f"顶层字段不在 flow@3 白名单：{sorted(unknown_top)}{migrate_hint(path)}")
+
+    defaults = d.get("defaults", {}) or {}
+    if not isinstance(defaults, dict) or set(defaults.keys()) - {"link"}:
+        E("E-LINK", f"defaults 只允许 {{link}}：{defaults!r}")
+    elif defaults.get("link") not in (None, "auto", "manual"):
+        E("E-LINK", f"defaults.link 非法：{defaults.get('link')!r}")
+    policy = d.get("policy", {}) or {}
+    if not isinstance(policy, dict):
+        E("E-LINK", "policy 必须是 object")
+    else:
+        if policy.get("link_default") not in (None, "auto", "manual"):
+            E("E-LINK", f"policy.link_default 非法：{policy.get('link_default')!r}")
+        if policy.get("adapt") not in (None, "off", "propose", "apply"):
+            E("E-LINK", f"policy.adapt 非法：{policy.get('adapt')!r}（off|propose|apply）")
+
+    modules = d.get("modules")
+    if not isinstance(modules, list) or not modules:
+        E("E-MODULES", "modules 缺失、非数组或为空——模块序列是 flow@3 的流程本体")
+        return result
+
+    seen_ids, any_manual = {}, False
+    for inst in modules:
+        if not isinstance(inst, dict):
+            E("E-INSTANCE", f"模块实例必须是 object：{inst!r}")
+            continue
+        iid, mid = inst.get("id"), inst.get("module")
+        where = f"modules[{iid or '?'}]"
+        if not iid or not isinstance(iid, str) or not ID_RE.match(iid):
+            E("E-INSTANCE", f"{where}: 实例 id 缺失或非法（{ID_RE.pattern}）")
+        else:
+            if "." in iid:
+                E("E-INSTANCE", f"{where}: 实例 id 含「.」——与连接件派生 id <实例id>.link 冲突")
+            if iid in seen_ids:
+                E("E-INSTANCE", f"实例 id 重复：{iid}（已在 {seen_ids[iid]}）")
+            seen_ids[iid] = where
+        if not mid:
+            E("E-INSTANCE", f"{where}: module 引用缺失")
+            continue
+        if inst.get("link") not in (None, "auto", "manual"):
+            E("E-LINK", f"{where}: link 非法：{inst.get('link')!r}")
+        if inst.get("link") == "manual":
+            any_manual = True
+
+        if not lib_available:
+            continue
+        module = load_module(mid)
+        if module is None:
+            E("E-MODULE-REF", f"{where}: 模块 {mid!r} 不在 modules/ 库（可用：{sorted(lib_ids)}）")
+            continue
+
+        mops = module.get("ops", {})
+        spine_set = set(module.get("skeleton", {}).get("spine", []))
+        mcaps = set(module.get("caps", []))
+
+        caps = inst.get("caps")
+        enabled = set(spine_set)
+        if caps is not None:
+            if not isinstance(caps, list):
+                E("E-CAPS", f"{where}: caps 必须是数组")
+            else:
+                gap = [c for c in caps if c not in mcaps]
+                if gap:
+                    E("E-CAPS", f"{where}: 请求了模块 {mid} 不提供的能力 {gap}（可用：{sorted(mcaps)}）")
+                for oid, op in mops.items():
+                    if set(op.get("capability", []) or []) & set(caps):
+                        enabled.add(oid)
+
+        redundant = check_insert(module, inst.get("insert", {}) or {}, spine_set, enabled, where, E)
+
+        # requires 可满足性：启用集（骨架 ∪ caps 触发 ∪ insert）必须喂饱每个启用 tool 的前置
+        for t in sorted(enabled):
+            op = mops.get(t, {})
+            missing = [r for r in op.get("requires", []) or [] if r not in enabled]
+            if missing:
+                E("E-REQUIRES-UNSAT", f"{where}: 启用 {t} 但其前置未启用 {missing}（补 caps/insert 或去掉该能力）")
+
+        iterate = inst.get("iterate")
+        if iterate is not None:
+            if not isinstance(iterate, dict) or not iterate.get("unit") or not iterate.get("over"):
+                E("E-ITERATE", f"{where}: iterate 须为 object 且必含 unit/over")
+            elif iterate.get("unit") not in ("chapter", "volume", "episode"):
+                E("E-ITERATE", f"{where}: iterate.unit 非法：{iterate.get('unit')!r}（chapter|volume|episode）")
+
+        vary = inst.get("vary")
+        if vary is not None:
+            if not isinstance(vary, dict):
+                E("E-VARY", f"{where}: vary 必须是 object")
+            else:
+                for unit, delta in vary.items():
+                    vw = f"{where}.vary[{unit}]"
+                    if not isinstance(delta, dict) or set(delta.keys()) - {"caps", "insert"}:
+                        E("E-VARY", f"{vw}: 只允许 caps/insert 键")
+                        continue
+                    dcaps = delta.get("caps")
+                    denabled = set(spine_set)
+                    if isinstance(dcaps, list):
+                        for oid, op in mops.items():
+                            if set(op.get("capability", []) or []) & set(dcaps):
+                                denabled.add(oid)
+                    if dcaps is not None:
+                        if not isinstance(dcaps, list):
+                            E("E-VARY", f"{vw}.caps 必须是数组")
+                        else:
+                            gap = [c for c in dcaps if c not in mcaps]
+                            if gap:
+                                E("E-VARY", f"{vw}: 请求了模块 {mid} 不提供的能力 {gap}（可用：{sorted(mcaps)}）")
+                    if "insert" in delta:
+                        redundant += check_insert(module, delta.get("insert") or {}, spine_set, denabled, vw, E)
+        for hint in redundant:
+            W("W-INSERT-REDUNDANT", hint)
+
+    if not lib_available:
+        W("W-REG", "modules/ 库缺失或为空——E-MODULE-REF/E-CAPS/E-REQUIRES-UNSAT 检查退化（显式提示，不静默）")
+
+    outputs = d.get("outputs", [])
+    if not isinstance(outputs, list):
+        E("E-OUTPUTS", "outputs 必须是数组")
+    else:
+        for o in outputs:
+            if not isinstance(o, dict) or not o.get("module") or not o.get("title"):
+                E("E-OUTPUTS", f"outputs 元素必须含 module/title：{o!r}")
+            elif o.get("module") not in seen_ids:
+                E("E-OUTPUTS", f"outputs[].module 未引用本 flow 的实例 id：{o['module']!r}（实例：{sorted(seen_ids)}）")
+
+    if not any_manual and len(seen_ids) > 1:
+        W("W-MANUAL-NONE", "全 flow 无 manual 连接件——全自动流水线，请确认是有意为之")
+
+    return result
 
 
 def main():
-    ids = [a for a in sys.argv[1:] if not a.startswith("--")]
-    if not ids:
-        ids = sorted(Path(d).name for d in glob.glob(str(ROOT / "flows" / "*")) if (Path(d) / "flow.json").exists())
-    kits = {}
-    for kp in sorted(glob.glob(str(ROOT / "kits" / "*" / "kit.json"))):
-        k = json.loads(Path(kp).read_text(encoding="utf-8"))
-        kits[k["id"]] = k
-    have_skill = {p.stem for p in (ROOT / "skills").glob("*.md")}
-    total_e = total_w = 0
-    for fid in ids:
-        errs, warns = lint_flow(fid, kits, have_skill)
-        total_e += len(errs)
-        total_w += len(warns)
-        for e in errs:
-            print("ERROR", e)
-        for w in warns:
-            print("WARN ", w)
-    print(f"--- {len(ids)} flows ｜ {total_e} errors ｜ {total_w} warnings")
-    sys.exit(1 if total_e or (STRICT and total_w) else 0)
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    if args:
+        paths = []
+        for a in args:
+            p = Path(a)
+            if not p.exists():
+                p = ROOT / "flows" / a / "flow.json"
+            if not p.exists():
+                print(f"flow-lint · 找不到 flow：{a}")
+                sys.exit(1)
+            paths.append(p)
+    else:
+        paths = sorted(Path(f) for f in glob.glob(str(ROOT / "flows" / "*" / "flow.json")))
+
+    lib_dir = ROOT / "modules"
+    lib_ids = {p.parent.name for p in lib_dir.glob("*/module.json")} if lib_dir.exists() else set()
+    lib_available = bool(lib_ids)
+
+    results = [lint_flow(p, lib_available, lib_ids) for p in paths]
+    total_e = sum(len(r["errors"]) for r in results)
+    total_w = sum(len(r["warnings"]) for r in results)
+
+    if ASJSON:
+        print(json.dumps({"tool": "flow-lint", "format": "flow@3", "flows": results,
+                          "summary": {"flows": len(results), "errors": total_e, "warnings": total_w}},
+                         ensure_ascii=False, indent=2))
+    else:
+        for r in results:
+            print(f"--- {r['file']}")
+            for e in r["errors"]:
+                print(f"  ERROR {e['code']}: {e['msg']}")
+            for w in r["warnings"]:
+                print(f"  WARN  {w['code']}: {w['msg']}")
+        print(f"flow-lint · {len(results)} flow · {total_e} errors · {total_w} warnings" + ("（--strict 下 warnings 也失败）" if STRICT else ""))
+
+    if total_e > 0 or (STRICT and total_w > 0):
+        sys.exit(1)
 
 
 if __name__ == "__main__":

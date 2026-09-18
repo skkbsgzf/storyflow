@@ -1,0 +1,70 @@
+{
+  "format": "flow@3",
+  "id": "wo02-fixture-good",
+  "title": "WO-02 正例",
+  "version": "1.0.0",
+  "status": "draft",
+  "defaults": {
+    "link": "auto"
+  },
+  "modules": [
+    {
+      "id": "m1",
+      "module": "topic",
+      "caps": [
+        "找梗",
+        "素材解剖",
+        "时代情绪锚"
+      ]
+    },
+    {
+      "id": "m2",
+      "module": "plot",
+      "link": "manual",
+      "caps": [
+        "主线",
+        "人设",
+        "暗线"
+      ],
+      "insert": {
+        "before:scene-breakdown": [
+          "subplot-weave"
+        ]
+      },
+      "vary": {
+        "13": {
+          "caps": [
+            "伏笔",
+            "悬念"
+          ]
+        }
+      }
+    },
+    {
+      "id": "m3",
+      "module": "prose",
+      "caps": [
+        "台词层",
+        "场景层",
+        "设定层",
+        "拼装盖章"
+      ],
+      "iterate": {
+        "unit": "chapter",
+        "over": "卷纲",
+        "first": 1
+      }
+    },
+    {
+      "id": "m4",
+      "module": "delivery"
+    }
+  ],
+  "outputs": [
+    {
+      "module": "m4",
+      "title": "终稿交付",
+      "audience": "平台"
+    }
+  ]
+}

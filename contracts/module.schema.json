@@ -30,10 +30,10 @@
       "properties": {
         "spine": {
           "type": "array",
-          "minItems": 1,
+          "minItems": 0,
           "uniqueItems": true,
           "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
-          "description": "默认启用的 tool 序列（次序即执行次序）；每一项必须在 ops 中声明（module-lint E 级）"
+          "description": "默认启用的 tool 序列（次序即执行次序）；每一项必须在 ops 中声明（module-lint E 级）。允许空数组 = 纯能力包模块（如 检索/检测/底座：只有机器件、无常驻流水线节点，见勘误 §十一.9）"
         },
         "edges": {
           "type": "array",
@@ -68,8 +68,21 @@
       "properties": {
         "title": { "type": "string", "description": "工具名（面板显示）" },
         "desc": { "type": "string" },
-        "skill": { "type": "string", "description": "认知类 tool 绑定的技能档案（skills/<skill>.md）；与 minitool 二者其一" },
-        "minitool": { "type": "string", "description": "确定性 tool 绑定的 minitool（须在 minitools.json 登记）；与 skill 二者其一" },
+        "skill": { "type": "string", "description": "认知类 tool 绑定的技能档案（skills/<skill>.md）；与 minitools/script 三者其一" },
+        "minitools": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" },
+          "description": "确定性 tool 绑定的内核 minitool 列表（须在 minitools.json 登记）；与 skill/script 三者其一。原 kit@1 即数组形态（勘误 §十一.10，单数 minitool 字段废弃）"
+        },
+        "script": {
+          "type": "string",
+          "description": "tools/ 脚本壳 tool 的脚本名（如 whereami/snapshot——开发基建，非流水线节点）；与 skill/minitools 三者其一（勘误 §十一.11）"
+        },
+        "model_tier": {
+          "enum": ["high", "low"],
+          "description": "运行档位声明（勘误 §十一.13）：high=强模型档（文学判断节点：novel-deai/novel-judge/dialogue-polish/评审类——AGENTS 模型档位纪律），low=轻量档可接管。缺省不声明 = 无档位约束；轻档会话接手 high 节点前必须声明降档风险（AGENTS 铁律）"
+        },
         "kind": {
           "enum": ["produce", "review", "check"],
           "default": "produce",

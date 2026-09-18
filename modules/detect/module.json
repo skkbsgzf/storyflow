@@ -9,6 +9,7 @@
       "title": "本地AI味打分（L1）",
       "script": "tools/prose-scan.py",
       "desc": "配额层（三连/不是A是B/slop/节奏词/否定排比）+ 八维画像 → AI味指数 0-100（透明加权，带逐项罚分明细）。每章完成即跑；指数 ≥31 先本地改，改完才允许 L2 送检",
+      "kind": "check",
       "knowledge": [
         "kb/aesthetic/ai-detection-sources"
       ],
@@ -43,6 +44,7 @@
       "title": "朱雀AI检测（L2 对照）",
       "script": "tools/zhuque-check.py",
       "desc": "官方 API（ai-gateway.edgeone.link zhuque-text/classify，Bearer Key，月免费50万token）。仅终稿/交付门跑一次：softmax/ratio 置信度 + labels_ratio + segment_labels 逐段标注；--compare 读 L1 打分产出两级门对照表；配额台账 100% 后拒绝调用（--force 才放行）",
+      "kind": "check",
       "knowledge": [
         "kb/aesthetic/ai-detection-sources"
       ],
@@ -97,6 +99,7 @@
       "script": "tools/prose-scan.py",
       "title": "prose-scan.py",
       "desc": "prose-scan.py v2 · 成稿机味扫描：配额层 + 八维统计画像（可复跑的机械层）",
+      "kind": "check",
       "config": {
         "threshold": {
           "type": "number",

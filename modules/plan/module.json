@@ -9,13 +9,11 @@
       "skill": "topic-analysis-report",
       "title": "选题分析报告方法论",
       "desc": "选题流程·分析报告步的工作规范——消费选题素材包与四视角评估批注，产出市场/目标客群/竞品/数据分析四板块加结论的选题分析报告，并以「创作约束移交单」向编剧步移交硬约束。",
+      "kind": "produce",
       "knowledge": [
         "kb/aesthetic/oversight",
         "kb/market/*",
         "kb/structure/episodic-webnovel"
-      ],
-      "assist": [
-        "internet-feel"
       ],
       "config": {
         "sections": {
@@ -66,13 +64,10 @@
       "skill": "topic-proposal",
       "title": "选题方案方法论",
       "desc": "选题流程·选题方案步的工作规范——纯内容呈现：选题、人设、冲突设计、大纲、前三集初稿；市场结论只以「创作约束移交单」为输入，报告里禁止商业分析语言。",
+      "kind": "produce",
       "knowledge": [
         "kb/aesthetic/*",
         "kb/benchmark/*"
-      ],
-      "assist": [
-        "internet-feel",
-        "plot-choreographer"
       ],
       "config": {
         "outlineDepth": {
@@ -126,6 +121,7 @@
       "skill": "topic-chief-aesthetic",
       "title": "审美总编·选题方案质量观",
       "desc": "审美总编技能（监管位）——以对标已出品爆款为强度标尺，对选题方案做爆点强度/钩子冲击力/名场面可视化三维把控；写入方案即视为总编终审通过。",
+      "kind": "produce",
       "config": {
         "benchmark": {
           "type": "enum",
@@ -183,6 +179,7 @@
       "skill": "topic-delivery-gate",
       "title": "需求交付·对账清单",
       "desc": "需求交付技能（监管位）——对分析报告「创作约束移交单」逐条合规对账 + 交付完整性核查；硬条款违反一票否决，合同优先于审美。",
+      "kind": "produce",
       "config": {
         "checklist": {
           "type": "enum",

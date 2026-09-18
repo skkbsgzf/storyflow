@@ -9,6 +9,7 @@
       "script": "tools/export-doc.py",
       "title": "export-doc.py",
       "desc": "export-doc · 小纲/剧本 → Word doc 导出器（export_doc minitool 实现）",
+      "kind": "check",
       "config": {
         "style": {
           "type": "enum",
@@ -63,6 +64,7 @@
         "render_html"
       ],
       "desc": "静态单文件交付页生成",
+      "kind": "produce",
       "config": {
         "theme": {
           "type": "enum",
@@ -119,6 +121,7 @@
         "docx_ingest"
       ],
       "desc": "（planned，内核未实现，触达即 blocked）解析客户回传 docx 批注 → 结构化意见清单（批注回流=on 时触达）",
+      "kind": "produce",
       "config": {
         "stripComments": {
           "type": "boolean",

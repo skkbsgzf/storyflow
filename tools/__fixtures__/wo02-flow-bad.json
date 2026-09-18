@@ -1,0 +1,40 @@
+{
+  "format": "flow@2",
+  "id": "wo02-fixture-bad",
+  "title": "WO-02 负例",
+  "status": "nope",
+  "graph": {
+    "nodes": {}
+  },
+  "stages": [],
+  "modules": [
+    {
+      "id": "m1",
+      "module": "ghost",
+      "caps": [
+        "不存在"
+      ]
+    },
+    {
+      "id": "m1",
+      "module": "plot",
+      "caps": "主线",
+      "link": "maybe",
+      "insert": {
+        "after:ghost": [
+          "foreshadow-plant"
+        ]
+      }
+    },
+    {
+      "id": "m.2",
+      "module": "search"
+    }
+  ],
+  "outputs": [
+    {
+      "module": "mX",
+      "title": "x"
+    }
+  ]
+}

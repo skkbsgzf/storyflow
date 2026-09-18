@@ -1,0 +1,61 @@
+{
+  "format": "module@0",
+  "id": "Bad_ID",
+  "name": "",
+  "ops": {
+    "t1": {
+      "title": "t1",
+      "capability": [
+        "不存在的能力"
+      ],
+      "knowledge": [
+        "kb/nope"
+      ],
+      "requires": [
+        "t2"
+      ]
+    },
+    "t2": {
+      "title": "t2",
+      "kind": "weird",
+      "capability": [
+        "主线"
+      ],
+      "slot": "after:ghost",
+      "requires": [
+        "t1"
+      ]
+    },
+    "t3": {
+      "title": "t3",
+      "kind": "produce",
+      "capability": [
+        "暗线"
+      ],
+      "slot": "end",
+      "minitools": [
+        "no_such_minitool"
+      ],
+      "adds": {
+        "bogus": []
+      }
+    }
+  },
+  "skeleton": {
+    "spine": [
+      "t1",
+      "t9",
+      "t1"
+    ],
+    "edges": [
+      [
+        "t1",
+        "ghost"
+      ]
+    ]
+  },
+  "caps": [
+    "主线",
+    "悬空能力"
+  ]
+}

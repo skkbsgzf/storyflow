@@ -44,6 +44,12 @@ def load(p):
 
 
 def main():
+    # R6 兼容层（WO-02）：kit@1 已由 module@1 取代——modules/ 库存在时本工具降级为存量对照模式，
+    # E 级不再阻断（提交门禁改用 python tools/module-lint.py）。kits/ 保留供 WO-08 转换对照。
+    legacy_mode = any((ROOT / "modules").glob("*/module.json"))
+    if legacy_mode:
+        print("note: kit@1 已由 module@1 取代（R6）——kit-lint 为存量对照模式（不阻断）；门禁请改用 python tools/module-lint.py")
+
     kits = {}
     for kp in sorted(glob.glob(str(ROOT / "kits" / "*" / "kit.json"))):
         k = load(kp)
@@ -299,6 +305,12 @@ def main():
                 E.append(f"{rel}#{i}（{k}）: optimizer 的生效补丁必须带 evidence（指标依据）")
 
     # ── 出账 ─────────────────────────────────────────────────
+    if legacy_mode and E:
+        print(f"note: 对照模式——{len(E)} 条 error 降级为 warning（kit@1 存量，不再作为门禁）：")
+        for x in E:
+            print("  WARN(降级)", x)
+        W.extend("E降级: " + x for x in E)
+        E.clear()
     n_ops = sum(len(k["ops"]) for k in kits.values())
     n_cfg = sum(len(v) for v in op_configs.values())
     print(f"kit-lint ｜ {len(kits)} kits / {n_ops} ops ｜ {len(have_skill)} 技能 ｜ {n_nodes} agent 节点")
