@@ -6,6 +6,7 @@ import { compilePlan, upstreamOf } from "../src/plan.js";
 import { edgeVia, edgeRole, isBackEdge, evalWhen, condContextOf, pendingInstancesOf } from "../src/cond.js";
 import { classOfPath } from "../src/asserts.js";
 import { artifactPathOf, nodeAsserts, nodeOutput } from "../src/minitools.js";
+import { expandFlow3, type Flow3Descriptor } from "../src/modules.js";
 import type { FlowDescriptor } from "../src/types.js";
 
 const FLOW_IDS = fs
@@ -15,6 +16,20 @@ const FLOW_IDS = fs
 
 const load = (id: string): FlowDescriptor =>
   JSON.parse(fs.readFileSync(path.join(ROOT, "flows", id, "flow.json"), "utf-8")) as FlowDescriptor;
+
+/**
+ * flow@2 与 flow@3 同载具：flow@3（模块序列）不携带手画图，图级检查一律跑在
+ * expandFlow3 派生出的 flow@2 形态描述符上（与内核 effectiveOf 同一展开单点）。
+ */
+const loadAny = (id: string): { format: string; flow: FlowDescriptor } => {
+  const j = JSON.parse(fs.readFileSync(path.join(ROOT, "flows", id, "flow.json"), "utf-8")) as
+    | FlowDescriptor
+    | (Flow3Descriptor & { format: "flow@3" });
+  if ((j as { format: string }).format === "flow@3") {
+    return { format: "flow@3", flow: expandFlow3(ROOT, j as Flow3Descriptor).flow as FlowDescriptor };
+  }
+  return { format: "flow@2", flow: j as FlowDescriptor };
+};
 
 /** 严格 JSON：重复键必须报错（文本级字段手术的经典事故）。 */
 function strictParseId(raw: string, ctx: string): unknown {
@@ -32,24 +47,32 @@ function strictParseId(raw: string, ctx: string): unknown {
   return data;
 }
 
-describe("flow@2 · 全量描述符体检（规范 R4 §5.1）", () => {
-  it("全部 flow 均为 flow@2，且无重复键 / 无旧字段名", () => {
+describe("flow 描述符 · 全量体检（R4 §5.1 + R6 模块序列）", () => {
+  it("每个 flow 的 format 合法（flow@2 | flow@3），无重复键、无旧字段名", () => {
     expect(FLOW_IDS.length).toBeGreaterThan(0);
     for (const id of FLOW_IDS) {
       const raw = fs.readFileSync(path.join(ROOT, "flows", id, "flow.json"), "utf-8");
       strictParseId(raw, id);
-      expect(JSON.parse(raw).format, id).toBe("flow@2");
+      const format = JSON.parse(raw).format;
+      expect(["flow@2", "flow@3"], id).toContain(format);
       expect(raw.includes('"transform"'), `${id} 残留 transform`).toBe(false);
       expect(/^\s*"file"\s*:/m.test(raw), `${id} 残留 node.file`).toBe(false);
       expect(/^\s*"check"\s*:/m.test(raw), `${id} 残留 node.check`).toBe(false);
       expect(/^\s*"kb"\s*:/m.test(raw), `${id} 残留 node.kb`).toBe(false);
       expect(/"when"\s*:\s*"/.test(raw), `${id} 残留字符串 when`).toBe(false);
+      if (format === "flow@3") {
+        // 模块序列不携带手画图：图只能由 expandFlow3 派生
+        expect(raw.includes('"graph"'), `${id} flow@3 不得手写 graph`).toBe(false);
+        expect(raw.includes('"stages"'), `${id} flow@3 不得手写 stages`).toBe(false);
+        expect(raw.includes('"nodes"'), `${id} flow@3 不得手写 nodes`).toBe(false);
+        expect(raw.includes('"edges"'), `${id} flow@3 不得手写 edges`).toBe(false);
+      }
     }
   });
 
   it("每根线有 role，when 可求值，via 派生自目标节点执行体", () => {
     for (const id of FLOW_IDS) {
-      const flow = load(id);
+      const flow = loadAny(id).flow;
       const ctx = condContextOf({ inputs: {} });
       for (const e of flow.graph.edges) {
         expect(e.role, `${id}/${e.id} 缺 role`).toBeDefined();
@@ -68,7 +91,7 @@ describe("flow@2 · 全量描述符体检（规范 R4 §5.1）", () => {
 
   it("打回边与回边都带角色语义；打回边必须带 params.scope（面板可渲染）", () => {
     for (const id of FLOW_IDS) {
-      const flow = load(id);
+      const flow = loadAny(id).flow;
       for (const e of flow.graph.edges) {
         if (edgeRole(e) !== "reject") continue;
         expect((e.params ?? {}).scope, `${id}/${e.id} 缺 params.scope`).toBeTruthy();
@@ -76,9 +99,9 @@ describe("flow@2 · 全量描述符体检（规范 R4 §5.1）", () => {
     }
   });
 
-  it("agent 节点全部迁移到 kit+op 引用（漂移面归零）", () => {
+  it("agent 节点全部迁移到 kit+op 引用（漂移面归零；flow@3 派生节点自带模块归属）", () => {
     for (const id of FLOW_IDS) {
-      const flow = load(id);
+      const flow = loadAny(id).flow;
       for (const [nid, n] of Object.entries(flow.graph.nodes)) {
         if (!n.skill) continue;
         expect(n.kit, `${id}/${nid} 缺 kit`).toBeTruthy();
@@ -89,13 +112,15 @@ describe("flow@2 · 全量描述符体检（规范 R4 §5.1）", () => {
 
   it("产物路径全部落在准入目录内，或为根级输入材料", () => {
     const ALLOWED = ["内部/意见/", "内部/收据/", "内部/依据/", "内部/稿本/", "对外交付/", "章节正文/", "世界书/"];
+    // R6 模块产物目录：NN-模块名/（01-选题/ 这类，由 expandFlow3 派生）
+    const R6_DIR = /^\d{2}-[^/]+\//;
     for (const id of FLOW_IDS) {
-      const flow = load(id);
+      const flow = loadAny(id).flow;
       for (const [nid, n] of Object.entries(flow.graph.nodes)) {
         const out = nodeOutput(n);
         if (!out) continue;
         const rel = out.replaceAll("\\", "/");
-        const ok = ALLOWED.some((d) => rel.startsWith(d)) || (n.kind === "novel-txt" && !rel.includes("/"));
+        const ok = ALLOWED.some((d) => rel.startsWith(d)) || R6_DIR.test(rel) || (n.kind === "novel-txt" && !rel.includes("/"));
         expect(ok, `${id}/${nid} 产物 ${rel} 不在准入目录`).toBe(true);
         expect(classOfPath(rel), `${id}/${nid} class 反查`).toBeTruthy();
       }
@@ -111,7 +136,7 @@ describe("flow@2 · 全量描述符体检（规范 R4 §5.1）", () => {
 
   it("每个 flow 都能编译计划（回边不计入前向 → 无环；前向边序保持）", () => {
     for (const id of FLOW_IDS) {
-      const flow = load(id);
+      const flow = loadAny(id).flow;
       const order = compilePlan(flow, {});
       expect(order.length, `${id} 计划为空`).toBeGreaterThan(0);
       // 前向边的 from 必须排在 to 之前；回边不参与拓扑，不得据此判环

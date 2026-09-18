@@ -528,7 +528,9 @@ export class Kernel {
       // 计数仍是 0）。故重算任务包，取与派发完全同源的那份清单。
       const pkg = buildTaskPackage(projectDir, flow, state, nodeId, eff.toolOverrides);
       const injected = [...(pkg.knowledge ?? []).map((k) => k.id), ...pkg.context.map((c) => c.ref)];
-      const usage = extractCtxUsage(fs.readFileSync(abs, "utf-8"), injected);
+      // 概念词命中层（D1 第一层改造）：kb 卡按签名词在正文的落点计命中，
+      // 路径字面匹配只作保底——知识库根以 repoRoot 为准（knowledge/ 与 projects/ 分居）。
+      const usage = extractCtxUsage(fs.readFileSync(abs, "utf-8"), injected, { root: this.repoRoot });
       this.metric(projectDir, state, nodeId, node, "submit", {
         ctx: usage,
         asserts: assertCounts(finalProblems, declared, declaredOutcome.unverified),
