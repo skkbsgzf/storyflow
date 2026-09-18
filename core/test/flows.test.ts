@@ -129,7 +129,7 @@ describe("flow 描述符 · 全量体检（R4 §5.1 + R6 模块序列）", () =>
         const p = o.path ?? artifactPathOf(flow, o.node ?? "");
         if (!p) continue;
         expect(p.includes("/"), `${id} 交付出口「${p}」不是合格路径（合格形态：对外交付/NN-名.ext）`).toBe(true);
-        expect(ALLOWED.some((d) => p.replaceAll("\\", "/").startsWith(d)), `${id} 交付出口 ${p}`).toBe(true);
+        expect(ALLOWED.some((d) => p.replaceAll("\\", "/").startsWith(d)) || R6_DIR.test(p), `${id} 交付出口 ${p}`).toBe(true);
       }
     }
   });

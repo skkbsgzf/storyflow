@@ -1,21 +1,21 @@
 {
   "format": "metrics-summary@1",
   "runId": "run-mu7grvzg-yrdb60",
-  "events": 4,
+  "events": 5,
   "byNode": {
     "m1.topic-report": {
       "nodeId": "m1.topic-report",
       "runs": 2,
-      "submits": 2,
+      "submits": 3,
       "tokensIn": 0,
       "tokensOut": 0,
       "latencyMs": 0,
-      "assertPass": 4,
+      "assertPass": 7,
       "assertBlock": 2,
       "retries": 2,
       "ctxOffered": 10,
-      "ctxUsed": 0,
-      "hitRate": 0,
+      "ctxUsed": 5,
+      "hitRate": 0.5,
       "consumedBy": 0,
       "cost": 14,
       "efficiency": 0,
@@ -33,16 +33,16 @@
       "kit": "topic",
       "op": "topic-report",
       "runs": 2,
-      "submits": 2,
+      "submits": 3,
       "tokensIn": 0,
       "tokensOut": 0,
       "latencyMs": 0,
-      "assertPass": 4,
+      "assertPass": 7,
       "assertBlock": 2,
       "retries": 2,
       "ctxOffered": 10,
-      "ctxUsed": 0,
-      "hitRate": 0,
+      "ctxUsed": 5,
+      "hitRate": 0.5,
       "consumedBy": 0,
       "cost": 14,
       "efficiency": 0,
@@ -56,37 +56,37 @@
     {
       "id": "kb/trope/chongsheng-fuchou",
       "offered": 2,
-      "used": 0,
-      "hitRate": 0
+      "used": 1,
+      "hitRate": 0.5
     },
     {
       "id": "kb/trope/dalian-nuezha",
       "offered": 2,
-      "used": 0,
-      "hitRate": 0
+      "used": 1,
+      "hitRate": 0.5
     },
     {
       "id": "kb/market/topic-anatomy",
       "offered": 2,
-      "used": 0,
-      "hitRate": 0
+      "used": 1,
+      "hitRate": 0.5
     },
     {
       "id": "kb/market/meme-rules",
       "offered": 2,
-      "used": 0,
-      "hitRate": 0
+      "used": 1,
+      "hitRate": 0.5
     },
     {
       "id": "kb/aesthetic/pacing-density",
       "offered": 2,
-      "used": 0,
-      "hitRate": 0
+      "used": 1,
+      "hitRate": 0.5
     }
   ],
   "gates": [],
   "window": {
     "from": "2026-09-18T21:21:58.472Z",
-    "to": "2026-09-18T21:24:52.281Z"
+    "to": "2026-09-18T21:25:25.935Z"
   }
 }

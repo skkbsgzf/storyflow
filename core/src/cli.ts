@@ -5,6 +5,7 @@ import path from "node:path";
 import process from "node:process";
 import { Kernel, KernelError } from "./kernel.js";
 import { ROOT } from "./schema.js";
+import { skillPatch } from "./skills.js";
 
 type Args = Record<string, string | boolean>;
 
@@ -46,6 +47,8 @@ function usage(): string {
     "  flow_effect   --project <id>                        生效编排 + 指标汇总（tool 效率/上下文命中率）",
     "  flow_optimize --project <id> [--apply] [--actor s]  由指标产出编排调优提案；--apply 落 overlay（低风险自动，其余待批）",
     "  flow_mine     --project <id>                      组装编排挖掘包（journal/指标/中间文件），交编排挖掘师产出 findings@1 → flow_optimize 自动并入",
+    "  skill_patch   --target <skill> --text <s> --reason <s> [--section <s>] [--op append|replace] [--origin user|miner|agent]",
+    "                    提示词补丁（W-05）：默认 proposed 不生效；--approve <id> 批准装载 / --reject <id> 驳回 / --list [--target <skill>]",
     "  flow_overlay  --project <id> [--patches <file.json>] [--approve <id,...>] [--reason s] [--replan]",
     "                                                      改写运行时编排（tool 的位置与内容配置）；--replan 立即重编译计划",
     "",
@@ -150,6 +153,23 @@ async function main(): Promise<number> {
         return out(kernel.viewEffect(projectId));
       case "flow_mine":
         return out(kernel.flowMine(projectId));
+      case "skill_patch":
+        return out(
+          skillPatch(ROOT, (() => {
+            if (flags.approve) return { action: "approve", id: String(flags.approve) };
+            if (flags.reject) return { action: "reject", id: String(flags.reject) };
+            if (flags.list) return { action: "list", target: flags.target ? String(flags.target) : undefined };
+            return {
+              action: "add",
+              target: String(flags.target),
+              text: String(flags.text),
+              reason: String(flags.reason),
+              section: flags.section ? String(flags.section) : undefined,
+              op: flags.op ? (String(flags.op) as "append" | "replace") : undefined,
+              origin: flags.origin ? (String(flags.origin) as "user" | "miner" | "agent") : undefined,
+            };
+          })()),
+        );
       case "flow_optimize":
         return out(
           kernel.flowOptimize(projectId, {

@@ -300,6 +300,15 @@ export function expandFlow3(
   });
 
   // ── 合成 flow@2 形态派生描述符（全链现有机器直接消费）
+  // outputs：flow@3 的模块级声明展开为节点级（模块内最后一个有产物节点 = 该模块交付件），
+  // 保留 module 键供模块报告/交付清单按模块归口
+  const derivedOutputs = (flow3.outputs ?? [])
+    .map((o) => {
+      const ids = (moduleNodes[o.module] ?? []).filter((id) => nodes[id]?.output);
+      const last = ids.at(-1);
+      return last ? { node: last, module: o.module, title: o.title, ...(o.audience ? { audience: o.audience } : {}) } : null;
+    })
+    .filter(Boolean);
   const derived: any = {
     format: "flow@3-derived",
     id: flow3.id,
@@ -308,7 +317,7 @@ export function expandFlow3(
     version: flow3.version,
     status: flow3.status ?? "official",
     inputs: flow3.inputs ?? {},
-    outputs: [],
+    outputs: derivedOutputs,
     graph: { nodes, edges },
     stages: derivedStages,
     r6: { modules, links, moduleNodes, dirs },

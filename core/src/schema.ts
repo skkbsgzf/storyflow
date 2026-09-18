@@ -29,6 +29,8 @@ const SCHEMA_IDS = [
   "flow",
   "flow-overlay",
   "module",
+  "module-report",
+  "skill-overlay",
   "toolbox",
   "page-payload",
   "metrics",

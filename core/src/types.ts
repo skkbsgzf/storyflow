@@ -150,6 +150,8 @@ export interface FlowDescriptor {
  */
 export interface FlowOutput {
   node?: string;
+  /** flow@3：模块级交付——按模块声明（module 键），展开为该模块的交付产物 */
+  module?: string;
   /** 交付路径；缺省取该节点的 output */
   path?: string;
   /** 交付名/说明（前端交付页标题） */

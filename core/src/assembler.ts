@@ -11,6 +11,7 @@ import { ProfileRegistry } from "./profiles.js";
 import { kitRegistry, resolveToolConfig, applyToolOverride, type ResolvedOp } from "./kits.js";
 import type { ToolOverride } from "./overlay.js";
 import { loadProjectConfig, configCardLines } from "./project-config.js";
+import { applySkillOverlay, appliedPatchesFor } from "./skills.js";
 import { bodySkeleton, classOfPath, foreignOwnTerms, headerTemplate } from "./asserts.js";
 
 const CONTEXT_BUDGET = 20000;
@@ -303,12 +304,17 @@ export function buildTaskPackage(
   // 指令：标尺 + skill 方法论（封顶）+ 节点描述 + 契约回显
   let skillText = "";
   let skillTruncated = false;
+  let patchMisses: string[] = [];
   if (skillId) {
     const skillFile = path.join(ROOT, "skills", `${skillId}.md`);
     if (fs.existsSync(skillFile)) {
-      const r = clip(fs.readFileSync(skillFile, "utf-8"), SKILL_CAP);
+      // W-05 提示词补丁层：只有 status=applied 的 skill-overlay 补丁参与装载；
+      // 未命中小节的补丁显式回显（任务包可见），不静默丢弃
+      const patched = applySkillOverlay(fs.readFileSync(skillFile, "utf-8"), skillId, appliedPatchesFor(ROOT, skillId));
+      const r = clip(patched.text, SKILL_CAP);
       skillText = r.text;
       skillTruncated = r.truncated;
+      patchMisses = patched.misses;
     }
   }
   const parts: string[] = [];
@@ -338,6 +344,9 @@ export function buildTaskPackage(
   }
   if (cfg.unknownKeys.length) {
     parts.push(`## 配置告警（写了却没人认的键——禁止假装生效）\n\n${cfg.unknownKeys.map((k) => `- ${k}`).join("\n")}`);
+  }
+  if (patchMisses.length) {
+    parts.push(`## 提示词补丁告警（skill-overlay 补丁未命中目标小节——已跳过，检查 section 拼写）\n\n${patchMisses.map((k) => `- ${k}`).join("\n")}`);
   }
   if (node.desc) parts.push(`## 本步要求\n\n${node.desc}`);
   // D5：禁词表前置。与交卷时的 glossary 断言**同源**（他项目 own 词），但用途相反——

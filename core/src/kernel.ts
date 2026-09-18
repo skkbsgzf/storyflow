@@ -269,6 +269,7 @@ export class Kernel {
       const view = { format: "metrics-summary@1", runId: state.runId, ...summary };
       fs.mkdirSync(path.join(projectDir, "registry"), { recursive: true });
       atomicWriteText(path.join(projectDir, "registry", "metrics-summary.json"), JSON.stringify(view, null, 2) + "\n");
+      this.persistModuleReports(projectDir, state, eff);
     } catch {
       /* 旁路 */
     }
@@ -664,6 +665,12 @@ export class Kernel {
         state.status = "completed";
         journalAppend(projectDir, state.runId, "run-end", { detail: "srd 裁决通过，run 完成" });
         saveState(projectDir, state);
+        try {
+          this.flowMine(projectId);
+          this.flowOptimize(projectId, { actor: "auto-completed" });
+        } catch {
+          /* 负反馈旁路 */
+        }
         return { applied: true, completed: true };
       }
       state.status = "running";
@@ -1010,6 +1017,13 @@ export class Kernel {
     state.status = "completed";
     journalAppend(projectDir, state.runId, "run-end", { detail: "全部节点 done" });
     saveState(projectDir, state);
+    // W-06 负反馈自动触发：completed 即自动组装挖掘包 + 刷新提案池（内核不做 LLM 判断；提案仍待人批）
+    try {
+      this.flowMine(projectId);
+      this.flowOptimize(projectId, { actor: "auto-completed" });
+    } catch {
+      /* 负反馈旁路：不阻塞完成态 */
+    }
     return { status: "completed" };
   }
 
@@ -1214,7 +1228,32 @@ export class Kernel {
         JSON.stringify({ eventsAtMine: summary.events, lastMinedAt: nowIso(), phase: "consumed", findings: mine.file.findings.length }, null, 2) + "\n",
       );
     }
-    const report = buildReport(eff.flow, summary, eff.policy, proposals, { sources, mineStructural });
+    // W-06 批注接线：用户批注是负反馈的证据源——并入报告供优化 agent 消费（内核不做 LLM 转译）
+    let userFeedback: { count: number; items: { id: string; node?: string; text: string }[] } | undefined;
+    try {
+      const annoPath = path.join(projectDir, "内部", "批注与意见.json");
+      const items: { id: string; node?: string; text: string }[] = [];
+      if (fs.existsSync(annoPath)) {
+        const aj = JSON.parse(fs.readFileSync(annoPath, "utf-8")) as { annos?: Record<string, unknown>; comments?: Record<string, unknown> };
+        for (const [k, v] of Object.entries(aj.annos ?? {})) {
+          const t = typeof v === "string" ? v : ((v as { text?: string }).text ?? "");
+          if (t) items.push({ id: k, node: typeof v === "object" ? (v as { node?: string }).node : undefined, text: String(t).slice(0, 200) });
+        }
+        for (const [k, v] of Object.entries(aj.comments ?? {})) {
+          if (v) items.push({ id: k, text: String(v).slice(0, 200) });
+        }
+      }
+      for (const [k, v] of Object.entries((state.comments as Record<string, unknown>) ?? {})) {
+        if (v) items.push({ id: k, text: String(v).slice(0, 200) });
+      }
+      if (items.length) userFeedback = { count: items.length, items };
+    } catch {
+      /* 批注读取旁路 */
+    }
+    const report = {
+      ...buildReport(eff.flow, summary, eff.policy, proposals, { sources, mineStructural }),
+      ...(userFeedback ? { userFeedback } : {}),
+    };
     fs.mkdirSync(path.join(projectDir, "registry"), { recursive: true });
     atomicWriteText(path.join(projectDir, "registry", "optimize.json"), JSON.stringify(report, null, 2) + "\n");
     let written: string | undefined;
@@ -1227,6 +1266,108 @@ export class Kernel {
       });
     }
     return { report, written, adapt: eff.policy.adapt ?? "propose", mineStructural };
+  }
+
+  /**
+   * W-04 模块结果报告读模型（module-report@1）：模块收口（全部节点 done）即生成
+   * registry/module-report-<mid>.json —— 产出物 + 验收三态 + 模块粒度指标 + 反馈计数。
+   * 负反馈的人工入口：用户对着这份报告批注，批注经 flow_optimize 并入提案池。
+   */
+  private persistModuleReports(projectDir: string, state: RunState, eff: EffectiveFlow): void {
+    const nodes = eff.flow.graph.nodes;
+    const outputs = eff.flow.outputs ?? [];
+    const byModule = new Map<string, string[]>();
+    for (const [id, n] of Object.entries(nodes)) {
+      const mid = (n as { module?: string }).module ?? n.stage ?? "m0";
+      if (!byModule.has(mid)) byModule.set(mid, []);
+      byModule.get(mid)!.push(id);
+    }
+    const events = readMetrics(projectDir);
+    for (const [mid, ids] of byModule) {
+      const doneIds = ids.filter((id) => state.nodes[id]?.status === "done");
+      if (doneIds.length === 0) continue; // 未收口模块不产报告
+      const artifacts: { node: string; op?: string; path: string; role: "deliverable" | "process" }[] = [];
+      const acceptance: { node: string; assert: string; status: string; detail?: string }[] = [];
+      let submits = 0, retries = 0, tokensIn = 0, tokensOut = 0, latencyMs = 0, ctxOffered = 0, ctxUsed = 0;
+      const moduleDeclared = outputs.some((o) => o.module === mid || (o.node && ids.includes(o.node)));
+      let deliverableAssigned = false;
+      for (const id of ids) {
+        const n = nodes[id];
+        const ns = state.nodes[id];
+        const output = (n as { output?: string }).output;
+        // 交付件认定：模块被 outputs 声明时，模块内**最后一个有产物的 done 节点**是交付件，其余为过程件
+        const isDeliverable =
+          moduleDeclared && !!output && ns?.status === "done" &&
+          (() => {
+            if (deliverableAssigned) return false;
+            const later = ids.slice(ids.indexOf(id) + 1).filter((x) => (nodes[x] as { output?: string }).output && state.nodes[x]?.status === "done");
+            if (later.length === 0) { deliverableAssigned = true; return true; }
+            return false;
+          })();
+        if (output && ns?.status === "done") {
+          artifacts.push({ node: id, op: (n as { op?: string }).op, path: output, role: isDeliverable ? "deliverable" : "process" });
+        }
+        // 验收三态：节点声明过的断言，对照最新注册产物里的引擎结果
+        const declared = nodeAsserts(n);
+        const latest = [...listArtifacts(projectDir, { node: id, latest: true })].find((a) => a.path === output);
+        for (const a of declared) {
+          const v = (latest?.validations ?? []).find((x) => x.name === a);
+          acceptance.push({
+            node: id,
+            assert: a,
+            status: v ? (v.status === "pass" ? "pass" : v.status) : "unverified",
+            detail: v?.detail,
+          });
+        }
+        if (ns?.status === "done") submits += 1;
+        for (const e of events.filter((x) => x.nodeId === id)) {
+          if (e.phase === "submit" || e.phase === "core") {
+            ctxUsed += e.ctx?.used ?? 0;
+            retries = Math.max(retries, e.retries ?? 0);
+          }
+          if (e.phase === "dispatch") ctxOffered += e.ctx?.offered ?? e.ctx?.ids?.length ?? 0;
+          tokensIn += e.tokensIn ?? 0;
+          tokensOut += e.tokensOut ?? 0;
+          latencyMs += e.latencyMs ?? 0;
+        }
+      }
+      const lastTs = events
+        .filter((e) => ids.includes(e.nodeId))
+        .map((e) => e.ts)
+        .sort()
+        .at(-1);
+      const deliverablePath = artifacts.find((a) => a.role === "deliverable")?.path;
+      const report = {
+        format: "module-report@1" as const,
+        projectId: path.basename(projectDir),
+        flowId: eff.flow.id,
+        moduleId: mid,
+        moduleName: mid,
+        title: ids.map((id) => nodes[id].title).filter(Boolean).slice(0, 3).join(" / "),
+        closedAt: lastTs ?? nowIso(),
+        io: {
+          input: Object.keys(state.inputs ?? {}).filter((k) => !["project"].includes(k)),
+          output: deliverablePath ?? "",
+        },
+        artifacts,
+        acceptance,
+        metrics: {
+          submits, retries, tokensIn, tokensOut, latencyMs, ctxOffered, ctxUsed,
+          hitRate: ctxOffered > 0 ? ctxUsed / ctxOffered : 0,
+        },
+        feedback: {
+          annotations: Object.keys((state.comments as Record<string, unknown>) ?? {}).filter((k) => ids.some((id) => k.includes(id))).length,
+          proposals: 0,
+        },
+      };
+      try {
+        assertSchema("module-report", report);
+      } catch (e) {
+        journalAppend(projectDir, state.runId, "warn", { detail: `module-report ${mid} schema 校验失败（跳过落盘）: ${String(e).slice(0, 120)}` });
+        continue;
+      }
+      atomicWriteText(path.join(projectDir, "registry", `module-report-${mid}.json`), JSON.stringify(report, null, 2) + "\n");
+    }
   }
 
   /**
@@ -1274,7 +1415,7 @@ export class Kernel {
     scan(path.join("内部"), 120);
     scan(path.join("对外交付"), 60);
     scan(path.join("世界书"), 40);
-    for (const extra of ["梗卡.md", "选题素材.md", "项目配置.json", "registry/metrics-summary.json", "registry/effective.json", "registry/optimize.json"]) {
+    for (const extra of ["梗卡.md", "选题素材.md", "项目配置.json", path.join("内部", "批注与意见.json"), "registry/metrics-summary.json", "registry/effective.json", "registry/optimize.json"]) {
       if (fs.existsSync(path.join(projectDir, extra)) && !evidence.includes(extra)) evidence.unshift(extra);
     }
 
