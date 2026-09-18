@@ -106,7 +106,7 @@ export function expandFlow3(
   const moduleNodes: Record<string, string[]> = {};
   const dirs: Record<string, string> = {};
   const nodes: Record<string, any> = {};
-  const edges: { id: string; from: string; to: string; via?: string; params?: Record<string, unknown> }[] = [];
+  const edges: { id: string; from: string; to: string; role?: string; via?: string; params?: Record<string, unknown> }[] = [];
   const derivedStages: any[] = [];
 
   let prev: { mid: string; terminals: string[]; linkId: string } | null = null;
@@ -182,14 +182,15 @@ export function expandFlow3(
         title: op.title ?? toolId,
         stage: mid,
         module: mid,
+        kit: inst.module,
+        op: toolId,
         output: `${dir}/${baseOut}`,
         ...(op.skill ? { skill: op.skill } : {}),
         ...(op.minitool ? { minitool: op.minitool } : {}),
-        ...(op.knowledge?.length ? { kb: [...op.knowledge] } : {}),
-        ...(adds.asserts?.length ? { asserts: [...(op.asserts ?? []), ...adds.asserts] } : op.asserts?.length ? { asserts: [...op.asserts] } : {}),
-        ...(adds.knowledge?.length || op.knowledge?.length
-          ? { kb: [...new Set([...(op.knowledge ?? []), ...(adds.knowledge ?? [])])] }
+        ...(op.asserts?.length || adds.asserts?.length
+          ? { asserts: [...new Set([...(op.asserts ?? []), ...(adds.asserts ?? [])])] }
           : {}),
+        ...(adds.knowledge?.length ? { knowledge: [...new Set([...(op.knowledge ?? []), ...(adds.knowledge ?? [])])] } : {}),
         ...(Object.keys(adds.config ?? {}).length || op.config
           ? {
               config: Object.fromEntries(
@@ -233,7 +234,8 @@ export function expandFlow3(
       }
     }
     for (const [f, t] of enabledEdges) {
-      edges.push({ id: `e-${mid}-${f}-${t}`, from: `${mid}.${f}`, to: `${mid}.${t}` });
+      const viaSkill = mod.ops[t]?.skill;
+      edges.push({ id: `e-${mid}-${f}-${t}`, from: `${mid}.${f}`, to: `${mid}.${t}`, role: "flow", ...(viaSkill ? { via: `skill.${viaSkill}` } : {}) });
     }
 
     // 规则 3：节点 id；模块实例序列 → 合成 stages（assembler/搬迁口径复用）
@@ -272,11 +274,11 @@ export function expandFlow3(
         stage: mid,
         module: mid,
       };
-      for (const t of prev.terminals) edges.push({ id: `e-${prev.mid}-link`, from: t, to: linkId });
+      for (const t of prev.terminals) edges.push({ id: `e-${prev.mid}-link`, from: t, to: linkId, role: "flow" });
       for (const e of midNodes.slice(1)) {
         // 入口首节点由连接件接入；其余成员保持骨架内部边
       }
-      if (midNodes.length) edges.push({ id: `e-link-${mid}`, from: linkId, to: midNodes[0] });
+      if (midNodes.length) edges.push({ id: `e-link-${mid}`, from: linkId, to: midNodes[0], role: "flow" });
     }
     const terminals = midNodes.length ? [midNodes[midNodes.length - 1]] : [];
     prev = { mid, terminals, linkId };

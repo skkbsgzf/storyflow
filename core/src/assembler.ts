@@ -258,7 +258,7 @@ export function buildTaskPackage(
   // kit 标尺（K1 装载复位）：kit/op 声明的判定条款为权威；节点 kb 仅在无 kit 归属时生效
   const opRef = resolveNodeOp(node, ROOT, toolOverrides);
   const skillId = node.skill ?? opRef?.skill;
-  const knowledgeIds = opRef?.knowledge.length ? opRef.knowledge : (node.kb ?? []);
+  const knowledgeIds = [...new Set([...(opRef?.knowledge ?? []), ...(node.knowledge ?? node.kb ?? [])])];
   const kb = loadKnowledge(ROOT, knowledgeIds, opRef?.excludeKnowledge ?? []);
   const asserts = [...new Set([...nodeAsserts(node), ...(opRef?.asserts ?? [])])];
   // R5 内容配置项：overlay.opConfig > 节点 config > op.default > 通用默认

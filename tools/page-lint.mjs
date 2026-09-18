@@ -162,29 +162,30 @@ const nodePanel = probe(`(()=>{
 ok("节点面板 openNodeDoc 全节点可渲染且无泄漏", nodePanel === "[]", nodePanel);
 
 // ================= R5 · 生成式编排（生效层 / 边界验收 / 配置项 / 指标 / 提案） =================
-const HAS_EFF = !!payload.effective;
+const HAS_EFF = !!payload.EFF; // payload@2：生效编排键为 EFF（effective@2，links 取代 boundaries）
 const HAS_KITS = Object.keys(payload.kits || {}).length > 0;
 
 // 7 · 页面主图 = 生效编排（边界验收节点只有生效编排里才有；bootstrap 看不到）
 if (HAS_EFF) {
-  const bndMissing = probe(`JSON.stringify((EFF.boundaries||[]).filter(b=>!nodes[b]))`);
-  ok("生效编排的边界验收节点全部在页面主图上", bndMissing === "[]", bndMissing);
-  const notMarked = probe(`JSON.stringify((EFF.boundaries||[]).filter(b=>!isBoundaryNode(b)))`);
-  ok("边界节点由内核标注识别（不靠 id 前缀嗅探）", notMarked === "[]", notMarked);
-  const bndMisclassified = probe(`JSON.stringify((EFF.boundaries||[]).filter(b=>{const m=nodes[b]||{}; return m.kind!=="gate"||m.gate_role!=="kit-boundary";}))`);
-  ok("边界节点 kind=gate 且 gate_role=kit-boundary", bndMisclassified === "[]", bndMisclassified);
-  const nonBndFlagged = probe(`JSON.stringify(Object.keys(nodes).filter(n=>(nodes[n].gate_role==="kit-boundary")!==isBoundaryNode(n)))`);
-  ok("isBoundaryNode 与节点声明一致（无错标）", nonBndFlagged === "[]", nonBndFlagged);
-  // 边界门必须有专属渲染：画布徽章 + 面板说明页（含「为什么只有这道门」）
-  const bndRender = probe(`(()=>{const bad=[];(EFF.boundaries||[]).forEach(b=>{document.getElementById("d-body").innerHTML="";
+  // R6：边界门退役为「模块间连接件」（gate_role=link，EFF.links 为内核事实源）。
+  // 存量 flow@2 页面（DATA.modules 置空）显式降级为 legacy 断言，不硬套 flow@3 语义。
+  const isFlow3Page = probe(`JSON.stringify(!!(DATA.modules||[]).length)`) === "true";
+  if (!isFlow3Page) {
+    const lg = probe(`JSON.stringify(Object.keys(nodes).filter(n=>nodes[n].gate_role==="link"))`);
+    ok("存量页：无 R6 连接件混入（转换后由 WO-08 + flow_effect 重新生成）", lg === "[]", lg);
+  }
+  const lnkSeam = probe(`JSON.stringify((EFF.links||[]).filter(l=>{const m=nodes[l.id]||{}; return m.kind!=="gate"||m.gate_role!=="link";}).map(l=>l.id))`);
+  ok("连接件 kind=gate 且 gate_role=link", lnkSeam === "[]", lnkSeam);
+  const lnkMode = probe(`JSON.stringify((EFF.links||[]).filter(l=>!["auto","manual"].includes(nodes[l.id]?.link_mode)).map(l=>l.id))`);
+  ok("连接件模式合法（auto=灰虚线自动 / manual=金实线挂人）", lnkMode === "[]", lnkMode);
+  const lnkRender = probe(`(()=>{const bad=[];(EFF.links||[]).forEach(l=>{const b=l.id;document.getElementById("d-body").innerHTML="";
     openNodeDoc(b); const h=document.getElementById("d-body").innerHTML;
-    if(!h.includes("跨域")&&!h.includes("边界")) bad.push(b+":无边界说明");
-    if(!boundaryPaper(b).includes("kit-boundary")&&!boundaryPaper(b).includes("kit 边界")) bad.push(b+":说明页缺语义");
+    if(!h.includes("连接件")) bad.push(b+":无连接件说明");
+    if(!h.includes("重跑上游模块")) bad.push(b+":缺驳回语义");
     if(/undefined|NaN/.test(h)) bad.push(b+":undefined泄漏");});return JSON.stringify(bad);})()`);
-  ok("边界验收节点有专属说明页且渲染无泄漏", bndRender === "[]", bndRender);
-  const bndBadge = probe(`JSON.stringify((EFF.boundaries||[]).filter(b=>{const m=nodes[b]||{};
-    return !isBoundaryNode(b) || (m.gate_role!=="kit-boundary");}))`);
-  ok("边界验收徽章来源可判定（画布渲染同一判据）", bndBadge === "[]", bndBadge);
+  ok("连接件有专属说明页（含驳回语义）且渲染无泄漏", lnkRender === "[]", lnkRender);
+  const lnkClique = probe(`JSON.stringify(Object.keys(nodes).filter(n=>nodes[n].gate_role==="link" && !(EFF.links||[]).some(l=>l.id===n)))`);
+  ok("连接件由内核 links 表标注（不靠 id 前缀嗅探）", lnkClique === "[]", lnkClique);
 } else {
   const box = probe(`(()=>{renderEffectiveBanner(); return document.getElementById("eff-banner").innerHTML;})()`);
   ok("无读模型时横幅显式说明「本页是 bootstrap 编排」（不静默）", /bootstrap/.test(box), box.slice(0, 80));
@@ -248,7 +249,7 @@ if (HAS_EFF) {
 // 11 · 合成场景 A：项目 overlay 改写了某 tool 的配置 → 该节点配置页必须显示改写理由与来源=overlay
 if (HAS_EFF) {
   const target = (() => {
-    const nc = payload.effective.nodeConfig || {};
+    const nc = (payload.EFF || {}).nodeConfig || {};
     const hit = Object.entries(nc).find(([, r]) => r && r.resolved);
     return hit ? { id: hit[0], kit: hit[1].kit, op: hit[1].op, keys: Object.keys(hit[1].resolved.defs || {}) } : null;
   })();
@@ -282,9 +283,12 @@ if (HAS_EFF) {
   p3.effective = null; p3.metrics = null; p3.overlay = null; p3.optimize = null;
   // 忠实模拟真实降级：生成器找不到 effective.json 时用的是 bootstrap flow.json，
   // 那里根本没有派生出来的边界门。所以这一场景里把边界门从主图拿掉。
-  const bnd = new Set(((payload.effective || {}).boundaries) || []);
-  p3.flow.graph.nodes = Object.fromEntries(Object.entries(p3.flow.graph.nodes).filter(([id]) => !bnd.has(id)));
-  p3.flow.graph.edges = p3.flow.graph.edges.filter(e => !bnd.has(e.from) && !bnd.has(e.to));
+  p3.EFF = null; p3.METRICS = null; p3.OVERLAY = null; p3.OPTIMIZE = null;
+  if (p3.DATA && p3.DATA.flow && p3.DATA.flow.graph) {
+    const bnd = new Set((((payload.EFF || {}).links) || []).map(l => l.id));
+    p3.DATA.flow.graph.nodes = Object.fromEntries(Object.entries(p3.DATA.flow.graph.nodes).filter(([id]) => !bnd.has(id)));
+    p3.DATA.flow.graph.edges = p3.DATA.flow.graph.edges.filter(e => !bnd.has(e.from) && !bnd.has(e.to));
+  }
   const b3 = boot(p3);
   const h = b3.probe(`(()=>{renderEffectiveBanner(); return document.getElementById("eff-banner").innerHTML;})()`);
   ok("读模型缺失：横幅明示 bootstrap 且给出恢复路径", /bootstrap/.test(h) && /flow_effect|flow_next/.test(h), h.slice(0, 110));

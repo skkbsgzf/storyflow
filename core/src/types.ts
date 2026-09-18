@@ -56,6 +56,8 @@ export interface FlowNode {
    * 键必须存在于 op.config（否则 flow-lint warn）。这是「tool 的内容可被用户/优化 agent 调优」的落点。
    */
   config?: Record<string, unknown>;
+  /** R6：模块展开后此节点的标尺清单（含插件 adds.knowledge 合并）；替代废弃的 kb */
+  knowledge?: string[];
 }
 
 /**

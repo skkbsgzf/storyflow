@@ -885,7 +885,7 @@ function drawEdges(){
     const bh = Math.max(maxR+NH+MG, MG+56+((b.inst.spine||[]).length)*(NH+GY));
     s += `<rect x="${b.from-18}" y="16" width="${b.to-b.from+36}" height="${bh-16}" rx="10" fill="${b.color}" opacity="0.05"/>`;
     s += `<line x1="${b.from+SPINE_DX+NW/2}" y1="52" x2="${b.from+SPINE_DX+NW/2}" y2="${bh-24}" stroke="${b.color}" stroke-width="1" stroke-dasharray="2,5" opacity="0.5"/>`;
-    s += `<text class="stage-name" x="${b.from-8}" y="34" fill="${b.color}">${String(b.index+1).padStart(2,"0")} ${b.inst.name||instId} · 能力 ${en.length}/${caps.length}${b.inst.link==="manual"?" · 待人工":""}</text>`;
+    s += `<text class="stage-name" data-module="${instId}" style="cursor:pointer" x="${b.from-8}" y="34" fill="${b.color}">${String(b.index+1).padStart(2,"0")} ${b.inst.name||instId} · 能力 ${en.length}/${caps.length}${b.inst.link==="manual"?" · 待人工":""}</text>`;
   }
   // 派生边：模块内 = 竖向三次贝塞尔（控制点取 y 中点）；跨模块直连 = 横向贝塞尔。
   // 与 <x>.link 相关的跳线不画——连接件语义由下面的模块缝承载，避免双线。
@@ -918,12 +918,18 @@ function drawEdges(){
     s += `<path class="edge-hit" data-e="${l.id}" d="M${l.x1},${l.y} L${l.x2},${l.y}" fill="none" stroke="${col}" stroke-width="${manual?2.2:1.4}"${manual?"":' stroke-dasharray="6,5"'} opacity="${manual?0.95:0.6}" ${manual?"":'marker-end="url(#arw)"'}/>`;
     const label = manual ? (LINK_ZH[l.state]||"待人工") : "自动";
     const wpx = label.length*13+16, mx2 = (l.x1+l.x2)/2;
-    s += `<rect x="${mx2-wpx/2}" y="${l.y-12}" width="${wpx}" height="24" rx="12" fill="#fbf7ee" stroke="${col}" stroke-width="1.2"/>`
-       + `<text class="edge-label" x="${mx2}" y="${l.y+4}" text-anchor="middle" fill="${manual?"#8a7434":"#7d7568"}">${l.mode==="manual"?"⏸ ":""}${label}</text>`;
+    s += `<rect data-linkid="${l.id}" x="${mx2-wpx/2}" y="${l.y-12}" width="${wpx}" height="24" rx="12" fill="#fbf7ee" stroke="${col}" stroke-width="1.2" style="cursor:pointer"/>`
+       + `<text data-linkid="${l.id}" class="edge-label" x="${mx2}" y="${l.y+4}" text-anchor="middle" fill="${manual?"#8a7434":"#7d7568"}" style="cursor:pointer">${l.mode==="manual"?"⏸ ":""}${label}</text>`;
   });
   svg.innerHTML = s + "</svg>";
   svg.querySelectorAll(".edge-hit").forEach(p=>{
     p.addEventListener("click", ev=>{ ev.stopPropagation(); hideTip(); openEdgeDoc(p.dataset.e); });
+  });
+  svg.querySelectorAll(".stage-name[data-module]").forEach(el=>{
+    el.addEventListener("click", ev=>{ ev.stopPropagation(); hideTip(); openModulePaper(el.dataset.module); });
+  });
+  svg.querySelectorAll("[data-linkid]").forEach(el=>{
+    el.addEventListener("click", ev=>{ ev.stopPropagation(); hideTip(); openLinkPaper(el.dataset.linkid); });
   });
 }
 const sessionEdited = new Set();   // 本会话在页面里保存过的文件（原稿或过程文件）
@@ -1180,7 +1186,7 @@ function openNodeDoc(n){
     // 审核者视角：意见前置；技术细节折叠在后
     dBody.insertAdjacentHTML("beforeend", commentPaper(n, zhTitle(m)));
     bindComment(n);
-    dBody.insertAdjacentHTML("beforeend", isBoundaryNode(n) ? boundaryPaper(n) : loopPaper(n));
+    dBody.insertAdjacentHTML("beforeend", (n.gate_role||nodes[n]?.gate_role)==="link" ? linkPaper(n) : isBoundaryNode(n) ? boundaryPaper(n) : loopPaper(n));
     dBody.insertAdjacentHTML("beforeend", detailsNodeInfo(n,m));
   } else {
     dBody.insertAdjacentHTML("beforeend", detailsNodeInfo(n,m));
@@ -1214,6 +1220,70 @@ function boundaryPaper(n){
       <span class="k">本轮状态</span><span class="v">${ST_ZH[st(n)]} · 第 ${(nsR.round||1)} 轮${nsR.verdict?` · 裁决 ${zhVerdict(nsR.verdict)}`:""}${RS.lastRejectReason?` ｜ 打回原因：${RS.lastRejectReason}`:""}</span>
     </div>
     <p class="msg">域内门（<code>gate_mode=auto</code>）断言全过即自动放行，只有本类门会拦人。若某道边界长期无打回，可由优化器提案降噪；若某处域切换没有门，说明该处不跨界或已被 suppress。</p></div></div>`;
+}
+function openLinkPaper(n){ navPush({type:"node", n}); openNodeDoc(n); }
+/* R6 · 模块卡片详情页：能力标签条 + 已启用节点 + 插件 + 跳转工具箱 */
+function openModulePaper(mid){
+  const inst=(DATA.modules||[]).find(x=>x.id===mid); if(!inst) return;
+  navPush({type:"node", n:mid}); sel=null; render();
+  docReset(); dBack.style.display=navStack.length?"":"none";
+  dTitle.textContent = `${String(inst.order||1).padStart(2,"0")} ${inst.name||mid}`;
+  dChips.innerHTML = chip(`模块 ${mid}`) + chip(`link=${inst.link||"auto"}`) + chip(`产物 ${inst.dir||"-"}`);
+  const caps=inst.caps||[], en=inst.capsEnabled||[];
+  const capBar = caps.map(c=>en.includes(c)?`<span class="chip" style="border-color:#5a7d3a;color:#5a7d3a">✓ ${c}</span>`:`<span class="chip" style="color:#8a8375">○ ${c}</span>`).join(" ");
+  const spine=inst.spine||[], plugins=inst.plugins||[];
+  const row=(nid,plugin)=>`<div class="shelf-row" data-n="${nid}"><span class="no">${plugin?"插":"骨"}</span><span class="nm">${zhTitle(nodes[nid]||{})||nid} <span class="msg">(${nid})</span></span><span class="go">${ST_ZH[st(nid)]||"未启动"}</span></div>`;
+  dBody.innerHTML = `<div class="paper"><div class="doc-h"><span>模块 · ${inst.name||mid}</span><span>${mid}</span></div><div class="md">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 14px">${capBar}</div>
+    <div class="shelf-cap">启用水线（骨架 ${spine.length} + 插件 ${plugins.length}）</div>
+    ${spine.concat(plugins).map(nid=>row(nid, plugins.includes(nid))).join("")}
+    <p class="msg">点模块卡头可回到本页；点模块缝上的连接件标签看放行模式与裁决态。启用新能力：打开工具箱抽屉（能力 ○ 项）勾选即生成 overlay patch。</p></div></div>`;
+  dBody.querySelectorAll(".shelf-row[data-n]").forEach(r=>r.addEventListener("click",()=>{ select(r.dataset.n); }));
+  flashDoc(); dBody.scrollTop=0;
+}
+
+/* R6 · 工具箱抽屉：按能力分组列全部 tool；勾选生成 overlay patch（人确认后落盘） */
+function openToolboxPaper(mid){
+  const inst=(DATA.modules||[]).find(x=>x.id===mid); if(!inst) return;
+  const tb=(DATA.toolbox&&DATA.toolbox.modules&&DATA.toolbox.modules[mid])||null;
+  navPush({type:"node", n:mid+".toolbox"}); render();
+  docReset(); dBack.style.display=navStack.length?"":"none";
+  dTitle.textContent = `工具箱 · ${inst.name||mid}`;
+  dChips.innerHTML = chip("能力 → 工具") + chip(`勾选即出 overlay patch`);
+  if(!tb){ dBody.innerHTML=`<div class="paper"><p class="msg">本页无工具箱数据（DATA.toolbox 缺 ${mid}）——存量项目待 WO-08 转换后出现。</p></div>`; flashDoc(); return; }
+  const groups=(tb.groups||[]).map(g=>{
+    const tools=(g.tools||[]).map(tool=>{
+      const en=tool.enabled;
+      const knob=Object.keys(tool.config||{}).length?` <span class="msg">[旋钮 ×${Object.keys(tool.config).length}]</span>`:"";
+      return `<div class="shelf-row" style="cursor:default"><span class="no">${en?"✓":"○"}</span><span class="nm">${tool.title||tool.tool}${knob}<br><span class="msg">${tool.tool} · slot=${tool.slot||"-"}</span></span><span class="go">${en?"已启用":"○"}</span></div>`;
+    }).join("");
+    return `<div class="shelf-cap">${en.includes(g.cap)?"✓":"○"} ${g.cap}</div>${tools}`;
+  }).join("");
+  dBody.innerHTML = `<div class="paper"><div class="doc-h"><span>工具箱 · ${tb.name||mid}</span><span>能力 ${ (inst.capsEnabled||[]).length }/${(tb.caps||[]).length } 启用</span></div><div class="md">
+    ${groups}
+    <p class="msg">勾选能力 → 生成 <code>set-module caps</code> / <code>insert-tool</code> overlay patch（R6 §六：编排是运行时事实，不直接改 flow.json）。patch 需经人确认后由 flow_overlay 落盘。</p></div></div>`;
+  flashDoc(); dBody.scrollTop=0;
+}
+
+/* R6 · 连接件说明页：模块间 auto/manual 两模式；manual 挂人（flow_gate pass/reject）；reject=重跑上游模块 */
+function linkPaper(n){
+  const m=nodes[n]||{}, nsR=RS.nodes[n]||{};
+  const links=(EFF&&EFF.links)||[];
+  const link=links.find(l=>l.id===n)||{fromModule:"?",toModule:"?",mode:m.link_mode||"auto"};
+  const upR6=(EFF&&EFF.r6)||{}; const mods=upR6.modules||[];
+  const upName=(mods.find(x=>x.id===link.fromModule)||{}).name||link.fromModule;
+  const downName=(mods.find(x=>x.id===link.toModule)||{}).name||link.toModule;
+  const manual=link.mode==="manual";
+  return `<div class="paper" style="padding:26px 34px 40px"><div class="doc-h"><span>模块连接件</span><span>${n}</span></div><div class="md">
+    <div class="kv">
+      <span class="k">语义</span><span class="v"><b>模块间连接件</b>（<code>gate_role=link</code>）——${upName} 的产物交由 ${downName} 继续加工的放行口</span>
+      <span class="k">模式</span><span class="v">${manual?"<b>manual（待人工批准）</b>：挂起等人 flow_gate pass/reject":"<b>auto（自动批准）</b>：断言与上游全 done 即自动放行，journal 留痕"}</span>
+      <span class="k">上游模块</span><span class="v">${upName} <span class="msg">(${link.fromModule})</span></span>
+      <span class="k">放行去向</span><span class="v">${downName} <span class="msg">(${link.toModule})</span></span>
+      <span class="k">驳回语义</span><span class="v">reject = <b>重跑上游模块</b>（整个 ${upName} 全部节点失效重算）——不是单节点打回</span>
+      <span class="k">本轮状态</span><span class="v">${ST_ZH[st(n)]} · 第 ${(nsR.round||1)} 轮${nsR.verdict?` · 裁决 ${zhVerdict(nsR.verdict)}`:""}${RS.lastRejectReason?` ｜ 打回原因：${RS.lastRejectReason}`:""}</span>
+    </div>
+    <p class="msg">模块内部无门无打回（R6 §四）：质量由各 tool 的 asserts/config 承担；模块之间的信任由本连接件表达。</p></div></div>`;
 }
 function loopPaper(n){
   const stg=(flow.stages||[]).find(x=>x.gate===n);

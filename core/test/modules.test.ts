@@ -134,7 +134,7 @@ describe("R6 · 模块展开器（expandFlow3）", () => {
     expect(es.some((e: any) => e.from === "m1.foreshadow" && e.to === "m1.breakdown")).toBe(true);
     // adds 落到派生节点：断言 + 知识
     expect(r.flow.graph.nodes["m1.foreshadow"].asserts).toContain("AE-FORESHADOW-CLOSE");
-    expect(r.flow.graph.nodes["m1.foreshadow"].kb).toContain("kb/craft/foreshadow");
+    expect(r.flow.graph.nodes["m1.foreshadow"].knowledge).toContain("kb/craft/foreshadow");
   });
 
   it("requires 剪枝：前置缺失报错（不静默丢）", () => {
