@@ -373,6 +373,385 @@
       "round": 1,
       "sha1": "e7fceba2b55d",
       "ts": "2026-09-18T19:37:11.000Z"
+    },
+    {
+      "path": "02-编剧/structure-design.md",
+      "node": "m2.structure-design",
+      "round": 3,
+      "producer": "host-submit",
+      "inputs": {
+        "01-选题/material-dissect.md": "d9d45d73b786"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "403 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "6099051f45ec",
+      "ts": "2026-09-18T20:14:31.596Z"
+    },
+    {
+      "path": "02-编剧/plot-choreographer.md",
+      "node": "m2.plot-choreographer",
+      "round": 3,
+      "producer": "host-submit",
+      "inputs": {
+        "02-编剧/structure-design.md": "6099051f45ec"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "822 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "AE-CURVE-STALL",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-CURVE-TYPE",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-CUSHION",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-DESERT",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-END-MECH",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-REV-MIDPOINT",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-REV-SETUP",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "97b7f25d3577",
+      "ts": "2026-09-18T20:14:35.116Z"
+    },
+    {
+      "path": "02-编剧/subplot-weave.md",
+      "node": "m2.subplot-weave",
+      "round": 3,
+      "producer": "host-submit",
+      "inputs": {
+        "02-编剧/plot-choreographer.md": "97b7f25d3577"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "593 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "1d914f1f7b4f",
+      "ts": "2026-09-18T20:14:38.623Z"
+    },
+    {
+      "path": "02-编剧/novel-bible.md",
+      "node": "m2.novel-bible",
+      "round": 3,
+      "producer": "host-submit",
+      "inputs": {
+        "02-编剧/subplot-weave.md": "1d914f1f7b4f"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "573 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "24a3dc0b644a",
+      "ts": "2026-09-18T20:14:41.619Z"
+    },
+    {
+      "path": "02-编剧/foreshadow-plant.md",
+      "node": "m2.foreshadow-plant",
+      "round": 3,
+      "producer": "host-submit",
+      "inputs": {
+        "02-编剧/novel-bible.md": "24a3dc0b644a"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "592 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "AE-CONT-FORESHADOW",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "539b4d219663",
+      "ts": "2026-09-18T20:14:44.193Z"
+    },
+    {
+      "path": "02-编剧/scene-breakdown.md",
+      "node": "m2.scene-breakdown",
+      "round": 3,
+      "producer": "host-submit",
+      "inputs": {
+        "02-编剧/plot-choreographer.md": "97b7f25d3577",
+        "02-编剧/foreshadow-plant.md": "539b4d219663"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "537 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "8109b4a55581",
+      "ts": "2026-09-18T20:14:46.825Z"
+    },
+    {
+      "path": "03-写作/layer-voices.md",
+      "node": "m3.layer-voices",
+      "round": 3,
+      "producer": "host-submit",
+      "inputs": {
+        "02-编剧/scene-breakdown.md": "8109b4a55581"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "582 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "26bf722bb2a7",
+      "ts": "2026-09-18T20:14:51.735Z"
+    },
+    {
+      "path": "03-写作/layer-scenes.md",
+      "node": "m3.layer-scenes",
+      "round": 3,
+      "producer": "host-submit",
+      "inputs": {
+        "03-写作/layer-voices.md": "26bf722bb2a7"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "470 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "360725c3c320",
+      "ts": "2026-09-18T20:14:54.269Z"
+    },
+    {
+      "path": "03-写作/layer-canon.md",
+      "node": "m3.layer-canon",
+      "round": 3,
+      "producer": "host-submit",
+      "inputs": {
+        "03-写作/layer-scenes.md": "360725c3c320"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "427 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "3cd1e091c666",
+      "ts": "2026-09-18T20:14:56.850Z"
+    },
+    {
+      "path": "03-写作/prose-assembler.md",
+      "node": "m3.prose-assembler",
+      "round": 3,
+      "producer": "host-submit",
+      "inputs": {
+        "03-写作/layer-canon.md": "3cd1e091c666"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1395 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "AE-PROSE-NOTBUT",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-PROSE-RHYTHM",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-PROSE-SLOP",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-PROSE-TRIPLET",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-WNF-HOOK",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "699eaf8fc17f",
+      "ts": "2026-09-18T20:14:59.774Z"
+    },
+    {
+      "path": "03-写作/novel-deai.md",
+      "node": "m3.novel-deai",
+      "round": 3,
+      "producer": "host-submit",
+      "inputs": {
+        "03-写作/prose-assembler.md": "699eaf8fc17f"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1371 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "15c10210916f",
+      "ts": "2026-09-18T20:17:06.073Z"
+    },
+    {
+      "path": "04-交付/export-doc.docx",
+      "node": "m4.export-doc",
+      "producer": "script:export-doc.py",
+      "inputs": {},
+      "round": 1,
+      "sha1": "64e8d60358a7",
+      "ts": "2026-09-18T20:17:13.433Z"
+    },
+    {
+      "path": "03-写作/novel-deai.md",
+      "node": "m3.novel-deai",
+      "round": 5,
+      "producer": "host-submit",
+      "inputs": {
+        "03-写作/prose-assembler.md": "699eaf8fc17f"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1371 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "15c10210916f",
+      "ts": "2026-09-18T20:19:54.652Z"
+    },
+    {
+      "path": "04-交付/export-doc.docx",
+      "node": "m4.export-doc",
+      "producer": "script:export-doc.py",
+      "inputs": {},
+      "round": 1,
+      "sha1": "72dbb12c00e2",
+      "ts": "2026-09-18T20:20:09.564Z"
+    },
+    {
+      "path": "03-写作/novel-deai.md",
+      "node": "m3.novel-deai",
+      "round": 7,
+      "producer": "host-submit",
+      "inputs": {
+        "03-写作/prose-assembler.md": "699eaf8fc17f"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1371 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "15c10210916f",
+      "ts": "2026-09-18T20:25:16.974Z"
+    },
+    {
+      "path": "04-交付/export-doc.docx",
+      "node": "m4.export-doc",
+      "producer": "script:export-doc.py",
+      "inputs": {},
+      "round": 1,
+      "sha1": "0fb25636f3be",
+      "ts": "2026-09-18T20:25:26.321Z"
     }
   ]
 }

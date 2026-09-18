@@ -1,7 +1,7 @@
 {
   "format": "metrics-summary@1",
   "runId": "run-mu7d1iqy-xoqa2d",
-  "events": 33,
+  "events": 42,
   "byNode": {
     "m1.find-trope": {
       "nodeId": "m1.find-trope",
@@ -276,26 +276,26 @@
       "ctxOffered": 16,
       "ctxUsed": 12,
       "hitRate": 0.75,
-      "consumedBy": 1,
+      "consumedBy": 3,
       "cost": 0.000001,
-      "efficiency": 1000000,
+      "efficiency": 3000000,
       "verdicts": [],
       "kit": "prose",
       "op": "prose-assembler"
     },
     "m3.novel-deai": {
       "nodeId": "m3.novel-deai",
-      "runs": 2,
-      "submits": 1,
+      "runs": 4,
+      "submits": 3,
       "tokensIn": 0,
       "tokensOut": 0,
       "latencyMs": 0,
-      "assertPass": 2,
+      "assertPass": 6,
       "assertBlock": 0,
       "retries": 0,
-      "ctxOffered": 14,
-      "ctxUsed": 3,
-      "hitRate": 0.21428571428571427,
+      "ctxOffered": 28,
+      "ctxUsed": 9,
+      "hitRate": 0.32142857142857145,
       "consumedBy": 0,
       "cost": 0.000001,
       "efficiency": 0,
@@ -320,13 +320,15 @@
       "cost": 0.000001,
       "efficiency": 0,
       "verdicts": [
+        "pass",
+        "pass",
         "pass"
       ]
     },
     "m4.export-doc": {
       "nodeId": "m4.export-doc",
       "runs": 0,
-      "submits": 1,
+      "submits": 4,
       "tokensIn": 0,
       "tokensOut": 0,
       "latencyMs": 0,
@@ -340,6 +342,9 @@
       "cost": 0.000001,
       "efficiency": 0,
       "verdicts": [
+        "pass",
+        "pass",
+        "pass",
         "pass"
       ],
       "kit": "delivery",
@@ -615,9 +620,9 @@
       "ctxOffered": 16,
       "ctxUsed": 12,
       "hitRate": 0.75,
-      "consumedBy": 1,
+      "consumedBy": 3,
       "cost": 0.000001,
-      "efficiency": 1000000,
+      "efficiency": 3000000,
       "verdicts": [],
       "nodes": [
         "m3.prose-assembler"
@@ -627,17 +632,17 @@
       "nodeId": "prose.novel-deai",
       "kit": "prose",
       "op": "novel-deai",
-      "runs": 2,
-      "submits": 1,
+      "runs": 4,
+      "submits": 3,
       "tokensIn": 0,
       "tokensOut": 0,
       "latencyMs": 0,
-      "assertPass": 2,
+      "assertPass": 6,
       "assertBlock": 0,
       "retries": 0,
-      "ctxOffered": 14,
-      "ctxUsed": 3,
-      "hitRate": 0.21428571428571427,
+      "ctxOffered": 28,
+      "ctxUsed": 9,
+      "hitRate": 0.32142857142857145,
       "consumedBy": 0,
       "cost": 0.000001,
       "efficiency": 0,
@@ -651,7 +656,7 @@
       "kit": "delivery",
       "op": "export-doc",
       "runs": 0,
-      "submits": 1,
+      "submits": 4,
       "tokensIn": 0,
       "tokensOut": 0,
       "latencyMs": 0,
@@ -679,36 +684,30 @@
     },
     {
       "id": "kb/aesthetic/naturalness-zh",
-      "offered": 2,
+      "offered": 4,
       "used": 0,
       "hitRate": 0
     },
     {
       "id": "kb/deconstruct/style-learning",
+      "offered": 7,
+      "used": 1,
+      "hitRate": 0.14285714285714285
+    },
+    {
+      "id": "kb/aesthetic/metaphor-zh",
       "offered": 5,
       "used": 1,
       "hitRate": 0.2
     },
     {
-      "id": "kb/aesthetic/metaphor-zh",
-      "offered": 3,
-      "used": 1,
-      "hitRate": 0.3333333333333333
+      "id": "kb/aesthetic/character",
+      "offered": 8,
+      "used": 3,
+      "hitRate": 0.375
     },
     {
       "id": "kb/trope/liufang-zhongtian",
-      "offered": 2,
-      "used": 1,
-      "hitRate": 0.5
-    },
-    {
-      "id": "kb/aesthetic/character",
-      "offered": 6,
-      "used": 3,
-      "hitRate": 0.5
-    },
-    {
-      "id": "03-写作/prose-assembler.md",
       "offered": 2,
       "used": 1,
       "hitRate": 0.5
@@ -726,16 +725,22 @@
       "hitRate": 0.6666666666666666
     },
     {
-      "id": "kb/aesthetic/ai-trace",
+      "id": "03-写作/prose-assembler.md",
       "offered": 4,
       "used": 3,
       "hitRate": 0.75
     },
     {
+      "id": "kb/aesthetic/ai-trace",
+      "offered": 6,
+      "used": 5,
+      "hitRate": 0.8333333333333334
+    },
+    {
       "id": "kb/aesthetic/slop-list",
-      "offered": 4,
-      "used": 3,
-      "hitRate": 0.75
+      "offered": 6,
+      "used": 5,
+      "hitRate": 0.8333333333333334
     },
     {
       "id": "kb/trope/chongsheng-fuchou",
@@ -966,13 +971,13 @@
     {
       "nodeId": "itb-m4.export-doc",
       "phase": "gate",
-      "passes": 1,
+      "passes": 3,
       "sendBacks": 0,
-      "samples": 1
+      "samples": 3
     }
   ],
   "window": {
     "from": "2026-09-18T19:37:29.411Z",
-    "to": "2026-09-18T20:06:55.367Z"
+    "to": "2026-09-18T20:25:04.560Z"
   }
 }

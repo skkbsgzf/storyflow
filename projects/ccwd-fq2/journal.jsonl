@@ -80,3 +80,37 @@
 {"ts":"2026-09-18T20:06:55.087Z","runId":"run-mu7d1iqy-xoqa2d","event":"verdict","actor":"kernel","nodeId":"itb-m4.export-doc","detail":"pass：预授权自动审批"}
 {"ts":"2026-09-18T20:06:55.367Z","runId":"run-mu7d1iqy-xoqa2d","event":"advance","actor":"kernel","nodeId":"m4.export-doc","detail":"04-交付/export-doc.docx","refs":["04-交付/export-doc.docx"]}
 {"ts":"2026-09-18T20:06:55.367Z","runId":"run-mu7d1iqy-xoqa2d","event":"run-end","actor":"kernel","detail":"全部节点 done"}
+{"ts":"2026-09-18T20:12:38.747Z","runId":"run-mu7d1iqy-xoqa2d","event":"stale","actor":"kernel","nodeId":"m4.export-doc","detail":"rerun 级联失效"}
+{"ts":"2026-09-18T20:12:38.747Z","runId":"run-mu7d1iqy-xoqa2d","event":"rerun","actor":"kernel","nodeId":"m4.export-doc","detail":"scope 1 节点","refs":["m4.export-doc"]}
+{"ts":"2026-09-18T20:12:39.004Z","runId":"run-mu7d1iqy-xoqa2d","event":"advance","actor":"kernel","nodeId":"m4.export-doc","detail":"04-交付/export-doc.docx","refs":["04-交付/export-doc.docx"]}
+{"ts":"2026-09-18T20:12:39.005Z","runId":"run-mu7d1iqy-xoqa2d","event":"run-end","actor":"kernel","detail":"全部节点 done"}
+{"ts":"2026-09-18T20:19:33.237Z","runId":"run-mu7d1iqy-xoqa2d","event":"stale","actor":"kernel","nodeId":"m3.novel-deai","detail":"rerun 级联失效"}
+{"ts":"2026-09-18T20:19:33.238Z","runId":"run-mu7d1iqy-xoqa2d","event":"stale","actor":"kernel","nodeId":"m4.link","detail":"rerun 级联失效"}
+{"ts":"2026-09-18T20:19:33.239Z","runId":"run-mu7d1iqy-xoqa2d","event":"stale","actor":"kernel","nodeId":"itb-m4.export-doc","detail":"rerun 级联失效"}
+{"ts":"2026-09-18T20:19:33.239Z","runId":"run-mu7d1iqy-xoqa2d","event":"stale","actor":"kernel","nodeId":"m4.export-doc","detail":"rerun 级联失效"}
+{"ts":"2026-09-18T20:19:33.239Z","runId":"run-mu7d1iqy-xoqa2d","event":"rerun","actor":"kernel","nodeId":"m3.novel-deai","detail":"scope 4 节点","refs":["m3.novel-deai","m4.link","itb-m4.export-doc","m4.export-doc"]}
+{"ts":"2026-09-18T20:19:33.250Z","runId":"run-mu7d1iqy-xoqa2d","event":"advance","actor":"kernel","nodeId":"m3.novel-deai","detail":"任务包产出（skill=novel-deai，上下文 1 件）"}
+{"ts":"2026-09-18T20:19:33.250Z","runId":"run-mu7d1iqy-xoqa2d","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m3.novel-deai（并行）"}
+{"ts":"2026-09-18T20:19:34.451Z","runId":"run-mu7d1iqy-xoqa2d","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m3.novel-deai（并行）"}
+{"ts":"2026-09-18T20:19:35.722Z","runId":"run-mu7d1iqy-xoqa2d","event":"submit","actor":"kernel","nodeId":"m3.novel-deai","detail":"03-写作/novel-deai.md","refs":["03-写作/novel-deai.md"]}
+{"ts":"2026-09-18T20:19:35.723Z","runId":"run-mu7d1iqy-xoqa2d","event":"snapshot","actor":"kernel","nodeId":"m3.novel-deai","detail":"r4·novel-deai.md","refs":["03-写作/novel-deai.md"]}
+{"ts":"2026-09-18T20:19:35.728Z","runId":"run-mu7d1iqy-xoqa2d","event":"verdict","actor":"kernel","nodeId":"m4.link","detail":"auto-pass（R6 连接件：自动批准）"}
+{"ts":"2026-09-18T20:19:35.729Z","runId":"run-mu7d1iqy-xoqa2d","event":"gate-open","actor":"kernel","nodeId":"itb-m4.export-doc","detail":"跨域交接验收：prose → delivery"}
+{"ts":"2026-09-18T20:19:42.608Z","runId":"run-mu7d1iqy-xoqa2d","event":"verdict","actor":"kernel","nodeId":"itb-m4.export-doc","detail":"pass：预授权自动审批"}
+{"ts":"2026-09-18T20:19:42.909Z","runId":"run-mu7d1iqy-xoqa2d","event":"advance","actor":"kernel","nodeId":"m4.export-doc","detail":"04-交付/export-doc.docx","refs":["04-交付/export-doc.docx"]}
+{"ts":"2026-09-18T20:19:42.910Z","runId":"run-mu7d1iqy-xoqa2d","event":"run-end","actor":"kernel","detail":"全部节点 done"}
+{"ts":"2026-09-18T20:24:59.992Z","runId":"run-mu7d1iqy-xoqa2d","event":"stale","actor":"kernel","nodeId":"m3.novel-deai","detail":"rerun 级联失效"}
+{"ts":"2026-09-18T20:24:59.993Z","runId":"run-mu7d1iqy-xoqa2d","event":"stale","actor":"kernel","nodeId":"m4.link","detail":"rerun 级联失效"}
+{"ts":"2026-09-18T20:24:59.993Z","runId":"run-mu7d1iqy-xoqa2d","event":"stale","actor":"kernel","nodeId":"itb-m4.export-doc","detail":"rerun 级联失效"}
+{"ts":"2026-09-18T20:24:59.993Z","runId":"run-mu7d1iqy-xoqa2d","event":"stale","actor":"kernel","nodeId":"m4.export-doc","detail":"rerun 级联失效"}
+{"ts":"2026-09-18T20:24:59.994Z","runId":"run-mu7d1iqy-xoqa2d","event":"rerun","actor":"kernel","nodeId":"m3.novel-deai","detail":"scope 4 节点","refs":["m3.novel-deai","m4.link","itb-m4.export-doc","m4.export-doc"]}
+{"ts":"2026-09-18T20:25:00.006Z","runId":"run-mu7d1iqy-xoqa2d","event":"advance","actor":"kernel","nodeId":"m3.novel-deai","detail":"任务包产出（skill=novel-deai，上下文 1 件）"}
+{"ts":"2026-09-18T20:25:00.007Z","runId":"run-mu7d1iqy-xoqa2d","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m3.novel-deai（并行）"}
+{"ts":"2026-09-18T20:25:01.265Z","runId":"run-mu7d1iqy-xoqa2d","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m3.novel-deai（并行）"}
+{"ts":"2026-09-18T20:25:02.688Z","runId":"run-mu7d1iqy-xoqa2d","event":"submit","actor":"kernel","nodeId":"m3.novel-deai","detail":"03-写作/novel-deai.md","refs":["03-写作/novel-deai.md"]}
+{"ts":"2026-09-18T20:25:02.689Z","runId":"run-mu7d1iqy-xoqa2d","event":"snapshot","actor":"kernel","nodeId":"m3.novel-deai","detail":"r6·novel-deai.md","refs":["03-写作/novel-deai.md"]}
+{"ts":"2026-09-18T20:25:02.697Z","runId":"run-mu7d1iqy-xoqa2d","event":"verdict","actor":"kernel","nodeId":"m4.link","detail":"auto-pass（R6 连接件：自动批准）"}
+{"ts":"2026-09-18T20:25:02.698Z","runId":"run-mu7d1iqy-xoqa2d","event":"gate-open","actor":"kernel","nodeId":"itb-m4.export-doc","detail":"跨域交接验收：prose → delivery"}
+{"ts":"2026-09-18T20:25:04.173Z","runId":"run-mu7d1iqy-xoqa2d","event":"verdict","actor":"kernel","nodeId":"itb-m4.export-doc","detail":"pass：预授权自动审批"}
+{"ts":"2026-09-18T20:25:04.561Z","runId":"run-mu7d1iqy-xoqa2d","event":"advance","actor":"kernel","nodeId":"m4.export-doc","detail":"04-交付/export-doc.docx","refs":["04-交付/export-doc.docx"]}
+{"ts":"2026-09-18T20:25:04.562Z","runId":"run-mu7d1iqy-xoqa2d","event":"run-end","actor":"kernel","detail":"全部节点 done"}

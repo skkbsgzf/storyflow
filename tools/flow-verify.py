@@ -89,6 +89,17 @@ def main(project):
             end = text.find("\n---", 3)
             if end != -1:
                 h_body = hashlib.sha1(text[end + 4:].lstrip().encode("utf-8")).hexdigest()[:12]
+        # 原始字节正文哈希：read_text 的 universal-newlines 会把 \r\n 静默翻成 \n，与内核按原始
+        # 字节算的 contentSha12 恒等不上（ccwd-fq2 假红实证）——补一个保 \r 的正文口径。
+        h_body_raw = None
+        if h_body is not None:
+            try:
+                t_raw = disk.read_bytes().decode("utf-8", errors="replace")
+                end = t_raw.find("\n---", 3)
+                if end != -1:
+                    h_body_raw = hashlib.sha1(t_raw[end + 4:].lstrip().encode("utf-8")).hexdigest()[:12]
+            except OSError:
+                pass
 
         kts = max((a["ts"] for a in reg if a.get("path") == path and a.get("producer") == "host-submit"), default=None)
         sl = [s for s in snaps.get(node, []) if path in s.get("files", {}) and s["files"][path].get("hash")]
@@ -97,7 +108,7 @@ def main(project):
         if latest is None:
             print(f"  [红] {path}（{node}）：从未快照——产物无留档")
             bad += 1
-        elif latest["files"][path]["hash"] not in (h_bytes, h_text, h_body):
+        elif latest["files"][path]["hash"] not in (h_bytes, h_text, h_body, h_body_raw):
             print(f"  [红] {path}（{node}）：磁盘内容 ≠ 最新快照 r{latest['round']}（快照后又被改，未留档）")
             bad += 1
         elif kts is None:

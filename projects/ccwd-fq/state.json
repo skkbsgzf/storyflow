@@ -10,6 +10,7 @@
       "m1.find-trope",
       "m1.material-dissect",
       "m2.link",
+      "itb-m2.structure-design",
       "m2.structure-design",
       "m2.plot-choreographer",
       "m2.subplot-weave",
@@ -17,12 +18,14 @@
       "m2.foreshadow-plant",
       "m2.scene-breakdown",
       "m3.link",
+      "itb-m3.layer-voices",
       "m3.layer-voices",
       "m3.layer-scenes",
       "m3.layer-canon",
       "m3.prose-assembler",
       "m3.novel-deai",
       "m4.link",
+      "itb-m4.export-doc",
       "m4.export-doc"
     ]
   },
@@ -41,39 +44,45 @@
     },
     "m2.structure-design": {
       "status": "done",
-      "round": 1,
+      "round": 3,
       "lastArtifact": "02-编剧/structure-design.md",
-      "stale": false
+      "stale": false,
+      "committed": []
     },
     "m2.plot-choreographer": {
       "status": "done",
-      "round": 1,
+      "round": 3,
       "lastArtifact": "02-编剧/plot-choreographer.md",
-      "stale": false
+      "stale": false,
+      "committed": []
     },
     "m2.subplot-weave": {
       "status": "done",
-      "round": 1,
+      "round": 3,
       "lastArtifact": "02-编剧/subplot-weave.md",
-      "stale": false
+      "stale": false,
+      "committed": []
     },
     "m2.novel-bible": {
       "status": "done",
-      "round": 1,
+      "round": 3,
       "lastArtifact": "02-编剧/novel-bible.md",
-      "stale": false
+      "stale": false,
+      "committed": []
     },
     "m2.foreshadow-plant": {
       "status": "done",
-      "round": 1,
+      "round": 3,
       "lastArtifact": "02-编剧/foreshadow-plant.md",
-      "stale": false
+      "stale": false,
+      "committed": []
     },
     "m2.scene-breakdown": {
       "status": "done",
-      "round": 1,
+      "round": 3,
       "lastArtifact": "02-编剧/scene-breakdown.md",
-      "stale": false
+      "stale": false,
+      "committed": []
     },
     "m2.link": {
       "status": "done",
@@ -83,57 +92,85 @@
     },
     "m3.layer-voices": {
       "status": "done",
-      "round": 1,
+      "round": 3,
       "lastArtifact": "03-写作/layer-voices.md",
-      "stale": false
+      "stale": false,
+      "committed": []
     },
     "m3.layer-scenes": {
       "status": "done",
-      "round": 1,
+      "round": 3,
       "lastArtifact": "03-写作/layer-scenes.md",
-      "stale": false
+      "stale": false,
+      "committed": []
     },
     "m3.layer-canon": {
       "status": "done",
-      "round": 1,
+      "round": 3,
       "lastArtifact": "03-写作/layer-canon.md",
-      "stale": false
+      "stale": false,
+      "committed": []
     },
     "m3.prose-assembler": {
       "status": "done",
-      "round": 1,
+      "round": 3,
       "lastArtifact": "03-写作/prose-assembler.md",
-      "stale": false
+      "stale": false,
+      "committed": []
     },
     "m3.novel-deai": {
       "status": "done",
-      "round": 1,
-      "lastArtifact": "03-写作/prose-assembler.md",
-      "stale": false
+      "round": 7,
+      "lastArtifact": "03-写作/novel-deai.md",
+      "stale": false,
+      "committed": []
     },
     "m3.link": {
       "status": "done",
-      "round": 1,
+      "round": 3,
       "verdict": "pass",
-      "stale": false
+      "stale": false,
+      "committed": []
     },
     "m4.export-doc": {
       "status": "done",
-      "round": 1,
+      "round": 7,
       "stale": false,
-      "lastArtifact": "对外交付/prose-assembler.docx"
+      "lastArtifact": "04-交付/export-doc.docx",
+      "committed": []
     },
     "m4.link": {
+      "status": "done",
+      "round": 7,
+      "verdict": "pass",
+      "stale": false,
+      "committed": []
+    },
+    "itb-m2.structure-design": {
       "status": "done",
       "round": 1,
       "verdict": "pass",
       "stale": false
+    },
+    "itb-m3.layer-voices": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "itb-m4.export-doc": {
+      "status": "done",
+      "round": 5,
+      "verdict": "pass",
+      "stale": false,
+      "committed": []
     }
   },
   "gate": {
     "verdict": "pass",
     "node": "itb-m4.export-doc",
-    "at": "2026-09-18T18:01:52.691Z"
+    "at": "2026-09-18T20:25:26.029Z",
+    "note": "预授权自动审批"
   },
   "inputs": {
     "project": "ccwd-fq",
@@ -148,11 +185,12 @@
     "AB测试": false
   },
   "comments": {},
-  "overlayHash": "r6-2a4dbc91",
+  "overlayHash": "ee049bfa",
   "policy": {
-    "link_default": "auto",
+    "kit_boundary": "always",
+    "gate_mode": "auto",
     "adapt": "propose"
   },
-  "planHash": "ed5369c5",
+  "planHash": "89c9a42e",
   "lastRejectReason": ""
 }

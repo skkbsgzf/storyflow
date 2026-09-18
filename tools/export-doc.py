@@ -26,6 +26,29 @@ def proj_dir(name):
     return ROOT / "projects" / name
 
 
+def snapshot_after_export(node, flow, out, note):
+    """交付即快照（铁律 7）：源 md + 交付 docx 一并留档；失败可见不阻塞。"""
+    if not node:
+        return
+    try:
+        rel = SRC.resolve().relative_to(ROOT)
+        project = rel.parts[1] if rel.parts[0] == "projects" else None
+        if not project:
+            print("snapshot: 跳过（源文件不在 projects/<id>/ 下）")
+            return
+        import snapshot as _snap
+        proj_root = proj_dir(project)
+        fmap = {SRC.resolve().relative_to(proj_root).as_posix(): str(SRC.resolve())}
+        if out.resolve().exists() and out.resolve().is_relative_to(proj_root):
+            fmap[out.resolve().relative_to(proj_root).as_posix()] = str(out.resolve())
+        if ideas_path and Path(ideas_path).exists():
+            fmap[Path(ideas_path).resolve().relative_to(proj_root).as_posix()] = str(ideas_path.resolve())
+        entry = _snap.capture(project, node, fmap, note=note, flow=flow)
+        print(f"snapshot: {node} r{entry['round']}（{len(entry['files'])} 文件）")
+    except Exception as e:  # 快照失败不阻塞交付，但要可见
+        print(f"snapshot: 失败（不阻塞）：{e}")
+
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 ap = argparse.ArgumentParser()
@@ -70,6 +93,13 @@ for em in re.finditer(r"^## (第[一二三四五六七八九十]+集《([^」》
     eps.append({"head": em.group(1), "title": em.group(2), "beats": beats})
 
 # ---------- --plain 通用模式：非拍级产物（报告/方案）直接 md→docx ----------
+# 自动降级：源文档解析不出「第X集」B 拍结构（如小说「第X章」、报告）且未显式要求
+# 集数校验时，批注壳版式对它毫无意义——自动转 plain，禁止静默产出空壳 docx
+# （事故：novel 终稿导出只剩 256 字符批注说明，正文零字符）。
+if not eps and not args.plain and not args.expect_episodes:
+    print("[export-doc] 未解析出「第X集」B 拍结构——自动转 --plain 通用模式（小说/报告类）")
+    args.plain = True
+
 if args.plain:
     problems = []
     for i, ln in enumerate(text.splitlines(), 1):
@@ -189,6 +219,7 @@ if args.plain:
     OUT.parent.mkdir(parents=True, exist_ok=True)
     doc.save(str(OUT))
     print(f"written (plain): {OUT} ({OUT.stat().st_size//1024} KB)")
+    snapshot_after_export(args.node, args.flow, OUT, note=f"export-doc 自动快照（plain）→ {OUT.name}")
     sys.exit(0)
 
 # ---------- M0 硬断言（底座规格 §2.4）----------
@@ -292,23 +323,7 @@ doc.save(str(OUT))
 tag = "（⚠ 断言未过，--allow-lossy 降级导出）" if problems else ""
 print(f"written: {OUT} ({OUT.stat().st_size//1024} KB, {parsed} beats / {len(eps)} eps){tag}")
 
-# ---------- 自动快照（文本产物；docx 为派生物不入快照）----------
-if args.node and not problems:
-    try:
-        rel = SRC.resolve().relative_to(ROOT)
-        project = rel.parts[1] if rel.parts[0] == "projects" else None
-        if project:
-            import json as _json
-            import snapshot
-            proj_root = proj_dir(project)
-            fmap = {SRC.resolve().relative_to(proj_root).as_posix(): str(SRC.resolve())}
-            if ideas_path and Path(ideas_path).exists():
-                fmap[Path(ideas_path).resolve().relative_to(proj_root).as_posix()] = str(ideas_path.resolve())
-            entry = snapshot.capture(project, args.node, fmap,
-                                     note=f"export-doc 自动快照：{parsed} beats / {len(eps)} eps → {OUT.name}",
-                                     flow=args.flow)
-            print(f"snapshot: {args.node} r{entry['round']}（{len(entry['files'])} 文件）")
-        else:
-            print("snapshot: 跳过（源文件不在 projects/<id>/ 下）")
-    except Exception as e:  # 快照失败不阻塞交付，但要可见
-        print(f"snapshot: 失败（不阻塞）：{e}")
+# ---------- 自动快照（源 md + 交付 docx；铁律 7：交付即快照，flow-verify 红档检查项）----------
+if not problems:
+    snapshot_after_export(args.node, args.flow, OUT,
+                          note=f"export-doc 自动快照：{parsed} beats / {len(eps)} eps → {OUT.name}")

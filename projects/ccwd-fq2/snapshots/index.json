@@ -178,6 +178,28 @@
             "path": "snapshots/m3.novel-deai/r1/03-写作/novel-deai.md"
           }
         }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-18T20:19:35.621Z",
+        "note": "submit r4·novel-deai.md",
+        "files": {
+          "03-写作/novel-deai.md": {
+            "hash": "6443ce82da1f",
+            "path": "snapshots/m3.novel-deai/r2/03-写作/novel-deai.md"
+          }
+        }
+      },
+      {
+        "round": 3,
+        "ts": "2026-09-18T20:25:02.562Z",
+        "note": "submit r6·novel-deai.md",
+        "files": {
+          "03-写作/novel-deai.md": {
+            "hash": "6443ce82da1f",
+            "path": "snapshots/m3.novel-deai/r3/03-写作/novel-deai.md"
+          }
+        }
       }
     ],
     "m4.export-doc": [
@@ -189,6 +211,38 @@
           "03-写作/novel-deai.md": {
             "hash": "0b4602cdf0c8",
             "path": "snapshots/m4.export-doc/r1/03-写作/novel-deai.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-19 04:23",
+        "note": "export-doc 自动快照（plain）→ export-doc.docx",
+        "files": {
+          "03-写作/novel-deai.md": {
+            "hash": "f76c5452c6fe",
+            "path": "snapshots/m4.export-doc/r2/03-写作/novel-deai.md"
+          },
+          "04-交付/export-doc.docx": {
+            "hash": "9aaa550c3b07",
+            "path": "snapshots/m4.export-doc/r2/04-交付/export-doc.docx",
+            "binary": true
+          }
+        }
+      },
+      {
+        "round": 3,
+        "ts": "2026-09-19 04:25",
+        "note": "export-doc 自动快照（plain）→ export-doc.docx",
+        "files": {
+          "03-写作/novel-deai.md": {
+            "hash": "f76c5452c6fe",
+            "path": "snapshots/m4.export-doc/r3/03-写作/novel-deai.md"
+          },
+          "04-交付/export-doc.docx": {
+            "hash": "3716f093babf",
+            "path": "snapshots/m4.export-doc/r3/04-交付/export-doc.docx",
+            "binary": true
           }
         }
       }

@@ -399,9 +399,6 @@
       "output": "03-写作/prose-assembler.md",
       "skill": "prose-assembler",
       "asserts": [
-        "AE-CONT-FORESHADOW",
-        "AE-CONT-ITEM",
-        "AE-CONT-KNOW",
         "AE-PROSE-NOTBUT",
         "AE-PROSE-RHYTHM",
         "AE-PROSE-SLOP",

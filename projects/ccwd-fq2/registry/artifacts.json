@@ -435,6 +435,77 @@
       "round": 1,
       "sha1": "f5882beb83e3",
       "ts": "2026-09-18T20:06:55.365Z"
+    },
+    {
+      "path": "04-交付/export-doc.docx",
+      "node": "m4.export-doc",
+      "producer": "script:export-doc.py",
+      "inputs": {},
+      "round": 1,
+      "sha1": "1bfcfbef902d",
+      "ts": "2026-09-18T20:12:39.002Z"
+    },
+    {
+      "path": "03-写作/novel-deai.md",
+      "node": "m3.novel-deai",
+      "round": 4,
+      "producer": "host-submit",
+      "inputs": {
+        "03-写作/prose-assembler.md": "f5012ee94cc3"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "6111 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "6443ce82da1f",
+      "ts": "2026-09-18T20:19:35.618Z"
+    },
+    {
+      "path": "04-交付/export-doc.docx",
+      "node": "m4.export-doc",
+      "producer": "script:export-doc.py",
+      "inputs": {},
+      "round": 1,
+      "sha1": "12ad202ce173",
+      "ts": "2026-09-18T20:19:42.907Z"
+    },
+    {
+      "path": "03-写作/novel-deai.md",
+      "node": "m3.novel-deai",
+      "round": 6,
+      "producer": "host-submit",
+      "inputs": {
+        "03-写作/prose-assembler.md": "f5012ee94cc3"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "6111 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "6443ce82da1f",
+      "ts": "2026-09-18T20:25:02.560Z"
+    },
+    {
+      "path": "04-交付/export-doc.docx",
+      "node": "m4.export-doc",
+      "producer": "script:export-doc.py",
+      "inputs": {},
+      "round": 1,
+      "sha1": "0981f621a525",
+      "ts": "2026-09-18T20:25:04.558Z"
     }
   ]
 }

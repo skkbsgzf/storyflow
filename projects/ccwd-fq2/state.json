@@ -111,7 +111,7 @@
     },
     "m3.novel-deai": {
       "status": "done",
-      "round": 2,
+      "round": 6,
       "stale": false,
       "committed": [],
       "lastArtifact": "03-写作/novel-deai.md"
@@ -124,15 +124,17 @@
     },
     "m4.export-doc": {
       "status": "done",
-      "round": 1,
+      "round": 7,
       "stale": false,
-      "lastArtifact": "04-交付/export-doc.docx"
+      "lastArtifact": "04-交付/export-doc.docx",
+      "committed": []
     },
     "m4.link": {
       "status": "done",
-      "round": 1,
+      "round": 5,
       "verdict": "pass",
-      "stale": false
+      "stale": false,
+      "committed": []
     },
     "itb-m2.structure-design": {
       "status": "done",
@@ -148,15 +150,16 @@
     },
     "itb-m4.export-doc": {
       "status": "done",
-      "round": 1,
+      "round": 5,
       "verdict": "pass",
-      "stale": false
+      "stale": false,
+      "committed": []
     }
   },
   "gate": {
     "verdict": "pass",
     "node": "itb-m4.export-doc",
-    "at": "2026-09-18T20:06:55.086Z",
+    "at": "2026-09-18T20:25:04.171Z",
     "note": "预授权自动审批"
   },
   "inputs": {
