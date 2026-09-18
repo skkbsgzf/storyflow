@@ -1,0 +1,57 @@
+{
+  "snapshots": {
+    "read": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T16:26:36.158Z",
+        "note": "submit r1·拆解件-剧情设计.md",
+        "files": {
+          "内部/稿本/拆解件-剧情设计.md": {
+            "hash": "e8dd75c1988a",
+            "path": "snapshots/read/r1/内部/稿本/拆解件-剧情设计.md"
+          }
+        }
+      }
+    ],
+    "refine": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T16:27:37.236Z",
+        "note": "submit r1·拆解件-细化.md",
+        "files": {
+          "内部/稿本/拆解件-细化.md": {
+            "hash": "53705f059bae",
+            "path": "snapshots/refine/r1/内部/稿本/拆解件-细化.md"
+          }
+        }
+      }
+    ],
+    "chars": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T16:28:27.880Z",
+        "note": "submit r1·拆解件-人设.md",
+        "files": {
+          "内部/稿本/拆解件-人设.md": {
+            "hash": "47559c06e330",
+            "path": "snapshots/chars/r1/内部/稿本/拆解件-人设.md"
+          }
+        }
+      }
+    ],
+    "style": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T16:29:12.381Z",
+        "note": "submit r1·拆解件-文风.md",
+        "files": {
+          "内部/稿本/拆解件-文风.md": {
+            "hash": "d2195c2f943a",
+            "path": "snapshots/style/r1/内部/稿本/拆解件-文风.md"
+          }
+        }
+      }
+    ]
+  },
+  "inputs": {}
+}

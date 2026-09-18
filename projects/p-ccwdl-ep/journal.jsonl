@@ -1,0 +1,5 @@
+{"ts":"2026-09-17T17:01:52.293Z","runId":"run-mu5s1jj9-jjw2wd","event":"run-start","actor":"kernel","detail":"episode-script@0.1.0-draft 计划 7 节点"}
+{"ts":"2026-09-17T17:01:52.295Z","runId":"run-mu5s1jj9-jjw2wd","event":"note","actor":"kernel:overlay","detail":"生效编排合成：set-policy kit_boundary=off｜实验批：跨域门自动放行 ｜ kit_boundary=off：不派生边界验收（全自动）"}
+{"ts":"2026-09-17T17:01:52.312Z","runId":"run-mu5s1jj9-jjw2wd","event":"advance","actor":"kernel","nodeId":"src","detail":"源步 分集大纲.md"}
+{"ts":"2026-09-17T17:01:52.313Z","runId":"run-mu5s1jj9-jjw2wd","event":"warn","actor":"kernel","nodeId":"ledger","detail":"minitool「continuity_slice」未实现（M1 边界）——节点 ledger 保持未执行，不静默放行"}
+{"ts":"2026-09-17T17:02:01.022Z","runId":"run-mu5s1jj9-jjw2wd","event":"warn","actor":"kernel","nodeId":"ledger","detail":"minitool「continuity_slice」未实现（M1 边界）——节点 ledger 保持未执行，不静默放行"}

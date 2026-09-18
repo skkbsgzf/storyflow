@@ -1,6 +1,11 @@
-"""flow.json -> 图示渲染器（零依赖，确定性）
+"""flow -> 图示渲染器（零依赖，确定性）
 输出：flows/<id>/graph.svg + flows/<id>/graph.mmd（Obsidian/GitHub 可渲染）+ flows/graphs.html（总览）
-布局：最长路径分层 + 层内重心排序，节点按 kind 着色，产物节点描边加粗。
+
+R6（模块化 flow）：
+  flow@3 → 模块序列图：模块卡横向拼接，卡内竖向列骨架工具（modules/<id>/module.json 声明的
+           skeleton.spine，只读声明，**不做节点派生**——展开是内核 modules.ts::expandFlow 的单点职责）；
+           模块缝画连接件（auto 灰虚 / manual 金实+「待人工」）。
+  flow@2（存量）→ 阶段横向带 + 带内节点竖向（与新画布同构的过渡形态；WO-08 转换后此分支消亡）。
 """
 import json, glob, os, re, html
 from pathlib import Path
@@ -15,175 +20,178 @@ KIND_STYLE = {
     "srd":       {"fill": "#2a1616", "stroke": "#a5433a", "text": "#e8a49c"},
 }
 KIND_LABEL = {"novel-txt": "素材", "core": "core·minitool", "agent": "agent·认知步", "srd": "验收门"}
+MODULE_PALETTE = ["#3d7a4f", "#3d5a80", "#e8b33d", "#7d5f8a", "#a5433a", "#3d7a7a", "#8a623d", "#5f3d7a"]
+
 
 def load(flow_path):
     d = json.load(open(flow_path, encoding="utf-8"))
-    nodes, edges = d["graph"]["nodes"], d["graph"]["edges"]
-    return d, nodes, edges
+    if d.get("format") == "flow@3":
+        return d, {}, {}
+    return d, d["graph"]["nodes"], d["graph"]["edges"]
 
-def layers(nodes, edges):
-    # 环边（loop: true）不参与分层（v3 语义：环上边不计）
-    edges = [e for e in edges if not e.get("loop")]
-    ids = list(nodes)
-    preds = {i: [] for i in ids}
-    for e in edges:
-        preds[e["to"]].append(e["from"])
-    # longest-path layering (iterative, graph is a DAG)
-    layer = {}
-    def depth(n, seen=()):
-        if n in layer: return layer[n]
-        if n in seen: return 0
-        p = [depth(x, seen + (n,)) for x in preds[n]]
-        layer[n] = (max(p) + 1) if p else 0
-        return layer[n]
-    for i in ids: depth(i)
-    L = max(layer.values())
-    out = [[] for _ in range(L + 1)]
-    for i in ids: out[layer[i]].append(i)
-    # barycenter ordering sweeps
-    def pos_map():
-        return {n: k for l in out for k, n in enumerate(l)}
-    for _ in range(3):
-        pm = pos_map()
-        for li in range(1, L + 1):
-            out[li].sort(key=lambda n: (sum(pm.get(p, 0) for p in preds[n]) / max(len(preds[n]), 1), n))
-        pm = pos_map()
-        for li in range(L - 1, -1, -1):
-            succs = {n: [e["to"] for e in edges if e["from"] == n] for n in out[li]}
-            out[li].sort(key=lambda n: (sum(pm.get(s, 0) for s in succs[n]) / max(len(succs[n]), 1), n))
-    return out
+
+def module_registry():
+    reg = {}
+    for p in sorted(ROOT.glob("modules/*/module.json")):
+        try:
+            m = json.loads(p.read_text(encoding="utf-8"))
+            reg[m.get("id") or p.parent.name] = m
+        except Exception:
+            continue
+    return reg
+
+
+def esc(s):
+    return html.escape(str(s), quote=True)
+
+
+def render_flow3(d, reg):
+    """flow@3 模块序列图：模块卡横向拼接 + 卡内竖向骨架 + 连接件走缝。"""
+    CARD_W, GAP = 236, 96
+    top, row_h = 64, 34
+    mods = d.get("modules") or []
+    link_default = (d.get("defaults") or {}).get("link") or (d.get("policy") or {}).get("link_default") or "auto"
+    # 卡高 = 骨架工具数（声明级；caps 触发的插件在卡底以「+能力」行提示）
+    def card_rows(inst):
+        m = reg.get(inst.get("module")) or {}
+        spine = (m.get("skeleton") or {}).get("spine") or []
+        extra = [c for c in (inst.get("caps") or [])]
+        return spine, extra
+    cards = []
+    max_h = 0
+    for inst in mods:
+        m = reg.get(inst.get("module")) or {}
+        spine, extra = card_rows(inst)
+        h = top + len(spine) * row_h + (row_h + 10 if extra else 0) + 18
+        max_h = max(max_h, h)
+        cards.append((inst, m, spine, extra, h))
+    width = 40 + len(cards) * (CARD_W + GAP)
+    height = max(240, max_h + 40)
+    out = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" font-family="-apple-system,\'PingFang SC\',\'Microsoft YaHei\',sans-serif">']
+    out.append(f'<rect width="{width}" height="{height}" fill="#0f1115" rx="10"/>')
+    x = 40
+    band_of = {}
+    for i, (inst, m, spine, extra, h) in enumerate(cards):
+        color = MODULE_PALETTE[i % len(MODULE_PALETTE)]
+        link = inst.get("link") or link_default
+        out.append(f'<rect x="{x}" y="24" width="{CARD_W}" height="{h}" rx="12" fill="{color}" fill-opacity="0.08" stroke="{color}" stroke-width="1"/>')
+        caps_n = len(inst.get("caps") or [])
+        caps_all = len(m.get("caps") or [])
+        title = f'{i+1:02d} {m.get("name") or inst.get("module","?")}'
+        sub = f'{inst.get("id","")} · link={link}' + (f' · caps {caps_n}/{caps_all}' if caps_n else '')
+        out.append(f'<text x="{x+12}" y="48" fill="{color}" font-size="13" font-weight="700">{esc(title)}</text>')
+        out.append(f'<text x="{x+12}" y="64" fill="#8b95a8" font-size="9.5">{esc(sub)}{" · iterate" if inst.get("iterate") else ""}</text>')
+        for k, t in enumerate(spine):
+            ty = 92 + k * row_h
+            out.append(f'<rect x="{x+14}" y="{ty-17}" width="{CARD_W-28}" height="26" rx="7" fill="#161a22" stroke="#2a2f3a"/>')
+            dot = f'<circle cx="{x+26}" cy="{ty-4}" r="3.2" fill="{color}"/>'
+            out.append(f'{dot}<text x="{x+36}" y="{ty}" fill="#c9ceda" font-size="10.5">{esc(t)}</text>')
+        if extra:
+            ty = 92 + len(spine) * row_h
+            out.append(f'<text x="{x+14}" y="{ty}" fill="{color}" font-size="10">＋ {esc(" / ".join(extra))}</text>')
+        band_of[inst.get("id")] = (x, x + CARD_W, 24 + h / 2)
+        x += CARD_W + GAP
+    # 连接件：模块缝上，auto 灰虚 / manual 金实 + 徽章
+    pairs = list(zip(mods, mods[1:]))
+    for a, b in pairs:
+        if a["id"] not in band_of or b["id"] not in band_of:
+            continue
+        x1 = band_of[a["id"]][1] + 4
+        x2 = band_of[b["id"]][0] - 4
+        y = band_of[b["id"]][2]
+        link = (b.get("link") or link_default)
+        manual = link == "manual"
+        col = "#b8a464" if manual else "#5a6478"
+        dash = '' if manual else ' stroke-dasharray="6,5"'
+        out.append(f'<path d="M{x1},{y} L{x2},{y}" fill="none" stroke="{col}" stroke-width="{2 if manual else 1.3}"{dash}/>')
+        label = "待人工" if manual else "自动"
+        mx = (x1 + x2) / 2
+        out.append(f'<rect x="{mx-26}" y="{y-11}" width="52" height="22" rx="11" fill="#0f1115" stroke="{col}"/>')
+        out.append(f'<text x="{mx}" y="{y+4}" fill="{col}" font-size="9.5" text-anchor="middle">{esc(label)}</text>')
+    out.append('</svg>')
+    return "\n".join(out)
+
+
+def mmd_flow3(d, reg):
+    lines = ["flowchart LR"]
+    for inst in d.get("modules") or []:
+        m = reg.get(inst.get("module")) or {}
+        spine = " → ".join((m.get("skeleton") or {}).get("spine") or ["(空骨架)"])
+        lines.append(f'    {inst["id"]}["{inst.get("id")} {m.get("name") or inst.get("module")} · {spine}"]:::mod')
+    for a, b in zip(d.get("modules") or [], (d.get("modules") or [])[1:]):
+        link = b.get("link") or (d.get("defaults") or {}).get("link") or "auto"
+        op = "-.->" if link == "auto" else "==>"
+        lines.append(f'    {a["id"]} {op}|{link}| {b["id"]}')
+    lines += ["    classDef mod fill:#1d2430,stroke:#e8b33d,color:#e8b33d"]
+    return "\n".join(lines)
+
 
 def render_svg(d, nodes, edges):
-    L = layers(nodes, edges)
-    layer_of = {n: li for li, col in enumerate(L) for n in col}
-    W, H, GAPX, GAPY, NW, NH = 190, 64, 74, 96, 176, 52
-    width = GAPX * 2 + len(L) * (NW + GAPX)
-    height = GAPY * 2 + max(len(l) for l in L) * (NH + GAPY) + 70  # 底部留回环弧空间
-    cx = {}
-    for li, col in enumerate(L):
-        colh = len(col) * (NH + GAPY) - GAPY
-        y0 = (height - 70 - colh) / 2
-        for k, n in enumerate(col):
-            cx[n] = (GAPX + li * (NW + GAPX), y0 + k * (NH + GAPY))
-    def esc(s): return html.escape(str(s), quote=True)
+    """flow@2 存量：阶段横向带 + 带内竖向（与新画布同构的过渡形态）。"""
+    NW, NH, ROW_H, MG = 176, 52, 78, 40
+    stages = d.get("stages") or []
+    placed = {}
+    max_rows = 1
+    bands = []
+    for sg in stages:
+        ns = [n for n in sg.get("nodes", []) if n in nodes]
+        max_rows = max(max_rows, len(ns))
+        bands.append((sg, ns))
+    orphan = [n for n in nodes if n not in placed and not any(n in ns for _, ns in bands)]
+    if orphan:
+        bands.append(({"id": "ORPHAN", "name": "未归段"}, orphan))
+        max_rows = max(max_rows, len(orphan))
+    CARD_W = 200
+    width = 40 + len(bands) * (CARD_W + 88)
+    height = max(240, 72 + max_rows * ROW_H + 24)
     svg = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" font-family="-apple-system,\'PingFang SC\',\'Microsoft YaHei\',sans-serif">']
     svg.append(f'''<defs><marker id="arw" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
 <path d="M0,0 L9,4 L0,8 z" fill="#5a6478"/></marker></defs>''')
     svg.append(f'<rect width="{width}" height="{height}" fill="#0f1115" rx="10"/>')
-    # 阶段分区带（节点带 stage 字段时启用）
-    STAGE_STYLE = {
-        "S1": ("#14231c", "#3d7a4f", "S1 调研"), "S2": ("#161d31", "#3d5a80", "S2 结构"),
-        "S3": ("#241b12", "#e8b33d", "S3 方案"), "S4": ("#28141f", "#a5433a", "S4 成稿"),
-        "S5": ("#1d1d24", "#7a8496", "交付"),
-    }
-    stage_of = {n: nodes[n].get("stage") for n in nodes if nodes[n].get("stage")}
-    if stage_of:
-        bands = []
-        for li, col in enumerate(L):
-            sts = [stage_of[n] for n in col if n in stage_of]
-            dom = max(set(sts), key=sts.count) if sts else None
-            bands.append(dom)
-        runs = []
-        s0 = 0
-        for li in range(1, len(bands) + 1):
-            if li == len(bands) or bands[li] != bands[s0]:
-                if bands[s0]: runs.append((s0, li - 1, bands[s0]))
-                s0 = li
-        for (c0, c1, st) in runs:
-            xs = GAPX + c0 * (NW + GAPX) - 14
-            xe = GAPX + c1 * (NW + GAPX) + NW + 14
-            fill, stroke, label = STAGE_STYLE.get(st, ("#161a22", "#2a2f3a", st))
-            svg.append(f'<rect x="{xs}" y="16" width="{xe-xs}" height="{height-42}" rx="12" fill="{fill}" stroke="{stroke}" stroke-width="0.8" stroke-dasharray="3,5" opacity="0.55"/>')
-            svg.append(f'<text x="{xs+12}" y="34" fill="{stroke}" font-size="11" font-weight="700">{esc(label)}</text>')
-    # edges first (under nodes); 回环弧由 engine 派生（gate → 本阶段入口 / 全局入口）
-    outputs = set(d["graph"].get("outputs", []))
-    layer_of = {n: li for li, col in enumerate(L) for n in col}
-    stage_of = {n: nodes[n].get("stage") for n in nodes if nodes[n].get("stage")}
-    stage_entry = {}
-    for st_def in d.get("stages", []):
-        stage_entry[st_def["id"]] = st_def.get("entry")
-    global_entry = d["stages"][0]["entry"] if d.get("stages") else None
-    derived = []
-    arc_i = 0
-    for e in edges:
-        x1, y1 = cx[e["from"]]; x2, y2 = cx[e["to"]]
-        if e.get("loop"):
-            color, tag = "#a5433a", "打回重做"
-            depth = 34 + (arc_i % 3) * 26
-            arc_i += 1
-            sx, sy = x1 + NW / 2, y1 + NH
-            tx, ty = x2 + NW / 2, y2 + NH
-            by = max(sy, ty) + depth
-            path = f"M{sx},{sy} C{sx},{by} {tx},{by} {tx},{ty}"
-            lx, ly = (sx + tx) / 2, by + 2
-            svg.append(f'<path d="{path}" fill="none" stroke="{color}" stroke-width="1.6" stroke-dasharray="6,4" marker-end="url(#arw)"><title>{esc(e["id"])}: {esc(e["from"])} → {esc(e["to"])}</title></path>')
-            svg.append(f'<text x="{lx}" y="{ly}" fill="{color}" font-size="9.5" text-anchor="middle">{esc(tag)}·{esc(e.get("when",""))}</text>')
-            continue
-        sx, sy = x1 + NW, y1 + NH / 2
-        tx, ty = x2, y2 + NH / 2
-        dashed = ' stroke-dasharray="5,4"' if e.get("optional") or e.get("when") else ""
-        mx = (sx + tx) / 2
-        path = f"M{sx},{sy} C{mx},{sy} {mx},{ty} {tx},{ty}"
-        label = e.get("transform", "")
-        svg.append(f'<path d="{path}" fill="none" stroke="#5a6478" stroke-width="1.4"{dashed} marker-end="url(#arw)"><title>{esc(e["id"])}: {esc(e["from"])} → {esc(e["to"])} ｜ {esc(label)}{" ｜ "+esc(e["when"]) if e.get("when") else ""}{" ｜ optional" if e.get("optional") else ""}</title></path>')
-        if label:
-            ly = (sy + ty) / 2 - 4
-            svg.append(f'<text x="{mx}" y="{ly}" fill="#7a8496" font-size="9" text-anchor="middle">{esc(label[:20])}</text>')
-    # 派生回环弧：gate 菱形 → 本阶段入口（修改流）/ 全局入口（从零构筑）
-    for st_def in d.get("stages", []):
-        g = st_def.get("gate")
-        entry = st_def.get("entry")
-        if not g or g not in cx: continue
-        gx, gy = cx[g]
-        if entry in cx:
-            ex, ey = cx[entry]
-            depth = 46
-            sx, sy = gx + NW/2, gy + NH
-            tx, ty = ex + NW/2, ey + NH
-            by = max(sy, ty) + depth + 8
-            svg.append(f'<path d="M{sx},{sy} C{sx},{by} {tx},{by} {tx},{ty}" fill="none" stroke="#a5433a" stroke-width="1.5" stroke-dasharray="7,4" marker-end="url(#arw)" opacity="0.85"><title>{esc(st_def["id"])} 打回 · 修改流：回 {esc(entry)} 重做（级联失效下游）</title></path>')
-            svg.append(f'<text x="{(sx+tx)/2}" y="{by-4}" fill="#a5433a" font-size="9" text-anchor="middle">{esc(st_def["id"])} 打回·修改流</text>')
-        if st_def["id"] != d["stages"][0]["id"]:
-            ex, ey = cx[global_entry]
-            depth2 = 46 + 22
-            sx2, sy2 = gx + NW/2, gy + NH
-            tx2, ty2 = ex + NW/2, ey + NH
-            by2 = max(sy2, ty2) + depth2
-            svg.append(f'<path d="M{sx2},{sy2} C{sx2},{by2} {tx2},{by2} {tx2},{ty2}" fill="none" stroke="#7a4a4a" stroke-width="1.3" stroke-dasharray="3,5" marker-end="url(#arw)" opacity="0.7"><title>{esc(st_def["id"])} 打回 · 从零构筑流：回 {esc(global_entry)}（根因在更早阶段时）</title></path>')
-    # nodes
-    for li, col in enumerate(L):
-        for n in col:
-            x, y = cx[n]
+    STAGE_COLOR = {"S1": "#3d7a4f", "S2": "#3d5a80", "S3": "#e8b33d", "S4": "#a5433a", "S5": "#7a8496"}
+    x = 40
+    for sg, ns in bands:
+        color = STAGE_COLOR.get(sg.get("id"), "#5a6478")
+        bh = max(72, 64 + len(ns) * ROW_H)
+        svg.append(f'<rect x="{x}" y="24" width="{CARD_W}" height="{bh}" rx="12" fill="{color}" fill-opacity="0.08" stroke="{color}" stroke-width="1"/>')
+        svg.append(f'<text x="{x+12}" y="48" fill="{color}" font-size="13" font-weight="700">{esc(sg.get("id","")+" "+sg.get("name",""))}</text>')
+        for k, n in enumerate(ns):
             meta = nodes[n]
             st = KIND_STYLE.get(meta.get("kind", "agent"), KIND_STYLE["agent"])
-            is_out = n in outputs
-            sw = 2.6 if is_out else 1.4
-            tip = esc(f'{n} ｜ {meta.get("kind")} ｜ {meta.get("title", "")} ｜ skill={meta.get("skill","-")} minitool={meta.get("minitool","-")}')
-            svg.append(f'<g><title>{tip}</title>')
-            if meta.get("kind") == "gate":
-                # 菱形判断节点（红方验收）
-                cxm, cym = x + NW/2, y + NH/2
-                pts = f"{cxm},{y} {x+NW},{cym} {cxm},{y+NH} {x},{cym}"
-                svg.append(f'<polygon points="{pts}" fill="{st["fill"]}" stroke="{st["stroke"]}" stroke-width="{sw}"/>')
-                if is_out:
-                    svg.append(f'<circle cx="{x+NW-9}" cy="{y+9}" r="5" fill="none" stroke="{st["stroke"]}" stroke-width="1.2"/><circle cx="{x+NW-9}" cy="{y+9}" r="1.8" fill="{st["stroke"]}"/>')
-                svg.append(f'<text x="{cxm}" y="{cym-2}" fill="{st["text"]}" font-size="12.5" font-weight="700" text-anchor="middle">{esc(n)}</text>')
-                svg.append(f'<text x="{cxm}" y="{cym+14}" fill="#b8bdc7" font-size="9.5" text-anchor="middle">{esc("红方验收 ◇")}</text>')
-            else:
-                svg.append(f'<rect x="{x}" y="{y}" width="{NW}" height="{NH}" rx="9" fill="{st["fill"]}" stroke="{st["stroke"]}" stroke-width="{sw}"/>')
-                if is_out:
-                    svg.append(f'<circle cx="{x+NW-9}" cy="{y+9}" r="5" fill="none" stroke="{st["stroke"]}" stroke-width="1.2"/><circle cx="{x+NW-9}" cy="{y+9}" r="1.8" fill="{st["stroke"]}"/>')
-                svg.append(f'<text x="{x+NW/2}" y="{y+21}" fill="{st["text"]}" font-size="12.5" font-weight="700" text-anchor="middle">{esc(n)}</text>')
-                title = meta.get("title", "")
-                if len(title) > 14: title = title[:13] + "…"
-                svg.append(f'<text x="{x+NW/2}" y="{y+37}" fill="#b8bdc7" font-size="10.5" text-anchor="middle">{esc(title)}</text>')
-                tag = meta.get("skill") or meta.get("minitool") or KIND_LABEL.get(meta.get("kind"), "")
-                if tag:
-                    if len(tag) > 18: tag = tag[:17] + "…"
-                    svg.append(f'<text x="{x+NW/2}" y="{y+49}" fill="#667089" font-size="8.5" text-anchor="middle">{esc(tag)}</text>')
-            svg.append('</g>')
+            ty = 78 + k * ROW_H
+            svg.append(f'<rect x="{x+14}" y="{ty-17}" width="{CARD_W-28}" height="{NH-8}" rx="8" fill="{st["fill"]}" stroke="{st["stroke"]}" stroke-width="1.2"/>')
+            title = meta.get("title", n)
+            if len(title) > 13:
+                title = title[:12] + "…"
+            svg.append(f'<text x="{x+CARD_W/2}" y="{ty}" fill="{st["text"]}" font-size="11" font-weight="700" text-anchor="middle">{esc(title)}</text>')
+            tag = meta.get("skill") or meta.get("minitool") or ""
+            if len(tag) > 16:
+                tag = tag[:15] + "…"
+            if tag:
+                svg.append(f'<text x="{x+CARD_W/2}" y="{ty+15}" fill="#667089" font-size="8.5" text-anchor="middle">{esc(tag)}</text>')
+            placed[n] = (x + CARD_W / 2, ty + (NH - 8) / 2, x, x + CARD_W, ty - 17, ty + NH - 17)
+        x += CARD_W + 88
+    # 边：同带竖向、跨带横向
+    for e in edges:
+        if e["from"] not in placed or e["to"] not in placed:
+            continue
+        _, _, ax0, ax1, ay0, ay1 = placed[e["from"]]
+        bx0, bx1, by0, by1, _, by2 = placed[e["to"]]
+        dashed = ' stroke-dasharray="5,4"' if e.get("optional") or e.get("when") else ""
+        if abs(ax0 - bx0) < 8:  # 同带：竖向
+            sx, sy = (ax0 + ax1) / 2, ay1
+            tx, ty = (bx0 + bx1) / 2, by0 - 8
+            my = (sy + ty) / 2
+            path = f"M{sx},{sy} C{sx},{my} {tx},{my} {tx},{ty}"
+        else:  # 跨带：横向
+            sx, sy = ax1, (ay0 + ay1) / 2
+            tx, ty = bx0, (by0 + by2) / 2
+            mx = (sx + tx) / 2
+            path = f"M{sx},{sy} C{mx},{sy} {mx},{ty} {tx},{ty}"
+        svg.append(f'<path d="{path}" fill="none" stroke="#5a6478" stroke-width="1.3"{dashed} marker-end="url(#arw)"><title>{esc(e["id"])}: {esc(e["from"])} → {esc(e["to"])}</title></path>')
     svg.append('</svg>')
     return "\n".join(svg)
+
 
 def render_mmd(d, nodes, edges):
     lines = ["flowchart LR"]
@@ -201,16 +209,23 @@ def render_mmd(d, nodes, edges):
               "    classDef gate fill:#2a1616,stroke:#a5433a,color:#e8a49c"]
     return "\n".join(lines)
 
+
+REG = module_registry()
 svgs = {}
 for fp in FLOWS:
     d, nodes, edges = load(fp)
     fid = d["id"]
     outdir = Path(fp).parent
-    svg = render_svg(d, nodes, edges)
+    if d.get("format") == "flow@3":
+        svg = render_flow3(d, REG)
+        mmd = mmd_flow3(d, REG)
+    else:
+        svg = render_svg(d, nodes, edges)
+        mmd = render_mmd(d, nodes, edges)
     (outdir / "graph.svg").write_text(svg, encoding="utf-8")
-    (outdir / "graph.mmd").write_text(render_mmd(d, nodes, edges) + "\n", encoding="utf-8")
+    (outdir / "graph.mmd").write_text(mmd + "\n", encoding="utf-8")
     svgs[fid] = (d.get("title", fid), d.get("version", ""), svg)
-    print(f"{fid}: graph.svg + graph.mmd ({len(nodes)} nodes / {len(edges)} edges)")
+    print(f"{fid}: graph.svg + graph.mmd ({d.get('format') or 'flow@2'})")
 
 # ---- 世界书体系页（全项目通用：小说/剧本双变体 + 各项目实况） ----
 WB_VARIANT_TREE = {
@@ -285,9 +300,10 @@ h1{{font-size:18px;padding:14px 16px 0;margin:0}} .legend{{padding:4px 16px 10px
 .wbt{{border-collapse:collapse;width:100%;font-size:13px}} .wbt th,.wbt td{{border:1px solid #2a2f3a;padding:6px 10px;text-align:left;color:#c9ceda}} .wbt th{{background:#161a22;color:#e8b33d}}
 small{{color:#7a8496;font-weight:400}}
 </style></head><body>
-<h1>miniflow · flow 图示</h1><div class="legend">节点色 = 步型：{legend}　空心圆点 = flow 产物节点　虚线边 = 条件/可选</div>
+<h1>miniflow · flow 图示</h1><div class="legend">模块卡/节点带横向拼接 · 带内竖向为执行序　虚线边 = 条件/自动连接件　金色 = 待人工连接件</div>
 <div class="tabs">{''.join(tabs)}</div>{''.join(pages)}
 <script>function show(n){{document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('on',i===n));document.querySelectorAll('.page').forEach((p,i)=>p.classList.toggle('on',i===n));}}</script>
 </body></html>"""
 (ROOT / "flows" / "graphs.html").write_text(viewer, encoding="utf-8")
 print("written: flows/graphs.html")
+

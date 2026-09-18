@@ -66,10 +66,19 @@ def main(project):
         # 等价于 errors="replace"）。历史产物里有 GBK 编码件——严格 utf-8 会直接崩，
         # 校验工具自己崩掉比漏报更糟（p-key-soul / p-ts-001 实证）。
         try:
-            h_text = hashlib.sha1(disk.read_text(encoding="utf-8", errors="replace").encode("utf-8")).hexdigest()[:12]
+            text = disk.read_text(encoding="utf-8", errors="replace")
+            h_text = hashlib.sha1(text.encode("utf-8")).hexdigest()[:12]
         except OSError as e:
             print(f"  [黄] {path}（{node}）：产物读取失败（{e}）——只做字节级比对")
-            h_text = None
+            text, h_text = None, None
+
+        # 正文哈希：内核快照哈希口径是 contentSha12（剥 artifact@1 头部后取正文，见 core/src/ids.ts）。
+        # R4 头部规约上线后产物全带头部——不补这个口径会把所有带头的合法产物误报成"快照后又被改"。
+        h_body = None
+        if text is not None and text.startswith("---"):
+            end = text.find("\n---", 3)
+            if end != -1:
+                h_body = hashlib.sha1(text[end + 4:].lstrip().encode("utf-8")).hexdigest()[:12]
 
         kts = max((a["ts"] for a in reg if a.get("path") == path and a.get("producer") == "host-submit"), default=None)
         sl = [s for s in snaps.get(node, []) if path in s.get("files", {}) and s["files"][path].get("hash")]
@@ -78,7 +87,7 @@ def main(project):
         if latest is None:
             print(f"  [红] {path}（{node}）：从未快照——产物无留档")
             bad += 1
-        elif latest["files"][path]["hash"] not in (h_bytes, h_text):
+        elif latest["files"][path]["hash"] not in (h_bytes, h_text, h_body):
             print(f"  [红] {path}（{node}）：磁盘内容 ≠ 最新快照 r{latest['round']}（快照后又被改，未留档）")
             bad += 1
         elif kts is None:

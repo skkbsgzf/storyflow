@@ -1,0 +1,156 @@
+{
+  "mode": "aesthetic",
+  "node": "audit",
+  "minitool": "check_aesthetic_asserts",
+  "checked": [
+    "章节正文/第1章.md",
+    "章节正文/第2章.md",
+    "章节正文/第3章.md"
+  ],
+  "results": [
+    {
+      "name": "exists",
+      "status": "pass",
+      "detail": "1956 chars"
+    },
+    {
+      "name": "no-debris",
+      "status": "pass"
+    },
+    {
+      "name": "AE-PROSE-TRIPLET",
+      "status": "pass",
+      "detail": "无三连排比"
+    },
+    {
+      "name": "AE-PROSE-NOTBUT",
+      "status": "pass",
+      "detail": "「不是A(而)是B」2 处（配额 2）"
+    },
+    {
+      "name": "AE-PROSE-RHYTHM",
+      "status": "pass",
+      "detail": "突然/仿佛/似乎 0 处（≤2）"
+    },
+    {
+      "name": "AE-PROSE-SLOP",
+      "status": "pass",
+      "detail": "无 AI 高频词"
+    },
+    {
+      "name": "AE-WNF-HOOK",
+      "status": "pass",
+      "detail": "章末钩型：转折"
+    },
+    {
+      "name": "AE-CONT-KNOW",
+      "status": "pass",
+      "detail": "切片未见越权专名（引号词条×台账比对；语义级越权归红方）"
+    },
+    {
+      "name": "AE-CONT-ITEM",
+      "status": "pass",
+      "detail": "数字事实切片一致（3 条台账事实比对；语义级矛盾归红方）"
+    },
+    {
+      "name": "AE-CONT-FORESHADOW",
+      "status": "warn",
+      "detail": "伏笔台账（世界书/伏笔台账.md）行不可解析（需数字章号+状态列）——切片不适用"
+    },
+    {
+      "name": "AE-OUTPUT-PURITY",
+      "status": "pass",
+      "detail": "无执行元数据（标记台账共享）"
+    },
+    {
+      "name": "AE-COMPLIANCE",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+    },
+    {
+      "name": "exists",
+      "status": "pass",
+      "detail": "1487 chars"
+    },
+    {
+      "name": "AE-PROSE-TRIPLET",
+      "status": "pass",
+      "detail": "三连排比 1 处（配额内，须为笑点/文书本体）: 脑子里那座书城翻出一页，又是一页，每翻一页"
+    },
+    {
+      "name": "AE-PROSE-NOTBUT",
+      "status": "pass",
+      "detail": "「不是A(而)是B」0 处（配额 2）"
+    },
+    {
+      "name": "AE-WNF-HOOK",
+      "status": "warn",
+      "detail": "章末钩型：转折；与第1章同型（转折）——连续同型钩，四型轮换"
+    },
+    {
+      "name": "exists",
+      "status": "pass",
+      "detail": "1448 chars"
+    },
+    {
+      "name": "AE-WNF-HOOK",
+      "status": "pass",
+      "detail": "章末钩型：情绪"
+    }
+  ],
+  "declared": [
+    "AE-PROSE-TRIPLET",
+    "AE-PROSE-NOTBUT",
+    "AE-PROSE-RHYTHM",
+    "AE-PROSE-SLOP",
+    "AE-COMPLIANCE"
+  ],
+  "contract": [
+    {
+      "rel": "章节正文/第1章.md",
+      "declared": 5,
+      "checked": [
+        "AE-PROSE-TRIPLET",
+        "AE-PROSE-NOTBUT",
+        "AE-PROSE-RHYTHM",
+        "AE-PROSE-SLOP"
+      ],
+      "unverified": [
+        "AE-COMPLIANCE"
+      ]
+    },
+    {
+      "rel": "章节正文/第2章.md",
+      "declared": 5,
+      "checked": [
+        "AE-PROSE-TRIPLET",
+        "AE-PROSE-NOTBUT",
+        "AE-PROSE-RHYTHM",
+        "AE-PROSE-SLOP"
+      ],
+      "unverified": [
+        "AE-COMPLIANCE"
+      ]
+    },
+    {
+      "rel": "章节正文/第3章.md",
+      "declared": 5,
+      "checked": [
+        "AE-PROSE-TRIPLET",
+        "AE-PROSE-NOTBUT",
+        "AE-PROSE-RHYTHM",
+        "AE-PROSE-SLOP"
+      ],
+      "unverified": [
+        "AE-COMPLIANCE"
+      ]
+    }
+  ],
+  "summary": {
+    "declared": 5,
+    "machineChecked": 4,
+    "unverified": 1,
+    "block": 0
+  },
+  "note": "check_aesthetic_asserts：引擎机器可查维度全量 + 节点声明断言逐条裁（5 条声明，1 条无机器校验器→归评审/红方剖面，未执行且不冒充通过）"
+}

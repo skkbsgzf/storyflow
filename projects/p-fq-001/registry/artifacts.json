@@ -1238,6 +1238,839 @@
       ],
       "sha1": "e9818f03ffa8",
       "ts": "2026-09-16T20:51:52.281Z"
+    },
+    {
+      "path": "对外交付/02-前三章终稿.md",
+      "node": "polish",
+      "round": 6,
+      "producer": "host-submit",
+      "inputs": {
+        "章节正文/第1章.md": "71cc786e086d"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "6251 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        },
+        {
+          "name": "AE-SKIP-NON-BEAT",
+          "status": "warn",
+          "detail": "非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "8a274f1abadc",
+      "ts": "2026-09-16T21:01:57.825Z"
+    },
+    {
+      "path": "章节正文/第1章.md",
+      "node": "chapter",
+      "round": 3,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/多视角意见书-S3.md": "13210d64c69b",
+        "世界观圣经.md": "6deb2a8c6f1b",
+        "单元剧大纲.md": "4502e3713c8d"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2178 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "c815a928a32c",
+      "ts": "2026-09-16T21:07:55.060Z"
+    },
+    {
+      "path": "内部/断言报告-audit.json",
+      "node": "audit",
+      "producer": "minitool:check_aesthetic_asserts",
+      "inputs": {
+        "章节正文/第1章.md": "c815a928a32c",
+        "章节正文/第2章.md": "de65f26618cb",
+        "章节正文/第3章.md": "d446018d9fea"
+      },
+      "round": 1,
+      "sha1": "2f763489d808",
+      "ts": "2026-09-16T21:07:55.071Z"
+    },
+    {
+      "path": "对外交付/02-前三章终稿.md",
+      "node": "polish",
+      "round": 8,
+      "producer": "host-submit",
+      "inputs": {
+        "章节正文/第1章.md": "c815a928a32c"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "6251 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        },
+        {
+          "name": "AE-SKIP-NON-BEAT",
+          "status": "warn",
+          "detail": "非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "8a274f1abadc",
+      "ts": "2026-09-16T21:07:55.473Z"
+    },
+    {
+      "path": "对外交付/02-前三章终稿.md",
+      "node": "polish",
+      "round": 11,
+      "producer": "host-submit",
+      "inputs": {
+        "章节正文/第1章.md": "c815a928a32c"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "5992 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        },
+        {
+          "name": "AE-SKIP-NON-BEAT",
+          "status": "warn",
+          "detail": "非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "e2ff096ec1e2",
+      "ts": "2026-09-16T21:49:11.934Z"
+    },
+    {
+      "path": "章节正文/第1章.md",
+      "node": "chapter",
+      "round": 5,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/多视角意见书-S3.md": "13210d64c69b",
+        "世界观圣经.md": "6deb2a8c6f1b",
+        "单元剧大纲.md": "4502e3713c8d"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2174 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "4d0daa5e4ff8",
+      "ts": "2026-09-16T21:50:34.784Z"
+    },
+    {
+      "path": "内部/断言报告-audit.json",
+      "node": "audit",
+      "producer": "minitool:check_aesthetic_asserts",
+      "inputs": {
+        "章节正文/第1章.md": "4d0daa5e4ff8",
+        "章节正文/第2章.md": "86ce9500936f",
+        "章节正文/第3章.md": "9bd825c40ff4"
+      },
+      "round": 1,
+      "sha1": "42e3bf10bf6d",
+      "ts": "2026-09-16T21:50:34.793Z"
+    },
+    {
+      "path": "对外交付/02-前三章终稿.md",
+      "node": "polish",
+      "round": 13,
+      "producer": "host-submit",
+      "inputs": {
+        "章节正文/第1章.md": "4d0daa5e4ff8"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "5992 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        },
+        {
+          "name": "AE-SKIP-NON-BEAT",
+          "status": "warn",
+          "detail": "非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "e2ff096ec1e2",
+      "ts": "2026-09-16T21:51:08.954Z"
+    },
+    {
+      "path": "对外交付/02-前三章终稿.md",
+      "node": "polish",
+      "round": 15,
+      "producer": "host-submit",
+      "inputs": {
+        "章节正文/第1章.md": "4d0daa5e4ff8"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "6021 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        },
+        {
+          "name": "AE-SKIP-NON-BEAT",
+          "status": "warn",
+          "detail": "非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "79b963ad5f2e",
+      "ts": "2026-09-16T22:15:57.419Z"
+    },
+    {
+      "path": "章节正文/第1章.md",
+      "node": "chapter",
+      "round": 7,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/多视角意见书-S3.md": "13210d64c69b",
+        "世界观圣经.md": "6deb2a8c6f1b",
+        "单元剧大纲.md": "4502e3713c8d"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2174 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "4d0daa5e4ff8",
+      "ts": "2026-09-16T22:15:57.832Z"
+    },
+    {
+      "path": "内部/断言报告-audit.json",
+      "node": "audit",
+      "producer": "minitool:check_aesthetic_asserts",
+      "inputs": {
+        "章节正文/第1章.md": "4d0daa5e4ff8",
+        "章节正文/第2章.md": "16ff068d56b9",
+        "章节正文/第3章.md": "6d321c2d31c8"
+      },
+      "round": 1,
+      "sha1": "dcdf7bafa3e4",
+      "ts": "2026-09-16T22:15:57.841Z"
+    },
+    {
+      "path": "对外交付/02-前三章终稿.md",
+      "node": "polish",
+      "round": 17,
+      "producer": "host-submit",
+      "inputs": {
+        "章节正文/第1章.md": "4d0daa5e4ff8"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "6021 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        },
+        {
+          "name": "AE-SKIP-NON-BEAT",
+          "status": "warn",
+          "detail": "非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "79b963ad5f2e",
+      "ts": "2026-09-16T22:16:07.028Z"
+    },
+    {
+      "path": "章节正文/第1章.md",
+      "node": "chapter",
+      "round": 8,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/多视角意见书-S3.md": "13210d64c69b",
+        "世界观圣经.md": "6deb2a8c6f1b",
+        "单元剧大纲.md": "4502e3713c8d"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2174 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "4d0daa5e4ff8",
+      "ts": "2026-09-17T00:33:58.999Z"
+    },
+    {
+      "path": "章节正文/第2章.md",
+      "node": "chapter",
+      "round": 8,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/多视角意见书-S3.md": "13210d64c69b",
+        "世界观圣经.md": "6deb2a8c6f1b",
+        "单元剧大纲.md": "4502e3713c8d"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1762 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "16ff068d56b9",
+      "ts": "2026-09-17T00:33:59.153Z"
+    },
+    {
+      "path": "章节正文/第3章.md",
+      "node": "chapter",
+      "round": 9,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/多视角意见书-S3.md": "13210d64c69b",
+        "世界观圣经.md": "6deb2a8c6f1b",
+        "单元剧大纲.md": "4502e3713c8d"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1866 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "6d321c2d31c8",
+      "ts": "2026-09-17T00:33:59.305Z"
+    },
+    {
+      "path": "对外交付/02-前三章终稿.md",
+      "node": "polish",
+      "round": 19,
+      "producer": "host-submit",
+      "inputs": {
+        "章节正文/第1章.md": "4d0daa5e4ff8"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "6021 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        },
+        {
+          "name": "AE-SKIP-NON-BEAT",
+          "status": "warn",
+          "detail": "非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "79b963ad5f2e",
+      "ts": "2026-09-17T00:34:11.530Z"
+    },
+    {
+      "path": "章节正文/第1章.md",
+      "node": "chapter",
+      "round": 10,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/多视角意见书-S3.md": "13210d64c69b",
+        "世界观圣经.md": "6deb2a8c6f1b",
+        "单元剧大纲.md": "4502e3713c8d"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2386 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "4d9383b28e65",
+      "ts": "2026-09-17T01:10:39.842Z"
+    },
+    {
+      "path": "章节正文/第2章.md",
+      "node": "chapter",
+      "round": 10,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/多视角意见书-S3.md": "13210d64c69b",
+        "世界观圣经.md": "6deb2a8c6f1b",
+        "单元剧大纲.md": "4502e3713c8d"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2068 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "596d5a722ffc",
+      "ts": "2026-09-17T01:10:39.996Z"
+    },
+    {
+      "path": "章节正文/第3章.md",
+      "node": "chapter",
+      "round": 11,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/多视角意见书-S3.md": "13210d64c69b",
+        "世界观圣经.md": "6deb2a8c6f1b",
+        "单元剧大纲.md": "4502e3713c8d"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2322 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "606d0920690f",
+      "ts": "2026-09-17T01:10:40.161Z"
+    },
+    {
+      "path": "内部/断言报告-audit.json",
+      "node": "audit",
+      "producer": "minitool:check_aesthetic_asserts",
+      "inputs": {
+        "章节正文/第1章.md": "4d9383b28e65",
+        "章节正文/第2章.md": "596d5a722ffc",
+        "章节正文/第3章.md": "606d0920690f"
+      },
+      "round": 1,
+      "sha1": "17b66ca0ee25",
+      "ts": "2026-09-17T01:10:40.169Z"
+    },
+    {
+      "path": "对外交付/02-前三章终稿.md",
+      "node": "polish",
+      "round": 21,
+      "producer": "host-submit",
+      "inputs": {
+        "章节正文/第1章.md": "4d9383b28e65"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "6995 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        },
+        {
+          "name": "AE-SKIP-NON-BEAT",
+          "status": "warn",
+          "detail": "非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "208b4ccdffc5",
+      "ts": "2026-09-17T01:11:42.436Z"
+    },
+    {
+      "path": "章节正文/第1章.md",
+      "node": "chapter",
+      "round": 12,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/多视角意见书-S3.md": "13210d64c69b",
+        "世界观圣经.md": "6deb2a8c6f1b",
+        "单元剧大纲.md": "4502e3713c8d"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2562 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "b4f0e09a0d59",
+      "ts": "2026-09-17T02:16:24.109Z"
+    },
+    {
+      "path": "章节正文/第2章.md",
+      "node": "chapter",
+      "round": 12,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/多视角意见书-S3.md": "13210d64c69b",
+        "世界观圣经.md": "6deb2a8c6f1b",
+        "单元剧大纲.md": "4502e3713c8d"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2050 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "a82630967d44",
+      "ts": "2026-09-17T02:16:24.262Z"
+    },
+    {
+      "path": "章节正文/第3章.md",
+      "node": "chapter",
+      "round": 13,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/多视角意见书-S3.md": "13210d64c69b",
+        "世界观圣经.md": "6deb2a8c6f1b",
+        "单元剧大纲.md": "4502e3713c8d"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2297 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "7c26b3119840",
+      "ts": "2026-09-17T02:16:24.425Z"
+    },
+    {
+      "path": "内部/断言报告-audit.json",
+      "node": "audit",
+      "producer": "minitool:check_aesthetic_asserts",
+      "inputs": {
+        "章节正文/第1章.md": "b4f0e09a0d59",
+        "章节正文/第2章.md": "a82630967d44",
+        "章节正文/第3章.md": "7c26b3119840"
+      },
+      "round": 1,
+      "sha1": "42e9128891fc",
+      "ts": "2026-09-17T02:16:24.434Z"
+    },
+    {
+      "path": "对外交付/02-前三章终稿.md",
+      "node": "polish",
+      "round": 23,
+      "producer": "host-submit",
+      "inputs": {
+        "章节正文/第1章.md": "b4f0e09a0d59"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "6985 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        },
+        {
+          "name": "AE-SKIP-NON-BEAT",
+          "status": "warn",
+          "detail": "非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "7da222e7dc8e",
+      "ts": "2026-09-17T02:16:54.307Z"
+    },
+    {
+      "path": "章节正文/第1章.md",
+      "node": "chapter",
+      "round": 14,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/多视角意见书-S3.md": "13210d64c69b",
+        "世界观圣经.md": "6deb2a8c6f1b",
+        "单元剧大纲.md": "4502e3713c8d"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2609 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "c2c7d4d22e32",
+      "ts": "2026-09-17T03:21:19.620Z"
+    },
+    {
+      "path": "章节正文/第2章.md",
+      "node": "chapter",
+      "round": 14,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/多视角意见书-S3.md": "13210d64c69b",
+        "世界观圣经.md": "6deb2a8c6f1b",
+        "单元剧大纲.md": "4502e3713c8d"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2114 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "f52dd3a6af87",
+      "ts": "2026-09-17T03:21:19.772Z"
+    },
+    {
+      "path": "章节正文/第3章.md",
+      "node": "chapter",
+      "round": 15,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/多视角意见书-S3.md": "13210d64c69b",
+        "世界观圣经.md": "6deb2a8c6f1b",
+        "单元剧大纲.md": "4502e3713c8d"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2397 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "48ac1be5d3eb",
+      "ts": "2026-09-17T03:21:19.925Z"
+    },
+    {
+      "path": "内部/断言报告-audit.json",
+      "node": "audit",
+      "producer": "minitool:check_aesthetic_asserts",
+      "inputs": {
+        "章节正文/第1章.md": "c2c7d4d22e32",
+        "章节正文/第2章.md": "f52dd3a6af87",
+        "章节正文/第3章.md": "48ac1be5d3eb"
+      },
+      "round": 1,
+      "sha1": "be231d45fde9",
+      "ts": "2026-09-17T03:21:19.933Z"
+    },
+    {
+      "path": "对外交付/02-前三章终稿.md",
+      "node": "polish",
+      "round": 25,
+      "producer": "host-submit",
+      "inputs": {
+        "章节正文/第1章.md": "c2c7d4d22e32"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "7196 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        },
+        {
+          "name": "AE-SKIP-NON-BEAT",
+          "status": "warn",
+          "detail": "非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "bb36badb9e42",
+      "ts": "2026-09-17T03:21:20.379Z"
     }
   ]
 }

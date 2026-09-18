@@ -1,0 +1,44 @@
+{
+  "snapshots": {
+    "tropes": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T17:05:40.034Z",
+        "note": "submit r1·梗卡.md",
+        "files": {
+          "内部/稿本/梗卡.md": {
+            "hash": "5ef90a329693",
+            "path": "snapshots/tropes/r1/内部/稿本/梗卡.md"
+          }
+        }
+      }
+    ],
+    "bible": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T17:06:35.184Z",
+        "note": "submit r1·世界观圣经.md",
+        "files": {
+          "世界书/世界观圣经.md": {
+            "hash": "2f6853efb058",
+            "path": "snapshots/bible/r1/世界书/世界观圣经.md"
+          }
+        }
+      }
+    ],
+    "volume": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T17:07:20.218Z",
+        "note": "submit r1·卷纲与章功能序列.md",
+        "files": {
+          "内部/稿本/卷纲与章功能序列.md": {
+            "hash": "c81a3ea73e15",
+            "path": "snapshots/volume/r1/内部/稿本/卷纲与章功能序列.md"
+          }
+        }
+      }
+    ]
+  },
+  "inputs": {}
+}

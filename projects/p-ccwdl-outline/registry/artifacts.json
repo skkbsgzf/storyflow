@@ -1,0 +1,126 @@
+{
+  "artifacts": [
+    {
+      "path": "选题方案.md",
+      "node": "src",
+      "producer": "kernel:novel-txt",
+      "inputs": {},
+      "round": 1,
+      "sha1": "3946aa888429",
+      "ts": "2026-09-17T16:57:47.230Z"
+    },
+    {
+      "path": "内部/kb-constraints.md",
+      "node": "constraints",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "beb42069bf7e",
+      "ts": "2026-09-17T16:57:47.233Z"
+    },
+    {
+      "path": "内部/稿本/分集大纲.md",
+      "node": "choreo",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {},
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2268 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        },
+        {
+          "name": "AE-CURVE-STALL",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-CURVE-TYPE",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-CUSHION",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-DESERT",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-END-MECH",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-REV-MIDPOINT",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-REV-SETUP",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "3bea8c07f28a",
+      "ts": "2026-09-17T16:59:40.419Z"
+    },
+    {
+      "path": "内部/断言报告-asserts.json",
+      "node": "asserts",
+      "producer": "minitool:check_aesthetic_asserts",
+      "inputs": {
+        "内部/稿本/分集大纲.md": "3bea8c07f28a"
+      },
+      "round": 1,
+      "sha1": "79b08a66635f",
+      "ts": "2026-09-17T16:59:40.429Z"
+    },
+    {
+      "path": "内部/意见/红方意见书-redline.md",
+      "node": "redline",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {},
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1133 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "34eba332d3b5",
+      "ts": "2026-09-17T17:00:47.768Z"
+    }
+  ]
+}

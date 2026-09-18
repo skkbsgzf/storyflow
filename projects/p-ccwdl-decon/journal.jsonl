@@ -1,0 +1,22 @@
+{"ts":"2026-09-17T16:22:01.772Z","runId":"run-mu5qmazv-q5oqvp","event":"run-start","actor":"kernel","detail":"book-deconstruct@0.1.0-draft 计划 9 节点"}
+{"ts":"2026-09-17T16:22:01.773Z","runId":"run-mu5qmazv-q5oqvp","event":"note","actor":"kernel:overlay","detail":"生效编排合成：set-policy kit_boundary=auto｜实验批：跨域交接验收门自动通过，最终产物由用户统一裁决"}
+{"ts":"2026-09-17T16:22:01.794Z","runId":"run-mu5qmazv-q5oqvp","event":"advance","actor":"kernel","nodeId":"src","detail":"源步 参考作品.md"}
+{"ts":"2026-09-17T16:22:01.798Z","runId":"run-mu5qmazv-q5oqvp","event":"advance","actor":"kernel","nodeId":"pre","detail":"内部/kb-pre.md","refs":["内部/kb-pre.md"]}
+{"ts":"2026-09-17T16:22:01.802Z","runId":"run-mu5qmazv-q5oqvp","event":"advance","actor":"kernel","nodeId":"read","detail":"任务包产出（skill=deconstruct-book，上下文 1 件）"}
+{"ts":"2026-09-17T16:22:01.802Z","runId":"run-mu5qmazv-q5oqvp","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：read（并行）"}
+{"ts":"2026-09-17T16:23:08.839Z","runId":"run-mu5qmazv-q5oqvp","event":"reject","actor":"kernel","nodeId":"read","detail":"artifact-header: 缺 artifact@1 头部（须以 --- 开头，见 docs/规范-项目文件与流程配置-R4.md）: 内部/稿本/拆解件-剧情设计.md","refs":["内部/稿本/拆解件-剧情设计.md"]}
+{"ts":"2026-09-17T16:26:36.159Z","runId":"run-mu5qmazv-q5oqvp","event":"submit","actor":"kernel","nodeId":"read","detail":"内部/稿本/拆解件-剧情设计.md","refs":["内部/稿本/拆解件-剧情设计.md"]}
+{"ts":"2026-09-17T16:26:36.160Z","runId":"run-mu5qmazv-q5oqvp","event":"snapshot","actor":"kernel","nodeId":"read","detail":"r1·拆解件-剧情设计.md","refs":["内部/稿本/拆解件-剧情设计.md"]}
+{"ts":"2026-09-17T16:26:36.166Z","runId":"run-mu5qmazv-q5oqvp","event":"advance","actor":"kernel","nodeId":"refine","detail":"任务包产出（skill=deconstruct-book，上下文 1 件）"}
+{"ts":"2026-09-17T16:26:36.167Z","runId":"run-mu5qmazv-q5oqvp","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：refine（并行）"}
+{"ts":"2026-09-17T16:27:37.238Z","runId":"run-mu5qmazv-q5oqvp","event":"submit","actor":"kernel","nodeId":"refine","detail":"内部/稿本/拆解件-细化.md","refs":["内部/稿本/拆解件-细化.md"]}
+{"ts":"2026-09-17T16:27:37.238Z","runId":"run-mu5qmazv-q5oqvp","event":"snapshot","actor":"kernel","nodeId":"refine","detail":"r1·拆解件-细化.md","refs":["内部/稿本/拆解件-细化.md"]}
+{"ts":"2026-09-17T16:27:37.246Z","runId":"run-mu5qmazv-q5oqvp","event":"advance","actor":"kernel","nodeId":"chars","detail":"任务包产出（skill=deconstruct-book，上下文 1 件）"}
+{"ts":"2026-09-17T16:27:37.247Z","runId":"run-mu5qmazv-q5oqvp","event":"advance","actor":"kernel","nodeId":"style","detail":"任务包产出（skill=deconstruct-book，上下文 1 件）"}
+{"ts":"2026-09-17T16:27:37.248Z","runId":"run-mu5qmazv-q5oqvp","event":"advance","actor":"kernel","detail":"就绪批派发 2 项：chars、style（并行）"}
+{"ts":"2026-09-17T16:28:27.881Z","runId":"run-mu5qmazv-q5oqvp","event":"submit","actor":"kernel","nodeId":"chars","detail":"内部/稿本/拆解件-人设.md","refs":["内部/稿本/拆解件-人设.md"]}
+{"ts":"2026-09-17T16:28:27.882Z","runId":"run-mu5qmazv-q5oqvp","event":"snapshot","actor":"kernel","nodeId":"chars","detail":"r1·拆解件-人设.md","refs":["内部/稿本/拆解件-人设.md"]}
+{"ts":"2026-09-17T16:28:27.889Z","runId":"run-mu5qmazv-q5oqvp","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：style（并行）"}
+{"ts":"2026-09-17T16:29:12.383Z","runId":"run-mu5qmazv-q5oqvp","event":"submit","actor":"kernel","nodeId":"style","detail":"内部/稿本/拆解件-文风.md","refs":["内部/稿本/拆解件-文风.md"]}
+{"ts":"2026-09-17T16:29:12.383Z","runId":"run-mu5qmazv-q5oqvp","event":"snapshot","actor":"kernel","nodeId":"style","detail":"r1·拆解件-文风.md","refs":["内部/稿本/拆解件-文风.md"]}
+{"ts":"2026-09-17T16:29:12.388Z","runId":"run-mu5qmazv-q5oqvp","event":"warn","actor":"kernel","nodeId":"dedup","detail":"minitool「kb_search」未实现（M1 边界）——节点 dedup 保持未执行，不静默放行"}

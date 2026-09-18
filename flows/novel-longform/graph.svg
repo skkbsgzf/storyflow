@@ -1,97 +1,49 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1898 558" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 328 954" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
 <defs><marker id="arw" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
 <path d="M0,0 L9,4 L0,8 z" fill="#5a6478"/></marker></defs>
-<rect width="1898" height="558" fill="#0f1115" rx="10"/>
-<path d="M250,244.0 C287.0,244.0 287.0,170.0 324,170.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-market: req → market ｜ core.kb_load</title></path>
-<text x="287.0" y="203.0" fill="#7a8496" font-size="9" text-anchor="middle">core.kb_load</text>
-<path d="M500,170.0 C537.0,170.0 537.0,170.0 574,170.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-trope: market → tropes ｜ skill.find-trope</title></path>
-<text x="537.0" y="166.0" fill="#7a8496" font-size="9" text-anchor="middle">skill.find-trope</text>
-<path d="M750,170.0 C787.0,170.0 787.0,170.0 824,170.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-bible: tropes → bible ｜ skill.novel-bible</title></path>
-<text x="787.0" y="166.0" fill="#7a8496" font-size="9" text-anchor="middle">skill.novel-bible</text>
-<path d="M1000,170.0 C1037.0,170.0 1037.0,318.0 1074,318.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-volume: bible → volume ｜ skill.plot-choreographer</title></path>
-<text x="1037.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">skill.plot-choreogra</text>
-<path d="M1250,318.0 C1412.0,318.0 1412.0,244.0 1574,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-ledg: volume → ledger ｜ core.continuity_slice</title></path>
-<text x="1412.0" y="277.0" fill="#7a8496" font-size="9" text-anchor="middle">core.continuity_slic</text>
-<path d="M1750,244.0 C1037.0,244.0 1037.0,318.0 324,318.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-chap: ledger → chapter ｜ skill.novel-chapter</title></path>
-<text x="1037.0" y="277.0" fill="#7a8496" font-size="9" text-anchor="middle">skill.novel-chapter</text>
-<path d="M500,318.0 C537.0,318.0 537.0,318.0 574,318.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-audit: chapter → audit ｜ core.check_aesthetic_asserts</title></path>
-<text x="537.0" y="314.0" fill="#7a8496" font-size="9" text-anchor="middle">core.check_aesthetic</text>
-<path d="M750,318.0 C787.0,318.0 787.0,318.0 824,318.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-commit: audit → ledgerUp ｜ core.continuity_commit</title></path>
-<text x="787.0" y="314.0" fill="#7a8496" font-size="9" text-anchor="middle">core.continuity_comm</text>
-<path d="M1000,318.0 C1037.0,318.0 1037.0,170.0 1074,170.0" fill="none" stroke="#5a6478" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#arw)"><title>e-red: ledgerUp → redline ｜ sm.redline ｜ optional</title></path>
-<text x="1037.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.redline</text>
-<path d="M1250,170.0 C1287.0,170.0 1287.0,244.0 1324,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" marker-end="url(#arw)"><title>e-fin: redline → fin ｜ sm.review</title></path>
-<text x="1287.0" y="203.0" fill="#7a8496" font-size="9" text-anchor="middle">sm.review</text>
-<path d="M1500,244.0 C1537.0,244.0 1537.0,244.0 1574,244.0" fill="none" stroke="#5a6478" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#arw)"><title>e-loop: fin → ledger ｜ core.continuity_slice ｜ 还有未写章</title></path>
-<text x="1537.0" y="240.0" fill="#7a8496" font-size="9" text-anchor="middle">core.continuity_slic</text>
-<g><title>req ｜ novel-txt ｜ 需求 ｜ skill=- minitool=-</title>
-<rect x="74" y="218.0" width="176" height="52" rx="9" fill="#1d3323" stroke="#3d7a4f" stroke-width="1.4"/>
-<text x="162.0" y="239.0" fill="#8fd4a3" font-size="12.5" font-weight="700" text-anchor="middle">req</text>
-<text x="162.0" y="255.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">需求</text>
-<text x="162.0" y="267.0" fill="#667089" font-size="8.5" text-anchor="middle">素材</text>
-</g>
-<g><title>market ｜ core ｜ 市场与梗库装载 ｜ skill=- minitool=kb_load</title>
-<rect x="324" y="144.0" width="176" height="52" rx="9" fill="#16233a" stroke="#3d5a80" stroke-width="1.4"/>
-<text x="412.0" y="165.0" fill="#a8c4e8" font-size="12.5" font-weight="700" text-anchor="middle">market</text>
-<text x="412.0" y="181.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">市场与梗库装载</text>
-<text x="412.0" y="193.0" fill="#667089" font-size="8.5" text-anchor="middle">kb_load</text>
-</g>
-<g><title>chapter ｜ agent ｜ 章回写作 ｜ skill=novel-chapter minitool=-</title>
-<rect x="324" y="292.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="2.6"/>
-<circle cx="491" cy="301.0" r="5" fill="none" stroke="#e8b33d" stroke-width="1.2"/><circle cx="491" cy="301.0" r="1.8" fill="#e8b33d"/>
-<text x="412.0" y="313.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">chapter</text>
-<text x="412.0" y="329.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">章回写作</text>
-<text x="412.0" y="341.0" fill="#667089" font-size="8.5" text-anchor="middle">novel-chapter</text>
-</g>
-<g><title>tropes ｜ agent ｜ 找梗定调 ｜ skill=find-trope minitool=-</title>
-<rect x="574" y="144.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="1.4"/>
-<text x="662.0" y="165.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">tropes</text>
-<text x="662.0" y="181.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">找梗定调</text>
-<text x="662.0" y="193.0" fill="#667089" font-size="8.5" text-anchor="middle">find-trope</text>
-</g>
-<g><title>audit ｜ core ｜ 断言+台账双校验 ｜ skill=- minitool=check_aesthetic_asserts</title>
-<rect x="574" y="292.0" width="176" height="52" rx="9" fill="#16233a" stroke="#3d5a80" stroke-width="1.4"/>
-<text x="662.0" y="313.0" fill="#a8c4e8" font-size="12.5" font-weight="700" text-anchor="middle">audit</text>
-<text x="662.0" y="329.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">断言+台账双校验</text>
-<text x="662.0" y="341.0" fill="#667089" font-size="8.5" text-anchor="middle">check_aesthetic_a…</text>
-</g>
-<g><title>bible ｜ agent ｜ 三层问答开书 ｜ skill=novel-bible minitool=-</title>
-<rect x="824" y="144.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="2.6"/>
-<circle cx="991" cy="153.0" r="5" fill="none" stroke="#e8b33d" stroke-width="1.2"/><circle cx="991" cy="153.0" r="1.8" fill="#e8b33d"/>
-<text x="912.0" y="165.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">bible</text>
-<text x="912.0" y="181.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">三层问答开书</text>
-<text x="912.0" y="193.0" fill="#667089" font-size="8.5" text-anchor="middle">novel-bible</text>
-</g>
-<g><title>ledgerUp ｜ core ｜ 台账结算 ｜ skill=- minitool=continuity_commit</title>
-<rect x="824" y="292.0" width="176" height="52" rx="9" fill="#16233a" stroke="#3d5a80" stroke-width="1.4"/>
-<text x="912.0" y="313.0" fill="#a8c4e8" font-size="12.5" font-weight="700" text-anchor="middle">ledgerUp</text>
-<text x="912.0" y="329.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">台账结算</text>
-<text x="912.0" y="341.0" fill="#667089" font-size="8.5" text-anchor="middle">continuity_commit</text>
-</g>
-<g><title>redline ｜ agent ｜ 红队抽检 ｜ skill=plot-redline minitool=-</title>
-<rect x="1074" y="144.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="1.4"/>
-<text x="1162.0" y="165.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">redline</text>
-<text x="1162.0" y="181.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">红队抽检</text>
-<text x="1162.0" y="193.0" fill="#667089" font-size="8.5" text-anchor="middle">plot-redline</text>
-</g>
-<g><title>volume ｜ agent ｜ 卷纲与章功能序列 ｜ skill=plot-choreographer minitool=-</title>
-<rect x="1074" y="292.0" width="176" height="52" rx="9" fill="#2a2313" stroke="#e8b33d" stroke-width="2.6"/>
-<circle cx="1241" cy="301.0" r="5" fill="none" stroke="#e8b33d" stroke-width="1.2"/><circle cx="1241" cy="301.0" r="1.8" fill="#e8b33d"/>
-<text x="1162.0" y="313.0" fill="#e8b33d" font-size="12.5" font-weight="700" text-anchor="middle">volume</text>
-<text x="1162.0" y="329.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">卷纲与章功能序列</text>
-<text x="1162.0" y="341.0" fill="#667089" font-size="8.5" text-anchor="middle">plot-choreographer</text>
-</g>
-<g><title>fin ｜ srd ｜ 批次人工验收 ｜ skill=- minitool=-</title>
-<rect x="1324" y="218.0" width="176" height="52" rx="9" fill="#2a1616" stroke="#a5433a" stroke-width="1.4"/>
-<text x="1412.0" y="239.0" fill="#e8a49c" font-size="12.5" font-weight="700" text-anchor="middle">fin</text>
-<text x="1412.0" y="255.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">批次人工验收</text>
-<text x="1412.0" y="267.0" fill="#667089" font-size="8.5" text-anchor="middle">验收门</text>
-</g>
-<g><title>ledger ｜ core ｜ 台账切片注入 ｜ skill=- minitool=continuity_slice</title>
-<rect x="1574" y="218.0" width="176" height="52" rx="9" fill="#16233a" stroke="#3d5a80" stroke-width="2.6"/>
-<circle cx="1741" cy="227.0" r="5" fill="none" stroke="#3d5a80" stroke-width="1.2"/><circle cx="1741" cy="227.0" r="1.8" fill="#3d5a80"/>
-<text x="1662.0" y="239.0" fill="#a8c4e8" font-size="12.5" font-weight="700" text-anchor="middle">ledger</text>
-<text x="1662.0" y="255.0" fill="#b8bdc7" font-size="10.5" text-anchor="middle">台账切片注入</text>
-<text x="1662.0" y="267.0" fill="#667089" font-size="8.5" text-anchor="middle">continuity_slice</text>
-</g>
+<rect width="328" height="954" fill="#0f1115" rx="10"/>
+<rect x="40" y="24" width="200" height="922" rx="12" fill="#5a6478" fill-opacity="0.08" stroke="#5a6478" stroke-width="1"/>
+<text x="52" y="48" fill="#5a6478" font-size="13" font-weight="700">ORPHAN 未归段</text>
+<rect x="54" y="61" width="172" height="44" rx="8" fill="#1d3323" stroke="#3d7a4f" stroke-width="1.2"/>
+<text x="140.0" y="78" fill="#8fd4a3" font-size="11" font-weight="700" text-anchor="middle">需求</text>
+<rect x="54" y="139" width="172" height="44" rx="8" fill="#16233a" stroke="#3d5a80" stroke-width="1.2"/>
+<text x="140.0" y="156" fill="#a8c4e8" font-size="11" font-weight="700" text-anchor="middle">市场与梗库装载</text>
+<text x="140.0" y="171" fill="#667089" font-size="8.5" text-anchor="middle">kb_load</text>
+<rect x="54" y="217" width="172" height="44" rx="8" fill="#2a2313" stroke="#e8b33d" stroke-width="1.2"/>
+<text x="140.0" y="234" fill="#e8b33d" font-size="11" font-weight="700" text-anchor="middle">找梗定调</text>
+<text x="140.0" y="249" fill="#667089" font-size="8.5" text-anchor="middle">find-trope</text>
+<rect x="54" y="295" width="172" height="44" rx="8" fill="#2a2313" stroke="#e8b33d" stroke-width="1.2"/>
+<text x="140.0" y="312" fill="#e8b33d" font-size="11" font-weight="700" text-anchor="middle">三层问答开书</text>
+<text x="140.0" y="327" fill="#667089" font-size="8.5" text-anchor="middle">novel-bible</text>
+<rect x="54" y="373" width="172" height="44" rx="8" fill="#2a2313" stroke="#e8b33d" stroke-width="1.2"/>
+<text x="140.0" y="390" fill="#e8b33d" font-size="11" font-weight="700" text-anchor="middle">卷纲与章功能序列</text>
+<text x="140.0" y="405" fill="#667089" font-size="8.5" text-anchor="middle">plot-choreograp…</text>
+<rect x="54" y="451" width="172" height="44" rx="8" fill="#16233a" stroke="#3d5a80" stroke-width="1.2"/>
+<text x="140.0" y="468" fill="#a8c4e8" font-size="11" font-weight="700" text-anchor="middle">台账切片注入</text>
+<text x="140.0" y="483" fill="#667089" font-size="8.5" text-anchor="middle">continuity_slice</text>
+<rect x="54" y="529" width="172" height="44" rx="8" fill="#2a2313" stroke="#e8b33d" stroke-width="1.2"/>
+<text x="140.0" y="546" fill="#e8b33d" font-size="11" font-weight="700" text-anchor="middle">章回写作</text>
+<text x="140.0" y="561" fill="#667089" font-size="8.5" text-anchor="middle">novel-chapter</text>
+<rect x="54" y="607" width="172" height="44" rx="8" fill="#16233a" stroke="#3d5a80" stroke-width="1.2"/>
+<text x="140.0" y="624" fill="#a8c4e8" font-size="11" font-weight="700" text-anchor="middle">断言+台账双校验</text>
+<text x="140.0" y="639" fill="#667089" font-size="8.5" text-anchor="middle">check_aesthetic…</text>
+<rect x="54" y="685" width="172" height="44" rx="8" fill="#16233a" stroke="#3d5a80" stroke-width="1.2"/>
+<text x="140.0" y="702" fill="#a8c4e8" font-size="11" font-weight="700" text-anchor="middle">台账结算</text>
+<text x="140.0" y="717" fill="#667089" font-size="8.5" text-anchor="middle">continuity_comm…</text>
+<rect x="54" y="763" width="172" height="44" rx="8" fill="#2a2313" stroke="#e8b33d" stroke-width="1.2"/>
+<text x="140.0" y="780" fill="#e8b33d" font-size="11" font-weight="700" text-anchor="middle">红队抽检</text>
+<text x="140.0" y="795" fill="#667089" font-size="8.5" text-anchor="middle">plot-redline</text>
+<rect x="54" y="841" width="172" height="44" rx="8" fill="#2a1616" stroke="#a5433a" stroke-width="1.2"/>
+<text x="140.0" y="858" fill="#e8a49c" font-size="11" font-weight="700" text-anchor="middle">批次人工验收</text>
+<path d="M240,87.0 C190.0,87.0 190.0,115.5 140.0,115.5" fill="none" stroke="#5a6478" stroke-width="1.3" marker-end="url(#arw)"><title>e-market: req → market</title></path>
+<path d="M240,165.0 C190.0,165.0 190.0,154.5 140.0,154.5" fill="none" stroke="#5a6478" stroke-width="1.3" marker-end="url(#arw)"><title>e-trope: market → tropes</title></path>
+<path d="M240,243.0 C190.0,243.0 190.0,193.5 140.0,193.5" fill="none" stroke="#5a6478" stroke-width="1.3" marker-end="url(#arw)"><title>e-bible: tropes → bible</title></path>
+<path d="M240,321.0 C190.0,321.0 190.0,232.5 140.0,232.5" fill="none" stroke="#5a6478" stroke-width="1.3" marker-end="url(#arw)"><title>e-volume: bible → volume</title></path>
+<path d="M240,399.0 C190.0,399.0 190.0,271.5 140.0,271.5" fill="none" stroke="#5a6478" stroke-width="1.3" marker-end="url(#arw)"><title>e-ledg: volume → ledger</title></path>
+<path d="M240,477.0 C190.0,477.0 190.0,310.5 140.0,310.5" fill="none" stroke="#5a6478" stroke-width="1.3" marker-end="url(#arw)"><title>e-chap: ledger → chapter</title></path>
+<path d="M240,555.0 C190.0,555.0 190.0,349.5 140.0,349.5" fill="none" stroke="#5a6478" stroke-width="1.3" marker-end="url(#arw)"><title>e-audit: chapter → audit</title></path>
+<path d="M240,633.0 C190.0,633.0 190.0,388.5 140.0,388.5" fill="none" stroke="#5a6478" stroke-width="1.3" marker-end="url(#arw)"><title>e-commit: audit → ledgerUp</title></path>
+<path d="M240,711.0 C190.0,711.0 190.0,427.5 140.0,427.5" fill="none" stroke="#5a6478" stroke-width="1.3" marker-end="url(#arw)"><title>e-red: ledgerUp → redline</title></path>
+<path d="M240,789.0 C190.0,789.0 190.0,466.5 140.0,466.5" fill="none" stroke="#5a6478" stroke-width="1.3" marker-end="url(#arw)"><title>e-fin: redline → fin</title></path>
+<path d="M240,867.0 C190.0,867.0 190.0,271.5 140.0,271.5" fill="none" stroke="#5a6478" stroke-width="1.3" stroke-dasharray="5,4" marker-end="url(#arw)"><title>e-loop: fin → ledger</title></path>
 </svg>

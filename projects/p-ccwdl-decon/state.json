@@ -1,0 +1,89 @@
+{
+  "runId": "run-mu5qmazv-q5oqvp",
+  "projectId": "p-ccwdl-decon",
+  "flowId": "book-deconstruct",
+  "flowVersion": "0.1.0-draft",
+  "flowHash": "2c305abd",
+  "status": "running",
+  "plan": {
+    "order": [
+      "src",
+      "pre",
+      "read",
+      "refine",
+      "chars",
+      "style",
+      "dedup",
+      "promote",
+      "fin"
+    ]
+  },
+  "nodes": {
+    "src": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "参考作品.md"
+    },
+    "pre": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "内部/kb-pre.md"
+    },
+    "read": {
+      "status": "done",
+      "round": 1,
+      "failCount": 1,
+      "lastArtifact": "内部/稿本/拆解件-剧情设计.md",
+      "stale": false
+    },
+    "refine": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "内部/稿本/拆解件-细化.md",
+      "stale": false
+    },
+    "chars": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "内部/稿本/拆解件-人设.md",
+      "stale": false
+    },
+    "style": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "内部/稿本/拆解件-文风.md",
+      "stale": false
+    },
+    "dedup": {
+      "status": "none",
+      "round": 0
+    },
+    "promote": {
+      "status": "none",
+      "round": 0
+    },
+    "fin": {
+      "status": "none",
+      "round": 0
+    }
+  },
+  "gate": {
+    "verdict": "none"
+  },
+  "inputs": {
+    "project": "p-ccwdl-decon",
+    "sources": "≥2 篇类型共性拆解：参考作品.md（自写范文两篇——枭雄穿卑躯/市井权谋，命题「曹操穿越武大郎」观察样本）",
+    "slots": "all"
+  },
+  "comments": {},
+  "overlayHash": "2a661b6d",
+  "policy": {
+    "kit_boundary": "auto",
+    "gate_mode": "auto",
+    "adapt": "propose"
+  },
+  "planHash": "d43aa60b",
+  "focus": "dedup"
+}

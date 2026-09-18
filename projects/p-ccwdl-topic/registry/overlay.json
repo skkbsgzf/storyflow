@@ -1,0 +1,22 @@
+{
+  "format": "flow-overlay@1",
+  "flowId": "topic-selection",
+  "origin": "user",
+  "reason": "实验批自动放行：auto 档剪链实测后改 off",
+  "patches": [
+    {
+      "kind": "set-policy",
+      "key": "kit_boundary",
+      "value": "off",
+      "reason": "实验批：跨域交接验收门自动通过，最终产物由用户统一裁决"
+    }
+  ],
+  "history": [
+    {
+      "at": "2026-09-17T16:38:50.479Z",
+      "actor": "user",
+      "flowHashBefore": "7a36bbec",
+      "note": "实验批自动放行：auto 档剪链实测后改 off"
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "runId": "run-mu5s1jj9-jjw2wd",
+  "projectId": "p-ccwdl-ep",
+  "flowId": "episode-script",
+  "flowVersion": "0.1.0-draft",
+  "flowHash": "713e7aa9",
+  "status": "running",
+  "plan": {
+    "order": [
+      "src",
+      "ledger",
+      "write",
+      "audit",
+      "ledgerUp",
+      "redline",
+      "fin"
+    ]
+  },
+  "nodes": {
+    "src": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "分集大纲.md"
+    },
+    "ledger": {
+      "status": "none",
+      "round": 0
+    },
+    "write": {
+      "status": "none",
+      "round": 0
+    },
+    "audit": {
+      "status": "none",
+      "round": 0
+    },
+    "ledgerUp": {
+      "status": "none",
+      "round": 0
+    },
+    "redline": {
+      "status": "none",
+      "round": 0
+    },
+    "fin": {
+      "status": "none",
+      "round": 0
+    }
+  },
+  "gate": {
+    "verdict": "none"
+  },
+  "inputs": {
+    "project": "p-ccwdl-ep",
+    "route": "hot",
+    "range": "1-3",
+    "batch": 3
+  },
+  "comments": {},
+  "overlayHash": "4dd0676e",
+  "policy": {
+    "kit_boundary": "off",
+    "gate_mode": "auto",
+    "adapt": "propose"
+  },
+  "planHash": "47bb85d3",
+  "focus": "ledger"
+}

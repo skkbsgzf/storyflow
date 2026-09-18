@@ -1,0 +1,590 @@
+{
+  "artifacts": [
+    {
+      "path": "内部/kb-market.md",
+      "node": "market",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "2a4f16e2089d",
+      "ts": "2026-09-17T17:08:22.078Z"
+    },
+    {
+      "path": "选题素材.md",
+      "node": "src",
+      "producer": "kernel:novel-txt",
+      "inputs": {},
+      "round": 1,
+      "sha1": "5a5232e17ac3",
+      "ts": "2026-09-17T17:08:22.080Z"
+    },
+    {
+      "path": "内部/稿本/梗卡.md",
+      "node": "tropes",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "5a5232e17ac3"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1529 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        }
+      ],
+      "sha1": "6f3c4f424655",
+      "ts": "2026-09-17T17:09:25.535Z"
+    },
+    {
+      "path": "内部/断言报告-combo.json",
+      "node": "combo",
+      "producer": "minitool:check_trope_combo",
+      "inputs": {
+        "内部/稿本/梗卡.md": "6f3c4f424655"
+      },
+      "round": 1,
+      "sha1": "c9b8074997b3",
+      "ts": "2026-09-17T17:09:25.545Z"
+    },
+    {
+      "path": "内部/kb-benchmark.md",
+      "node": "benchmark",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "86d2c6efcc01",
+      "ts": "2026-09-17T17:09:25.550Z"
+    },
+    {
+      "path": "对外交付/01-选题报告.md",
+      "node": "analysis",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "5a5232e17ac3",
+        "内部/稿本/梗卡.md": "6f3c4f424655",
+        "内部/稿本/热点素材.md": null
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1659 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        },
+        {
+          "name": "AE-SKIP-NON-BEAT",
+          "status": "warn",
+          "detail": "非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "2ef92cc8a5fd",
+      "ts": "2026-09-17T17:10:17.739Z"
+    },
+    {
+      "path": "内部/意见/多视角意见书-gate-r1.md",
+      "node": "gate-r1",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "对外交付/01-选题报告.md": "2ef92cc8a5fd"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "911 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        }
+      ],
+      "sha1": "dc301ab69aa4",
+      "ts": "2026-09-17T17:11:02.440Z"
+    },
+    {
+      "path": "世界书/世界观圣经.md",
+      "node": "bible",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "对外交付/01-选题报告.md": "2ef92cc8a5fd"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1163 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        }
+      ],
+      "sha1": "fcaf79c9420d",
+      "ts": "2026-09-17T17:13:00.096Z"
+    },
+    {
+      "path": "内部/意见/多视角意见书-red-s2.md",
+      "node": "red-s2",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "世界书/世界观圣经.md": "fcaf79c9420d"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "918 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        }
+      ],
+      "sha1": "3e9652bbb48b",
+      "ts": "2026-09-17T17:13:51.587Z"
+    },
+    {
+      "path": "内部/稿本/单元剧大纲.md",
+      "node": "outline3",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/意见/多视角意见书-red-s2.md": "3e9652bbb48b"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1800 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        }
+      ],
+      "sha1": "3c3a83c69081",
+      "ts": "2026-09-17T17:14:44.304Z"
+    },
+    {
+      "path": "内部/意见/多视角意见书-red-s3.md",
+      "node": "red-s3",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/稿本/单元剧大纲.md": "3c3a83c69081"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "819 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        }
+      ],
+      "sha1": "3e9b7d68e459",
+      "ts": "2026-09-17T17:15:11.048Z"
+    },
+    {
+      "path": "章节正文/第1章.md",
+      "node": "chapter",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/意见/多视角意见书-red-s3.md": "3e9b7d68e459",
+        "世界书/世界观圣经.md": "fcaf79c9420d",
+        "内部/稿本/单元剧大纲.md": "3c3a83c69081"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1956 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        },
+        {
+          "name": "AE-AI-QUOTA",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+        },
+        {
+          "name": "AE-AI-STRUCT",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+        },
+        {
+          "name": "AE-COMPLIANCE",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+        },
+        {
+          "name": "AE-CONT-FORESHADOW",
+          "status": "warn",
+          "detail": "伏笔台账（世界书/伏笔台账.md）行不可解析（需数字章号+状态列）——切片不适用"
+        },
+        {
+          "name": "AE-CONT-ITEM",
+          "status": "pass",
+          "detail": "数字事实切片一致（3 条台账事实比对；语义级矛盾归红方）"
+        },
+        {
+          "name": "AE-CONT-KNOW",
+          "status": "pass",
+          "detail": "切片未见越权专名（引号词条×台账比对；语义级越权归红方）"
+        },
+        {
+          "name": "AE-NAT-HIT",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+        },
+        {
+          "name": "AE-PROSE-NOTBUT",
+          "status": "pass",
+          "detail": "「不是A(而)是B」2 处（配额 2）"
+        },
+        {
+          "name": "AE-PROSE-RHYTHM",
+          "status": "pass",
+          "detail": "突然/仿佛/似乎 0 处（≤2）"
+        },
+        {
+          "name": "AE-PROSE-SLOP",
+          "status": "pass",
+          "detail": "无 AI 高频词"
+        },
+        {
+          "name": "AE-PROSE-TRIPLET",
+          "status": "pass",
+          "detail": "无三连排比"
+        },
+        {
+          "name": "AE-WNF-HOOK",
+          "status": "pass",
+          "detail": "章末钩型：转折"
+        }
+      ],
+      "sha1": "8e378d4717b4",
+      "ts": "2026-09-17T17:20:29.027Z"
+    },
+    {
+      "path": "章节正文/第2章.md",
+      "node": "chapter",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/意见/多视角意见书-red-s3.md": "3e9b7d68e459",
+        "世界书/世界观圣经.md": "fcaf79c9420d",
+        "内部/稿本/单元剧大纲.md": "3c3a83c69081"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1487 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        },
+        {
+          "name": "AE-AI-QUOTA",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+        },
+        {
+          "name": "AE-AI-STRUCT",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+        },
+        {
+          "name": "AE-COMPLIANCE",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+        },
+        {
+          "name": "AE-CONT-FORESHADOW",
+          "status": "warn",
+          "detail": "伏笔台账（世界书/伏笔台账.md）行不可解析（需数字章号+状态列）——切片不适用"
+        },
+        {
+          "name": "AE-CONT-ITEM",
+          "status": "pass",
+          "detail": "数字事实切片一致（3 条台账事实比对；语义级矛盾归红方）"
+        },
+        {
+          "name": "AE-CONT-KNOW",
+          "status": "pass",
+          "detail": "切片未见越权专名（引号词条×台账比对；语义级越权归红方）"
+        },
+        {
+          "name": "AE-NAT-HIT",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+        },
+        {
+          "name": "AE-PROSE-NOTBUT",
+          "status": "pass",
+          "detail": "「不是A(而)是B」0 处（配额 2）"
+        },
+        {
+          "name": "AE-PROSE-RHYTHM",
+          "status": "pass",
+          "detail": "突然/仿佛/似乎 0 处（≤2）"
+        },
+        {
+          "name": "AE-PROSE-SLOP",
+          "status": "pass",
+          "detail": "无 AI 高频词"
+        },
+        {
+          "name": "AE-PROSE-TRIPLET",
+          "status": "pass",
+          "detail": "三连排比 1 处（配额内，须为笑点/文书本体）: 脑子里那座书城翻出一页，又是一页，每翻一页"
+        },
+        {
+          "name": "AE-WNF-HOOK",
+          "status": "warn",
+          "detail": "章末钩型：转折；与第1章同型（转折）——连续同型钩，四型轮换"
+        }
+      ],
+      "sha1": "dd74e5b81bd4",
+      "ts": "2026-09-17T17:22:32.433Z"
+    },
+    {
+      "path": "章节正文/第3章.md",
+      "node": "chapter",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/意见/多视角意见书-red-s3.md": "3e9b7d68e459",
+        "世界书/世界观圣经.md": "fcaf79c9420d",
+        "内部/稿本/单元剧大纲.md": "3c3a83c69081"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1448 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        },
+        {
+          "name": "AE-AI-QUOTA",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+        },
+        {
+          "name": "AE-AI-STRUCT",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+        },
+        {
+          "name": "AE-COMPLIANCE",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+        },
+        {
+          "name": "AE-CONT-FORESHADOW",
+          "status": "warn",
+          "detail": "伏笔台账（世界书/伏笔台账.md）行不可解析（需数字章号+状态列）——切片不适用"
+        },
+        {
+          "name": "AE-CONT-ITEM",
+          "status": "pass",
+          "detail": "数字事实切片一致（3 条台账事实比对；语义级矛盾归红方）"
+        },
+        {
+          "name": "AE-CONT-KNOW",
+          "status": "pass",
+          "detail": "切片未见越权专名（引号词条×台账比对；语义级越权归红方）"
+        },
+        {
+          "name": "AE-NAT-HIT",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+        },
+        {
+          "name": "AE-PROSE-NOTBUT",
+          "status": "pass",
+          "detail": "「不是A(而)是B」0 处（配额 2）"
+        },
+        {
+          "name": "AE-PROSE-RHYTHM",
+          "status": "pass",
+          "detail": "突然/仿佛/似乎 0 处（≤2）"
+        },
+        {
+          "name": "AE-PROSE-SLOP",
+          "status": "pass",
+          "detail": "无 AI 高频词"
+        },
+        {
+          "name": "AE-PROSE-TRIPLET",
+          "status": "pass",
+          "detail": "无三连排比"
+        },
+        {
+          "name": "AE-WNF-HOOK",
+          "status": "pass",
+          "detail": "章末钩型：情绪"
+        }
+      ],
+      "sha1": "b45ffbbc9fcd",
+      "ts": "2026-09-17T17:23:45.280Z"
+    },
+    {
+      "path": "内部/断言报告-audit.json",
+      "node": "audit",
+      "producer": "minitool:check_aesthetic_asserts",
+      "inputs": {
+        "章节正文/第1章.md": "8e378d4717b4",
+        "章节正文/第2章.md": "dd74e5b81bd4",
+        "章节正文/第3章.md": "b45ffbbc9fcd"
+      },
+      "round": 1,
+      "sha1": "7e0b5127d9ee",
+      "ts": "2026-09-17T17:23:45.293Z"
+    },
+    {
+      "path": "对外交付/02-前三章终稿.md",
+      "node": "polish",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "章节正文/第1章.md": "8e378d4717b4"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "4525 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        },
+        {
+          "name": "AE-SKIP-NON-BEAT",
+          "status": "warn",
+          "detail": "非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "4b42464c5a10",
+      "ts": "2026-09-17T17:27:02.271Z"
+    },
+    {
+      "path": "内部/意见/多视角意见书-gate-final.md",
+      "node": "gate-final",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "对外交付/02-前三章终稿.md": "4b42464c5a10"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "845 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "c72a4c29d634",
+      "ts": "2026-09-17T17:32:23.998Z"
+    }
+  ]
+}

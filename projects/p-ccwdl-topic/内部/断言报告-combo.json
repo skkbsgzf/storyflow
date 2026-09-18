@@ -1,0 +1,20 @@
+{
+  "mode": "integrity",
+  "node": "combo",
+  "minitool": "check_trope_combo",
+  "checked": [
+    "内部/稿本/梗卡.md"
+  ],
+  "results": [
+    {
+      "name": "exists",
+      "status": "pass",
+      "detail": "1833 chars"
+    },
+    {
+      "name": "no-debris",
+      "status": "pass"
+    }
+  ],
+  "note": "integrity 模式（存在性/残渣/计数一致性）"
+}

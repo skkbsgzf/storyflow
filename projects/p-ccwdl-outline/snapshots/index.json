@@ -1,0 +1,31 @@
+{
+  "snapshots": {
+    "choreo": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T16:59:40.421Z",
+        "note": "submit r1·分集大纲.md",
+        "files": {
+          "内部/稿本/分集大纲.md": {
+            "hash": "3bea8c07f28a",
+            "path": "snapshots/choreo/r1/内部/稿本/分集大纲.md"
+          }
+        }
+      }
+    ],
+    "redline": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T17:00:47.770Z",
+        "note": "submit r1·红方意见书-redline.md",
+        "files": {
+          "内部/意见/红方意见书-redline.md": {
+            "hash": "34eba332d3b5",
+            "path": "snapshots/redline/r1/内部/意见/红方意见书-redline.md"
+          }
+        }
+      }
+    ]
+  },
+  "inputs": {}
+}

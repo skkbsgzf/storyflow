@@ -280,3 +280,153 @@
 {"ts": "2026-09-16T20:52:17.000Z", "runId": "run-mu3kjmhg-coltmb", "event": "verify", "actor": "host", "nodeId": "audit", "detail": "flow-verify 首跑盘点：4 红收档+13 黄对账（内部/flow-verify-首跑盘点.md）", "refs": []}
 {"ts": "2026-09-16T20:52:17.000Z", "runId": "run-mu3kjmhg-coltmb", "event": "tooling", "actor": "host", "nodeId": "audit", "detail": "K7a 探测器落地 tools/flow-verify.py；K8 收据纪律 prose-scan 落盘（内部/prose-scan-v6.md）；内核断言表新增 AE-PROSE-*（小说正文），audit 对 iterate 上游展开全部实例", "refs": []}
 {"ts": "2026-09-16T20:52:17.000Z", "runId": "run-mu3kjmhg-coltmb", "event": "rerun", "actor": "host", "nodeId": "audit", "detail": "按 flow 正路重跑：flow_rerun audit → 内核断言三章全绿 → 级联重派 polish → flow_submit 终稿 → gate-final 重开", "refs": []}
+{"ts":"2026-09-16T20:58:59.681Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"polish","detail":"rerun 级联失效"}
+{"ts":"2026-09-16T20:58:59.682Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"gate-final","detail":"rerun 级联失效"}
+{"ts":"2026-09-16T20:58:59.682Z","runId":"run-mu3kjmhg-coltmb","event":"rerun","actor":"kernel","nodeId":"polish","detail":"scope 2 节点","refs":["polish","gate-final"]}
+{"ts":"2026-09-16T20:58:59.688Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"polish","detail":"任务包产出（skill=novel-deai，上下文 2 件）"}
+{"ts":"2026-09-16T20:58:59.688Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：polish（并行）"}
+{"ts":"2026-09-16T21:01:57.829Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"polish","detail":"对外交付/02-前三章终稿.md","refs":["对外交付/02-前三章终稿.md"]}
+{"ts":"2026-09-16T21:01:57.829Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"polish","detail":"r6","refs":["对外交付/02-前三章终稿.md"]}
+{"ts":"2026-09-16T21:01:57.832Z","runId":"run-mu3kjmhg-coltmb","event":"gate-open","actor":"kernel","nodeId":"gate-final","detail":"终稿验收（用户读三章）"}
+{"ts":"2026-09-16T21:07:17.730Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"chapter","detail":"rerun 级联失效"}
+{"ts":"2026-09-16T21:07:17.731Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"audit","detail":"rerun 级联失效"}
+{"ts":"2026-09-16T21:07:17.731Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"polish","detail":"rerun 级联失效"}
+{"ts":"2026-09-16T21:07:17.731Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"gate-final","detail":"rerun 级联失效"}
+{"ts":"2026-09-16T21:07:17.731Z","runId":"run-mu3kjmhg-coltmb","event":"rerun","actor":"kernel","nodeId":"chapter","detail":"scope 4 节点","refs":["chapter","audit","polish","gate-final"]}
+{"ts":"2026-09-16T21:07:17.737Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"chapter","detail":"任务包产出（skill=novel-chapter，上下文 3 件）"}
+{"ts":"2026-09-16T21:07:17.738Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：chapter（并行）"}
+{"ts":"2026-09-16T21:07:55.064Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"chapter","detail":"章节正文/第1章.md","refs":["章节正文/第1章.md"]}
+{"ts":"2026-09-16T21:07:55.065Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"chapter","detail":"r3","refs":["章节正文/第1章.md"]}
+{"ts":"2026-09-16T21:07:55.072Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"audit","detail":"内部/断言报告-audit.json","refs":["内部/断言报告-audit.json"]}
+{"ts":"2026-09-16T21:07:55.078Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"polish","detail":"任务包产出（skill=novel-deai，上下文 2 件）"}
+{"ts":"2026-09-16T21:07:55.079Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：polish（并行）"}
+{"ts":"2026-09-16T21:07:55.279Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：polish（并行）"}
+{"ts":"2026-09-16T21:07:55.476Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"polish","detail":"对外交付/02-前三章终稿.md","refs":["对外交付/02-前三章终稿.md"]}
+{"ts":"2026-09-16T21:07:55.476Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"polish","detail":"r8","refs":["对外交付/02-前三章终稿.md"]}
+{"ts":"2026-09-16T21:07:55.478Z","runId":"run-mu3kjmhg-coltmb","event":"gate-open","actor":"kernel","nodeId":"gate-final","detail":"终稿验收（用户读三章）"}
+{"ts":"2026-09-16T21:39:09.082Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"polish","detail":"rerun 级联失效"}
+{"ts":"2026-09-16T21:39:09.083Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"gate-final","detail":"rerun 级联失效"}
+{"ts":"2026-09-16T21:39:09.083Z","runId":"run-mu3kjmhg-coltmb","event":"rerun","actor":"kernel","nodeId":"polish","detail":"scope 2 节点","refs":["polish","gate-final"]}
+{"ts":"2026-09-16T21:39:09.088Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"polish","detail":"任务包产出（skill=novel-deai，上下文 2 件）"}
+{"ts":"2026-09-16T21:39:09.088Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：polish（并行）"}
+{"ts":"2026-09-16T21:39:13.721Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"polish","detail":"rerun 级联失效"}
+{"ts":"2026-09-16T21:39:13.722Z","runId":"run-mu3kjmhg-coltmb","event":"rerun","actor":"kernel","nodeId":"polish","detail":"scope 2 节点","refs":["polish","gate-final"]}
+{"ts":"2026-09-16T21:39:13.727Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"polish","detail":"任务包产出（skill=novel-deai，上下文 2 件）"}
+{"ts":"2026-09-16T21:39:13.727Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：polish（并行）"}
+{"ts":"2026-09-16T21:49:11.937Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"polish","detail":"对外交付/02-前三章终稿.md","refs":["对外交付/02-前三章终稿.md"]}
+{"ts":"2026-09-16T21:49:11.938Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"polish","detail":"r11","refs":["对外交付/02-前三章终稿.md"]}
+{"ts":"2026-09-16T21:49:11.939Z","runId":"run-mu3kjmhg-coltmb","event":"gate-open","actor":"kernel","nodeId":"gate-final","detail":"终稿验收（用户读三章）"}
+{"ts":"2026-09-16T21:49:19.014Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"chapter","detail":"rerun 级联失效"}
+{"ts":"2026-09-16T21:49:19.015Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"audit","detail":"rerun 级联失效"}
+{"ts":"2026-09-16T21:49:19.015Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"polish","detail":"rerun 级联失效"}
+{"ts":"2026-09-16T21:49:19.015Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"gate-final","detail":"rerun 级联失效"}
+{"ts":"2026-09-16T21:49:19.015Z","runId":"run-mu3kjmhg-coltmb","event":"rerun","actor":"kernel","nodeId":"chapter","detail":"scope 4 节点","refs":["chapter","audit","polish","gate-final"]}
+{"ts":"2026-09-16T21:49:19.020Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"chapter","detail":"任务包产出（skill=novel-chapter，上下文 3 件）"}
+{"ts":"2026-09-16T21:49:19.020Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：chapter（并行）"}
+{"ts":"2026-09-16T21:50:34.787Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"chapter","detail":"章节正文/第1章.md","refs":["章节正文/第1章.md"]}
+{"ts":"2026-09-16T21:50:34.787Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"chapter","detail":"r5","refs":["章节正文/第1章.md"]}
+{"ts":"2026-09-16T21:50:34.794Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"audit","detail":"内部/断言报告-audit.json","refs":["内部/断言报告-audit.json"]}
+{"ts":"2026-09-16T21:50:34.797Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"polish","detail":"任务包产出（skill=novel-deai，上下文 2 件）"}
+{"ts":"2026-09-16T21:50:34.797Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：polish（并行）"}
+{"ts":"2026-09-16T21:51:08.957Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"polish","detail":"对外交付/02-前三章终稿.md","refs":["对外交付/02-前三章终稿.md"]}
+{"ts":"2026-09-16T21:51:08.957Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"polish","detail":"r13","refs":["对外交付/02-前三章终稿.md"]}
+{"ts":"2026-09-16T21:51:08.959Z","runId":"run-mu3kjmhg-coltmb","event":"gate-open","actor":"kernel","nodeId":"gate-final","detail":"终稿验收（用户读三章）"}
+{"ts":"2026-09-16T22:13:36.743Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"polish","detail":"rerun 级联失效"}
+{"ts":"2026-09-16T22:13:36.744Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"gate-final","detail":"rerun 级联失效"}
+{"ts":"2026-09-16T22:13:36.744Z","runId":"run-mu3kjmhg-coltmb","event":"rerun","actor":"kernel","nodeId":"polish","detail":"scope 2 节点","refs":["polish","gate-final"]}
+{"ts":"2026-09-16T22:13:36.749Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"polish","detail":"任务包产出（skill=novel-deai，上下文 2 件）"}
+{"ts":"2026-09-16T22:13:36.749Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：polish（并行）"}
+{"ts":"2026-09-16T22:15:57.423Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"polish","detail":"对外交付/02-前三章终稿.md","refs":["对外交付/02-前三章终稿.md"]}
+{"ts":"2026-09-16T22:15:57.423Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"polish","detail":"r15","refs":["对外交付/02-前三章终稿.md"]}
+{"ts":"2026-09-16T22:15:57.425Z","runId":"run-mu3kjmhg-coltmb","event":"gate-open","actor":"kernel","nodeId":"gate-final","detail":"终稿验收（用户读三章）"}
+{"ts":"2026-09-16T22:15:57.579Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"chapter","detail":"rerun 级联失效"}
+{"ts":"2026-09-16T22:15:57.580Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"audit","detail":"rerun 级联失效"}
+{"ts":"2026-09-16T22:15:57.580Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"polish","detail":"rerun 级联失效"}
+{"ts":"2026-09-16T22:15:57.581Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"gate-final","detail":"rerun 级联失效"}
+{"ts":"2026-09-16T22:15:57.581Z","runId":"run-mu3kjmhg-coltmb","event":"rerun","actor":"kernel","nodeId":"chapter","detail":"scope 4 节点","refs":["chapter","audit","polish","gate-final"]}
+{"ts":"2026-09-16T22:15:57.586Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"chapter","detail":"任务包产出（skill=novel-chapter，上下文 3 件）"}
+{"ts":"2026-09-16T22:15:57.586Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：chapter（并行）"}
+{"ts":"2026-09-16T22:15:57.835Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"chapter","detail":"章节正文/第1章.md","refs":["章节正文/第1章.md"]}
+{"ts":"2026-09-16T22:15:57.836Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"chapter","detail":"r7","refs":["章节正文/第1章.md"]}
+{"ts":"2026-09-16T22:15:57.842Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"audit","detail":"内部/断言报告-audit.json","refs":["内部/断言报告-audit.json"]}
+{"ts":"2026-09-16T22:15:57.845Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"polish","detail":"任务包产出（skill=novel-deai，上下文 2 件）"}
+{"ts":"2026-09-16T22:15:57.845Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：polish（并行）"}
+{"ts":"2026-09-16T22:16:07.031Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"polish","detail":"对外交付/02-前三章终稿.md","refs":["对外交付/02-前三章终稿.md"]}
+{"ts":"2026-09-16T22:16:07.032Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"polish","detail":"r17","refs":["对外交付/02-前三章终稿.md"]}
+{"ts":"2026-09-16T22:16:07.033Z","runId":"run-mu3kjmhg-coltmb","event":"gate-open","actor":"kernel","nodeId":"gate-final","detail":"终稿验收（用户读三章）"}
+{"ts":"2026-09-17T00:33:58.844Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"chapter","detail":"rerun 级联失效"}
+{"ts":"2026-09-17T00:33:58.844Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"audit","detail":"rerun 级联失效"}
+{"ts":"2026-09-17T00:33:58.845Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"polish","detail":"rerun 级联失效"}
+{"ts":"2026-09-17T00:33:58.845Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"gate-final","detail":"rerun 级联失效"}
+{"ts":"2026-09-17T00:33:58.845Z","runId":"run-mu3kjmhg-coltmb","event":"rerun","actor":"kernel","nodeId":"chapter","detail":"scope 4 节点","refs":["chapter","audit","polish","gate-final"]}
+{"ts":"2026-09-17T00:33:58.849Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"chapter","detail":"任务包产出（skill=novel-chapter，上下文 3 件）"}
+{"ts":"2026-09-17T00:33:58.850Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：chapter（并行）"}
+{"ts":"2026-09-17T00:33:59.002Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"chapter","detail":"章节正文/第1章.md","refs":["章节正文/第1章.md"]}
+{"ts":"2026-09-17T00:33:59.002Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"chapter","detail":"r8·第1章.md","refs":["章节正文/第1章.md"]}
+{"ts":"2026-09-17T00:33:59.156Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"chapter","detail":"章节正文/第2章.md","refs":["章节正文/第2章.md"]}
+{"ts":"2026-09-17T00:33:59.156Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"chapter","detail":"r8·第2章.md","refs":["章节正文/第2章.md"]}
+{"ts":"2026-09-17T00:33:59.308Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"chapter","detail":"章节正文/第3章.md","refs":["章节正文/第3章.md"]}
+{"ts":"2026-09-17T00:33:59.308Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"chapter","detail":"r9·第3章.md","refs":["章节正文/第3章.md"]}
+{"ts":"2026-09-17T00:33:59.311Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"audit","detail":"缓存命中（输入指纹未变，跳过重算）"}
+{"ts":"2026-09-17T00:33:59.314Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"polish","detail":"任务包产出（skill=novel-deai，上下文 2 件）"}
+{"ts":"2026-09-17T00:33:59.314Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：polish（并行）"}
+{"ts":"2026-09-17T00:34:11.533Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"polish","detail":"对外交付/02-前三章终稿.md","refs":["对外交付/02-前三章终稿.md"]}
+{"ts":"2026-09-17T00:34:11.534Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"polish","detail":"r19·02-前三章终稿.md","refs":["对外交付/02-前三章终稿.md"]}
+{"ts":"2026-09-17T00:34:11.535Z","runId":"run-mu3kjmhg-coltmb","event":"gate-open","actor":"kernel","nodeId":"gate-final","detail":"终稿验收（用户读三章）"}
+{"ts":"2026-09-17T01:05:05.952Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"chapter","detail":"本阶段打回失效，待重算"}
+{"ts":"2026-09-17T01:05:05.952Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"audit","detail":"本阶段打回失效，待重算"}
+{"ts":"2026-09-17T01:05:05.953Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"polish","detail":"本阶段打回失效，待重算"}
+{"ts":"2026-09-17T01:05:05.953Z","runId":"run-mu3kjmhg-coltmb","event":"verdict","actor":"kernel","nodeId":"gate-final","detail":"send-back → chapter（本阶段，3 节点失效）：用户判词：三章都不行，都需要改——细节不够、描写没有代入感、不清晰。按根因退 S4 入口（chapter）重做","refs":["chapter","audit","polish"]}
+{"ts":"2026-09-17T01:05:05.958Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"chapter","detail":"任务包产出（skill=novel-chapter，上下文 3 件）"}
+{"ts":"2026-09-17T01:05:05.958Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：chapter（并行）"}
+{"ts":"2026-09-17T01:10:39.845Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"chapter","detail":"章节正文/第1章.md","refs":["章节正文/第1章.md"]}
+{"ts":"2026-09-17T01:10:39.846Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"chapter","detail":"r10·第1章.md","refs":["章节正文/第1章.md"]}
+{"ts":"2026-09-17T01:10:39.999Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"chapter","detail":"章节正文/第2章.md","refs":["章节正文/第2章.md"]}
+{"ts":"2026-09-17T01:10:39.999Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"chapter","detail":"r10·第2章.md","refs":["章节正文/第2章.md"]}
+{"ts":"2026-09-17T01:10:40.163Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"chapter","detail":"章节正文/第3章.md","refs":["章节正文/第3章.md"]}
+{"ts":"2026-09-17T01:10:40.164Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"chapter","detail":"r11·第3章.md","refs":["章节正文/第3章.md"]}
+{"ts":"2026-09-17T01:10:40.170Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"audit","detail":"内部/断言报告-audit.json","refs":["内部/断言报告-audit.json"]}
+{"ts":"2026-09-17T01:10:40.173Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"polish","detail":"任务包产出（skill=novel-deai，上下文 2 件）"}
+{"ts":"2026-09-17T01:10:40.174Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：polish（并行）"}
+{"ts":"2026-09-17T01:11:42.439Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"polish","detail":"对外交付/02-前三章终稿.md","refs":["对外交付/02-前三章终稿.md"]}
+{"ts":"2026-09-17T01:11:42.440Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"polish","detail":"r21·02-前三章终稿.md","refs":["对外交付/02-前三章终稿.md"]}
+{"ts":"2026-09-17T01:11:42.441Z","runId":"run-mu3kjmhg-coltmb","event":"gate-open","actor":"kernel","nodeId":"gate-final","detail":"终稿验收（用户读三章）"}
+{"ts":"2026-09-17T02:16:23.949Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"chapter","detail":"rerun 级联失效"}
+{"ts":"2026-09-17T02:16:23.950Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"audit","detail":"rerun 级联失效"}
+{"ts":"2026-09-17T02:16:23.950Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"polish","detail":"rerun 级联失效"}
+{"ts":"2026-09-17T02:16:23.951Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"gate-final","detail":"rerun 级联失效"}
+{"ts":"2026-09-17T02:16:23.951Z","runId":"run-mu3kjmhg-coltmb","event":"rerun","actor":"kernel","nodeId":"chapter","detail":"scope 4 节点","refs":["chapter","audit","polish","gate-final"]}
+{"ts":"2026-09-17T02:16:23.955Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"chapter","detail":"任务包产出（skill=novel-chapter，上下文 3 件）"}
+{"ts":"2026-09-17T02:16:23.956Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：chapter（并行）"}
+{"ts":"2026-09-17T02:16:24.112Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"chapter","detail":"章节正文/第1章.md","refs":["章节正文/第1章.md"]}
+{"ts":"2026-09-17T02:16:24.112Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"chapter","detail":"r12·第1章.md","refs":["章节正文/第1章.md"]}
+{"ts":"2026-09-17T02:16:24.265Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"chapter","detail":"章节正文/第2章.md","refs":["章节正文/第2章.md"]}
+{"ts":"2026-09-17T02:16:24.266Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"chapter","detail":"r12·第2章.md","refs":["章节正文/第2章.md"]}
+{"ts":"2026-09-17T02:16:24.428Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"chapter","detail":"章节正文/第3章.md","refs":["章节正文/第3章.md"]}
+{"ts":"2026-09-17T02:16:24.429Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"chapter","detail":"r13·第3章.md","refs":["章节正文/第3章.md"]}
+{"ts":"2026-09-17T02:16:24.435Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"audit","detail":"内部/断言报告-audit.json","refs":["内部/断言报告-audit.json"]}
+{"ts":"2026-09-17T02:16:24.438Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"polish","detail":"任务包产出（skill=novel-deai，上下文 2 件）"}
+{"ts":"2026-09-17T02:16:24.438Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：polish（并行）"}
+{"ts":"2026-09-17T02:16:54.310Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"polish","detail":"对外交付/02-前三章终稿.md","refs":["对外交付/02-前三章终稿.md"]}
+{"ts":"2026-09-17T02:16:54.310Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"polish","detail":"r23·02-前三章终稿.md","refs":["对外交付/02-前三章终稿.md"]}
+{"ts":"2026-09-17T02:16:54.312Z","runId":"run-mu3kjmhg-coltmb","event":"gate-open","actor":"kernel","nodeId":"gate-final","detail":"终稿验收（用户读三章）"}
+{"ts":"2026-09-17T03:21:19.465Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"chapter","detail":"rerun 级联失效"}
+{"ts":"2026-09-17T03:21:19.466Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"audit","detail":"rerun 级联失效"}
+{"ts":"2026-09-17T03:21:19.467Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"polish","detail":"rerun 级联失效"}
+{"ts":"2026-09-17T03:21:19.467Z","runId":"run-mu3kjmhg-coltmb","event":"stale","actor":"kernel","nodeId":"gate-final","detail":"rerun 级联失效"}
+{"ts":"2026-09-17T03:21:19.467Z","runId":"run-mu3kjmhg-coltmb","event":"rerun","actor":"kernel","nodeId":"chapter","detail":"scope 4 节点","refs":["chapter","audit","polish","gate-final"]}
+{"ts":"2026-09-17T03:21:19.472Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"chapter","detail":"任务包产出（skill=novel-chapter，上下文 3 件）"}
+{"ts":"2026-09-17T03:21:19.472Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：chapter（并行）"}
+{"ts":"2026-09-17T03:21:19.623Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"chapter","detail":"章节正文/第1章.md","refs":["章节正文/第1章.md"]}
+{"ts":"2026-09-17T03:21:19.623Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"chapter","detail":"r14·第1章.md","refs":["章节正文/第1章.md"]}
+{"ts":"2026-09-17T03:21:19.775Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"chapter","detail":"章节正文/第2章.md","refs":["章节正文/第2章.md"]}
+{"ts":"2026-09-17T03:21:19.775Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"chapter","detail":"r14·第2章.md","refs":["章节正文/第2章.md"]}
+{"ts":"2026-09-17T03:21:19.928Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"chapter","detail":"章节正文/第3章.md","refs":["章节正文/第3章.md"]}
+{"ts":"2026-09-17T03:21:19.928Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"chapter","detail":"r15·第3章.md","refs":["章节正文/第3章.md"]}
+{"ts":"2026-09-17T03:21:19.934Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"audit","detail":"内部/断言报告-audit.json","refs":["内部/断言报告-audit.json"]}
+{"ts":"2026-09-17T03:21:19.938Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","nodeId":"polish","detail":"任务包产出（skill=novel-deai，上下文 2 件）"}
+{"ts":"2026-09-17T03:21:19.938Z","runId":"run-mu3kjmhg-coltmb","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：polish（并行）"}
+{"ts":"2026-09-17T03:21:20.382Z","runId":"run-mu3kjmhg-coltmb","event":"submit","actor":"kernel","nodeId":"polish","detail":"对外交付/02-前三章终稿.md","refs":["对外交付/02-前三章终稿.md"]}
+{"ts":"2026-09-17T03:21:20.382Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"polish","detail":"r25·02-前三章终稿.md","refs":["对外交付/02-前三章终稿.md"]}
+{"ts":"2026-09-17T03:21:20.384Z","runId":"run-mu3kjmhg-coltmb","event":"gate-open","actor":"kernel","nodeId":"gate-final","detail":"终稿验收（用户读三章）"}
+{"ts":"2026-09-17T15:53:46.855Z","runId":"run-mu3kjmhg-coltmb","event":"note","actor":"kernel:mine","detail":"编排挖掘包已组装（journal 400 事件 / 证据文件 46 件 / 打回记录 44 条）","refs":["registry/mine-package.json"]}

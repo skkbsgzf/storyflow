@@ -1,0 +1,291 @@
+{
+  "format": "metrics-summary@1",
+  "runId": "run-mu5s4aaw-vkptxn",
+  "events": 6,
+  "byNode": {
+    "market": {
+      "nodeId": "market",
+      "runs": 0,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 0,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 0,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [
+        "pass"
+      ]
+    },
+    "tropes": {
+      "nodeId": "tropes",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 7,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 1,
+      "cost": 0.000001,
+      "efficiency": 1000000,
+      "verdicts": [],
+      "kit": "search",
+      "op": "find-trope"
+    },
+    "bible": {
+      "nodeId": "bible",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 7,
+      "ctxUsed": 1,
+      "hitRate": 0.14285714285714285,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "plot",
+      "op": "novel-bible"
+    },
+    "volume": {
+      "nodeId": "volume",
+      "runs": 1,
+      "submits": 0,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 0,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 8,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "plot",
+      "op": "plot-choreographer"
+    }
+  },
+  "byTool": {
+    "search.find-trope": {
+      "nodeId": "search.find-trope",
+      "kit": "search",
+      "op": "find-trope",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 7,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 1,
+      "cost": 0.000001,
+      "efficiency": 1000000,
+      "verdicts": [],
+      "nodes": [
+        "tropes"
+      ]
+    },
+    "plot.novel-bible": {
+      "nodeId": "plot.novel-bible",
+      "kit": "plot",
+      "op": "novel-bible",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 7,
+      "ctxUsed": 1,
+      "hitRate": 0.14285714285714285,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "bible"
+      ]
+    },
+    "plot.plot-choreographer": {
+      "nodeId": "plot.plot-choreographer",
+      "kit": "plot",
+      "op": "plot-choreographer",
+      "runs": 1,
+      "submits": 0,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 0,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 8,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "volume"
+      ]
+    }
+  },
+  "knowledge": [
+    {
+      "id": "kb/trope/chongsheng-fuchou",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/trope/dalian-nuezha",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/trope/liufang-zhongtian",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/trope/majia-diaoma",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/trope/na-billionaire",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/trope/na-fantasy",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "内部/kb-market.md",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/market/snapshot",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/market/structure",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/trope/*",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/character",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/conflict-escalation",
+      "offered": 3,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/formats/webnovel-longform",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/emotion-curve",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/ending",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/pacing-density",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/reversal",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/scene-value",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/market/constraints",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "世界书/世界观圣经.md",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "内部/稿本/梗卡.md",
+      "offered": 2,
+      "used": 1,
+      "hitRate": 0.5
+    }
+  ],
+  "gates": [],
+  "window": {
+    "from": "2026-09-17T17:04:00.317Z",
+    "to": "2026-09-17T17:06:35.192Z"
+  }
+}

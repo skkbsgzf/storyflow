@@ -1,0 +1,84 @@
+{
+  "runId": "run-mu5t5e4s-otz10u",
+  "projectId": "p-ccwdl-prose",
+  "flowId": "novel-prose",
+  "flowVersion": "0.1.0",
+  "flowHash": "b7e47d7e",
+  "status": "running",
+  "plan": {
+    "order": [
+      "src",
+      "ledger",
+      "beats",
+      "voices",
+      "textures",
+      "canon",
+      "assemble",
+      "audit",
+      "polish",
+      "fin"
+    ]
+  },
+  "nodes": {
+    "src": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "分场卡.md"
+    },
+    "ledger": {
+      "status": "none",
+      "round": 0
+    },
+    "beats": {
+      "status": "none",
+      "round": 0
+    },
+    "voices": {
+      "status": "none",
+      "round": 0
+    },
+    "textures": {
+      "status": "none",
+      "round": 0
+    },
+    "canon": {
+      "status": "none",
+      "round": 0
+    },
+    "assemble": {
+      "status": "none",
+      "round": 0
+    },
+    "audit": {
+      "status": "none",
+      "round": 0
+    },
+    "polish": {
+      "status": "none",
+      "round": 0
+    },
+    "fin": {
+      "status": "none",
+      "round": 0
+    }
+  },
+  "gate": {
+    "verdict": "none"
+  },
+  "inputs": {
+    "project": "p-ccwdl-prose",
+    "route": "hot",
+    "range": "1",
+    "batch": 4
+  },
+  "comments": {},
+  "overlayHash": "4dd0676e",
+  "policy": {
+    "kit_boundary": "off",
+    "gate_mode": "auto",
+    "adapt": "propose"
+  },
+  "planHash": "e086161b",
+  "focus": "ledger"
+}

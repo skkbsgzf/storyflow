@@ -322,7 +322,7 @@ textarea{width:100%;min-height:340px;background:var(--bg-ctl);color:var(--ink);b
     <button onclick="fitView()" title="整条流程适配窗口">⛶ 全屏</button>
     <button onclick="fitStage()" title="适配当前所在阶段（选中节点的阶段；无选中取第一个未完成阶段）">⊞ 本轮</button>
     <button onclick="fitStageNext()" title="适配下一轮（当前阶段的下一个阶段）">▸ 下一轮</button>
-    <button onclick="autoLayout()" title="按阶段分段重排">⌗ 自动布局</button>
+    <button onclick="autoLayout()" title="按模块分段重排（模块横向、模块内竖向）">⌗ 自动布局</button>
     <button onclick="persistState()" title="把运行状态写回项目">▤ 保存意见</button>
   </div>
 </div>
@@ -361,9 +361,14 @@ textarea{width:100%;min-height:340px;background:var(--bg-ctl);color:var(--ink);b
   </div>
 <script type="application/json" id="payload">__PAYLOAD__</script>
 <script>
-const DATA = JSON.parse(document.getElementById("payload").textContent);
-const flow = DATA.flow, files = DATA.files, RS = DATA.runstate;
+const PAYLOAD = JSON.parse(document.getElementById("payload").textContent);
+/* payload@2 五键冻结契约（contracts/page-payload.schema.json）：顶层 DATA/EFF/OVERLAY/OPTIMIZE/METRICS */
+const DATA = PAYLOAD.DATA;
+const files = DATA.files, RS = DATA.runstate;
 if (DATA.annos) RS.annos = DATA.annos;
+/* 未迁移面板的缺失键回填（WO-07 面板重写后可删）：只补默认值，不做双名兜底 */
+DATA.snapshots = DATA.snapshots || {}; DATA.kits = DATA.kits || {}; DATA.kbTitles = DATA.kbTitles || {};
+DATA.nodeFields = DATA.nodeFields || []; DATA.flowsIndex = DATA.flowsIndex || []; DATA.skillsIndex = DATA.skillsIndex || [];
 /* ---------- 文件多版本索引（来自快照）：diff 呈现的数据底座 ---------- */
 const fileVersions = {};
 Object.entries(DATA.snapshots || {}).forEach(([nid, lst]) => (lst || []).forEach(s => {
@@ -372,14 +377,16 @@ Object.entries(DATA.snapshots || {}).forEach(([nid, lst]) => (lst || []).forEach
   });
 }));
 Object.keys(fileVersions).forEach(k => fileVersions[k].sort((x, y) => x.label < y.label ? -1 : 1));
-const nodes = flow.graph.nodes, edges = flow.graph.edges;
-/* 交付节点集合：唯一真相 = 顶层 outputs[].node（graph.outputs 仅拓扑终点，作渲染兼容并入）——规范 R4 §5.1 */
-let _deliverySet = null;
-function deliveryNodes(){
-  if (!_deliverySet) _deliverySet = new Set((flow.outputs||[]).map(o=>o.node).filter(Boolean).concat(flow.graph.outputs||[]));
-  return _deliverySet;
-}
-function isDeliveryNode(n){ return deliveryNodes().has(n); }
+/* ---------- 生效编排：节点与边只此一份（EFF，内核 expandFlow 单点派生落盘）---------- */
+/* 页面不重算派生（R6 §三）。存量项目（未跑 flow_effect / 未转换）EFF 为空壳 → 画布空，横幅显式说明。 */
+const EFF = PAYLOAD.EFF || null;
+const OVERLAY = PAYLOAD.OVERLAY || null;
+const OPTIMIZE = PAYLOAD.OPTIMIZE || null;
+const METRICS = PAYLOAD.METRICS || null;
+const flow = (EFF && EFF.flow) || DATA.flow || {};   // flow@3 全文（内核内嵌）；无 EFF 时退展示摘要（payload DATA.flow）
+const nodes = (EFF && EFF.nodes) || {};    // { <实例id>.<tool>: node }
+const edges = (EFF && EFF.edges) || [];    // 骨架边 + 插件自动接线（R6 无 reject/loop 边）
+const LEGACY_CANVAS = !Object.keys(nodes).length;
 document.getElementById("v").textContent = "";  // 流程名移入「工作流管理」页（顶栏降噪）
 // 项目切换下拉：当前项目 + 目录下其他项目 + 新建入口
 const projSel = document.getElementById("proj-switch");
@@ -463,51 +470,48 @@ async function saveFile(name, content, ext){
   }
 }
 
-/* ---------- 布局：阶段分段 ｜ 同级同列 ｜ 产物压阶段虚线 ---------- */
-const NW=196, NH=76, GX=88, GY=64, MG=44;
+/* ---------- 布局：模块横向拼接 ｜ 模块内竖向主轴 ｜ 插件左分支 ｜ 连接件在模块缝 ----------
+   数据源唯一：DATA.modules（payload 契约「画布布局的唯一来源」）；EFF.links 只出连接件的模式与裁决态。 */
+const NW=196, NH=76, GY=64, MG=44;
+const PLUGIN_DX=24;                       // 插件分支：骨架主轴左侧的偏移
+const SPINE_DX=PLUGIN_DX+NW+18;           // 主轴相对模块带左缘的偏移（≥插件宽度，两列不相交）
+const MOD_GAP=132;                        // 模块缝宽：连接件走这里
+const MODULE_PALETTE=["#5e7d5a","#4f6d8c","#9c6b4a","#7d5f8a","#a5546b","#5f7d7d","#8c6d4f","#6b4f7d"];
 let pos = {};
-let stageLineX = {}, stageBand = {}, parCols = new Set();
+let moduleBand = {}, moduleLinks = [], nodeMeta = {}, parCols = new Set();
+const moduleColor = i => MODULE_PALETTE[i % MODULE_PALETTE.length];
 function autoLayout(){
-  const stageList = (flow.stages||[]);
-  const colOf = {}, colNodes = {};
-  let c = 0;
-  const push = (n, col)=>{ colOf[n]=col; (colNodes[col]=colNodes[col]||[]).push(n); };
-  for (const sg of stageList){
-    const work = (sg.nodes||[]).filter(n=>nodes[n] && n!==sg.gate);
-    if (!work.length) continue;
-    // 阶段内最长路径分层：同一层级的节点共享同一竖线
-    const lvl = {}; work.forEach(n=>lvl[n]=0);
-    for (let it=0; it<=work.length; it++){
-      for (const e of edges){
-        if (isBackEdge(e) || lvl[e.from]===undefined || lvl[e.to]===undefined) continue;
-        if (lvl[e.to] < lvl[e.from]+1) lvl[e.to] = lvl[e.from]+1;
-      }
-    }
-    const byLevel = {};
-    work.forEach(n=>{ (byLevel[lvl[n]] = byLevel[lvl[n]]||[]).push(n); });
-    const levels = Object.keys(byLevel).map(Number).sort((a,b)=>a-b);
-    const base = c;
-    levels.forEach((L,i)=>{ byLevel[L].sort().forEach(n=>push(n, base+i)); });
-    c = base + levels.length;
-    if (sg.gate && nodes[sg.gate]) push(sg.gate, c++);
-    stageBand[sg.id] = {from: base, to: c-1};
-  }
-  Object.keys(nodes).forEach(n=>{ if (colOf[n]===undefined) push(n, c); });
-  // 阶段虚线 = 本阶段产物列的中心线：产物骑在虚线上，左侧是本阶段工序，右侧是验收门
-  stageLineX = {};
-  for (const sg of stageList){
-    const prod = (sg.nodes||[]).find(n=>nodes[n] && n!==sg.gate && isDeliveryNode(n));
-    const col = prod ? colOf[prod] : (stageBand[sg.id]||{}).from;
-    if (col !== undefined) stageLineX[sg.id] = MG + col*(NW+GX) + NW/2;
-  }
-  // 每列节点围绕中线纵向堆叠；多节点列 = 并行组（同一就绪批）
-  parCols = new Set(Object.keys(colNodes).map(Number).filter(c=>colNodes[c].length>1));
-  let maxRows = 1; Object.values(colNodes).forEach(a=>maxRows=Math.max(maxRows,a.length));
-  const midY = MG + (maxRows*(NH+GY)-GY)/2;
-  for (const [col, arr] of Object.entries(colNodes)){
-    const colH = arr.length*(NH+GY)-GY;
-    const y0 = Math.round(midY - colH/2);
-    arr.forEach((n,k)=>{ pos[n] = [MG + col*(NW+GX), y0 + k*(NH+GY)]; });
+  pos = {}; moduleBand = {}; moduleLinks = []; nodeMeta = {}; parCols = new Set();
+  const insts = DATA.modules || [];
+  insts.forEach((inst, i) => {
+    const seq = inst.spine || [];
+    const pluginSet = new Set(inst.plugins || []);
+    const bx = MG + i*(SPINE_DX+NW+MOD_GAP);
+    moduleBand[inst.id] = {from: bx, to: bx + SPINE_DX + NW, index: i, inst,
+                           color: moduleColor(i)};
+    seq.forEach((nid, k) => {
+      const plugin = pluginSet.has(nid);
+      nodeMeta[nid] = {instId: inst.id, index: i, plugin, color: moduleColor(i)};
+      pos[nid] = [bx + (plugin ? PLUGIN_DX : SPINE_DX), MG + 56 + k*(NH+GY)];
+    });
+  });
+  // 连接件：相邻模块之间铸一个（EFF.links 为内核事实源），画在模块缝上，锚住目标模块入口行
+  ((EFF && EFF.links) || []).forEach(l => {
+    const from = moduleBand[l.fromModule], to = moduleBand[l.toModule];
+    if (!from || !to) return;
+    const first = ((DATA.modules[to.index] || {}).spine || []).find(nid => pos[nid]);
+    const y = first ? pos[first][1] + NH/2 : MG + 56 + NH/2;
+    moduleLinks.push({id: l.id, mode: l.mode || "auto", state: l.state || "pending",
+                      x1: from.to + 6, x2: to.from - 6, y, fromModule: l.fromModule, toModule: l.toModule});
+  });
+  // EFF 里有、DATA.modules 没覆盖的节点（内核先行/数据不同步）：显式可见，不静默丢弃
+  const orphans = Object.keys(nodes).filter(nid => !pos[nid] && !nid.endsWith(".link"));
+  if (orphans.length){
+    const bx = MG + insts.length*(SPINE_DX+NW+MOD_GAP);
+    orphans.forEach((nid, k) => {
+      nodeMeta[nid] = {instId: "?", index: insts.length, plugin: false, color: "#b8b0a4", orphan: true};
+      pos[nid] = [bx + SPINE_DX, MG + 56 + k*(NH+GY)];
+    });
   }
   render();
 }
@@ -525,31 +529,31 @@ function fitView(){
   if (!xs.length) return;
   fitToBox(Math.min(...xs), Math.min(...ys), Math.max(...xs)+NW, Math.max(...ys)+NH);
 }
-/* 本轮：适配当前选中节点所在阶段；无选中则取第一个未完成阶段 */
+/* 本轮：适配当前选中节点所在模块；无选中则取第一个未完成模块 */
 function currentStageId(){
-  if (sel && nodes[sel] && nodes[sel].stage) return nodes[sel].stage;
-  if (lastSel && nodes[lastSel] && nodes[lastSel].stage) return nodes[lastSel].stage;
-  for (const s of (flow.stages||[])){
-    if ((s.nodes||[]).some(x => st(x) !== "done")) return s.id;
+  const cur = sel || lastSel;
+  if (cur && nodeMeta[cur]) return nodeMeta[cur].instId;
+  for (const inst of (DATA.modules||[])){
+    if ((inst.spine||[]).some(x => st(x) !== "done")) return inst.id;
   }
-  return ((flow.stages||[])[0]||{}).id;
+  return ((DATA.modules||[])[0]||{}).id;
 }
 function fitStage(){
   fitStageById(currentStageId());
 }
 function fitStageById(sid){
-  const band = stageBand[sid];
+  const band = moduleBand[sid];
   if (!band){ fitView(); return; }
   const xs = [], ys = [];
   for (const [n, pt] of Object.entries(pos)){
-    const c = Math.round((pt[0]-MG)/(NW+GX));
-    if (c >= band.from && c <= band.to){ xs.push(pt[0]); ys.push(pt[1]); }
+    if (pt[0] >= band.from && pt[0] <= band.to){ xs.push(pt[0]); ys.push(pt[1]); }
   }
   if (!xs.length){ fitView(); return; }
   fitToBox(Math.min(...xs), Math.min(...ys), Math.max(...xs)+NW, Math.max(...ys)+NH);
 }
 function fitStageNext(){
-  const ids = (flow.stages||[]).map(s=>s.id);
+  const ids = (DATA.modules||[]).map(s=>s.id);
+  if (!ids.length) return;
   const i = ids.indexOf(currentStageId());
   fitStageById(ids[(i+1) % ids.length]);
 }
@@ -696,21 +700,13 @@ function kitOpOf(m){
 }
 function kbTitle(id){ return (DATA.kbTitles||{})[id] || String(id||"").replace(/^kb\//,""); }
 
-/* ================= R5 · 生成式编排的四个数据面 =================
+/* ================= R5/R6 · 生成式编排数据面 =================
+   EFF/OVERLAY/OPTIMIZE/METRICS 已在页首数据缝从 payload 顶层分解（payload@2 五键契约）。
    全部由**内核**算好落盘（registry/effective.json / metrics-summary.json / overlay.json / optimize.json），
-   页面只读不改写。派生逻辑（overlay 叠加、kit 边界注入、配置合成）刻意不在前端复刻一遍——
-   「人看到的编排」与「跑的编排」必须是同一份东西，唯一办法是只有一处实现。 */
-const EFF = DATA.effective || null;
-const OVERLAY = DATA.overlay || null;
-const OPTIMIZE = DATA.optimize || null;
-const METRICS = DATA.metrics || null;
+   页面只读不改写。派生逻辑刻意不在前端复刻一遍——「人看到的编排」与「跑的编排」必须是同一份东西。 */
 
-/* 本节点是否 kit 边界验收门：以内核标注为准，不靠 id 前缀嗅探 */
-function isBoundaryNode(n){
-  const rec = EFF && EFF.nodeConfig && EFF.nodeConfig[n];
-  if (rec && rec.boundary) return true;
-  return (nodes[n]||{}).gate_role === "kit-boundary";
-}
+/* R6：模块间连接件取代 kit 边界门。旧 isBoundaryNode 语义退役，保留空实现供未迁移面板调用（WO-7 清理） */
+function isBoundaryNode(n){ return false; }
 /* 本节点的 tool 指标：按 kit.op 归口（换位置不换 tool，指标该跟着 tool 走） */
 function toolMetrics(m){
   if (!METRICS || !m || !m.kit || !m.op) return null;
@@ -852,20 +848,19 @@ function strayFields(m){
 function render(){
   const nc = document.getElementById("nodes"); nc.innerHTML = "";
   for (const [n,m] of Object.entries(nodes)){
+    if (!pos[n] || n.endsWith(".link")) continue;   // 连接件画在模块缝上（drawEdges），不出节点卡
     const [x,y] = pos[n];
-    const col = Math.round((x-MG)/(NW+GX));
+    const meta = nodeMeta[n] || {};
+    const inst = (DATA.modules||[])[meta.index] || {};
+    const isDel = inst.module === "delivery" || (meta.index === (DATA.modules||[]).length-1 && (DATA.modules||[]).length > 1);
     const d = document.createElement("div");
-    const gate = (m.kind==="gate"||m.kind==="srd");
-    const s = st(n), isDel = isDeliveryNode(n), bnd = isBoundaryNode(n);
-    // R5：带产活的门 = 域内评审步（照跑、裁决自动）。它不是纯汇合点，跳过了它的产物就凭空消失。
-    const workGate = gate && !bnd && !!(m.output||m.skill||m.op||m.minitool);
-    d.className = `node k-${m.kind}` + (bnd?" k-boundary":"") + (sel===n?" sel":"");
+    const s = st(n);
+    d.className = `node k-${m.kind||"agent"}` + (meta.plugin?" k-plugin":"") + (sel===n?" sel":"");
     d.style.left = x+"px"; d.style.top = y+"px";
-    const zhTag = m.skill ? (ZH[m.skill]||m.skill) : (m.minitool ? (ZH[m.minitool]||m.minitool) : (bnd?"跨域交接验收":(gate?"红方验收":"")));
-    d.innerHTML = `<div class="accent" style="background:${bnd?"#b8a464":(gate?"#a5433a":(STAGE_COLOR[m.stage]||"#b8b0a4"))}"></div>
+    const zhTag = m.skill ? (ZH[m.skill]||m.skill) : (m.minitool ? (ZH[m.minitool]||m.minitool) : "");
+    d.innerHTML = `<div class="accent" style="background:${meta.color||"#b8b0a4"}"></div>
       <div class="hd"><span class="dot st-${s}" title="${ST_ZH[s]||s}"></span><span class="zh">${zhTitle(m)}</span></div>
-      <div class="sub">${zhTag}${m.stage?" · "+m.stage:""}${workGate?`<span class="par" title="R5：这道门挂着真实评审活（${m.kit?"kit "+m.kit+"."+m.op:"skill "+m.skill}）——评审照跑、产物照出，只是裁决自动（域内质量交回该 tool 的 asserts/config）">评审步 · 自动裁决</span>`:""}${m.iterate?`<span class="par" title="迭代节点：一个任务定义循环执行多次（${m.iterate.unit||"迭代"} × ${m.iterate.first||"∞"}）">⟲ ${m.iterate.unit||"迭代"}${m.iterate.first?" ×"+m.iterate.first:""}</span>`:""}${parCols.has(col)?`<span class="par" title="与同列节点同一就绪批，宿主并行派发">∥ 并行</span>`:""}</div>
-      ${bnd?`<span class="bdg" title="kit 边界验收（R5 唯一保留的人工裁决点）：域切换处自动派生，域内质量由各 tool 的 asserts 与 config 负责">跨域验收</span>`:""}
+      <div class="sub">${zhTag}${meta.plugin?`<span class="par" title="插件工具：经插槽插入（slot/insert），不在模块默认骨架里">插件</span>`:""}${meta.orphan?`<span class="par" title="该节点不在 DATA.modules 任何实例的 spine 中（内核与页面数据不同步，显式可见）">未归属</span>`:""}</div>
       ${isDel?`<span class="out">交 付</span>`:""}
       ${(m.kit&&m.op)?`<span class="mbs">${metricBadges(m)}</span>`:""}`;
     d.addEventListener("mousedown", e=>startDrag(e,n));
@@ -881,35 +876,51 @@ let sel = null, selEdge = null;
 function drawEdges(){
   const svg = document.getElementById("edges");
   let maxC = 0, maxR = 0; Object.values(pos).forEach(p=>{maxC=Math.max(maxC,p[0]);maxR=Math.max(maxR,p[1]);});
-  const W = maxC+NW+MG+60, H = Math.max(420, maxR+NH+MG*2);
+  Object.values(moduleBand).forEach(b=>maxC=Math.max(maxC,b.to));
+  const W = maxC+MG+60, H = Math.max(420, maxR+NH+MG*2);
   let s = `<svg width="${W}" height="${H}" style="position:absolute;left:0;top:0;overflow:visible"><defs><marker id="arw" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 z" fill="#a89f90"/></marker></defs>`;
-  // 阶段虚线：穿过本阶段产物中心（autoLayout 预计算）；阶段段铺淡色底
-  (flow.stages||[]).forEach(sg=>{
-    const lx = stageLineX[sg.id], band = stageBand[sg.id];
-    if (lx === undefined) return;
-    const col = STAGE_COLOR[sg.id] || "#b8b0a4";
-    if (band){
-      const bx = MG + band.from*(NW+GX) - 18, bx2 = MG + (band.to+1)*(NW+GX) - GX + 18;
-      s += `<rect x="${bx}" y="16" width="${bx2-bx}" height="${H-56}" rx="10" fill="${col}" opacity="0.05"/>`;
-    }
-    s += `<line class="stage-rule" x1="${lx}" y1="20" x2="${lx}" y2="${H-40}" stroke="${col}" stroke-width="1.2"/>`;
-    s += `<text class="stage-name" x="${MG + band.from*(NW+GX) + 2}" y="34" fill="${col}">${sg.id} ${STAGE_ZH[sg.id]||sg.name||""}</text>`;
-  });
-  // 打回回环不常驻画布：每次打回的原因与范围各不相同，属评审结果的具体记录，
-  // 仅在查看对应验收门节点时于右侧文档面板按需呈现（openNodeDoc 的「打回与回注」页）。
-  // 前向边
+  // 模块带：纵向色带（原横向阶段带）+ 顶栏「NN · 工种 · 能力 n/m」+ 骨架主轴细线
+  for (const [instId, b] of Object.entries(moduleBand)){
+    const caps = b.inst.caps || [], en = b.inst.capsEnabled || [];
+    const bh = Math.max(maxR+NH+MG, MG+56+((b.inst.spine||[]).length)*(NH+GY));
+    s += `<rect x="${b.from-18}" y="16" width="${b.to-b.from+36}" height="${bh-16}" rx="10" fill="${b.color}" opacity="0.05"/>`;
+    s += `<line x1="${b.from+SPINE_DX+NW/2}" y1="52" x2="${b.from+SPINE_DX+NW/2}" y2="${bh-24}" stroke="${b.color}" stroke-width="1" stroke-dasharray="2,5" opacity="0.5"/>`;
+    s += `<text class="stage-name" x="${b.from-8}" y="34" fill="${b.color}">${String(b.index+1).padStart(2,"0")} ${b.inst.name||instId} · 能力 ${en.length}/${caps.length}${b.inst.link==="manual"?" · 待人工":""}</text>`;
+  }
+  // 派生边：模块内 = 竖向三次贝塞尔（控制点取 y 中点）；跨模块直连 = 横向贝塞尔。
+  // 与 <x>.link 相关的跳线不画——连接件语义由下面的模块缝承载，避免双线。
   const cctx = condCtx();   // 一次求值上下文，全图共用
   for (const e of edges){
-    if (isBackEdge(e)) continue; // 打回/回环边不上画布：原因与范围每次不同，属门语义数据
     if (!pos[e.from] || !pos[e.to]) continue;
+    if (e.from.endsWith(".link") || e.to.endsWith(".link")) continue;
     const [x1,y1] = pos[e.from], [x2,y2] = pos[e.to];
-    const sx=x1+NW, sy=y1+NH/2, tx=x2, ty=y2+NH/2, mx=(sx+tx)/2;
     const role=edgeRole(e);
     const active = evalWhen(e.when, cctx).active;   // 与内核 cond.ts 同源求值，不再嗅探 when 字符串
     const lab = [whenText(e.when), EDGE_ROLE_ZH[role]||""].filter(Boolean).join(" · ");
-    s += `<path class="edge-hit" data-e="${e.id}" d="M${sx},${sy} C${mx},${sy} ${mx},${ty} ${tx},${ty}" fill="none" stroke="#a89f90" stroke-width="1.4"${(e.when||role!=="flow")?' stroke-dasharray="5,4"':""} opacity="${active?0.9:0.35}" marker-end="url(#arw)"/>`;
-    if (lab) s += `<text class="edge-label" x="${mx}" y="${(sy+ty)/2-4}" text-anchor="middle">${lab}</text>`;
+    let d, lx, ly;
+    if ((nodeMeta[e.from]||{}).index === (nodeMeta[e.to]||{}).index){
+      const sx=x1+NW/2, sy=y1+NH, tx=x2+NW/2, ty=y2, my=(sy+ty)/2;
+      d = `M${sx},${sy} C${sx},${my} ${tx},${my} ${tx},${ty}`;
+      lx = tx+8; ly = my;
+    } else {
+      const sx=x1+NW, sy=y1+NH/2, tx=x2, ty=y2+NH/2, mx=(sx+tx)/2;
+      d = `M${sx},${sy} C${mx},${sy} ${mx},${ty} ${tx},${ty}`;
+      lx = mx; ly = sy-6;
+    }
+    s += `<path class="edge-hit" data-e="${e.id}" d="${d}" fill="none" stroke="#a89f90" stroke-width="1.4"${(e.when||role!=="flow")?' stroke-dasharray="5,4"':""} opacity="${active?0.9:0.35}" marker-end="url(#arw)"/>`;
+    if (lab) s += `<text class="edge-label" x="${lx}" y="${ly}" text-anchor="start">${lab}</text>`;
   }
+  // 连接件（模块缝）：auto = 灰色虚线；manual = 金色实线 + 徽章；点击看连接件页（linkPaper）
+  const LINK_ZH = {pending:"待人工", passed:"已放行", rejected:"已驳回 · 重跑上游"};
+  moduleLinks.forEach(l => {
+    const manual = l.mode === "manual";
+    const col = manual ? "#b8a464" : "#a89f90";
+    s += `<path class="edge-hit" data-e="${l.id}" d="M${l.x1},${l.y} L${l.x2},${l.y}" fill="none" stroke="${col}" stroke-width="${manual?2.2:1.4}"${manual?"":' stroke-dasharray="6,5"'} opacity="${manual?0.95:0.6}" ${manual?"":'marker-end="url(#arw)"'}/>`;
+    const label = manual ? (LINK_ZH[l.state]||"待人工") : "自动";
+    const wpx = label.length*13+16, mx2 = (l.x1+l.x2)/2;
+    s += `<rect x="${mx2-wpx/2}" y="${l.y-12}" width="${wpx}" height="24" rx="12" fill="#fbf7ee" stroke="${col}" stroke-width="1.2"/>`
+       + `<text class="edge-label" x="${mx2}" y="${l.y+4}" text-anchor="middle" fill="${manual?"#8a7434":"#7d7568"}">${l.mode==="manual"?"⏸ ":""}${label}</text>`;
+  });
   svg.innerHTML = s + "</svg>";
   svg.querySelectorAll(".edge-hit").forEach(p=>{
     p.addEventListener("click", ev=>{ ev.stopPropagation(); hideTip(); openEdgeDoc(p.dataset.e); });
@@ -2141,19 +2152,23 @@ document.addEventListener("paste", e=>{
 
 /* ---------- 启动 ---------- */
 /* R5：编排数据面横幅——页面画的是不是「真在跑的编排」，必须在页面上说清楚，不能让人猜 */
+/* R6：编排数据面横幅——画的是不是「真在跑的编排」+ 模块化形态说明，必须在页面上说清楚 */
 function renderEffectiveBanner(){
   const box=document.getElementById("eff-banner"); if(!box) return;
   let h="";
-  if (!EFF){
-    h=`<div class="banner">本页显示的是 <b>bootstrap 编排</b>（<code>flows/${DATA.bootstrapFlowId||flow.id}/flow.json</code>）——
-      未找到 <code>registry/effective.json</code>：项目可能尚未跑过内核（无 overlay / 无 kit 边界验收节点 / 无指标）。
-      跑一次 <code>flow_next</code> 或 <code>flow_effect</code> 后重新生成本页即可看到生效编排。</div>`;
+  if (LEGACY_CANVAS){
+    h=`<div class="banner">本页画布为空：registry/effective.json 不是 <b>effective@2</b>（存量 flow@2 项目或尚未跑内核）。
+      跑 <code>flow_effect</code>（flow@3 转换后）重新生成本页即可看到「模块横向拼接」的生效编排。
+      盘上旧数据未动；目录搬迁见 docs/项目目录搬迁清单。</div>`;
   } else {
-    const bnd=(EFF.boundaries||[]).length, ov=(OVERLAY&&OVERLAY.patches||[]).length;
+    const mods=(DATA.modules||[]).length;
+    const manualLinks=(EFF.links||[]).filter(l=>l.mode==="manual").length;
+    const ov=(OVERLAY&&OVERLAY.patches||[]).length;
     const pend=((OPTIMIZE&&OPTIMIZE.proposals)||[]).filter(p=>p.status==="proposed").length;
-    h=`<div class="banner" style="border-left-color:${bnd?"#b8a464":"#5a8a5e"}">生效编排 · kit 边界验收 <b>${bnd}</b> 处（人工裁决只在这里）｜域内门 <b>${(EFF.policy||{}).gate_mode||"-"}</b> 自动放行
+    h=`<div class="banner" style="border-left-color:${manualLinks?"#b8a464":"#5a8a5e"}">生效编排 · <b>${mods}</b> 个模块实例（节点与边由骨架派生）
+      ｜模块间连接件 <b>${(EFF.links||[]).length}</b> 处，其中人工放行 <b>${manualLinks}</b> 处（模块内无门，质量归各 tool 的 asserts/config）
       ｜项目覆盖 <b>${ov}</b> 条${pend?`｜优化提案待批 <b>${pend}</b> 条`:""}｜指标事件 <b>${METRICS?METRICS.events:0}</b>
-      <span class="msg">（打开「工作流管理」看编排面板；点节点看该 tool 的内容配置项与效率/命中率）</span></div>`;
+      <span class="msg">（点模块带看工具箱；点连接件看放行状态）</span></div>`;
   }
   box.innerHTML=h; box.style.display="";
 }

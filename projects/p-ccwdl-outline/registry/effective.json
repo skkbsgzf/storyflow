@@ -1,0 +1,458 @@
+{
+  "format": "effective@1",
+  "flowId": "outline-production",
+  "flowVersion": "0.1.0-draft",
+  "policy": {
+    "kit_boundary": "off",
+    "gate_mode": "auto",
+    "adapt": "propose"
+  },
+  "overlayHash": "4dd0676e",
+  "planHash": "eb1c6121",
+  "boundaries": [],
+  "composition": [
+    "set-policy kit_boundary=off｜实验批：跨域门自动放行",
+    "kit_boundary=off：不派生边界验收（全自动）"
+  ],
+  "applied": 1,
+  "toolOverrides": {},
+  "flow": {
+    "format": "flow@2",
+    "id": "outline-production",
+    "title": "分集大纲与编排工作流（初稿）",
+    "desc": "已过验收的选题方案 → 三线骨架与分集功能表（60 集）→ 红队冷读者测试（节点可预测死点）→ 人工验收 → 可拍分集大纲",
+    "version": "0.1.0-draft",
+    "status": "draft",
+    "upstream": "topic-selection v3（取其选题方案/梗卡/约束移交单产物为输入）",
+    "inputs": {
+      "project": {
+        "type": "project",
+        "required": true,
+        "desc": "项目上下文"
+      },
+      "route": {
+        "type": "enum",
+        "default": "dual",
+        "options": [
+          "hot",
+          "calm",
+          "dual"
+        ],
+        "desc": "沿用选题阶段路线"
+      },
+      "episodes": {
+        "type": "number",
+        "default": 60,
+        "min": 24,
+        "max": 100,
+        "bind": {
+          "edge": "e-choreo",
+          "param": "episodes"
+        },
+        "desc": "总集数（默认实盘值 60）"
+      }
+    },
+    "outputs": [
+      {
+        "node": "choreo",
+        "title": "分集大纲（逐集：功能/三线状态/关键选择/集末钩）"
+      },
+      {
+        "node": "redline",
+        "title": "红方意见书（大纲级冷读者测试）"
+      }
+    ],
+    "graph": {
+      "format": "smwf@2",
+      "name": "outline-production",
+      "nodes": {
+        "src": {
+          "kind": "novel-txt",
+          "title": "选题方案（已验收）",
+          "output": "选题方案.md"
+        },
+        "constraints": {
+          "kind": "core",
+          "title": "约束与标准装载",
+          "minitool": "kb_load",
+          "loads": [
+            "kb/market/constraints",
+            "kb/aesthetic/pacing-density",
+            "kb/aesthetic/reversal",
+            "kb/aesthetic/emotion-curve",
+            "kb/aesthetic/scene-value",
+            "kb/aesthetic/ending"
+          ]
+        },
+        "choreo": {
+          "kind": "agent",
+          "title": "全剧编排",
+          "skill": "plot-choreographer",
+          "kit": "plot",
+          "op": "plot-choreographer",
+          "output": "内部/稿本/分集大纲.md",
+          "desc": "主线骨架（五节点价值链，每节点=选择+后果）→ 逐集功能表 → 卡点编排表 → 场景复用表；cost ladder 一次只动一到两个维度"
+        },
+        "asserts": {
+          "kind": "core",
+          "title": "结构断言扫描",
+          "minitool": "check_aesthetic_asserts",
+          "asserts": [],
+          "onFail": "退回 choreo 定点修",
+          "desc": "产物为大纲（非拍级非正文），引擎机器层不适用（AE-SKIP-NON-BEAT）；原 7 条语义断言（沙漠段/垫场/曲线/反转铺垫/结局禁止项）已迁 redline 记账（2026-09-17）"
+        },
+        "redline": {
+          "kind": "agent",
+          "title": "红队大纲评审",
+          "skill": "plot-redline",
+          "kit": "plot",
+          "op": "plot-redline",
+          "output": "内部/意见/红方意见书-redline.md",
+          "desc": "大纲级冷读者测试（节点走向猜中率）+ 死点挖掘 + 不合理亮点提案；challenge 时蓝方三选一回应后重审｜语义剖面记账（自 asserts 步迁入 2026-09-17）：AE-DESERT/AE-CUSHION/AE-CURVE-TYPE/AE-CURVE-STALL/AE-REV-SETUP/AE-REV-MIDPOINT/AE-END-MECH"
+        },
+        "fin": {
+          "kind": "srd",
+          "title": "人工验收",
+          "desc": "红方意见书 + 断言报告为必读件"
+        }
+      },
+      "edges": [
+        {
+          "id": "e-load",
+          "from": "src",
+          "to": "constraints",
+          "role": "flow"
+        },
+        {
+          "id": "e-choreo",
+          "from": "constraints",
+          "to": "choreo",
+          "role": "flow"
+        },
+        {
+          "id": "e-assert",
+          "from": "choreo",
+          "to": "asserts",
+          "role": "flow"
+        },
+        {
+          "id": "e-red",
+          "from": "asserts",
+          "to": "redline",
+          "via": "sm.redline",
+          "role": "flow"
+        },
+        {
+          "id": "e-fin",
+          "from": "redline",
+          "to": "fin",
+          "via": "sm.review",
+          "role": "flow"
+        }
+      ],
+      "outputs": [
+        "fin"
+      ]
+    },
+    "quality": {
+      "assertions": "重点维度：pacing（沙漠段/垫场）、reversal（中点反转改模型）、curve（主型判明）、ending（禁止项）",
+      "redlineFocus": "大纲级红队主查可预测死点（冷读者测试 ≥60% 即死点）与安全化磨平",
+      "allow_agent_verdict": false
+    },
+    "harness": {
+      "mode": "task-package",
+      "awaiting_input_at": [
+        "choreo",
+        "redline"
+      ],
+      "core_in_process": [
+        "constraints",
+        "asserts"
+      ],
+      "note": "初稿：M1 运行时就绪后联调；编排步建议按幕分段提交（每 20 集一个任务包）控制单包体量"
+    }
+  },
+  "nodeConfig": {
+    "src": {
+      "boundary": false,
+      "output": "选题方案.md",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": null
+    },
+    "constraints": {
+      "boundary": false,
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": null
+    },
+    "choreo": {
+      "boundary": false,
+      "output": "内部/稿本/分集大纲.md",
+      "kit": "plot",
+      "op": "plot-choreographer",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": {
+        "values": {
+          "depth": "标准",
+          "strictness": "标准",
+          "maxChars": 4000,
+          "model_tier": "high",
+          "actModel": "八段式",
+          "cardDensity": "标准",
+          "dataAnchor": "市场实盘",
+          "lineCount": 3
+        },
+        "defs": {
+          "depth": {
+            "type": "enum",
+            "enum": [
+              "浅",
+              "标准",
+              "深"
+            ],
+            "default": "标准",
+            "desc": "本步投入深度：浅=先出可用版本，标准=默认，深=加采样与自检",
+            "effect": "提高 = 更充分但更慢更贵；连续无打回时可降档"
+          },
+          "strictness": {
+            "type": "enum",
+            "enum": [
+              "宽松",
+              "标准",
+              "严格"
+            ],
+            "default": "标准",
+            "desc": "判定尺度：本步自检与断言执行时把握的宽严",
+            "effect": "提高 = 早暴露问题（打回率↑、返工↓）；打回率已高时不宜再提"
+          },
+          "maxChars": {
+            "type": "number",
+            "min": 200,
+            "max": 40000,
+            "default": 4000,
+            "unit": "字",
+            "desc": "本步产物正文的篇幅上限（超出即视为未收敛）",
+            "effect": "提高 = 允许更长产物；成本随字数上升"
+          },
+          "model_tier": {
+            "type": "enum",
+            "enum": [
+              "high",
+              "lite"
+            ],
+            "default": "high",
+            "desc": "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
+            "effect": "文学与结构判断节点必须 high；机械整理类可降 lite"
+          },
+          "actModel": {
+            "type": "enum",
+            "default": "八段式",
+            "enum": [
+              "八段式",
+              "三幕",
+              "单元剧"
+            ],
+            "desc": "结构模型选型",
+            "effect": "换了 = 分集功能表全表重排",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "cardDensity": {
+            "type": "enum",
+            "default": "标准",
+            "enum": [
+              "疏",
+              "标准",
+              "密"
+            ],
+            "desc": "分场卡密度",
+            "effect": "提高 = 每集卡点更多、拍摄成本更高",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "dataAnchor": {
+            "type": "enum",
+            "default": "市场实盘",
+            "enum": [
+              "市场实盘",
+              "母题",
+              "混合"
+            ],
+            "desc": "节奏的标尺来源",
+            "effect": "换成母题 = 少依赖实盘数据",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "lineCount": {
+            "type": "number",
+            "default": 3,
+            "min": 0,
+            "desc": "三线骨架的线数",
+            "effect": "提高 = 结构更丰富也更难收",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          }
+        },
+        "sources": {
+          "depth": "generic",
+          "strictness": "generic",
+          "maxChars": "generic",
+          "model_tier": "generic",
+          "actModel": "op",
+          "cardDensity": "op",
+          "dataAnchor": "op",
+          "lineCount": "op"
+        },
+        "unknownKeys": [],
+        "genericOnly": false
+      }
+    },
+    "asserts": {
+      "boundary": false,
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": null
+    },
+    "redline": {
+      "boundary": false,
+      "output": "内部/意见/红方意见书-redline.md",
+      "kit": "plot",
+      "op": "plot-redline",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": {
+        "values": {
+          "depth": "标准",
+          "strictness": "标准",
+          "maxChars": 4000,
+          "model_tier": "high",
+          "angles": 4,
+          "harshness": "标准",
+          "allowInject": true,
+          "voice": "说人话"
+        },
+        "defs": {
+          "depth": {
+            "type": "enum",
+            "enum": [
+              "浅",
+              "标准",
+              "深"
+            ],
+            "default": "标准",
+            "desc": "本步投入深度：浅=先出可用版本，标准=默认，深=加采样与自检",
+            "effect": "提高 = 更充分但更慢更贵；连续无打回时可降档"
+          },
+          "strictness": {
+            "type": "enum",
+            "enum": [
+              "宽松",
+              "标准",
+              "严格"
+            ],
+            "default": "标准",
+            "desc": "判定尺度：本步自检与断言执行时把握的宽严",
+            "effect": "提高 = 早暴露问题（打回率↑、返工↓）；打回率已高时不宜再提"
+          },
+          "maxChars": {
+            "type": "number",
+            "min": 200,
+            "max": 40000,
+            "default": 4000,
+            "unit": "字",
+            "desc": "本步产物正文的篇幅上限（超出即视为未收敛）",
+            "effect": "提高 = 允许更长产物；成本随字数上升"
+          },
+          "model_tier": {
+            "type": "enum",
+            "enum": [
+              "high",
+              "lite"
+            ],
+            "default": "high",
+            "desc": "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
+            "effect": "文学与结构判断节点必须 high；机械整理类可降 lite"
+          },
+          "angles": {
+            "type": "number",
+            "default": 4,
+            "min": 0,
+            "desc": "代入的评审视角数（读者/编剧/甲方…）",
+            "effect": "提高 = 更全面、成本线性上升",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "harshness": {
+            "type": "enum",
+            "default": "标准",
+            "enum": [
+              "温和",
+              "标准",
+              "苛刻"
+            ],
+            "desc": "苛刻程度",
+            "effect": "提高 = 更多打回更少漏网；过高会空转",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "allowInject": {
+            "type": "boolean",
+            "default": true,
+            "desc": "框架单薄时是否允许提交流程重构建议",
+            "effect": "关掉 = 只报问题不给方案",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "voice": {
+            "type": "enum",
+            "default": "说人话",
+            "enum": [
+              "说人话",
+              "念指标"
+            ],
+            "desc": "意见书的语体",
+            "effect": "念指标 = 读者读不懂，说人话 = 可执行",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          }
+        },
+        "sources": {
+          "depth": "generic",
+          "strictness": "generic",
+          "maxChars": "generic",
+          "model_tier": "generic",
+          "angles": "op",
+          "harshness": "op",
+          "allowInject": "op",
+          "voice": "op"
+        },
+        "unknownKeys": [],
+        "genericOnly": false
+      }
+    },
+    "fin": {
+      "boundary": false,
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": null
+    }
+  }
+}

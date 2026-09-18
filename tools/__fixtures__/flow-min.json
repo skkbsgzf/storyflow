@@ -1,0 +1,11 @@
+{
+  "format": "flow@3",
+  "id": "min-flow",
+  "title": "最小 flow@3 示例（骨架自检用）",
+  "version": "1.0.0",
+  "status": "official",
+  "defaults": { "link": "auto" },
+  "modules": [
+    { "id": "m1", "module": "plot", "link": "manual", "caps": ["主线"] }
+  ]
+}

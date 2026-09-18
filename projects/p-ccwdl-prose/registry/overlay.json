@@ -1,0 +1,9 @@
+{
+  "format": "flow-overlay@1",
+  "flowId": "novel-prose",
+  "origin": "user",
+  "reason": "实验批口径（用户 2026-09-17 拍板）：kit 边界门不派生（off=全自动），产物齐后统一人裁",
+  "patches": [
+    { "kind": "set-policy", "key": "kit_boundary", "value": "off", "reason": "实验批：跨域门自动放行" }
+  ]
+}

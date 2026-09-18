@@ -1,0 +1,4 @@
+{"ts":"2026-09-17T17:32:51.532Z","runId":"run-mu5t5e4s-otz10u","event":"run-start","actor":"kernel","detail":"novel-prose@0.1.0 计划 10 节点"}
+{"ts":"2026-09-17T17:32:51.534Z","runId":"run-mu5t5e4s-otz10u","event":"note","actor":"kernel:overlay","detail":"生效编排合成：set-policy kit_boundary=off｜实验批：跨域门自动放行 ｜ kit_boundary=off：不派生边界验收（全自动）"}
+{"ts":"2026-09-17T17:32:51.554Z","runId":"run-mu5t5e4s-otz10u","event":"advance","actor":"kernel","nodeId":"src","detail":"源步 分场卡.md"}
+{"ts":"2026-09-17T17:32:51.555Z","runId":"run-mu5t5e4s-otz10u","event":"warn","actor":"kernel","nodeId":"ledger","detail":"minitool「continuity_slice」未实现（M1 边界）——节点 ledger 保持未执行，不静默放行"}

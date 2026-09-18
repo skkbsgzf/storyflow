@@ -5,11 +5,11 @@ flowchart LR
     asserts["asserts · 结构断言扫描"]:::core
     redline["redline · 红队大纲评审"]:::agent
     fin["fin · 人工验收"]:::gate
-    src -->|core.kb_load| constraints
-    constraints -->|skill.plot-choreographer| choreo
-    choreo -->|core.check_aesthetic_asserts| asserts
-    asserts -->|sm.redline| redline
-    redline -->|sm.review| fin
+    src -->|| constraints
+    constraints -->|| choreo
+    choreo -->|| asserts
+    asserts -->|| redline
+    redline -->|| fin
     classDef src fill:#1d3323,stroke:#3d7a4f,color:#8fd4a3
     classDef core fill:#16233a,stroke:#3d5a80,color:#a8c4e8
     classDef agent fill:#2a2313,stroke:#e8b33d,color:#e8b33d

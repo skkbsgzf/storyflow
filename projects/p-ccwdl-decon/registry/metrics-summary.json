@@ -1,0 +1,186 @@
+{
+  "format": "metrics-summary@1",
+  "runId": "run-mu5qmazv-q5oqvp",
+  "events": 9,
+  "byNode": {
+    "pre": {
+      "nodeId": "pre",
+      "runs": 0,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 0,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 0,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [
+        "pass"
+      ]
+    },
+    "read": {
+      "nodeId": "read",
+      "runs": 1,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 5,
+      "assertBlock": 1,
+      "retries": 1,
+      "ctxOffered": 5,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 1,
+      "cost": 7,
+      "efficiency": 0.14285714285714285,
+      "verdicts": [
+        "rejected"
+      ],
+      "kit": "search",
+      "op": "deconstruct-book"
+    },
+    "refine": {
+      "nodeId": "refine",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 3,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 5,
+      "ctxUsed": 1,
+      "hitRate": 0.2,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "search",
+      "op": "deconstruct-book"
+    },
+    "chars": {
+      "nodeId": "chars",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 3,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 5,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "search",
+      "op": "deconstruct-book"
+    },
+    "style": {
+      "nodeId": "style",
+      "runs": 1,
+      "submits": 0,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 0,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 5,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "search",
+      "op": "deconstruct-book"
+    }
+  },
+  "byTool": {
+    "search.deconstruct-book": {
+      "nodeId": "search.deconstruct-book",
+      "kit": "search",
+      "op": "deconstruct-book",
+      "runs": 4,
+      "submits": 4,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 11,
+      "assertBlock": 1,
+      "retries": 1,
+      "ctxOffered": 20,
+      "ctxUsed": 1,
+      "hitRate": 0.05,
+      "consumedBy": 1,
+      "cost": 7,
+      "efficiency": 0.14285714285714285,
+      "verdicts": [],
+      "nodes": [
+        "read",
+        "refine",
+        "chars",
+        "style"
+      ]
+    }
+  },
+  "knowledge": [
+    {
+      "id": "kb/aesthetic/character",
+      "offered": 7,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/pacing-density",
+      "offered": 7,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/deconstruct/protocol",
+      "offered": 7,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/deconstruct/style-learning",
+      "offered": 7,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "内部/kb-pre.md",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "内部/稿本/拆解件-细化.md",
+      "offered": 3,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "内部/稿本/拆解件-剧情设计.md",
+      "offered": 2,
+      "used": 1,
+      "hitRate": 0.5
+    }
+  ],
+  "gates": [],
+  "window": {
+    "from": "2026-09-17T16:22:01.797Z",
+    "to": "2026-09-17T16:28:27.880Z"
+  }
+}

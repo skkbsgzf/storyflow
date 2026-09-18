@@ -10,17 +10,17 @@ flowchart LR
     ledgerUp["ledgerUp · 台账结算"]:::core
     redline["redline · 红队抽检"]:::agent
     fin["fin · 批次人工验收"]:::gate
-    req -->|core.kb_load| market
-    market -->|skill.find-trope| tropes
-    tropes -->|skill.novel-bible| bible
-    bible -->|skill.plot-choreographer| volume
-    volume -->|core.continuity_slice| ledger
-    ledger -->|skill.novel-chapter| chapter
-    chapter -->|core.check_aesthetic_asserts| audit
-    audit -->|core.continuity_commit| ledgerUp
-    ledgerUp -.->|sm.redline| redline
-    redline -->|sm.review| fin
-    fin -.->|core.continuity_slice| ledger
+    req -->|| market
+    market -->|| tropes
+    tropes -->|| bible
+    bible -->|| volume
+    volume -->|| ledger
+    ledger -->|| chapter
+    chapter -->|| audit
+    audit -->|| ledgerUp
+    ledgerUp -->|| redline
+    redline -->|| fin
+    fin -.->|| ledger
     classDef src fill:#1d3323,stroke:#3d7a4f,color:#8fd4a3
     classDef core fill:#16233a,stroke:#3d5a80,color:#a8c4e8
     classDef agent fill:#2a2313,stroke:#e8b33d,color:#e8b33d

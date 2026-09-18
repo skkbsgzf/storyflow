@@ -1,0 +1,934 @@
+{
+  "format": "effective@1",
+  "flowId": "novel-longform",
+  "flowVersion": "0.1.0-draft",
+  "policy": {
+    "kit_boundary": "off",
+    "gate_mode": "auto",
+    "adapt": "propose"
+  },
+  "overlayHash": "4dd0676e",
+  "planHash": "cd801a1c",
+  "boundaries": [],
+  "composition": [
+    "set-policy kit_boundary=off｜实验批：跨域门自动放行",
+    "kit_boundary=off：不派生边界验收（全自动）"
+  ],
+  "applied": 1,
+  "toolOverrides": {},
+  "flow": {
+    "format": "flow@2",
+    "id": "novel-longform",
+    "title": "长篇网文生产工作流（初稿）",
+    "desc": "需求 → 三层问答开书（World Bible）→ 卷纲与章功能序列 → 逐章流水（台账切片→章回写作→断言+台账双校验→红队抽检）→ 批次人工验收",
+    "version": "0.1.0-draft",
+    "status": "draft",
+    "upstream": "无（独立形态线；短剧线走 topic-selection → outline-production → episode-script）",
+    "inputs": {
+      "project": {
+        "type": "project",
+        "required": true,
+        "desc": "项目上下文"
+      },
+      "premise": {
+        "type": "string",
+        "required": true,
+        "desc": "一句话需求（题材方向 + 核心欲望）"
+      },
+      "platform": {
+        "type": "string",
+        "default": "番茄",
+        "desc": "目标平台（商业语境：保底节奏/更新频率/AI 检测口径）"
+      },
+      "batchSize": {
+        "type": "number",
+        "default": 10,
+        "min": 1,
+        "max": 50,
+        "desc": "单批章数（先出全段章功能序列再逐章执行）"
+      }
+    },
+    "outputs": [
+      {
+        "node": "bible",
+        "title": "World Bible（三层问答产物）"
+      },
+      {
+        "node": "volume",
+        "title": "卷纲 + 章功能序列"
+      },
+      {
+        "node": "ledger",
+        "title": "连续性台账（五类事实，滚动维护）"
+      },
+      {
+        "node": "chapter",
+        "title": "单章正文（章末钩子强制）"
+      },
+      {
+        "node": "redline",
+        "title": "红队抽检意见（每批 ≥1 章）"
+      }
+    ],
+    "graph": {
+      "format": "smwf@2",
+      "name": "novel-longform",
+      "nodes": {
+        "req": {
+          "kind": "novel-txt",
+          "title": "需求",
+          "output": "需求.md"
+        },
+        "market": {
+          "kind": "core",
+          "title": "市场与梗库装载",
+          "minitool": "kb_load",
+          "loads": [
+            "kb/market/snapshot",
+            "kb/trope/*",
+            "kb/formats/webnovel-longform"
+          ]
+        },
+        "tropes": {
+          "kind": "agent",
+          "title": "找梗定调",
+          "skill": "find-trope",
+          "kit": "search",
+          "op": "find-trope",
+          "output": "内部/稿本/梗卡.md",
+          "desc": "题材画像挂载：主梗/辅梗/饱和度/新变体落点"
+        },
+        "bible": {
+          "kind": "agent",
+          "title": "三层问答开书",
+          "skill": "novel-bible",
+          "kit": "plot",
+          "op": "novel-bible",
+          "assist": [
+            "internet-feel"
+          ],
+          "output": "世界书/世界观圣经.md",
+          "desc": "题材与核心情绪→主角与金手指四件套→前十事件链；知情范围初表 + 长期承诺清单（台账种子，机器可读）"
+        },
+        "volume": {
+          "kind": "agent",
+          "title": "卷纲与章功能序列",
+          "skill": "plot-choreographer",
+          "kit": "plot",
+          "op": "plot-choreographer",
+          "output": "内部/稿本/卷纲与章功能序列.md",
+          "desc": "AE-WNF-BATCH：先出全段章功能序列（避免逐章流水式偏航），标注付费卡点与卷末大节点"
+        },
+        "ledger": {
+          "kind": "core",
+          "title": "台账切片注入",
+          "minitool": "continuity_slice",
+          "desc": "确定性：本章人物状态/在场物品/知情范围/到期伏笔（kb/continuity/state-ledger 写前查账）",
+          "output": "内部/收据/连续性台账.json"
+        },
+        "chapter": {
+          "kind": "agent",
+          "title": "章回写作",
+          "skill": "novel-chapter",
+          "kit": "prose",
+          "op": "novel-chapter",
+          "output": "章节正文/正文-第XXX章.md",
+          "desc": "章末钩子强制（收束四型轮换）；笔墨密度随情绪波动；结构留毛刺（手法配额≤5）；交稿附待登记清单"
+        },
+        "audit": {
+          "kind": "core",
+          "title": "断言+台账双校验",
+          "minitool": "check_aesthetic_asserts",
+          "asserts": [
+            "AE-WNF-HOOK",
+            "AE-CONT-KNOW",
+            "AE-CONT-ITEM",
+            "AE-CONT-FORESHADOW"
+          ],
+          "onFail": "退回 chapter 定点修",
+          "desc": "确定性：钩子/越权/台账矛盾/伏笔逾期（文本层切片）。语义剖面（网络感/24 类/结构机味五指纹）归 redline 红队抽检（记账迁移 2026-09-17）"
+        },
+        "ledgerUp": {
+          "kind": "core",
+          "title": "台账结算",
+          "minitool": "continuity_commit",
+          "desc": "确定性：正文+台账增量原子提交"
+        },
+        "redline": {
+          "kind": "agent",
+          "title": "红队抽检",
+          "skill": "plot-redline",
+          "kit": "plot",
+          "op": "plot-redline",
+          "spotCheck": true,
+          "policy": "每批 ≥1 章",
+          "output": "内部/意见/红方意见书-redline.md",
+          "desc": "章级抽检：可预测死点 + 安全化磨平 + 结构机味｜语义剖面记账（自 audit 迁入 2026-09-17）：AE-NAT-HIT/AE-AI-STRUCT/AE-AI-QUOTA"
+        },
+        "fin": {
+          "kind": "srd",
+          "title": "批次人工验收",
+          "desc": "按批次裁决；过 AI 检测抽测（朱雀类，参考信号不作目标函数）"
+        }
+      },
+      "edges": [
+        {
+          "id": "e-market",
+          "from": "req",
+          "to": "market",
+          "role": "flow"
+        },
+        {
+          "id": "e-trope",
+          "from": "market",
+          "to": "tropes",
+          "role": "flow"
+        },
+        {
+          "id": "e-bible",
+          "from": "tropes",
+          "to": "bible",
+          "role": "flow"
+        },
+        {
+          "id": "e-volume",
+          "from": "bible",
+          "to": "volume",
+          "role": "flow"
+        },
+        {
+          "id": "e-ledg",
+          "from": "volume",
+          "to": "ledger",
+          "role": "flow"
+        },
+        {
+          "id": "e-chap",
+          "from": "ledger",
+          "to": "chapter",
+          "role": "flow"
+        },
+        {
+          "id": "e-audit",
+          "from": "chapter",
+          "to": "audit",
+          "role": "flow"
+        },
+        {
+          "id": "e-commit",
+          "from": "audit",
+          "to": "ledgerUp",
+          "role": "flow"
+        },
+        {
+          "id": "e-red",
+          "from": "ledgerUp",
+          "to": "redline",
+          "via": "sm.redline",
+          "role": "optional"
+        },
+        {
+          "id": "e-fin",
+          "from": "redline",
+          "to": "fin",
+          "via": "sm.review",
+          "role": "flow"
+        },
+        {
+          "id": "e-loop",
+          "from": "fin",
+          "to": "ledger",
+          "role": "loop",
+          "when": {
+            "loop": "pending"
+          }
+        }
+      ],
+      "outputs": [
+        "bible",
+        "volume",
+        "chapter",
+        "ledger"
+      ]
+    },
+    "quality": {
+      "assertions": "format（AE-WNF-*）+ continuity（AE-CONT-*）+ ai-trace（AE-AI-*）三维度是本 flow 生命线；24 类逐章抽扫",
+      "twoWars": "加规则治崩（台账零容忍）× 减规则治假（手法留白）——两仗同时打",
+      "allow_agent_verdict": false
+    },
+    "harness": {
+      "mode": "task-package",
+      "awaiting_input_at": [
+        "tropes",
+        "bible",
+        "volume",
+        "chapter",
+        "redline"
+      ],
+      "core_in_process": [
+        "market",
+        "ledger",
+        "audit",
+        "ledgerUp"
+      ],
+      "note": "初稿：e-loop 回边表达逐章循环（runtime 若不支持回边则展开为批次子图，每批一个子流程）；断点续跑按章落盘；依赖 minitool：continuity_slice / continuity_commit"
+    }
+  },
+  "nodeConfig": {
+    "req": {
+      "boundary": false,
+      "output": "需求.md",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": null
+    },
+    "market": {
+      "boundary": false,
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": null
+    },
+    "tropes": {
+      "boundary": false,
+      "output": "内部/稿本/梗卡.md",
+      "kit": "search",
+      "op": "find-trope",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": {
+        "values": {
+          "depth": "标准",
+          "strictness": "标准",
+          "maxChars": 4000,
+          "model_tier": "high",
+          "mainTropes": 1,
+          "subTropes": 3,
+          "saturationCheck": true,
+          "evolutionDepth": "两代"
+        },
+        "defs": {
+          "depth": {
+            "type": "enum",
+            "enum": [
+              "浅",
+              "标准",
+              "深"
+            ],
+            "default": "标准",
+            "desc": "本步投入深度：浅=先出可用版本，标准=默认，深=加采样与自检",
+            "effect": "提高 = 更充分但更慢更贵；连续无打回时可降档"
+          },
+          "strictness": {
+            "type": "enum",
+            "enum": [
+              "宽松",
+              "标准",
+              "严格"
+            ],
+            "default": "标准",
+            "desc": "判定尺度：本步自检与断言执行时把握的宽严",
+            "effect": "提高 = 早暴露问题（打回率↑、返工↓）；打回率已高时不宜再提"
+          },
+          "maxChars": {
+            "type": "number",
+            "min": 200,
+            "max": 40000,
+            "default": 4000,
+            "unit": "字",
+            "desc": "本步产物正文的篇幅上限（超出即视为未收敛）",
+            "effect": "提高 = 允许更长产物；成本随字数上升"
+          },
+          "model_tier": {
+            "type": "enum",
+            "enum": [
+              "high",
+              "lite"
+            ],
+            "default": "high",
+            "desc": "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
+            "effect": "文学与结构判断节点必须 high；机械整理类可降 lite"
+          },
+          "mainTropes": {
+            "type": "number",
+            "default": 1,
+            "min": 0,
+            "desc": "主梗数量",
+            "effect": "提高 = 焦点散",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "subTropes": {
+            "type": "number",
+            "default": 3,
+            "min": 0,
+            "desc": "辅梗数量",
+            "effect": "提高 = 组合更新鲜也更难落实",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "saturationCheck": {
+            "type": "boolean",
+            "default": true,
+            "desc": "判定梗族饱和度",
+            "effect": "关掉 = 选到烂梗",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "evolutionDepth": {
+            "type": "enum",
+            "default": "两代",
+            "enum": [
+              "一代",
+              "两代",
+              "链式"
+            ],
+            "desc": "沿演化链向上找的代数",
+            "effect": "越深越新、越难写",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          }
+        },
+        "sources": {
+          "depth": "generic",
+          "strictness": "generic",
+          "maxChars": "generic",
+          "model_tier": "generic",
+          "mainTropes": "op",
+          "subTropes": "op",
+          "saturationCheck": "op",
+          "evolutionDepth": "op"
+        },
+        "unknownKeys": [],
+        "genericOnly": false
+      }
+    },
+    "bible": {
+      "boundary": false,
+      "output": "世界书/世界观圣经.md",
+      "kit": "plot",
+      "op": "novel-bible",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": {
+        "values": {
+          "depth": "标准",
+          "strictness": "标准",
+          "maxChars": 4000,
+          "model_tier": "high",
+          "quests": 3,
+          "powerSystem": "力量体系",
+          "deadlineRounds": 3
+        },
+        "defs": {
+          "depth": {
+            "type": "enum",
+            "enum": [
+              "浅",
+              "标准",
+              "深"
+            ],
+            "default": "标准",
+            "desc": "本步投入深度：浅=先出可用版本，标准=默认，深=加采样与自检",
+            "effect": "提高 = 更充分但更慢更贵；连续无打回时可降档"
+          },
+          "strictness": {
+            "type": "enum",
+            "enum": [
+              "宽松",
+              "标准",
+              "严格"
+            ],
+            "default": "标准",
+            "desc": "判定尺度：本步自检与断言执行时把握的宽严",
+            "effect": "提高 = 早暴露问题（打回率↑、返工↓）；打回率已高时不宜再提"
+          },
+          "maxChars": {
+            "type": "number",
+            "min": 200,
+            "max": 40000,
+            "default": 4000,
+            "unit": "字",
+            "desc": "本步产物正文的篇幅上限（超出即视为未收敛）",
+            "effect": "提高 = 允许更长产物；成本随字数上升"
+          },
+          "model_tier": {
+            "type": "enum",
+            "enum": [
+              "high",
+              "lite"
+            ],
+            "default": "high",
+            "desc": "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
+            "effect": "文学与结构判断节点必须 high；机械整理类可降 lite"
+          },
+          "quests": {
+            "type": "number",
+            "default": 3,
+            "min": 0,
+            "desc": "开书三问的问答轮数",
+            "effect": "提高 = 设定更稳，开书更慢",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "powerSystem": {
+            "type": "enum",
+            "default": "力量体系",
+            "enum": [
+              "力量体系",
+              "情绪体系",
+              "社会体系"
+            ],
+            "desc": "核心设定的骨架类型",
+            "effect": "换了 = 全书冲突来源换血",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "deadlineRounds": {
+            "type": "number",
+            "default": 3,
+            "min": 0,
+            "desc": "三问未答完最多许开书几轮",
+            "effect": "提高 = 更难卡住，也更容易带病开书",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          }
+        },
+        "sources": {
+          "depth": "generic",
+          "strictness": "generic",
+          "maxChars": "generic",
+          "model_tier": "generic",
+          "quests": "op",
+          "powerSystem": "op",
+          "deadlineRounds": "op"
+        },
+        "unknownKeys": [],
+        "genericOnly": false
+      }
+    },
+    "volume": {
+      "boundary": false,
+      "output": "内部/稿本/卷纲与章功能序列.md",
+      "kit": "plot",
+      "op": "plot-choreographer",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": {
+        "values": {
+          "depth": "标准",
+          "strictness": "标准",
+          "maxChars": 4000,
+          "model_tier": "high",
+          "actModel": "八段式",
+          "cardDensity": "标准",
+          "dataAnchor": "市场实盘",
+          "lineCount": 3
+        },
+        "defs": {
+          "depth": {
+            "type": "enum",
+            "enum": [
+              "浅",
+              "标准",
+              "深"
+            ],
+            "default": "标准",
+            "desc": "本步投入深度：浅=先出可用版本，标准=默认，深=加采样与自检",
+            "effect": "提高 = 更充分但更慢更贵；连续无打回时可降档"
+          },
+          "strictness": {
+            "type": "enum",
+            "enum": [
+              "宽松",
+              "标准",
+              "严格"
+            ],
+            "default": "标准",
+            "desc": "判定尺度：本步自检与断言执行时把握的宽严",
+            "effect": "提高 = 早暴露问题（打回率↑、返工↓）；打回率已高时不宜再提"
+          },
+          "maxChars": {
+            "type": "number",
+            "min": 200,
+            "max": 40000,
+            "default": 4000,
+            "unit": "字",
+            "desc": "本步产物正文的篇幅上限（超出即视为未收敛）",
+            "effect": "提高 = 允许更长产物；成本随字数上升"
+          },
+          "model_tier": {
+            "type": "enum",
+            "enum": [
+              "high",
+              "lite"
+            ],
+            "default": "high",
+            "desc": "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
+            "effect": "文学与结构判断节点必须 high；机械整理类可降 lite"
+          },
+          "actModel": {
+            "type": "enum",
+            "default": "八段式",
+            "enum": [
+              "八段式",
+              "三幕",
+              "单元剧"
+            ],
+            "desc": "结构模型选型",
+            "effect": "换了 = 分集功能表全表重排",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "cardDensity": {
+            "type": "enum",
+            "default": "标准",
+            "enum": [
+              "疏",
+              "标准",
+              "密"
+            ],
+            "desc": "分场卡密度",
+            "effect": "提高 = 每集卡点更多、拍摄成本更高",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "dataAnchor": {
+            "type": "enum",
+            "default": "市场实盘",
+            "enum": [
+              "市场实盘",
+              "母题",
+              "混合"
+            ],
+            "desc": "节奏的标尺来源",
+            "effect": "换成母题 = 少依赖实盘数据",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "lineCount": {
+            "type": "number",
+            "default": 3,
+            "min": 0,
+            "desc": "三线骨架的线数",
+            "effect": "提高 = 结构更丰富也更难收",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          }
+        },
+        "sources": {
+          "depth": "generic",
+          "strictness": "generic",
+          "maxChars": "generic",
+          "model_tier": "generic",
+          "actModel": "op",
+          "cardDensity": "op",
+          "dataAnchor": "op",
+          "lineCount": "op"
+        },
+        "unknownKeys": [],
+        "genericOnly": false
+      }
+    },
+    "ledger": {
+      "boundary": false,
+      "output": "内部/收据/连续性台账.json",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": null
+    },
+    "chapter": {
+      "boundary": false,
+      "output": "章节正文/正文-第XXX章.md",
+      "kit": "prose",
+      "op": "novel-chapter",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": {
+        "values": {
+          "depth": "标准",
+          "strictness": "标准",
+          "maxChars": 4000,
+          "model_tier": "high",
+          "chapterChars": 3000,
+          "hookStrength": "标准",
+          "ledgerScope": "本拍",
+          "densityWave": "随情绪"
+        },
+        "defs": {
+          "depth": {
+            "type": "enum",
+            "enum": [
+              "浅",
+              "标准",
+              "深"
+            ],
+            "default": "标准",
+            "desc": "本步投入深度：浅=先出可用版本，标准=默认，深=加采样与自检",
+            "effect": "提高 = 更充分但更慢更贵；连续无打回时可降档"
+          },
+          "strictness": {
+            "type": "enum",
+            "enum": [
+              "宽松",
+              "标准",
+              "严格"
+            ],
+            "default": "标准",
+            "desc": "判定尺度：本步自检与断言执行时把握的宽严",
+            "effect": "提高 = 早暴露问题（打回率↑、返工↓）；打回率已高时不宜再提"
+          },
+          "maxChars": {
+            "type": "number",
+            "min": 200,
+            "max": 40000,
+            "default": 4000,
+            "unit": "字",
+            "desc": "本步产物正文的篇幅上限（超出即视为未收敛）",
+            "effect": "提高 = 允许更长产物；成本随字数上升"
+          },
+          "model_tier": {
+            "type": "enum",
+            "enum": [
+              "high",
+              "lite"
+            ],
+            "default": "high",
+            "desc": "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
+            "effect": "文学与结构判断节点必须 high；机械整理类可降 lite"
+          },
+          "chapterChars": {
+            "type": "number",
+            "default": 3000,
+            "min": 0,
+            "desc": "单章目标字数",
+            "effect": "提高 = 单章更沉、日更压力大",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "hookStrength": {
+            "type": "enum",
+            "default": "标准",
+            "enum": [
+              "轻",
+              "标准",
+              "强"
+            ],
+            "desc": "章末钩子强度",
+            "effect": "提高 = 留存好、疲劳感上升",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "ledgerScope": {
+            "type": "enum",
+            "default": "本拍",
+            "enum": [
+              "本拍",
+              "本阶段"
+            ],
+            "desc": "台账切片的范围",
+            "effect": "本阶段 = 更稳更慢",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "densityWave": {
+            "type": "enum",
+            "default": "随情绪",
+            "enum": [
+              "均一",
+              "随情绪"
+            ],
+            "desc": "笔墨密度",
+            "effect": "均一 = 无起伏",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          }
+        },
+        "sources": {
+          "depth": "generic",
+          "strictness": "generic",
+          "maxChars": "generic",
+          "model_tier": "generic",
+          "chapterChars": "op",
+          "hookStrength": "op",
+          "ledgerScope": "op",
+          "densityWave": "op"
+        },
+        "unknownKeys": [],
+        "genericOnly": false
+      }
+    },
+    "audit": {
+      "boundary": false,
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": null
+    },
+    "ledgerUp": {
+      "boundary": false,
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": null
+    },
+    "redline": {
+      "boundary": false,
+      "output": "内部/意见/红方意见书-redline.md",
+      "kit": "plot",
+      "op": "plot-redline",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": {
+        "values": {
+          "depth": "标准",
+          "strictness": "标准",
+          "maxChars": 4000,
+          "model_tier": "high",
+          "angles": 4,
+          "harshness": "标准",
+          "allowInject": true,
+          "voice": "说人话"
+        },
+        "defs": {
+          "depth": {
+            "type": "enum",
+            "enum": [
+              "浅",
+              "标准",
+              "深"
+            ],
+            "default": "标准",
+            "desc": "本步投入深度：浅=先出可用版本，标准=默认，深=加采样与自检",
+            "effect": "提高 = 更充分但更慢更贵；连续无打回时可降档"
+          },
+          "strictness": {
+            "type": "enum",
+            "enum": [
+              "宽松",
+              "标准",
+              "严格"
+            ],
+            "default": "标准",
+            "desc": "判定尺度：本步自检与断言执行时把握的宽严",
+            "effect": "提高 = 早暴露问题（打回率↑、返工↓）；打回率已高时不宜再提"
+          },
+          "maxChars": {
+            "type": "number",
+            "min": 200,
+            "max": 40000,
+            "default": 4000,
+            "unit": "字",
+            "desc": "本步产物正文的篇幅上限（超出即视为未收敛）",
+            "effect": "提高 = 允许更长产物；成本随字数上升"
+          },
+          "model_tier": {
+            "type": "enum",
+            "enum": [
+              "high",
+              "lite"
+            ],
+            "default": "high",
+            "desc": "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
+            "effect": "文学与结构判断节点必须 high；机械整理类可降 lite"
+          },
+          "angles": {
+            "type": "number",
+            "default": 4,
+            "min": 0,
+            "desc": "代入的评审视角数（读者/编剧/甲方…）",
+            "effect": "提高 = 更全面、成本线性上升",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "harshness": {
+            "type": "enum",
+            "default": "标准",
+            "enum": [
+              "温和",
+              "标准",
+              "苛刻"
+            ],
+            "desc": "苛刻程度",
+            "effect": "提高 = 更多打回更少漏网；过高会空转",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "allowInject": {
+            "type": "boolean",
+            "default": true,
+            "desc": "框架单薄时是否允许提交流程重构建议",
+            "effect": "关掉 = 只报问题不给方案",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "voice": {
+            "type": "enum",
+            "default": "说人话",
+            "enum": [
+              "说人话",
+              "念指标"
+            ],
+            "desc": "意见书的语体",
+            "effect": "念指标 = 读者读不懂，说人话 = 可执行",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          }
+        },
+        "sources": {
+          "depth": "generic",
+          "strictness": "generic",
+          "maxChars": "generic",
+          "model_tier": "generic",
+          "angles": "op",
+          "harshness": "op",
+          "allowInject": "op",
+          "voice": "op"
+        },
+        "unknownKeys": [],
+        "genericOnly": false
+      }
+    },
+    "fin": {
+      "boundary": false,
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": null
+    }
+  }
+}

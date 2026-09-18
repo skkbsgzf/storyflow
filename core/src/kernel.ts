@@ -449,12 +449,12 @@ export class Kernel {
     makeArtifact(projectDir, {
       path: rel,
       node: nodeId,
-      round: ns.round,
+      round: Math.max(ns.round, 1),
       producer: "host-submit",
       inputs: inputFingerprint(projectDir, upstreamFiles),
       validations: finalProblems,
     });
-    captureSnapshot(projectDir, nodeId, { [rel]: fs.readFileSync(abs, "utf-8") }, `submit r${ns.round}·${path.basename(rel)}`);
+    captureSnapshot(projectDir, nodeId, { [rel]: fs.readFileSync(abs, "utf-8") }, `submit r${Math.max(ns.round, 1)}·${path.basename(rel)}`);
     // R5 指标：命中率 = 注入的标尺卡/上游件中，产物真正引用过的比例（信号取自 artifact@1 头部 upstream 与正文）
     try {
       const injected = [...(opRef?.knowledge ?? []), ...upstreamFiles];
@@ -769,6 +769,7 @@ export class Kernel {
           return { status: "blocked", nodeId: id, reason: `源文件缺失: ${f}` };
         }
         makeArtifact(projectDir, { path: f, node: id, producer: "kernel:novel-txt", inputs: {} });
+        captureSnapshot(projectDir, id, { [f]: fs.readFileSync(path.join(projectDir, f), "utf-8") }, `src r1·${path.basename(f)}`);
         ns.status = "done";
         ns.round += 1;
         ns.stale = false;

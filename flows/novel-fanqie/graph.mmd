@@ -15,29 +15,29 @@ flowchart LR
     polish["polish · 去AI味终稿打磨"]:::agent
     gate-final["gate-final · 终稿验收（用户读三章）"]:::agent
     chapter["chapter · 章节成稿"]:::agent
-    src -->|skill.find-trope| tropes
-    market -->|skill.find-trope| tropes
-    src -->|skill.material-dissect| zeitgeist
-    tropes -->|core.check_trope_combo| combo
-    tropes -->|core.kb_load| benchmark
-    src -->|sm.topic-analysis| analysis
-    market -->|sm.topic-analysis| analysis
-    tropes -->|sm.topic-analysis| analysis
-    combo -->|sm.topic-analysis| analysis
-    zeitgeist -->|sm.topic-analysis| analysis
-    benchmark -->|sm.topic-analysis| analysis
-    analysis -->|sm.review| gate-r1
-    gate-r1 -->|skill.world-forge| bible
-    bible -->|sm.redline| red-s2
-    red-s2 -->|skill.episodic-outline| outline3
-    outline3 -->|sm.redline| red-s3
-    audit -->|skill.novel-deai| polish
-    polish -->|sm.review| gate-final
-    red-s3 -->|skill.novel-chapter| chapter
-    bible -->|skill.novel-chapter| chapter
-    outline3 -->|skill.novel-chapter| chapter
-    chapter -->|core.check_aesthetic_asserts| audit
-    chapter -->|skill.novel-deai| polish
+    src -->|| tropes
+    market -->|| tropes
+    src -->|| zeitgeist
+    tropes -->|| combo
+    tropes -->|| benchmark
+    src -->|| analysis
+    market -->|| analysis
+    tropes -->|| analysis
+    combo -->|| analysis
+    zeitgeist -->|| analysis
+    benchmark -->|| analysis
+    analysis -->|| gate-r1
+    gate-r1 -->|| bible
+    bible -->|| red-s2
+    red-s2 -->|| outline3
+    outline3 -->|| red-s3
+    audit -->|| polish
+    polish -->|| gate-final
+    red-s3 -->|| chapter
+    bible -->|| chapter
+    outline3 -->|| chapter
+    chapter -->|| audit
+    chapter -->|| polish
     classDef src fill:#1d3323,stroke:#3d7a4f,color:#8fd4a3
     classDef core fill:#16233a,stroke:#3d5a80,color:#a8c4e8
     classDef agent fill:#2a2313,stroke:#e8b33d,color:#e8b33d

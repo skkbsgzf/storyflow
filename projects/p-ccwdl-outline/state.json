@@ -1,0 +1,77 @@
+{
+  "runId": "run-mu5rwaff-yyec1h",
+  "projectId": "p-ccwdl-outline",
+  "flowId": "outline-production",
+  "flowVersion": "0.1.0-draft",
+  "flowHash": "109150b0",
+  "status": "suspended",
+  "plan": {
+    "order": [
+      "src",
+      "constraints",
+      "choreo",
+      "asserts",
+      "redline",
+      "fin"
+    ]
+  },
+  "nodes": {
+    "src": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "选题方案.md"
+    },
+    "constraints": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "内部/kb-constraints.md"
+    },
+    "choreo": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "内部/稿本/分集大纲.md",
+      "stale": false
+    },
+    "asserts": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "内部/断言报告-asserts.json"
+    },
+    "redline": {
+      "status": "done",
+      "round": 1,
+      "failCount": 1,
+      "lastArtifact": "内部/意见/红方意见书-redline.md",
+      "stale": false
+    },
+    "fin": {
+      "status": "awaiting",
+      "round": 0
+    }
+  },
+  "gate": {
+    "verdict": "awaiting",
+    "node": "fin",
+    "round": 0,
+    "token": "approval:p-ccwdl-outline:run-mu5rwaff-yyec1h:fin",
+    "at": "2026-09-17T17:00:47.776Z",
+    "note": "人工验收"
+  },
+  "inputs": {
+    "project": "p-ccwdl-outline",
+    "route": "dual",
+    "episodes": 60
+  },
+  "comments": {},
+  "overlayHash": "4dd0676e",
+  "policy": {
+    "kit_boundary": "off",
+    "gate_mode": "auto",
+    "adapt": "propose"
+  },
+  "planHash": "eb1c6121",
+  "focus": "fin"
+}

@@ -1,0 +1,155 @@
+{
+  "runId": "run-mu5s9wa2-0uld4c",
+  "projectId": "p-ccwdl-fq",
+  "flowId": "novel-fanqie",
+  "flowVersion": "2.2.1",
+  "flowHash": "3898d52a",
+  "status": "completed",
+  "plan": {
+    "order": [
+      "market",
+      "src",
+      "tropes",
+      "combo",
+      "benchmark",
+      "analysis",
+      "gate-r1",
+      "bible",
+      "red-s2",
+      "outline3",
+      "red-s3",
+      "chapter",
+      "audit",
+      "polish",
+      "gate-final"
+    ]
+  },
+  "nodes": {
+    "src": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "选题素材.md"
+    },
+    "market": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "内部/kb-market.md"
+    },
+    "tropes": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "内部/稿本/梗卡.md",
+      "stale": false
+    },
+    "combo": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "内部/断言报告-combo.json"
+    },
+    "zeitgeist": {
+      "status": "none",
+      "round": 0
+    },
+    "benchmark": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "内部/kb-benchmark.md"
+    },
+    "analysis": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "对外交付/01-选题报告.md",
+      "stale": false
+    },
+    "gate-r1": {
+      "status": "done",
+      "round": 1,
+      "failCount": 1,
+      "lastArtifact": "内部/意见/多视角意见书-gate-r1.md",
+      "stale": false,
+      "verdict": "pass"
+    },
+    "bible": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "世界书/世界观圣经.md",
+      "stale": false
+    },
+    "red-s2": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "内部/意见/多视角意见书-red-s2.md",
+      "stale": false
+    },
+    "outline3": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "内部/稿本/单元剧大纲.md",
+      "stale": false
+    },
+    "red-s3": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "内部/意见/多视角意见书-red-s3.md",
+      "stale": false
+    },
+    "audit": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "内部/断言报告-audit.json"
+    },
+    "polish": {
+      "status": "done",
+      "round": 1,
+      "failCount": 1,
+      "lastArtifact": "对外交付/02-前三章终稿.md",
+      "stale": false
+    },
+    "gate-final": {
+      "status": "done",
+      "round": 1,
+      "failCount": 2,
+      "lastArtifact": "内部/意见/多视角意见书-gate-final.md",
+      "stale": false,
+      "verdict": "pass"
+    },
+    "chapter": {
+      "status": "done",
+      "round": 1,
+      "failCount": 3,
+      "committed": [
+        "章节正文/第1章.md",
+        "章节正文/第2章.md",
+        "章节正文/第3章.md"
+      ],
+      "stale": false,
+      "lastArtifact": "章节正文/第3章.md"
+    }
+  },
+  "gate": {
+    "verdict": "pass",
+    "node": "gate-final",
+    "at": "2026-09-17T17:32:24.003Z",
+    "note": "R5 自动裁决：域内评审步，交卷断言全过即过"
+  },
+  "inputs": {
+    "project": "p-ccwdl-fq",
+    "direction": "曹操穿越到武大郎身上：三国枭雄之魂借市井最弱皮囊，从炊饼摊开始步步收权；跨书穿，威能带身体损耗",
+    "platform": "番茄",
+    "chapters": 3,
+    "zeitgeist": false
+  },
+  "comments": {},
+  "overlayHash": "4dd0676e",
+  "policy": {
+    "kit_boundary": "off",
+    "gate_mode": "auto",
+    "adapt": "propose"
+  },
+  "planHash": "53264a42"
+}

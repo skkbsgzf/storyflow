@@ -1,0 +1,18 @@
+{
+  "snapshots": {
+    "src": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T17:32:51.553Z",
+        "note": "src r1·分场卡.md",
+        "files": {
+          "分场卡.md": {
+            "hash": "473f6f3df5ae",
+            "path": "snapshots/src/r1/分场卡.md"
+          }
+        }
+      }
+    ]
+  },
+  "inputs": {}
+}

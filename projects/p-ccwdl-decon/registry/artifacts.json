@@ -1,0 +1,124 @@
+{
+  "artifacts": [
+    {
+      "path": "参考作品.md",
+      "node": "src",
+      "producer": "kernel:novel-txt",
+      "inputs": {},
+      "round": 1,
+      "sha1": "82fb35b07759",
+      "ts": "2026-09-17T16:22:01.793Z"
+    },
+    {
+      "path": "内部/kb-pre.md",
+      "node": "pre",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "d1b3a9f59dd3",
+      "ts": "2026-09-17T16:22:01.796Z"
+    },
+    {
+      "path": "内部/稿本/拆解件-剧情设计.md",
+      "node": "read",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {},
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1946 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        }
+      ],
+      "sha1": "e8dd75c1988a",
+      "ts": "2026-09-17T16:26:36.155Z"
+    },
+    {
+      "path": "内部/稿本/拆解件-细化.md",
+      "node": "refine",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/稿本/拆解件-剧情设计.md": "e8dd75c1988a"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2064 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        }
+      ],
+      "sha1": "53705f059bae",
+      "ts": "2026-09-17T16:27:37.232Z"
+    },
+    {
+      "path": "内部/稿本/拆解件-人设.md",
+      "node": "chars",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/稿本/拆解件-细化.md": "53705f059bae"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1936 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        }
+      ],
+      "sha1": "47559c06e330",
+      "ts": "2026-09-17T16:28:27.876Z"
+    },
+    {
+      "path": "内部/稿本/拆解件-文风.md",
+      "node": "style",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/稿本/拆解件-细化.md": "53705f059bae"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1719 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        }
+      ],
+      "sha1": "d2195c2f943a",
+      "ts": "2026-09-17T16:29:12.378Z"
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "runId": "run-mu5s4aaw-vkptxn",
+  "projectId": "p-ccwdl-long",
+  "flowId": "novel-longform",
+  "flowVersion": "0.1.0-draft",
+  "flowHash": "9a98eed2",
+  "status": "running",
+  "plan": {
+    "order": [
+      "req",
+      "market",
+      "tropes",
+      "bible",
+      "volume",
+      "ledger",
+      "chapter",
+      "audit",
+      "ledgerUp",
+      "redline",
+      "fin"
+    ]
+  },
+  "nodes": {
+    "req": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "需求.md"
+    },
+    "market": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "内部/kb-market.md"
+    },
+    "tropes": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "内部/稿本/梗卡.md",
+      "stale": false
+    },
+    "bible": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "世界书/世界观圣经.md",
+      "stale": false
+    },
+    "volume": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "内部/稿本/卷纲与章功能序列.md",
+      "stale": false
+    },
+    "ledger": {
+      "status": "none",
+      "round": 0
+    },
+    "chapter": {
+      "status": "none",
+      "round": 0
+    },
+    "audit": {
+      "status": "none",
+      "round": 0
+    },
+    "ledgerUp": {
+      "status": "none",
+      "round": 0
+    },
+    "redline": {
+      "status": "none",
+      "round": 0
+    },
+    "fin": {
+      "status": "none",
+      "round": 0
+    }
+  },
+  "gate": {
+    "verdict": "none"
+  },
+  "inputs": {
+    "project": "p-ccwdl-long",
+    "premise": "曹操穿越到武大郎身上：奸雄之魂借市井最弱皮囊，从炊饼摊重建权柄；跨书穿，前世记忆带身体损耗代价",
+    "platform": "番茄",
+    "batchSize": 10
+  },
+  "comments": {},
+  "overlayHash": "4dd0676e",
+  "policy": {
+    "kit_boundary": "off",
+    "gate_mode": "auto",
+    "adapt": "propose"
+  },
+  "planHash": "cd801a1c",
+  "focus": "ledger"
+}

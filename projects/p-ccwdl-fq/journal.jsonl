@@ -1,0 +1,70 @@
+{"ts":"2026-09-17T17:08:22.059Z","runId":"run-mu5s9wa2-0uld4c","event":"run-start","actor":"kernel","detail":"novel-fanqie@2.2.1 计划 15 节点"}
+{"ts":"2026-09-17T17:08:22.060Z","runId":"run-mu5s9wa2-0uld4c","event":"note","actor":"kernel:overlay","detail":"生效编排合成：set-policy kit_boundary=off｜实验批：跨域门自动放行 ｜ kit_boundary=off：不派生边界验收（全自动）"}
+{"ts":"2026-09-17T17:08:22.079Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","nodeId":"market","detail":"内部/kb-market.md","refs":["内部/kb-market.md"]}
+{"ts":"2026-09-17T17:08:22.081Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","nodeId":"src","detail":"源步 选题素材.md"}
+{"ts":"2026-09-17T17:08:22.087Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","nodeId":"tropes","detail":"任务包产出（skill=find-trope，上下文 2 件）"}
+{"ts":"2026-09-17T17:08:22.088Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：tropes（并行）"}
+{"ts":"2026-09-17T17:09:25.539Z","runId":"run-mu5s9wa2-0uld4c","event":"submit","actor":"kernel","nodeId":"tropes","detail":"内部/稿本/梗卡.md","refs":["内部/稿本/梗卡.md"]}
+{"ts":"2026-09-17T17:09:25.539Z","runId":"run-mu5s9wa2-0uld4c","event":"snapshot","actor":"kernel","nodeId":"tropes","detail":"r1·梗卡.md","refs":["内部/稿本/梗卡.md"]}
+{"ts":"2026-09-17T17:09:25.546Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","nodeId":"combo","detail":"内部/断言报告-combo.json","refs":["内部/断言报告-combo.json"]}
+{"ts":"2026-09-17T17:09:25.550Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","nodeId":"benchmark","detail":"内部/kb-benchmark.md","refs":["内部/kb-benchmark.md"]}
+{"ts":"2026-09-17T17:09:25.558Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","nodeId":"analysis","detail":"任务包产出（skill=topic-analysis-report，上下文 5 件）"}
+{"ts":"2026-09-17T17:09:25.558Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：analysis（并行）"}
+{"ts":"2026-09-17T17:10:17.743Z","runId":"run-mu5s9wa2-0uld4c","event":"submit","actor":"kernel","nodeId":"analysis","detail":"对外交付/01-选题报告.md","refs":["对外交付/01-选题报告.md"]}
+{"ts":"2026-09-17T17:10:17.743Z","runId":"run-mu5s9wa2-0uld4c","event":"snapshot","actor":"kernel","nodeId":"analysis","detail":"r1·01-选题报告.md","refs":["对外交付/01-选题报告.md"]}
+{"ts":"2026-09-17T17:10:17.750Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","nodeId":"gate-r1","detail":"评审步派发（R5：评审照跑，裁决自动——域内质量交回该 tool 的 asserts/config；如需人工请置 policy.gate_mode=manual）"}
+{"ts":"2026-09-17T17:10:17.750Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：gate-r1（并行）"}
+{"ts":"2026-09-17T17:10:45.959Z","runId":"run-mu5s9wa2-0uld4c","event":"reject","actor":"kernel","nodeId":"gate-r1","detail":"artifact-header: 摘要超长（>80 字符）","refs":["内部/意见/多视角意见书-gate-r1.md"]}
+{"ts":"2026-09-17T17:11:02.445Z","runId":"run-mu5s9wa2-0uld4c","event":"submit","actor":"kernel","nodeId":"gate-r1","detail":"内部/意见/多视角意见书-gate-r1.md","refs":["内部/意见/多视角意见书-gate-r1.md"]}
+{"ts":"2026-09-17T17:11:02.445Z","runId":"run-mu5s9wa2-0uld4c","event":"snapshot","actor":"kernel","nodeId":"gate-r1","detail":"r1·多视角意见书-gate-r1.md","refs":["内部/意见/多视角意见书-gate-r1.md"]}
+{"ts":"2026-09-17T17:11:02.445Z","runId":"run-mu5s9wa2-0uld4c","event":"verdict","actor":"kernel","nodeId":"gate-r1","detail":"auto-pass（R5：域内评审步自动裁决；要人接手请置 policy.gate_mode=manual，或由优化器按指标裁掉该步）"}
+{"ts":"2026-09-17T17:11:02.454Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","nodeId":"bible","detail":"任务包产出（skill=world-forge，上下文 1 件）"}
+{"ts":"2026-09-17T17:11:02.454Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：bible（并行）"}
+{"ts":"2026-09-17T17:13:00.101Z","runId":"run-mu5s9wa2-0uld4c","event":"submit","actor":"kernel","nodeId":"bible","detail":"世界书/世界观圣经.md","refs":["世界书/世界观圣经.md"]}
+{"ts":"2026-09-17T17:13:00.101Z","runId":"run-mu5s9wa2-0uld4c","event":"snapshot","actor":"kernel","nodeId":"bible","detail":"r1·世界观圣经.md","refs":["世界书/世界观圣经.md"]}
+{"ts":"2026-09-17T17:13:00.109Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","nodeId":"red-s2","detail":"任务包产出（skill=plot-redline，上下文 1 件）"}
+{"ts":"2026-09-17T17:13:00.109Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：red-s2（并行）"}
+{"ts":"2026-09-17T17:13:51.590Z","runId":"run-mu5s9wa2-0uld4c","event":"submit","actor":"kernel","nodeId":"red-s2","detail":"内部/意见/多视角意见书-red-s2.md","refs":["内部/意见/多视角意见书-red-s2.md"]}
+{"ts":"2026-09-17T17:13:51.590Z","runId":"run-mu5s9wa2-0uld4c","event":"snapshot","actor":"kernel","nodeId":"red-s2","detail":"r1·多视角意见书-red-s2.md","refs":["内部/意见/多视角意见书-red-s2.md"]}
+{"ts":"2026-09-17T17:13:51.596Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","nodeId":"outline3","detail":"任务包产出（skill=episodic-outline，上下文 1 件）"}
+{"ts":"2026-09-17T17:13:51.597Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：outline3（并行）"}
+{"ts":"2026-09-17T17:14:44.307Z","runId":"run-mu5s9wa2-0uld4c","event":"submit","actor":"kernel","nodeId":"outline3","detail":"内部/稿本/单元剧大纲.md","refs":["内部/稿本/单元剧大纲.md"]}
+{"ts":"2026-09-17T17:14:44.308Z","runId":"run-mu5s9wa2-0uld4c","event":"snapshot","actor":"kernel","nodeId":"outline3","detail":"r1·单元剧大纲.md","refs":["内部/稿本/单元剧大纲.md"]}
+{"ts":"2026-09-17T17:14:44.314Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","nodeId":"red-s3","detail":"任务包产出（skill=plot-redline，上下文 1 件）"}
+{"ts":"2026-09-17T17:14:44.314Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：red-s3（并行）"}
+{"ts":"2026-09-17T17:15:11.051Z","runId":"run-mu5s9wa2-0uld4c","event":"submit","actor":"kernel","nodeId":"red-s3","detail":"内部/意见/多视角意见书-red-s3.md","refs":["内部/意见/多视角意见书-red-s3.md"]}
+{"ts":"2026-09-17T17:15:11.051Z","runId":"run-mu5s9wa2-0uld4c","event":"snapshot","actor":"kernel","nodeId":"red-s3","detail":"r1·多视角意见书-red-s3.md","refs":["内部/意见/多视角意见书-red-s3.md"]}
+{"ts":"2026-09-17T17:15:11.058Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","nodeId":"chapter","detail":"任务包产出（skill=novel-chapter，上下文 3 件）"}
+{"ts":"2026-09-17T17:15:11.058Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：chapter（并行）"}
+{"ts":"2026-09-17T17:16:49.547Z","runId":"run-mu5s9wa2-0uld4c","event":"reject","actor":"kernel","nodeId":"chapter","detail":"artifact-header: 标题后须紧接一行 > 摘要（≤60 字）; AE-WNF-HOOK: 章末无钩（末三段无悬念？/转折词/情绪信号）——每章结尾必须留钩","refs":["章节正文/第1章.md"]}
+{"ts":"2026-09-17T17:17:39.150Z","runId":"run-mu5s9wa2-0uld4c","event":"reject","actor":"kernel","nodeId":"chapter","detail":"AE-WNF-HOOK: 章末无钩（末三段无悬念？/转折词/情绪信号）——每章结尾必须留钩","refs":["章节正文/第1章.md"]}
+{"ts":"2026-09-17T17:18:30.785Z","runId":"run-mu5s9wa2-0uld4c","event":"warn","actor":"kernel","nodeId":"chapter","detail":"声明断言无机器校验器（未执行，归评审/红方剖面）：AE-AI-QUOTA、AE-AI-STRUCT、AE-COMPLIANCE、AE-NAT-HIT","refs":["章节正文/第1章.md"]}
+{"ts":"2026-09-17T17:18:36.470Z","runId":"run-mu5s9wa2-0uld4c","event":"warn","actor":"kernel","nodeId":"chapter","detail":"声明断言无机器校验器（未执行，归评审/红方剖面）：AE-AI-QUOTA、AE-AI-STRUCT、AE-COMPLIANCE、AE-NAT-HIT","refs":["章节正文/第1章.md"]}
+{"ts":"2026-09-17T17:20:29.025Z","runId":"run-mu5s9wa2-0uld4c","event":"warn","actor":"kernel","nodeId":"chapter","detail":"声明断言无机器校验器（未执行，归评审/红方剖面）：AE-AI-QUOTA、AE-AI-STRUCT、AE-COMPLIANCE、AE-NAT-HIT","refs":["章节正文/第1章.md"]}
+{"ts":"2026-09-17T17:20:29.031Z","runId":"run-mu5s9wa2-0uld4c","event":"submit","actor":"kernel","nodeId":"chapter","detail":"章节正文/第1章.md","refs":["章节正文/第1章.md"]}
+{"ts":"2026-09-17T17:20:29.031Z","runId":"run-mu5s9wa2-0uld4c","event":"snapshot","actor":"kernel","nodeId":"chapter","detail":"r0·第1章.md","refs":["章节正文/第1章.md"]}
+{"ts":"2026-09-17T17:22:10.571Z","runId":"run-mu5s9wa2-0uld4c","event":"reject","actor":"kernel","nodeId":"chapter","detail":"glossary: 跨项目串戏：老周（来自 p-ts-001）","refs":["章节正文/第2章.md"]}
+{"ts":"2026-09-17T17:22:32.431Z","runId":"run-mu5s9wa2-0uld4c","event":"warn","actor":"kernel","nodeId":"chapter","detail":"声明断言无机器校验器（未执行，归评审/红方剖面）：AE-AI-QUOTA、AE-AI-STRUCT、AE-COMPLIANCE、AE-NAT-HIT","refs":["章节正文/第2章.md"]}
+{"ts":"2026-09-17T17:22:32.437Z","runId":"run-mu5s9wa2-0uld4c","event":"submit","actor":"kernel","nodeId":"chapter","detail":"章节正文/第2章.md","refs":["章节正文/第2章.md"]}
+{"ts":"2026-09-17T17:22:32.437Z","runId":"run-mu5s9wa2-0uld4c","event":"snapshot","actor":"kernel","nodeId":"chapter","detail":"r0·第2章.md","refs":["章节正文/第2章.md"]}
+{"ts":"2026-09-17T17:23:45.278Z","runId":"run-mu5s9wa2-0uld4c","event":"warn","actor":"kernel","nodeId":"chapter","detail":"声明断言无机器校验器（未执行，归评审/红方剖面）：AE-AI-QUOTA、AE-AI-STRUCT、AE-COMPLIANCE、AE-NAT-HIT","refs":["章节正文/第3章.md"]}
+{"ts":"2026-09-17T17:23:45.283Z","runId":"run-mu5s9wa2-0uld4c","event":"submit","actor":"kernel","nodeId":"chapter","detail":"章节正文/第3章.md","refs":["章节正文/第3章.md"]}
+{"ts":"2026-09-17T17:23:45.283Z","runId":"run-mu5s9wa2-0uld4c","event":"snapshot","actor":"kernel","nodeId":"chapter","detail":"r1·第3章.md","refs":["章节正文/第3章.md"]}
+{"ts":"2026-09-17T17:23:45.294Z","runId":"run-mu5s9wa2-0uld4c","event":"warn","actor":"kernel","nodeId":"audit","detail":"声明断言无机器校验器（未执行，归评审/红方剖面）：AE-COMPLIANCE","refs":["内部/断言报告-audit.json"]}
+{"ts":"2026-09-17T17:23:45.294Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","nodeId":"audit","detail":"内部/断言报告-audit.json","refs":["内部/断言报告-audit.json"]}
+{"ts":"2026-09-17T17:23:45.298Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","nodeId":"polish","detail":"任务包产出（skill=novel-deai，上下文 2 件）"}
+{"ts":"2026-09-17T17:23:45.298Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：polish（并行）"}
+{"ts":"2026-09-17T17:24:31.934Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：polish（并行）"}
+{"ts":"2026-09-17T17:26:33.126Z","runId":"run-mu5s9wa2-0uld4c","event":"reject","actor":"kernel","nodeId":"polish","detail":"glossary: 跨项目串戏：矮子里的丞相（来自 p-ccwdl-ep）、矮子里的丞相（来自 p-ccwdl-long）、矮子里的丞相（来自 p-ccwdl-outline）、矮子里的丞相（来自 p-ccwdl-topic）","refs":["对外交付/02-前三章终稿.md"]}
+{"ts":"2026-09-17T17:27:02.275Z","runId":"run-mu5s9wa2-0uld4c","event":"submit","actor":"kernel","nodeId":"polish","detail":"对外交付/02-前三章终稿.md","refs":["对外交付/02-前三章终稿.md"]}
+{"ts":"2026-09-17T17:27:02.276Z","runId":"run-mu5s9wa2-0uld4c","event":"snapshot","actor":"kernel","nodeId":"polish","detail":"r1·02-前三章终稿.md","refs":["对外交付/02-前三章终稿.md"]}
+{"ts":"2026-09-17T17:27:02.284Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","nodeId":"gate-final","detail":"评审步派发（R5：评审照跑，裁决自动——域内质量交回该 tool 的 asserts/config；如需人工请置 policy.gate_mode=manual）"}
+{"ts":"2026-09-17T17:27:02.284Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：gate-final（并行）"}
+{"ts":"2026-09-17T17:31:29.297Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","nodeId":"gate-final","detail":"评审步派发（R5：评审照跑，裁决自动——域内质量交回该 tool 的 asserts/config；如需人工请置 policy.gate_mode=manual）"}
+{"ts":"2026-09-17T17:31:29.297Z","runId":"run-mu5s9wa2-0uld4c","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：gate-final（并行）"}
+{"ts":"2026-09-17T17:32:06.058Z","runId":"run-mu5s9wa2-0uld4c","event":"reject","actor":"kernel","nodeId":"gate-final","detail":"artifact-header: 摘要超长（>80 字符）","refs":["内部/意见/多视角意见书-gate-final.md"]}
+{"ts":"2026-09-17T17:32:15.531Z","runId":"run-mu5s9wa2-0uld4c","event":"reject","actor":"kernel","nodeId":"gate-final","detail":"artifact-header: 摘要超长（>80 字符）","refs":["内部/意见/多视角意见书-gate-final.md"]}
+{"ts":"2026-09-17T17:32:24.003Z","runId":"run-mu5s9wa2-0uld4c","event":"submit","actor":"kernel","nodeId":"gate-final","detail":"内部/意见/多视角意见书-gate-final.md","refs":["内部/意见/多视角意见书-gate-final.md"]}
+{"ts":"2026-09-17T17:32:24.003Z","runId":"run-mu5s9wa2-0uld4c","event":"snapshot","actor":"kernel","nodeId":"gate-final","detail":"r1·多视角意见书-gate-final.md","refs":["内部/意见/多视角意见书-gate-final.md"]}
+{"ts":"2026-09-17T17:32:24.004Z","runId":"run-mu5s9wa2-0uld4c","event":"verdict","actor":"kernel","nodeId":"gate-final","detail":"auto-pass（R5：域内评审步自动裁决；要人接手请置 policy.gate_mode=manual，或由优化器按指标裁掉该步）"}
+{"ts":"2026-09-17T17:32:24.006Z","runId":"run-mu5s9wa2-0uld4c","event":"run-end","actor":"kernel","detail":"全部节点 done"}

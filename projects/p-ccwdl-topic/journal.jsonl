@@ -1,0 +1,81 @@
+{"ts":"2026-09-17T16:30:08.492Z","runId":"run-mu5qwqjv-fn4mlx","event":"run-start","actor":"kernel","detail":"topic-selection@5.1.2 计划 10 节点"}
+{"ts":"2026-09-17T16:30:08.494Z","runId":"run-mu5qwqjv-fn4mlx","event":"note","actor":"kernel:overlay","detail":"生效编排合成：set-policy kit_boundary=auto｜实验批：跨域交接验收门自动通过，最终产物由用户统一裁决 ｜ 派生边界验收 itb-structure：search → plot（接管 1 条跨界入边 e-struct） ｜ 派生边界验收 itb-proposal：plot → search（接管 1 条跨界入边 e-prop） ｜ 派生边界验收 itb-miniguided：search → plot（接管 1 条跨界入边 e-mini） ｜ 派生边界验收 itb-first3：plot → prose（接管 2 条跨界入边 e-final2,e-gate-r4-first3）"}
+{"ts":"2026-09-17T16:30:08.514Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","nodeId":"market","detail":"内部/kb-market.md","refs":["内部/kb-market.md"]}
+{"ts":"2026-09-17T16:30:08.516Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","nodeId":"src","detail":"源步 选题素材.md"}
+{"ts":"2026-09-17T16:30:08.522Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","nodeId":"tropes","detail":"任务包产出（skill=find-trope，上下文 2 件）"}
+{"ts":"2026-09-17T16:30:08.523Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","nodeId":"zeitgeist","detail":"任务包产出（skill=topic-zeitgeist，上下文 1 件）"}
+{"ts":"2026-09-17T16:30:08.524Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","detail":"就绪批派发 2 项：tropes、zeitgeist（并行）"}
+{"ts":"2026-09-17T16:31:20.817Z","runId":"run-mu5qwqjv-fn4mlx","event":"reject","actor":"kernel","nodeId":"tropes","detail":"artifact-header: 摘要超长（>80 字符）","refs":["内部/稿本/梗卡.md"]}
+{"ts":"2026-09-17T16:31:47.721Z","runId":"run-mu5qwqjv-fn4mlx","event":"submit","actor":"kernel","nodeId":"tropes","detail":"内部/稿本/梗卡.md","refs":["内部/稿本/梗卡.md"]}
+{"ts":"2026-09-17T16:31:47.721Z","runId":"run-mu5qwqjv-fn4mlx","event":"snapshot","actor":"kernel","nodeId":"tropes","detail":"r1·梗卡.md","refs":["内部/稿本/梗卡.md"]}
+{"ts":"2026-09-17T16:31:47.734Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","nodeId":"combo","detail":"内部/断言报告-combo.json","refs":["内部/断言报告-combo.json"]}
+{"ts":"2026-09-17T16:31:47.739Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","nodeId":"benchmark","detail":"内部/kb-benchmark.md","refs":["内部/kb-benchmark.md"]}
+{"ts":"2026-09-17T16:31:47.739Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：zeitgeist（并行）"}
+{"ts":"2026-09-17T16:32:54.668Z","runId":"run-mu5qwqjv-fn4mlx","event":"reject","actor":"kernel","nodeId":"zeitgeist","detail":"artifact-header: 摘要超长（>80 字符）","refs":["内部/稿本/热点素材.md"]}
+{"ts":"2026-09-17T16:33:29.099Z","runId":"run-mu5qwqjv-fn4mlx","event":"submit","actor":"kernel","nodeId":"zeitgeist","detail":"内部/稿本/热点素材.md","refs":["内部/稿本/热点素材.md"]}
+{"ts":"2026-09-17T16:33:29.099Z","runId":"run-mu5qwqjv-fn4mlx","event":"snapshot","actor":"kernel","nodeId":"zeitgeist","detail":"r1·热点素材.md","refs":["内部/稿本/热点素材.md"]}
+{"ts":"2026-09-17T16:33:29.112Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","nodeId":"analysis","detail":"任务包产出（skill=topic-analysis-report，上下文 6 件）"}
+{"ts":"2026-09-17T16:33:29.112Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：analysis（并行）"}
+{"ts":"2026-09-17T16:34:30.586Z","runId":"run-mu5qwqjv-fn4mlx","event":"submit","actor":"kernel","nodeId":"analysis","detail":"对外交付/01-选题报告.md","refs":["对外交付/01-选题报告.md"]}
+{"ts":"2026-09-17T16:34:30.586Z","runId":"run-mu5qwqjv-fn4mlx","event":"snapshot","actor":"kernel","nodeId":"analysis","detail":"r1·01-选题报告.md","refs":["对外交付/01-选题报告.md"]}
+{"ts":"2026-09-17T16:34:30.595Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","nodeId":"gate-r1","detail":"评审步派发（R5：评审照跑，裁决自动——域内质量交回该 tool 的 asserts/config；如需人工请置 policy.gate_mode=manual）"}
+{"ts":"2026-09-17T16:34:30.599Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","nodeId":"baseline","detail":"任务包产出（skill=topic-proposal，上下文 1 件）"}
+{"ts":"2026-09-17T16:34:30.600Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","detail":"就绪批派发 2 项：gate-r1、baseline（并行）"}
+{"ts":"2026-09-17T16:35:09.944Z","runId":"run-mu5qwqjv-fn4mlx","event":"submit","actor":"kernel","nodeId":"gate-r1","detail":"内部/意见/多视角意见书-gate-r1.md","refs":["内部/意见/多视角意见书-gate-r1.md"]}
+{"ts":"2026-09-17T16:35:09.945Z","runId":"run-mu5qwqjv-fn4mlx","event":"snapshot","actor":"kernel","nodeId":"gate-r1","detail":"r1·多视角意见书-gate-r1.md","refs":["内部/意见/多视角意见书-gate-r1.md"]}
+{"ts":"2026-09-17T16:35:09.945Z","runId":"run-mu5qwqjv-fn4mlx","event":"verdict","actor":"kernel","nodeId":"gate-r1","detail":"auto-pass（R5：域内评审步自动裁决；要人接手请置 policy.gate_mode=manual，或由优化器按指标裁掉该步）"}
+{"ts":"2026-09-17T16:35:09.953Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：baseline（并行）"}
+{"ts":"2026-09-17T16:35:54.329Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：baseline（并行）"}
+{"ts":"2026-09-17T16:36:39.766Z","runId":"run-mu5qwqjv-fn4mlx","event":"submit","actor":"kernel","nodeId":"baseline","detail":"内部/稿本/选题方案-爽版-基线.md","refs":["内部/稿本/选题方案-爽版-基线.md"]}
+{"ts":"2026-09-17T16:36:39.766Z","runId":"run-mu5qwqjv-fn4mlx","event":"snapshot","actor":"kernel","nodeId":"baseline","detail":"r1·选题方案-爽版-基线.md","refs":["内部/稿本/选题方案-爽版-基线.md"]}
+{"ts":"2026-09-17T16:36:39.781Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","nodeId":"gate-r3","detail":"评审步派发（R5：评审照跑，裁决自动——域内质量交回该 tool 的 asserts/config；如需人工请置 policy.gate_mode=manual）"}
+{"ts":"2026-09-17T16:36:39.781Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：gate-r3（并行）"}
+{"ts":"2026-09-17T16:38:50.481Z","runId":"run-mu5qwqjv-fn4mlx","event":"note","actor":"user","detail":"编排改写：applied 1 / proposed 0｜实验批自动放行：auto 档剪链实测后改 off"}
+{"ts":"2026-09-17T16:38:50.498Z","runId":"run-mu5qwqjv-fn4mlx","event":"note","actor":"kernel:overlay","detail":"编排变更 → 重编译计划：10 → 19 节点；新增 无；裁撤 itb-structure、itb-proposal、itb-miniguided、itb-first3；失效 无","refs":["itb-structure","itb-proposal","itb-miniguided","itb-first3"]}
+{"ts":"2026-09-17T16:38:50.499Z","runId":"run-mu5qwqjv-fn4mlx","event":"note","actor":"kernel:overlay","detail":"set-policy kit_boundary=off｜实验批：跨域交接验收门自动通过，最终产物由用户统一裁决"}
+{"ts":"2026-09-17T16:38:50.499Z","runId":"run-mu5qwqjv-fn4mlx","event":"note","actor":"kernel:overlay","detail":"kit_boundary=off：不派生边界验收（全自动）"}
+{"ts":"2026-09-17T16:38:50.508Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","nodeId":"structure","detail":"任务包产出（skill=structure-design，上下文 1 件）"}
+{"ts":"2026-09-17T16:38:50.508Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：structure（并行）"}
+{"ts":"2026-09-17T16:40:35.962Z","runId":"run-mu5qwqjv-fn4mlx","event":"submit","actor":"kernel","nodeId":"structure","detail":"对外交付/02-大纲.md","refs":["对外交付/02-大纲.md"]}
+{"ts":"2026-09-17T16:40:35.963Z","runId":"run-mu5qwqjv-fn4mlx","event":"snapshot","actor":"kernel","nodeId":"structure","detail":"r1·02-大纲.md","refs":["对外交付/02-大纲.md"]}
+{"ts":"2026-09-17T16:40:35.972Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","nodeId":"gate-r2","detail":"评审步派发（R5：评审照跑，裁决自动——域内质量交回该 tool 的 asserts/config；如需人工请置 policy.gate_mode=manual）"}
+{"ts":"2026-09-17T16:40:35.972Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：gate-r2（并行）"}
+{"ts":"2026-09-17T16:41:22.054Z","runId":"run-mu5qwqjv-fn4mlx","event":"submit","actor":"kernel","nodeId":"gate-r2","detail":"内部/意见/多视角意见书-gate-r2.md","refs":["内部/意见/多视角意见书-gate-r2.md"]}
+{"ts":"2026-09-17T16:41:22.054Z","runId":"run-mu5qwqjv-fn4mlx","event":"snapshot","actor":"kernel","nodeId":"gate-r2","detail":"r1·多视角意见书-gate-r2.md","refs":["内部/意见/多视角意见书-gate-r2.md"]}
+{"ts":"2026-09-17T16:41:22.054Z","runId":"run-mu5qwqjv-fn4mlx","event":"verdict","actor":"kernel","nodeId":"gate-r2","detail":"auto-pass（R5：域内评审步自动裁决；要人接手请置 policy.gate_mode=manual，或由优化器按指标裁掉该步）"}
+{"ts":"2026-09-17T16:41:22.066Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","nodeId":"proposal","detail":"任务包产出（skill=topic-proposal，上下文 1 件）"}
+{"ts":"2026-09-17T16:41:22.066Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：proposal（并行）"}
+{"ts":"2026-09-17T16:42:09.267Z","runId":"run-mu5qwqjv-fn4mlx","event":"submit","actor":"kernel","nodeId":"proposal","detail":"内部/稿本/选题方案.md","refs":["内部/稿本/选题方案.md"]}
+{"ts":"2026-09-17T16:42:09.267Z","runId":"run-mu5qwqjv-fn4mlx","event":"snapshot","actor":"kernel","nodeId":"proposal","detail":"r1·选题方案.md","refs":["内部/稿本/选题方案.md"]}
+{"ts":"2026-09-17T16:42:09.276Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","nodeId":"gate-r3","detail":"评审步派发（R5：评审照跑，裁决自动——域内质量交回该 tool 的 asserts/config；如需人工请置 policy.gate_mode=manual）"}
+{"ts":"2026-09-17T16:42:09.277Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：gate-r3（并行）"}
+{"ts":"2026-09-17T16:42:38.613Z","runId":"run-mu5qwqjv-fn4mlx","event":"submit","actor":"kernel","nodeId":"gate-r3","detail":"内部/意见/多视角意见书-gate-r3.md","refs":["内部/意见/多视角意见书-gate-r3.md"]}
+{"ts":"2026-09-17T16:42:38.613Z","runId":"run-mu5qwqjv-fn4mlx","event":"snapshot","actor":"kernel","nodeId":"gate-r3","detail":"r1·多视角意见书-gate-r3.md","refs":["内部/意见/多视角意见书-gate-r3.md"]}
+{"ts":"2026-09-17T16:42:38.614Z","runId":"run-mu5qwqjv-fn4mlx","event":"verdict","actor":"kernel","nodeId":"gate-r3","detail":"auto-pass（R5：域内评审步自动裁决；要人接手请置 policy.gate_mode=manual，或由优化器按指标裁掉该步）"}
+{"ts":"2026-09-17T16:42:38.622Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","nodeId":"miniguided","detail":"任务包产出（skill=scene-breakdown，上下文 2 件）"}
+{"ts":"2026-09-17T16:42:38.622Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：miniguided（并行）"}
+{"ts":"2026-09-17T16:46:38.329Z","runId":"run-mu5qwqjv-fn4mlx","event":"submit","actor":"kernel","nodeId":"miniguided","detail":"对外交付/03-小纲.docx","refs":["对外交付/03-小纲.docx"]}
+{"ts":"2026-09-17T16:46:38.329Z","runId":"run-mu5qwqjv-fn4mlx","event":"snapshot","actor":"kernel","nodeId":"miniguided","detail":"r1·03-小纲.docx","refs":["对外交付/03-小纲.docx"]}
+{"ts":"2026-09-17T16:46:38.339Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","nodeId":"gate-r4","detail":"评审步派发（R5：评审照跑，裁决自动——域内质量交回该 tool 的 asserts/config；如需人工请置 policy.gate_mode=manual）"}
+{"ts":"2026-09-17T16:46:38.339Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：gate-r4（并行）"}
+{"ts":"2026-09-17T16:47:02.993Z","runId":"run-mu5qwqjv-fn4mlx","event":"submit","actor":"kernel","nodeId":"gate-r4","detail":"内部/意见/多视角意见书-gate-r4.md","refs":["内部/意见/多视角意见书-gate-r4.md"]}
+{"ts":"2026-09-17T16:47:02.994Z","runId":"run-mu5qwqjv-fn4mlx","event":"snapshot","actor":"kernel","nodeId":"gate-r4","detail":"r1·多视角意见书-gate-r4.md","refs":["内部/意见/多视角意见书-gate-r4.md"]}
+{"ts":"2026-09-17T16:47:02.994Z","runId":"run-mu5qwqjv-fn4mlx","event":"verdict","actor":"kernel","nodeId":"gate-r4","detail":"auto-pass（R5：域内评审步自动裁决；要人接手请置 policy.gate_mode=manual，或由优化器按指标裁掉该步）"}
+{"ts":"2026-09-17T16:47:03.013Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","nodeId":"first3","detail":"任务包产出（skill=script-final，上下文 1 件）"}
+{"ts":"2026-09-17T16:47:03.013Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：first3（并行）"}
+{"ts":"2026-09-17T16:48:12.177Z","runId":"run-mu5qwqjv-fn4mlx","event":"reject","actor":"kernel","nodeId":"first3","detail":"AE-SCRIPT-FRONT: 前置件缺失: 背景、主角、剧情概括","refs":["对外交付/04-成品剧本试稿.md"]}
+{"ts":"2026-09-17T16:53:44.623Z","runId":"run-mu5qwqjv-fn4mlx","event":"reject","actor":"kernel","nodeId":"first3","detail":"AE-SCRIPT-BRACKET: 【】标注不足（0 处，场景/动作提示须用全角【】包裹）","refs":["对外交付/04-成品剧本试稿.md"]}
+{"ts":"2026-09-17T16:54:04.077Z","runId":"run-mu5qwqjv-fn4mlx","event":"submit","actor":"kernel","nodeId":"first3","detail":"对外交付/04-成品剧本试稿.md","refs":["对外交付/04-成品剧本试稿.md"]}
+{"ts":"2026-09-17T16:54:04.077Z","runId":"run-mu5qwqjv-fn4mlx","event":"snapshot","actor":"kernel","nodeId":"first3","detail":"r1·04-成品剧本试稿.md","refs":["对外交付/04-成品剧本试稿.md"]}
+{"ts":"2026-09-17T16:54:04.086Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","nodeId":"polish","detail":"任务包产出（skill=dialogue-polish，上下文 1 件）"}
+{"ts":"2026-09-17T16:54:04.087Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：polish（并行）"}
+{"ts":"2026-09-17T16:55:49.949Z","runId":"run-mu5qwqjv-fn4mlx","event":"reject","actor":"kernel","nodeId":"polish","detail":"artifact-header: node=first3 ≠ 本节点 polish","refs":["对外交付/03-剧本试稿.md"]}
+{"ts":"2026-09-17T16:56:04.612Z","runId":"run-mu5qwqjv-fn4mlx","event":"submit","actor":"kernel","nodeId":"polish","detail":"对外交付/03-剧本试稿.md","refs":["对外交付/03-剧本试稿.md"]}
+{"ts":"2026-09-17T16:56:04.612Z","runId":"run-mu5qwqjv-fn4mlx","event":"snapshot","actor":"kernel","nodeId":"polish","detail":"r1·03-剧本试稿.md","refs":["对外交付/03-剧本试稿.md"]}
+{"ts":"2026-09-17T16:56:04.621Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","nodeId":"gate-r5","detail":"评审步派发（R5：评审照跑，裁决自动——域内质量交回该 tool 的 asserts/config；如需人工请置 policy.gate_mode=manual）"}
+{"ts":"2026-09-17T16:56:04.621Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：gate-r5（并行）"}
+{"ts":"2026-09-17T16:56:27.635Z","runId":"run-mu5qwqjv-fn4mlx","event":"submit","actor":"kernel","nodeId":"gate-r5","detail":"内部/意见/多视角意见书-gate-r5.md","refs":["内部/意见/多视角意见书-gate-r5.md"]}
+{"ts":"2026-09-17T16:56:27.635Z","runId":"run-mu5qwqjv-fn4mlx","event":"snapshot","actor":"kernel","nodeId":"gate-r5","detail":"r1·多视角意见书-gate-r5.md","refs":["内部/意见/多视角意见书-gate-r5.md"]}
+{"ts":"2026-09-17T16:56:27.635Z","runId":"run-mu5qwqjv-fn4mlx","event":"verdict","actor":"kernel","nodeId":"gate-r5","detail":"auto-pass（R5：域内评审步自动裁决；要人接手请置 policy.gate_mode=manual，或由优化器按指标裁掉该步）"}
+{"ts":"2026-09-17T16:56:27.649Z","runId":"run-mu5qwqjv-fn4mlx","event":"advance","actor":"kernel","nodeId":"delivery","detail":"对外交付/选题交付页.html","refs":["对外交付/选题交付页.html"]}
+{"ts":"2026-09-17T16:56:27.650Z","runId":"run-mu5qwqjv-fn4mlx","event":"run-end","actor":"kernel","detail":"全部节点 done"}

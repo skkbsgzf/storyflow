@@ -1,0 +1,475 @@
+{
+  "format": "effective@1",
+  "flowId": "episode-script",
+  "flowVersion": "0.1.0-draft",
+  "policy": {
+    "kit_boundary": "off",
+    "gate_mode": "auto",
+    "adapt": "propose"
+  },
+  "overlayHash": "4dd0676e",
+  "planHash": "47bb85d3",
+  "boundaries": [],
+  "composition": [
+    "set-policy kit_boundary=off｜实验批：跨域门自动放行",
+    "kit_boundary=off：不派生边界验收（全自动）"
+  ],
+  "applied": 1,
+  "toolOverrides": {},
+  "flow": {
+    "format": "flow@2",
+    "id": "episode-script",
+    "title": "分集剧本流水工作流（初稿）",
+    "desc": "已验收的分集大纲 → 逐集任务包（台账切片注入 → 分拍写作 → 断言+台账双校验 → 红队抽检）→ 批量人工验收 → 剧本包",
+    "version": "0.1.0-draft",
+    "status": "draft",
+    "upstream": "outline-production（取其分集大纲/卡点表为输入）",
+    "inputs": {
+      "project": {
+        "type": "project",
+        "required": true,
+        "desc": "项目上下文"
+      },
+      "route": {
+        "type": "enum",
+        "default": "hot",
+        "options": [
+          "hot",
+          "calm"
+        ],
+        "desc": "沿用选题阶段路线档位"
+      },
+      "range": {
+        "type": "string",
+        "required": true,
+        "desc": "集数范围（如 '1-6'，前三集优先）"
+      },
+      "batch": {
+        "type": "number",
+        "default": 6,
+        "min": 1,
+        "max": 12,
+        "desc": "单批集数（人工验收批次粒度）"
+      }
+    },
+    "outputs": [
+      {
+        "node": "ledger",
+        "title": "连续性台账（滚动维护）"
+      },
+      {
+        "node": "write",
+        "title": "单集剧本（script-drama-beat 硬格式）"
+      },
+      {
+        "node": "audit",
+        "title": "逐集硬断言报告（block 项清零才收稿）"
+      },
+      {
+        "node": "redline",
+        "title": "红队抽检意见（每批 ≥1 集）"
+      }
+    ],
+    "graph": {
+      "format": "smwf@2",
+      "name": "episode-script",
+      "nodes": {
+        "src": {
+          "kind": "novel-txt",
+          "title": "分集大纲（已验收）",
+          "output": "分集大纲.md"
+        },
+        "ledger": {
+          "kind": "core",
+          "title": "台账切片注入",
+          "minitool": "continuity_slice",
+          "loads": "kb/continuity/state-ledger",
+          "desc": "确定性：按本集出场人物/物件/知情范围/到期伏笔切出台账切片，注入任务包（写前查账）",
+          "output": "内部/收据/连续性台账.json"
+        },
+        "write": {
+          "kind": "agent",
+          "title": "分拍写作",
+          "skill": "script-drama-beat",
+          "kit": "plot",
+          "op": "script-drama-beat",
+          "output": "内部/稿本/剧本-第XX集.md",
+          "desc": "单集 600-900 字硬格式；前 3 秒钩子；△动作可拍摄；集末卡点体检；route 档位参数生效（hot：零时差/爆点密度；calm：9:1 浓度）"
+        },
+        "audit": {
+          "kind": "core",
+          "title": "断言+台账双校验",
+          "minitool": "check_aesthetic_asserts",
+          "asserts": [
+            "AE-HOOK-EVENT",
+            "AE-DENSITY-HOT",
+            "AE-DENSITY-CALM",
+            "AE-CARD-END",
+            "AE-BEAT-FORMAT",
+            "AE-VIS-EMPTY",
+            "AE-CONT-KNOW",
+            "AE-CONT-ITEM",
+            "AE-CONT-FORESHADOW"
+          ],
+          "onFail": "退回 write 定点修（重试记账，不计完成）",
+          "desc": "确定性：钩子事件/密度档位/卡点/格式/禁空镜 + 知识越权/台账矛盾/伏笔逾期",
+          "output": "内部/收据/硬断言报告.json"
+        },
+        "ledgerUp": {
+          "kind": "core",
+          "title": "台账结算",
+          "minitool": "continuity_commit",
+          "desc": "确定性：校验全过后原子提交正文+台账增量（新增死亡/物品流转/知情变更/新伏笔）；不落状态不收稿"
+        },
+        "redline": {
+          "kind": "agent",
+          "title": "红队抽检",
+          "skill": "plot-redline",
+          "kit": "plot",
+          "op": "plot-redline",
+          "spotCheck": true,
+          "policy": "每批 ≥1 集（优先爆点集与卡点集）",
+          "output": "内部/意见/红方意见书-redline.md",
+          "desc": "spot-check 模式：名场面可视化五要素 + 便宜方案检查 + 结构机味指纹"
+        },
+        "fin": {
+          "kind": "srd",
+          "title": "批次人工验收",
+          "desc": "按批次裁决；连续 2 批全过 → 红队哨兵钝化自检（profile gate_behavior）"
+        }
+      },
+      "edges": [
+        {
+          "id": "e-ledg",
+          "from": "src",
+          "to": "ledger",
+          "role": "flow"
+        },
+        {
+          "id": "e-write",
+          "from": "ledger",
+          "to": "write",
+          "role": "flow"
+        },
+        {
+          "id": "e-audit",
+          "from": "write",
+          "to": "audit",
+          "role": "flow"
+        },
+        {
+          "id": "e-commit",
+          "from": "audit",
+          "to": "ledgerUp",
+          "role": "flow"
+        },
+        {
+          "id": "e-red",
+          "from": "ledgerUp",
+          "to": "redline",
+          "via": "sm.redline",
+          "role": "optional"
+        },
+        {
+          "id": "e-fin",
+          "from": "redline",
+          "to": "fin",
+          "via": "sm.review",
+          "role": "flow"
+        }
+      ],
+      "outputs": [
+        "write",
+        "ledger"
+      ]
+    },
+    "quality": {
+      "assertions": "每集 block 清零才进台账结算；AE-CONT-* 三条是长线生命线",
+      "atomicCommit": "正文与台账增量原子提交（InkOS 纪律：不许状态推进了正文没落盘）",
+      "retryAccounting": "audit 退回走 journal 重试记账，不阻塞批次",
+      "allow_agent_verdict": false
+    },
+    "harness": {
+      "mode": "task-package",
+      "awaiting_input_at": [
+        "write",
+        "redline"
+      ],
+      "core_in_process": [
+        "ledger",
+        "audit",
+        "ledgerUp"
+      ],
+      "note": "初稿：循环体（ledger→write→audit→ledgerUp）按集重复，runtime 图调度天然支持；断点续跑按集落盘。依赖 minitool：continuity_slice / continuity_commit（M2 实现，规格见 kb/continuity/state-ledger）"
+    }
+  },
+  "nodeConfig": {
+    "src": {
+      "boundary": false,
+      "output": "分集大纲.md",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": null
+    },
+    "ledger": {
+      "boundary": false,
+      "output": "内部/收据/连续性台账.json",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": null
+    },
+    "write": {
+      "boundary": false,
+      "output": "内部/稿本/剧本-第XX集.md",
+      "kit": "plot",
+      "op": "script-drama-beat",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": {
+        "values": {
+          "depth": "标准",
+          "strictness": "标准",
+          "maxChars": 4000,
+          "model_tier": "high",
+          "hookWindowSec": 3,
+          "paywallCard": true,
+          "shotNotation": "△动作"
+        },
+        "defs": {
+          "depth": {
+            "type": "enum",
+            "enum": [
+              "浅",
+              "标准",
+              "深"
+            ],
+            "default": "标准",
+            "desc": "本步投入深度：浅=先出可用版本，标准=默认，深=加采样与自检",
+            "effect": "提高 = 更充分但更慢更贵；连续无打回时可降档"
+          },
+          "strictness": {
+            "type": "enum",
+            "enum": [
+              "宽松",
+              "标准",
+              "严格"
+            ],
+            "default": "标准",
+            "desc": "判定尺度：本步自检与断言执行时把握的宽严",
+            "effect": "提高 = 早暴露问题（打回率↑、返工↓）；打回率已高时不宜再提"
+          },
+          "maxChars": {
+            "type": "number",
+            "min": 200,
+            "max": 40000,
+            "default": 4000,
+            "unit": "字",
+            "desc": "本步产物正文的篇幅上限（超出即视为未收敛）",
+            "effect": "提高 = 允许更长产物；成本随字数上升"
+          },
+          "model_tier": {
+            "type": "enum",
+            "enum": [
+              "high",
+              "lite"
+            ],
+            "default": "high",
+            "desc": "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
+            "effect": "文学与结构判断节点必须 high；机械整理类可降 lite"
+          },
+          "hookWindowSec": {
+            "type": "number",
+            "default": 3,
+            "min": 0,
+            "desc": "前几秒必须出现钩子",
+            "effect": "提高 = 更宽容；超过 5 秒观众已划走",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "paywallCard": {
+            "type": "boolean",
+            "default": true,
+            "desc": "结尾强制付费卡点体检",
+            "effect": "关掉 = 交付件可能不带商业钩子",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "shotNotation": {
+            "type": "enum",
+            "default": "△动作",
+            "enum": [
+              "△动作",
+              "平板",
+              "无"
+            ],
+            "desc": "镜头标注法",
+            "effect": "换了 = 与拍摄方约定不一致",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          }
+        },
+        "sources": {
+          "depth": "generic",
+          "strictness": "generic",
+          "maxChars": "generic",
+          "model_tier": "generic",
+          "hookWindowSec": "op",
+          "paywallCard": "op",
+          "shotNotation": "op"
+        },
+        "unknownKeys": [],
+        "genericOnly": false
+      }
+    },
+    "audit": {
+      "boundary": false,
+      "output": "内部/收据/硬断言报告.json",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": null
+    },
+    "ledgerUp": {
+      "boundary": false,
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": null
+    },
+    "redline": {
+      "boundary": false,
+      "output": "内部/意见/红方意见书-redline.md",
+      "kit": "plot",
+      "op": "plot-redline",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": {
+        "values": {
+          "depth": "标准",
+          "strictness": "标准",
+          "maxChars": 4000,
+          "model_tier": "high",
+          "angles": 4,
+          "harshness": "标准",
+          "allowInject": true,
+          "voice": "说人话"
+        },
+        "defs": {
+          "depth": {
+            "type": "enum",
+            "enum": [
+              "浅",
+              "标准",
+              "深"
+            ],
+            "default": "标准",
+            "desc": "本步投入深度：浅=先出可用版本，标准=默认，深=加采样与自检",
+            "effect": "提高 = 更充分但更慢更贵；连续无打回时可降档"
+          },
+          "strictness": {
+            "type": "enum",
+            "enum": [
+              "宽松",
+              "标准",
+              "严格"
+            ],
+            "default": "标准",
+            "desc": "判定尺度：本步自检与断言执行时把握的宽严",
+            "effect": "提高 = 早暴露问题（打回率↑、返工↓）；打回率已高时不宜再提"
+          },
+          "maxChars": {
+            "type": "number",
+            "min": 200,
+            "max": 40000,
+            "default": 4000,
+            "unit": "字",
+            "desc": "本步产物正文的篇幅上限（超出即视为未收敛）",
+            "effect": "提高 = 允许更长产物；成本随字数上升"
+          },
+          "model_tier": {
+            "type": "enum",
+            "enum": [
+              "high",
+              "lite"
+            ],
+            "default": "high",
+            "desc": "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
+            "effect": "文学与结构判断节点必须 high；机械整理类可降 lite"
+          },
+          "angles": {
+            "type": "number",
+            "default": 4,
+            "min": 0,
+            "desc": "代入的评审视角数（读者/编剧/甲方…）",
+            "effect": "提高 = 更全面、成本线性上升",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "harshness": {
+            "type": "enum",
+            "default": "标准",
+            "enum": [
+              "温和",
+              "标准",
+              "苛刻"
+            ],
+            "desc": "苛刻程度",
+            "effect": "提高 = 更多打回更少漏网；过高会空转",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "allowInject": {
+            "type": "boolean",
+            "default": true,
+            "desc": "框架单薄时是否允许提交流程重构建议",
+            "effect": "关掉 = 只报问题不给方案",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "voice": {
+            "type": "enum",
+            "default": "说人话",
+            "enum": [
+              "说人话",
+              "念指标"
+            ],
+            "desc": "意见书的语体",
+            "effect": "念指标 = 读者读不懂，说人话 = 可执行",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          }
+        },
+        "sources": {
+          "depth": "generic",
+          "strictness": "generic",
+          "maxChars": "generic",
+          "model_tier": "generic",
+          "angles": "op",
+          "harshness": "op",
+          "allowInject": "op",
+          "voice": "op"
+        },
+        "unknownKeys": [],
+        "genericOnly": false
+      }
+    },
+    "fin": {
+      "boundary": false,
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": null
+    }
+  }
+}

@@ -1,0 +1,198 @@
+{
+  "snapshots": {
+    "tropes": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T16:31:47.720Z",
+        "note": "submit r1·梗卡.md",
+        "files": {
+          "内部/稿本/梗卡.md": {
+            "hash": "92150521a901",
+            "path": "snapshots/tropes/r1/内部/稿本/梗卡.md"
+          }
+        }
+      }
+    ],
+    "zeitgeist": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T16:33:29.098Z",
+        "note": "submit r1·热点素材.md",
+        "files": {
+          "内部/稿本/热点素材.md": {
+            "hash": "a94655ff88ea",
+            "path": "snapshots/zeitgeist/r1/内部/稿本/热点素材.md"
+          }
+        }
+      }
+    ],
+    "analysis": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T16:34:30.584Z",
+        "note": "submit r1·01-选题报告.md",
+        "files": {
+          "对外交付/01-选题报告.md": {
+            "hash": "cd84e534edfb",
+            "path": "snapshots/analysis/r1/对外交付/01-选题报告.md"
+          }
+        }
+      }
+    ],
+    "gate-r1": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T16:35:09.943Z",
+        "note": "submit r1·多视角意见书-gate-r1.md",
+        "files": {
+          "内部/意见/多视角意见书-gate-r1.md": {
+            "hash": "3a75a08f1615",
+            "path": "snapshots/gate-r1/r1/内部/意见/多视角意见书-gate-r1.md"
+          }
+        }
+      }
+    ],
+    "baseline": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T16:36:39.764Z",
+        "note": "submit r1·选题方案-爽版-基线.md",
+        "files": {
+          "内部/稿本/选题方案-爽版-基线.md": {
+            "hash": "cad6beeb98d3",
+            "path": "snapshots/baseline/r1/内部/稿本/选题方案-爽版-基线.md"
+          }
+        }
+      }
+    ],
+    "structure": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T16:40:35.960Z",
+        "note": "submit r1·02-大纲.md",
+        "files": {
+          "对外交付/02-大纲.md": {
+            "hash": "2b35f3931b07",
+            "path": "snapshots/structure/r1/对外交付/02-大纲.md"
+          }
+        }
+      }
+    ],
+    "gate-r2": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T16:41:22.052Z",
+        "note": "submit r1·多视角意见书-gate-r2.md",
+        "files": {
+          "内部/意见/多视角意见书-gate-r2.md": {
+            "hash": "2af2f14f4c09",
+            "path": "snapshots/gate-r2/r1/内部/意见/多视角意见书-gate-r2.md"
+          }
+        }
+      }
+    ],
+    "proposal": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T16:42:09.265Z",
+        "note": "submit r1·选题方案.md",
+        "files": {
+          "内部/稿本/选题方案.md": {
+            "hash": "3946aa888429",
+            "path": "snapshots/proposal/r1/内部/稿本/选题方案.md"
+          }
+        }
+      }
+    ],
+    "gate-r3": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T16:42:38.610Z",
+        "note": "submit r1·多视角意见书-gate-r3.md",
+        "files": {
+          "内部/意见/多视角意见书-gate-r3.md": {
+            "hash": "1b5adfde2afe",
+            "path": "snapshots/gate-r3/r1/内部/意见/多视角意见书-gate-r3.md"
+          }
+        }
+      }
+    ],
+    "miniguided": [
+      {
+        "round": 1,
+        "ts": "2026-09-18 00:46",
+        "note": "export-doc 自动快照：30 beats / 3 eps → 03-小纲.docx",
+        "files": {
+          "对外交付/03-小纲源稿.md": {
+            "hash": "9f06fc4d0f64",
+            "path": "snapshots/miniguided/r1/对外交付/03-小纲源稿.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-17T16:46:38.327Z",
+        "note": "submit r1·03-小纲.docx",
+        "files": {
+          "对外交付/03-小纲.docx": {
+            "hash": "a3162e4eabd3",
+            "path": "snapshots/miniguided/r2/对外交付/03-小纲.docx"
+          }
+        }
+      }
+    ],
+    "gate-r4": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T16:47:02.990Z",
+        "note": "submit r1·多视角意见书-gate-r4.md",
+        "files": {
+          "内部/意见/多视角意见书-gate-r4.md": {
+            "hash": "ad835e4068e3",
+            "path": "snapshots/gate-r4/r1/内部/意见/多视角意见书-gate-r4.md"
+          }
+        }
+      }
+    ],
+    "first3": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T16:54:04.075Z",
+        "note": "submit r1·04-成品剧本试稿.md",
+        "files": {
+          "对外交付/04-成品剧本试稿.md": {
+            "hash": "abbbd7a2e257",
+            "path": "snapshots/first3/r1/对外交付/04-成品剧本试稿.md"
+          }
+        }
+      }
+    ],
+    "polish": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T16:56:04.610Z",
+        "note": "submit r1·03-剧本试稿.md",
+        "files": {
+          "对外交付/03-剧本试稿.md": {
+            "hash": "0f306b9da5ce",
+            "path": "snapshots/polish/r1/对外交付/03-剧本试稿.md"
+          }
+        }
+      }
+    ],
+    "gate-r5": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T16:56:27.632Z",
+        "note": "submit r1·多视角意见书-gate-r5.md",
+        "files": {
+          "内部/意见/多视角意见书-gate-r5.md": {
+            "hash": "7d667fdeb03f",
+            "path": "snapshots/gate-r5/r1/内部/意见/多视角意见书-gate-r5.md"
+          }
+        }
+      }
+    ]
+  },
+  "inputs": {}
+}

@@ -1,0 +1,2562 @@
+{
+  "format": "effective@1",
+  "flowId": "topic-selection",
+  "flowVersion": "5.1.2",
+  "policy": {
+    "kit_boundary": "off",
+    "gate_mode": "auto",
+    "adapt": "propose"
+  },
+  "overlayHash": "f9a471b5",
+  "planHash": "ddc5bd73",
+  "boundaries": [],
+  "composition": [
+    "set-policy kit_boundary=off｜实验批：跨域交接验收门自动通过，最终产物由用户统一裁决",
+    "kit_boundary=off：不派生边界验收（全自动）"
+  ],
+  "applied": 1,
+  "toolOverrides": {},
+  "flow": {
+    "format": "flow@2",
+    "id": "topic-selection",
+    "title": "短剧成稿生产线 v5（选题 → 结构 → 大纲 → 小纲 → 成稿 · 阶段-菱形循环）",
+    "desc": "四阶段推演，每阶段有独立产物与产出格式，红方以四视角（目标读者/一般读者/资深编剧/甲方）逐段验收，验收不通过按根因打回对应阶段并级联失效下游——流程推演有逻辑，不是公式产物",
+    "version": "5.1.2",
+    "status": "official",
+    "dataBase": "2026-09-14",
+    "phaseScope": "第一阶段只做剧本：产物到剧本为止，不含分镜/视觉生产（render-prompt-seedance 技能留库备用）",
+    "stages": [
+      {
+        "id": "S1",
+        "name": "调研",
+        "entry": "src",
+        "gate": "gate-r1",
+        "nodes": [
+          "src",
+          "market",
+          "tropes",
+          "combo",
+          "zeitgeist",
+          "benchmark",
+          "analysis"
+        ],
+        "question": "写什么、给谁看、凭什么现在写"
+      },
+      {
+        "id": "S2",
+        "name": "结构",
+        "entry": "structure",
+        "gate": "gate-r2",
+        "nodes": [
+          "structure"
+        ],
+        "question": "用什么骨架讲，怎么避免单薄"
+      },
+      {
+        "id": "S3",
+        "name": "大纲",
+        "entry": "proposal",
+        "gate": "gate-r3",
+        "nodes": [
+          "proposal",
+          "baseline"
+        ],
+        "question": "人设/梗概/编排/情感立不立得住"
+      },
+      {
+        "id": "S4",
+        "name": "小纲",
+        "entry": "miniguided",
+        "gate": "gate-r4",
+        "nodes": [
+          "miniguided",
+          "intake"
+        ],
+        "question": "每个分镜的行动与台词是否达意（doc，可批注回流）"
+      },
+      {
+        "id": "S5",
+        "name": "成稿",
+        "entry": "first3",
+        "gate": "gate-r5",
+        "nodes": [
+          "first3",
+          "polish"
+        ],
+        "question": "连贯成品剧本：行动/表情/台词，台词过去AI味"
+      }
+    ],
+    "inputs": {
+      "project": {
+        "type": "project",
+        "required": true,
+        "desc": "项目上下文（产物落点）"
+      },
+      "direction": {
+        "type": "string",
+        "required": true,
+        "bind": {
+          "edge": "e-trope",
+          "param": "direction"
+        },
+        "desc": "题材方向（自然语言）"
+      },
+      "route": {
+        "type": "enum",
+        "default": "dual",
+        "options": [
+          "hot",
+          "calm",
+          "dual"
+        ],
+        "bind": {
+          "edge": "e-prop",
+          "param": "route"
+        },
+        "desc": "风格路线：爽版/合理版/双版本+基线"
+      },
+      "region": {
+        "type": "enum",
+        "default": "CN",
+        "options": [
+          "CN",
+          "NA"
+        ],
+        "bind": {
+          "edge": "e-market",
+          "param": "region"
+        },
+        "desc": "目标市场"
+      },
+      "zeitgeist": {
+        "type": "boolean",
+        "default": true,
+        "bind": {
+          "gate": "e-zg"
+        },
+        "desc": "是否注入实时热点扫描（S1 必含项，建议开）"
+      }
+    },
+    "outputs": [
+      {
+        "node": "analysis",
+        "title": "S1 · 选题报告（含调研）",
+        "audience": "甲方决策层",
+        "style": "叙述先行，无内部术语/编号/kb 引用"
+      },
+      {
+        "node": "structure",
+        "title": "S2+S3 · 大纲（结构/人设/编排/情感）",
+        "audience": "甲方与制作团队",
+        "style": "模板化章节，干净成文"
+      },
+      {
+        "node": "proposal",
+        "path": "对外交付/02-大纲.md",
+        "title": "S3 · 大纲全量（同上，含双版本）"
+      },
+      {
+        "node": "first3",
+        "title": "S5 · 成品剧本试稿（连贯格式·台词已打磨）"
+      },
+      {
+        "node": "delivery",
+        "title": "交付页（四件套合一）"
+      },
+      {
+        "node": "polish",
+        "title": "剧本试稿",
+        "audience": "甲方与导演/演员侧",
+        "style": "全部对白已过 dialogue-polish 强制末环节"
+      },
+      {
+        "node": "miniguided",
+        "title": "S4 · 小纲（分镜·行动·台词·创作思路，doc 可批注）"
+      }
+    ],
+    "graph": {
+      "format": "smwf@2",
+      "name": "topic-selection-v4",
+      "nodes": {
+        "src": {
+          "kind": "novel-txt",
+          "stage": "S1",
+          "title": "选题素材",
+          "output": "选题素材.md"
+        },
+        "market": {
+          "kind": "core",
+          "stage": "S1",
+          "title": "市场快照装载",
+          "minitool": "kb_load",
+          "loads": [
+            "kb/market/snapshot",
+            "kb/market/structure",
+            "kb/market/constraints",
+            "kb/market/internet-feel",
+            "kb/market/setting-rules",
+            "kb/market/meme-rules"
+          ]
+        },
+        "tropes": {
+          "kind": "agent",
+          "stage": "S1",
+          "title": "找梗选梗（含新梗）",
+          "skill": "find-trope",
+          "kit": "search",
+          "op": "find-trope",
+          "output": "内部/稿本/梗卡.md",
+          "desc": "检索梗族→饱和度判定→主辅梗选型→演化链找新变体落点；产出网络热梗素材表（≥10 条，梗密度约束 AE-MEME-DENSITY）"
+        },
+        "combo": {
+          "kind": "core",
+          "stage": "S1",
+          "title": "梗组合相性校验",
+          "minitool": "check_trope_combo",
+          "onFail": "退回 tropes 重选"
+        },
+        "zeitgeist": {
+          "kind": "agent",
+          "stage": "S1",
+          "title": "实时热点扫描",
+          "skill": "topic-zeitgeist",
+          "kit": "search",
+          "op": "topic-zeitgeist",
+          "webSearch": true,
+          "output": "内部/稿本/热点素材.md"
+        },
+        "benchmark": {
+          "kind": "core",
+          "stage": "S1",
+          "title": "竞品对标装载",
+          "minitool": "kb_load",
+          "loads": "kb/benchmark/*",
+          "filterBy": "tropes.梗卡.对标件"
+        },
+        "analysis": {
+          "kind": "agent",
+          "stage": "S1",
+          "title": "选题调研报告",
+          "skill": "topic-analysis-report",
+          "kit": "search",
+          "op": "topic-analysis-report",
+          "assist": [
+            "internet-feel"
+          ],
+          "output": "对外交付/01-选题报告.md",
+          "desc": "S1 产物：方向/人群兴趣点/竞品与梗选型/热度数据/创作约束移交单/热点交叉"
+        },
+        "gate-r1": {
+          "kind": "gate",
+          "stage": "S1",
+          "title": "R1 · 调研验收",
+          "skill": "plot-redline",
+          "kit": "plot",
+          "op": "plot-redline",
+          "output": "内部/意见/多视角意见书-gate-r1.md",
+          "desc": "红方四视角验收调研：目标读者(这方向跟我有关吗)/甲方(时机与撞车)/编剧(竞品功课够不够)/路人(一句话说清写什么)+设定三分钟测试(kb/market/setting-rules)+梗密度与发散性检查(kb/market/meme-rules)；不通过按根因打回 tropes 或 analysis",
+          "reviewers": [
+            "plot-redline（红方评审）",
+            "topic-chief-aesthetic（审美总编·抽检）"
+          ]
+        },
+        "structure": {
+          "kind": "agent",
+          "stage": "S2",
+          "title": "结构选型与深挖",
+          "skill": "structure-design",
+          "kit": "plot",
+          "op": "structure-design",
+          "output": "对外交付/02-大纲.md",
+          "desc": "S2 产物：叙事结构选型（救猫咪/复仇/升级/双线…）+ 深挖改造融合 + 不确定因素注入提案≥2"
+        },
+        "gate-r2": {
+          "kind": "gate",
+          "stage": "S2",
+          "title": "R2 · 结构验收",
+          "skill": "plot-redline",
+          "kit": "plot",
+          "op": "plot-redline",
+          "output": "内部/意见/多视角意见书-gate-r2.md",
+          "desc": "红方四视角验收结构：读者(骨架有兴奋点吗)/编剧(深挖改造到位吗)/甲方(节奏对市场吗)；'可行但单薄'必触发不确定因素提案",
+          "reviewers": [
+            "plot-redline（红方评审）",
+            "topic-chief-aesthetic（审美总编·抽检）"
+          ]
+        },
+        "proposal": {
+          "kind": "agent",
+          "stage": "S3",
+          "title": "选题方案",
+          "skill": "topic-proposal",
+          "kit": "search",
+          "op": "topic-proposal",
+          "assist": [
+            "plot-choreographer",
+            "internet-feel"
+          ],
+          "output": "内部/稿本/选题方案.md",
+          "desc": "S3 产物：项目背景/故事梗概/核心人设/大纲与冲突/后续剧情走向 + 约束对账表 + 自检；route=dual 双版本并行"
+        },
+        "baseline": {
+          "kind": "agent",
+          "stage": "S3",
+          "title": "爽版无监管基线",
+          "skill": "topic-proposal",
+          "kit": "search",
+          "op": "topic-proposal",
+          "route": "hot",
+          "oversight": false,
+          "output": "内部/稿本/选题方案-爽版-基线.md",
+          "desc": "仅 route=dual：监管增益对照件"
+        },
+        "gate-r3": {
+          "kind": "gate",
+          "stage": "S3",
+          "title": "R3 · 方案验收",
+          "skill": "plot-redline",
+          "kit": "plot",
+          "op": "plot-redline",
+          "output": "内部/意见/多视角意见书-gate-r3.md",
+          "desc": "红方四视角验收方案：读者(人设代入感)/编剧(大纲因果与代价)/甲方(卖点与合规对账)",
+          "reviewers": [
+            "plot-redline（红方评审）",
+            "topic-chief-aesthetic（审美总编·抽检）"
+          ]
+        },
+        "first3": {
+          "kind": "agent",
+          "stage": "S5",
+          "title": "成品剧本试稿（连贯格式）",
+          "skill": "script-final",
+          "kit": "prose",
+          "op": "script-final",
+          "assist": [
+            "dialogue-polish"
+          ],
+          "output": "对外交付/04-成品剧本试稿.md",
+          "desc": "S5 产物：连贯剧本（场次头/人物行动/表情/角色台词按角色归组；特殊镜头与旁白中括号）。基于小纲（或批注后版本）；成稿后强制交接 dialogue-polish"
+        },
+        "gate-r4": {
+          "kind": "gate",
+          "stage": "S4",
+          "title": "R4 · 小纲验收",
+          "skill": "plot-redline",
+          "kit": "plot",
+          "op": "plot-redline",
+          "output": "内部/意见/多视角意见书-gate-r4.md",
+          "desc": "菱形验收：客户批注回流后的分镜脚本是否达意、是否落实批注；三出口 pass/send-back/rebuild",
+          "reviewers": [
+            "plot-redline（红方评审）",
+            "topic-chief-aesthetic（审美总编·抽检）"
+          ]
+        },
+        "delivery": {
+          "kind": "core",
+          "stage": "S4",
+          "title": "选题交付页",
+          "minitool": "render_html",
+          "template": "delivery-template.html",
+          "output": "对外交付/选题交付页.html",
+          "desc": "确定性渲染全部阶段产物 → 单文件移动版 HTML（零 LLM）"
+        },
+        "polish": {
+          "kind": "agent",
+          "stage": "S5",
+          "title": "台词去AI味打磨",
+          "skill": "dialogue-polish",
+          "kit": "prose",
+          "op": "dialogue-polish",
+          "desc": "强制末环节：全部人物对话逐句过三遍（人物声口校准/处境校准/去AI味清单），基于人物+处境+说话习惯优化；修订对照表内部留痕不外发",
+          "output": "对外交付/03-剧本试稿.md"
+        },
+        "miniguided": {
+          "kind": "agent",
+          "stage": "S4",
+          "title": "小纲（分镜脚本 doc）",
+          "skill": "scene-breakdown",
+          "kit": "plot",
+          "op": "scene-breakdown",
+          "output": "对外交付/03-小纲.docx",
+          "desc": "S4 产物：每个分镜的场景/人物行动/台词，达意即可无需打磨；文末附创作思路页。输出 docx 格式——客户可直接批注、修改，回传后进入批注回流"
+        },
+        "intake": {
+          "kind": "core",
+          "stage": "S4",
+          "title": "批注回流接入（可选模块）",
+          "minitool": "docx_ingest",
+          "when": {
+            "input": "批注回流",
+            "eq": "on"
+          },
+          "desc": "确定性：解析客户回传 doc 的批注与修订 → 结构化意见清单（锚点=分镜号）→ 映射为成品剧本的修改指令；无回传则按小纲原样进入成稿"
+        },
+        "gate-r5": {
+          "kind": "gate",
+          "stage": "S5",
+          "title": "R5 · 成稿验收",
+          "skill": "plot-redline",
+          "kit": "plot",
+          "op": "plot-redline",
+          "output": "内部/意见/多视角意见书-gate-r5.md",
+          "desc": "菱形验收：成品剧本四视角（路人3秒钩/目标读者名场面/编剧尾钩链/甲方合规）；三出口",
+          "reviewers": [
+            "plot-redline（红方评审）",
+            "topic-chief-aesthetic（审美总编·抽检）"
+          ]
+        }
+      },
+      "edges": [
+        {
+          "id": "e-trope",
+          "from": "market",
+          "to": "tropes",
+          "role": "flow"
+        },
+        {
+          "id": "e-combo",
+          "from": "tropes",
+          "to": "combo",
+          "role": "flow"
+        },
+        {
+          "id": "e-an1",
+          "from": "src",
+          "to": "analysis",
+          "via": "sm.topic-analysis",
+          "role": "flow"
+        },
+        {
+          "id": "e-an2",
+          "from": "market",
+          "to": "analysis",
+          "via": "sm.topic-analysis",
+          "role": "flow"
+        },
+        {
+          "id": "e-an3",
+          "from": "tropes",
+          "to": "analysis",
+          "via": "sm.topic-analysis",
+          "role": "flow"
+        },
+        {
+          "id": "e-an4",
+          "from": "zeitgeist",
+          "to": "analysis",
+          "via": "sm.topic-analysis",
+          "role": "flow"
+        },
+        {
+          "id": "e-an5",
+          "from": "benchmark",
+          "to": "analysis",
+          "via": "sm.topic-analysis",
+          "role": "flow"
+        },
+        {
+          "id": "e-r1",
+          "from": "analysis",
+          "to": "gate-r1",
+          "via": "sm.review",
+          "role": "flow"
+        },
+        {
+          "id": "e-struct",
+          "from": "gate-r1",
+          "to": "structure",
+          "role": "flow"
+        },
+        {
+          "id": "e-r2",
+          "from": "structure",
+          "to": "gate-r2",
+          "via": "sm.review",
+          "role": "flow"
+        },
+        {
+          "id": "e-prop",
+          "from": "gate-r2",
+          "to": "proposal",
+          "via": "sm.topic-proposal",
+          "role": "flow"
+        },
+        {
+          "id": "e-baseline",
+          "from": "analysis",
+          "to": "baseline",
+          "via": "sm.topic-proposal",
+          "role": "flow",
+          "when": {
+            "input": "route",
+            "eq": "dual"
+          }
+        },
+        {
+          "id": "e-r3a",
+          "from": "proposal",
+          "to": "gate-r3",
+          "via": "sm.review",
+          "role": "flow"
+        },
+        {
+          "id": "e-r3b",
+          "from": "baseline",
+          "to": "gate-r3",
+          "via": "sm.review",
+          "role": "flow",
+          "when": {
+            "input": "route",
+            "eq": "dual"
+          }
+        },
+        {
+          "id": "e-mini",
+          "from": "gate-r3",
+          "to": "miniguided",
+          "role": "flow"
+        },
+        {
+          "id": "e-intake",
+          "from": "miniguided",
+          "to": "intake",
+          "role": "optional",
+          "when": {
+            "input": "批注回流",
+            "eq": "on"
+          }
+        },
+        {
+          "id": "e-final2",
+          "from": "intake",
+          "to": "first3",
+          "role": "flow"
+        },
+        {
+          "id": "e-r4",
+          "from": "first3",
+          "to": "gate-r5",
+          "via": "sm.review",
+          "role": "flow"
+        },
+        {
+          "id": "e-del",
+          "from": "gate-r5",
+          "to": "delivery",
+          "via": "sm.topic-delivery",
+          "role": "flow"
+        },
+        {
+          "id": "e-r1-back",
+          "from": "gate-r1",
+          "to": "tropes",
+          "via": "sm.review.reject",
+          "params": {
+            "scope": "本阶段",
+            "mode": "定点重做"
+          },
+          "role": "reject",
+          "when": {
+            "cause": "梗选型"
+          }
+        },
+        {
+          "id": "e-r1-back2",
+          "from": "gate-r1",
+          "to": "analysis",
+          "via": "sm.review.reject",
+          "params": {
+            "scope": "本阶段",
+            "mode": "定点重做"
+          },
+          "role": "reject",
+          "when": {
+            "cause": "人群/竞品分析"
+          }
+        },
+        {
+          "id": "e-r2-back",
+          "from": "gate-r2",
+          "to": "structure",
+          "via": "sm.review.reject",
+          "params": {
+            "scope": "本阶段",
+            "mode": "定点重做"
+          },
+          "role": "reject",
+          "when": {
+            "cause": "结构单薄"
+          }
+        },
+        {
+          "id": "e-r3-back",
+          "from": "gate-r3",
+          "to": "proposal",
+          "via": "sm.review.reject",
+          "params": {
+            "scope": "本阶段",
+            "mode": "定点重做"
+          },
+          "role": "reject",
+          "when": {
+            "cause": "方案"
+          }
+        },
+        {
+          "id": "e-loop-r4-miniguided",
+          "from": "gate-r4",
+          "to": "miniguided",
+          "via": "sm.review.reject",
+          "params": {
+            "scope": "本阶段",
+            "mode": "回本阶段入口"
+          },
+          "role": "reject",
+          "when": {
+            "verdict": "send-back"
+          },
+          "desc": "R4 根因=小纲"
+        },
+        {
+          "id": "e-polish",
+          "from": "first3",
+          "to": "polish",
+          "role": "flow"
+        },
+        {
+          "id": "e-polish-gate-r5",
+          "from": "polish",
+          "to": "gate-r5",
+          "via": "sm.review",
+          "role": "flow",
+          "desc": ""
+        },
+        {
+          "id": "e-src-tro-27",
+          "from": "src",
+          "to": "tropes",
+          "role": "flow",
+          "desc": "素材方向喂给找梗师（原只看市场快照，补素材依赖）"
+        },
+        {
+          "id": "e-src-zei-28",
+          "from": "src",
+          "to": "zeitgeist",
+          "role": "flow",
+          "desc": "素材主题作为热点扫描输入（原误挂 combo 之下）"
+        },
+        {
+          "id": "e-tro-ben-29",
+          "from": "tropes",
+          "to": "benchmark",
+          "role": "flow",
+          "desc": "按 tropes.梗卡.对标件 过滤装载（对齐 filterBy 声明）"
+        },
+        {
+          "id": "e-com-ana-30",
+          "from": "combo",
+          "to": "analysis",
+          "via": "sm.topic-analysis",
+          "role": "flow",
+          "desc": "校验后的梗组合进入调研报告"
+        },
+        {
+          "id": "e-miniguided-gate-r4",
+          "from": "miniguided",
+          "to": "gate-r4",
+          "via": "sm.review",
+          "role": "flow",
+          "desc": "小纲产物交 R4 验收"
+        },
+        {
+          "id": "e-gate-r4-first3",
+          "from": "gate-r4",
+          "to": "first3",
+          "role": "flow",
+          "desc": "R4 通过 → 进入成稿"
+        },
+        {
+          "id": "e-loop-r5-first3",
+          "from": "gate-r5",
+          "to": "first3",
+          "via": "sm.review.reject",
+          "params": {
+            "scope": "本阶段",
+            "mode": "回本阶段入口"
+          },
+          "role": "reject",
+          "when": {
+            "verdict": "send-back"
+          },
+          "desc": "R5 根因=成稿"
+        }
+      ],
+      "outputs": [
+        "analysis",
+        "structure",
+        "proposal",
+        "miniguided",
+        "first3",
+        "delivery"
+      ]
+    },
+    "quality": {
+      "reviewModel": "红方 v2 视角代入制：目标读者/一般读者/资深编剧/甲方四视角独立意见，说人话不念指标（kb/aesthetic/perspective-review）；机器可查项归 check_aesthetic_asserts 断言层",
+      "stageGate": "每阶段红方验收不通过即打回；打回指认根因阶段，根因之后的所有阶段产物顺延失效重审（级联推演，不是哪坏补哪）",
+      "uncertainty": "框架可行但四视角集体不兴奋 = 单薄：红方必须提案 ≥2 个不确定因素注入（黑道大小姐/真假千金/穿书转世类反认知变量），择优融入后重审",
+      "abBaseline": "route=dual 时基线件随行，监管增益必须可验证",
+      "assertions": "kb/aesthetic/assertions.json 全表适用（机器层）；block 项必须清零",
+      "allow_agent_verdict": false,
+      "settingRules": "项目级约束（kb/market/setting-rules）：禁原创科幻/架空世界观；设定来源三级制——实事新闻底子首选、市面验证体系次选、原创一票否决；三分钟测试为 R1 固定检查项",
+      "dialoguePolish": "强制末环节：全部人物对话过 dialogue-polish 三遍（声口/处境/去AI味），R4 在打磨完成后验收",
+      "scriptFormat": "成品剧本 = 连贯剧本：场次头/人物行动/表情/角色台词（按角色标注便于画本上色）；特殊镜头与旁白用中括号；不出现钩型/时长/尾钩等内部标注（内部纪律在断言层与分镜表执行）",
+      "feedbackLoop": "可选模块：小纲 doc 交客户批注修改后回传 → docx_ingest 解析 → 成品剧本基于改后版本产出（flow 基于改后版本，不是无视批注重跑）",
+      "stageLoop": "engine.stage-gate-loop：每阶段红方菱形验收，pass 前进 / send-back 回本阶段修改流 / rebuild 回根因阶段从零构筑；根因之后顺延失效——循环机制是引擎规则，不是逐边硬编码",
+      "presets": "每阶段执行模式（auto/semi/manual）存于 run-state.presets；默认 semi——阶段门提问，节点内自动"
+    },
+    "harness": {
+      "mode": "task-package",
+      "awaiting_input_at": [
+        "analysis",
+        "baseline",
+        "first3",
+        "gate-r1",
+        "gate-r2",
+        "gate-r3",
+        "gate-r4",
+        "gate-r5",
+        "miniguided",
+        "polish",
+        "proposal",
+        "structure",
+        "tropes",
+        "zeitgeist"
+      ],
+      "core_in_process": [
+        "src",
+        "market",
+        "combo",
+        "benchmark",
+        "intake",
+        "delivery"
+      ],
+      "note": "宿主 Agent 用自己的 token 执行认知步与红方视角扮演；flow_next 按就绪批并行派发；验收门打回仅回注本阶段入口（失效范围限本阶段），跨阶段回滚须用户 force 介入"
+    },
+    "changelog": [
+      {
+        "version": "5.1.2",
+        "date": "2026-09-17",
+        "changes": [
+          "命名修正：流程名由「智能选题工作流」更正为「短剧成稿生产线」——id 保持 topic-selection 稳定（保护已绑定项目），显示名反映真实交付物"
+        ]
+      },
+      {
+        "version": "5.1.1",
+        "date": "2026-09-16",
+        "changes": [
+          "打回语义收敛：send-back 仅回注本阶段入口、失效范围限本阶段；已验收阶段即定稿，跨阶段回滚 = 用户强行介入（force/flow_rerun），不再是门语义",
+          "S4/S5 边修正：miniguided→gate-r4 补验收入边；gate-r4 pass→first3 改前向边；polish 改交 R5 成稿验收；回环边回归本阶段（gate-r4→miniguided、gate-r5→first3）"
+        ]
+      },
+      {
+        "version": "5.1.0",
+        "date": "2026-09-16",
+        "changes": [
+          "S1 并行化：拆掉假串行依赖——市场快照/竞品对标不再排队在素材链后，找梗选梗∥实时热点扫描两个 agent 就绪批并行搜集，梗组合校验∥竞品对标装载并行",
+          "底座就绪批调度：flow_next 返回 AND-join 就绪批（engine.scheduling），门为同步屏障"
+        ]
+      },
+      {
+        "version": "5.1.0",
+        "date": "2026-09-16",
+        "changes": [
+          "引擎新增快照/重跑/预设/缓存/提问语义：输入指纹缓存命中、从任一节点重跑到 Stage 边界、auto/semi/manual 三档执行模式、semi 模式 Agent 提问钩子",
+          "工具链：tools/snapshot.py（capture/diff/指纹）；画布检查器升级为 输入快照/版本 diff/意见/定点重跑 面板"
+        ]
+      },
+      {
+        "version": "5.0.0",
+        "date": "2026-09-16",
+        "changes": [
+          "架构重构：阶段-菱形循环引擎（stage-gate-loop）。红方=菱形判断节点，三出口：pass 前进 / send-back 回本阶段修改流 / rebuild 回根因阶段从零构筑",
+          "删除 11 条硬编码回环边——循环是引擎规则（engine 块），画布自动派生，任何项目/阶段通用",
+          "新增 S4 小纲阶段门（gate-r4：批注回流核验）与 S5 成稿门（gate-r5）",
+          "stages 数组升级为结构声明：每阶段 entry/nodes/gate，运行时与画布按声明派生循环",
+          "基线对照件改为 S3 内部对照，不再占输出位"
+        ]
+      },
+      {
+        "version": "4.4.0",
+        "date": "2026-09-15",
+        "changes": [
+          "新增 S4 小纲阶段：分镜脚本 doc（每分镜的人物行动与台词，达意即可），文末附创作思路页",
+          "新增可选模块「批注回流」：客户在 doc 上批注/修改后回传，docx_ingest 解析为结构化意见，成品剧本基于改后版本产出",
+          "S5 成品剧本格式重构：连贯剧本（场次头/人物行动/表情/角色台词），特殊镜头与旁白用中括号备注，不再出现钩型/时长/尾钩等内部标注；台词强制过 dialogue-polish",
+          "交付物四件套：01 选题报告 / 02 大纲 / 03 小纲(doc) / 04 成品剧本试稿；意见书与断言报告转为内部物件（内部/ 目录）",
+          "梗密度约束接线（4.3.0 遗漏项）：market 装载与 R1 检查项含 kb/market/meme-rules"
+        ]
+      },
+      {
+        "version": "4.3.0",
+        "date": "2026-09-15",
+        "changes": [
+          "新增项目级约束 kb/market/meme-rules：S1 选题作为网感输入源——热梗素材表 ≥10 条、主梗可拆 ≥3 跨场景用法、前三章每集 ≥1 梗点（AE-MEME-DENSITY/SPREAD）",
+          "梗词典数据源清单入库（小鸡词典镜像/梗百科/萌娘百科/B站热梗/抖音话题/微博百度指数）；meme_harvest minitool 规格 待实现",
+          "梗密度约束反向影响题材选择：同等条件优先梗储量高的领域"
+        ]
+      },
+      {
+        "version": "4.2.0",
+        "date": "2026-09-15",
+        "changes": [
+          "S4 新增强制末环节：台词去AI味打磨（dialogue-polish 技能，基于人物/处境/说话习惯的三遍校准）",
+          "交付物重构为对外三件套：选题报告（含调研）/ 大纲（含人设/剧情结构/编排/情感设计）/ 剧本试稿——干净、模板化、客户可直读",
+          "内部过程物件（梗卡/意见书/断言报告/对账表）与对外交付物分离，不随对外输出"
+        ]
+      },
+      {
+        "version": "4.1.0",
+        "date": "2026-09-15",
+        "changes": [
+          "新增项目级约束 kb/market/setting-rules：禁止原创科幻/架空世界观（读者代入成本红线）；设定来源三级制（实事新闻底子 > 市面验证体系 > 原创禁止）",
+          "三分钟测试纳入 R1 红方固定检查项；S2 框架案世界观节按三级制声明来源",
+          "约束移交单新增 C10 设定体系约束条款"
+        ]
+      },
+      {
+        "version": "4.0.0",
+        "date": "2026-09-15",
+        "changes": [
+          "重构为四阶段 stage-gate 制：S1 调研 → S2 结构 → S3 方案 → S4 成稿，每阶段独立产物与产出格式",
+          "新增 S2 结构阶段：structure-design 技能（叙事结构选型三步：深挖/改造/融合 + 节奏市场对表）+ kb/structure/catalog",
+          "红方 v2 视角代入制：目标读者/一般读者/资深编剧/甲方四视角独立意见（kb/aesthetic/perspective-review），废弃数据化指标评审（死点/安全系数），机器可查项归断言层",
+          "验收门从 1 个扩为 4 个（R1-R4），打回按根因指认阶段并级联失效下游（11 条根因回环边）",
+          "不确定因素注入机制：框架可行但单薄时红方强制提案反认知变量（黑道大小姐/真假千金/穿书转世类）"
+        ]
+      },
+      {
+        "version": "3.1.0",
+        "date": "2026-09-15",
+        "changes": [
+          "补齐驳回回注与 challenge 回应环；skill 名修正；断言基线 66 条"
+        ]
+      },
+      {
+        "version": "3.0.0",
+        "date": "2026-09-15",
+        "changes": [
+          "剧本特化产物重构：选题方案五节 + 前三章详细剧本独立产物；combo 相性校验；ai-trace 接入"
+        ]
+      },
+      {
+        "version": "2.0.0",
+        "date": "2026-09-14",
+        "changes": [
+          "找梗·网感·编排升级"
+        ]
+      }
+    ],
+    "internalArtifacts": "梗卡/意见书/断言报告/对账表/对照件等均为内部过程物件，不随对外交付物输出",
+    "engine": {
+      "type": "stage-gate-loop",
+      "rule": "每个阶段 = 产出流 → 红方菱形验收。菱形出口：pass → 下一阶段入口；send-back → 回本阶段入口定点重做，失效范围仅限本阶段。已 pass 阶段的产物视为定稿，不随后续打回失效；确需上游返工 = 用户强行介入（flow_gate force + rootCauseStage，或 flow_rerun 显式指定范围），属人工操作而非门语义。循环直至末级 pass → 交付。",
+      "send_back": "gate → 本阶段 entry（仅本阶段；跨阶段须 force 人工介入）",
+      "cascade": "打回失效范围 = 本阶段（入口起、验收门止）；后续阶段产物不受影响（已验收即定稿）",
+      "exit": "末级 gate pass → delivery",
+      "verdicts": {
+        "pass": "通过前进",
+        "pass-with-conditions": "附条件前进",
+        "send-back": "打回（仅本阶段修改流）"
+      },
+      "snapshots": "数据流入节点即注入快照：输入指纹（上游哈希）+ 输出副本（不可变，逐版本）；用户修改产生新版本不覆盖旧版",
+      "rerun": "从任一节点重跑，跑到本阶段验收门即停（Stage 边界）；未变化的上游走缓存命中（Agent 上下文与提示词前缀复用），仅变更节点重算",
+      "presets": [
+        "auto（全自动：断言绿即过，不提问）",
+        "semi（半自动：仅阶段门与断言失败时向用户提问）",
+        "manual（人工审：每个产出节点逐个确认）"
+      ],
+      "ask_user": "semi/manual 模式下，Agent 在关键分叉（结构选型/注入取舍/验收裁决）向用户提问后继续",
+      "diff": "用户编辑/红方打回 → Agent 先做 diff 分析（上下文增量），再决定最小重跑范围",
+      "scheduling": {
+        "model": "dag-ready-batch",
+        "ready": "节点就绪 = 全部活跃上游 done（AND-join）；多条入边缺一不派发",
+        "dispatch": "flow_next 返回就绪批：批内认知步互不依赖，宿主并行执行（多个 agent 同时搜集材料）；taskPackage.parallelWith 列出同批节点",
+        "core_inline": "core/minitool 步零 token，内核就绪即就地执行，不进批",
+        "barrier": "阶段验收门是同步屏障：门未 pass，下一阶段不派发；门上游未齐门不开",
+        "rerun": "打回重跑沿用同一调度：重跑范围内就绪批照常并行"
+      },
+      "intervention": "跨阶段回滚唯一入口 = 用户强行介入：flow_gate {force:true, rootCauseStage} 或 flow_rerun {nodeId, dryRun} 显式指定；任何 agent 不得自作主张打回已验收阶段"
+    },
+    "roleModel": {
+      "production": "找梗师/网感师/结构选型师/分镜编剧/成品剧本师/台词打磨——在流程里干活",
+      "review": "红方评审/审美总编/交付监理——站在质检位，只看产物、只出意见，不混入生产",
+      "principle": "总工程师不站产线里干活。质检员站在质检位上，对关键返回信息进行把控"
+    },
+    "displayName": "短剧成稿生产线",
+    "naming": {
+      "rule": "flow 命名 = 生产线（端到端交付物），stage = 生产线内的段落；能力段要独立成 flow 仅当它有独立交付物且被多条生产线复用",
+      "idNote": "id 'topic-selection' 沿用 v1 历史（当时只做选题）；S2-S5 陆续并入后 id 保持稳定以保护已绑定项目，显示名已更正"
+    }
+  },
+  "nodeConfig": {
+    "src": {
+      "boundary": false,
+      "output": "选题素材.md",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": null
+    },
+    "market": {
+      "boundary": false,
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": null
+    },
+    "tropes": {
+      "boundary": false,
+      "output": "内部/稿本/梗卡.md",
+      "kit": "search",
+      "op": "find-trope",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": {
+        "values": {
+          "depth": "标准",
+          "strictness": "标准",
+          "maxChars": 4000,
+          "model_tier": "high",
+          "mainTropes": 1,
+          "subTropes": 3,
+          "saturationCheck": true,
+          "evolutionDepth": "两代"
+        },
+        "defs": {
+          "depth": {
+            "type": "enum",
+            "enum": [
+              "浅",
+              "标准",
+              "深"
+            ],
+            "default": "标准",
+            "desc": "本步投入深度：浅=先出可用版本，标准=默认，深=加采样与自检",
+            "effect": "提高 = 更充分但更慢更贵；连续无打回时可降档"
+          },
+          "strictness": {
+            "type": "enum",
+            "enum": [
+              "宽松",
+              "标准",
+              "严格"
+            ],
+            "default": "标准",
+            "desc": "判定尺度：本步自检与断言执行时把握的宽严",
+            "effect": "提高 = 早暴露问题（打回率↑、返工↓）；打回率已高时不宜再提"
+          },
+          "maxChars": {
+            "type": "number",
+            "min": 200,
+            "max": 40000,
+            "default": 4000,
+            "unit": "字",
+            "desc": "本步产物正文的篇幅上限（超出即视为未收敛）",
+            "effect": "提高 = 允许更长产物；成本随字数上升"
+          },
+          "model_tier": {
+            "type": "enum",
+            "enum": [
+              "high",
+              "lite"
+            ],
+            "default": "high",
+            "desc": "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
+            "effect": "文学与结构判断节点必须 high；机械整理类可降 lite"
+          },
+          "mainTropes": {
+            "type": "number",
+            "default": 1,
+            "min": 0,
+            "desc": "主梗数量",
+            "effect": "提高 = 焦点散",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "subTropes": {
+            "type": "number",
+            "default": 3,
+            "min": 0,
+            "desc": "辅梗数量",
+            "effect": "提高 = 组合更新鲜也更难落实",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "saturationCheck": {
+            "type": "boolean",
+            "default": true,
+            "desc": "判定梗族饱和度",
+            "effect": "关掉 = 选到烂梗",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "evolutionDepth": {
+            "type": "enum",
+            "default": "两代",
+            "enum": [
+              "一代",
+              "两代",
+              "链式"
+            ],
+            "desc": "沿演化链向上找的代数",
+            "effect": "越深越新、越难写",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          }
+        },
+        "sources": {
+          "depth": "generic",
+          "strictness": "generic",
+          "maxChars": "generic",
+          "model_tier": "generic",
+          "mainTropes": "op",
+          "subTropes": "op",
+          "saturationCheck": "op",
+          "evolutionDepth": "op"
+        },
+        "unknownKeys": [],
+        "genericOnly": false
+      }
+    },
+    "combo": {
+      "boundary": false,
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": null
+    },
+    "zeitgeist": {
+      "boundary": false,
+      "output": "内部/稿本/热点素材.md",
+      "kit": "search",
+      "op": "topic-zeitgeist",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": {
+        "values": {
+          "depth": "标准",
+          "strictness": "标准",
+          "maxChars": 4000,
+          "model_tier": "high",
+          "windowDays": 30,
+          "evidenceCount": 3,
+          "emotionAnchors": 1
+        },
+        "defs": {
+          "depth": {
+            "type": "enum",
+            "enum": [
+              "浅",
+              "标准",
+              "深"
+            ],
+            "default": "标准",
+            "desc": "本步投入深度：浅=先出可用版本，标准=默认，深=加采样与自检",
+            "effect": "提高 = 更充分但更慢更贵；连续无打回时可降档"
+          },
+          "strictness": {
+            "type": "enum",
+            "enum": [
+              "宽松",
+              "标准",
+              "严格"
+            ],
+            "default": "标准",
+            "desc": "判定尺度：本步自检与断言执行时把握的宽严",
+            "effect": "提高 = 早暴露问题（打回率↑、返工↓）；打回率已高时不宜再提"
+          },
+          "maxChars": {
+            "type": "number",
+            "min": 200,
+            "max": 40000,
+            "default": 4000,
+            "unit": "字",
+            "desc": "本步产物正文的篇幅上限（超出即视为未收敛）",
+            "effect": "提高 = 允许更长产物；成本随字数上升"
+          },
+          "model_tier": {
+            "type": "enum",
+            "enum": [
+              "high",
+              "lite"
+            ],
+            "default": "high",
+            "desc": "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
+            "effect": "文学与结构判断节点必须 high；机械整理类可降 lite"
+          },
+          "windowDays": {
+            "type": "number",
+            "default": 30,
+            "min": 0,
+            "desc": "情绪锚点的可举证时间窗（天）",
+            "effect": "放宽 = 更容易凑数也更平庸",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "evidenceCount": {
+            "type": "number",
+            "default": 3,
+            "min": 0,
+            "desc": "锚点需要的举证条数",
+            "effect": "降低 = 锚点是拍脑袋",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "emotionAnchors": {
+            "type": "number",
+            "default": 1,
+            "min": 0,
+            "desc": "锚定的社会情绪数",
+            "effect": "提高 = 故事要兼顾的情绪更多",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          }
+        },
+        "sources": {
+          "depth": "generic",
+          "strictness": "generic",
+          "maxChars": "generic",
+          "model_tier": "generic",
+          "windowDays": "op",
+          "evidenceCount": "op",
+          "emotionAnchors": "op"
+        },
+        "unknownKeys": [],
+        "genericOnly": false
+      }
+    },
+    "benchmark": {
+      "boundary": false,
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": null
+    },
+    "analysis": {
+      "boundary": false,
+      "output": "对外交付/01-选题报告.md",
+      "kit": "search",
+      "op": "topic-analysis-report",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": {
+        "values": {
+          "depth": "标准",
+          "strictness": "标准",
+          "maxChars": 4000,
+          "model_tier": "high",
+          "sections": 4,
+          "handoffSheet": true,
+          "dataCitations": 5
+        },
+        "defs": {
+          "depth": {
+            "type": "enum",
+            "enum": [
+              "浅",
+              "标准",
+              "深"
+            ],
+            "default": "标准",
+            "desc": "本步投入深度：浅=先出可用版本，标准=默认，深=加采样与自检",
+            "effect": "提高 = 更充分但更慢更贵；连续无打回时可降档"
+          },
+          "strictness": {
+            "type": "enum",
+            "enum": [
+              "宽松",
+              "标准",
+              "严格"
+            ],
+            "default": "标准",
+            "desc": "判定尺度：本步自检与断言执行时把握的宽严",
+            "effect": "提高 = 早暴露问题（打回率↑、返工↓）；打回率已高时不宜再提"
+          },
+          "maxChars": {
+            "type": "number",
+            "min": 200,
+            "max": 40000,
+            "default": 4000,
+            "unit": "字",
+            "desc": "本步产物正文的篇幅上限（超出即视为未收敛）",
+            "effect": "提高 = 允许更长产物；成本随字数上升"
+          },
+          "model_tier": {
+            "type": "enum",
+            "enum": [
+              "high",
+              "lite"
+            ],
+            "default": "high",
+            "desc": "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
+            "effect": "文学与结构判断节点必须 high；机械整理类可降 lite"
+          },
+          "sections": {
+            "type": "number",
+            "default": 4,
+            "min": 0,
+            "desc": "报告板块数（市场/客群/竞品/数据）",
+            "effect": "减少 = 分析不完整",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "handoffSheet": {
+            "type": "boolean",
+            "default": true,
+            "desc": "输出创作约束移交单",
+            "effect": "关掉 = 编剧步没硬约束",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "dataCitations": {
+            "type": "number",
+            "default": 5,
+            "min": 0,
+            "desc": "引用数据的条数下限",
+            "effect": "降低 = 结论悬浮",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          }
+        },
+        "sources": {
+          "depth": "generic",
+          "strictness": "generic",
+          "maxChars": "generic",
+          "model_tier": "generic",
+          "sections": "op",
+          "handoffSheet": "op",
+          "dataCitations": "op"
+        },
+        "unknownKeys": [],
+        "genericOnly": false
+      }
+    },
+    "gate-r1": {
+      "boundary": false,
+      "output": "内部/意见/多视角意见书-gate-r1.md",
+      "kit": "plot",
+      "op": "plot-redline",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": {
+        "values": {
+          "depth": "标准",
+          "strictness": "标准",
+          "maxChars": 4000,
+          "model_tier": "high",
+          "angles": 4,
+          "harshness": "标准",
+          "allowInject": true,
+          "voice": "说人话"
+        },
+        "defs": {
+          "depth": {
+            "type": "enum",
+            "enum": [
+              "浅",
+              "标准",
+              "深"
+            ],
+            "default": "标准",
+            "desc": "本步投入深度：浅=先出可用版本，标准=默认，深=加采样与自检",
+            "effect": "提高 = 更充分但更慢更贵；连续无打回时可降档"
+          },
+          "strictness": {
+            "type": "enum",
+            "enum": [
+              "宽松",
+              "标准",
+              "严格"
+            ],
+            "default": "标准",
+            "desc": "判定尺度：本步自检与断言执行时把握的宽严",
+            "effect": "提高 = 早暴露问题（打回率↑、返工↓）；打回率已高时不宜再提"
+          },
+          "maxChars": {
+            "type": "number",
+            "min": 200,
+            "max": 40000,
+            "default": 4000,
+            "unit": "字",
+            "desc": "本步产物正文的篇幅上限（超出即视为未收敛）",
+            "effect": "提高 = 允许更长产物；成本随字数上升"
+          },
+          "model_tier": {
+            "type": "enum",
+            "enum": [
+              "high",
+              "lite"
+            ],
+            "default": "high",
+            "desc": "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
+            "effect": "文学与结构判断节点必须 high；机械整理类可降 lite"
+          },
+          "angles": {
+            "type": "number",
+            "default": 4,
+            "min": 0,
+            "desc": "代入的评审视角数（读者/编剧/甲方…）",
+            "effect": "提高 = 更全面、成本线性上升",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "harshness": {
+            "type": "enum",
+            "default": "标准",
+            "enum": [
+              "温和",
+              "标准",
+              "苛刻"
+            ],
+            "desc": "苛刻程度",
+            "effect": "提高 = 更多打回更少漏网；过高会空转",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "allowInject": {
+            "type": "boolean",
+            "default": true,
+            "desc": "框架单薄时是否允许提交流程重构建议",
+            "effect": "关掉 = 只报问题不给方案",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "voice": {
+            "type": "enum",
+            "default": "说人话",
+            "enum": [
+              "说人话",
+              "念指标"
+            ],
+            "desc": "意见书的语体",
+            "effect": "念指标 = 读者读不懂，说人话 = 可执行",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          }
+        },
+        "sources": {
+          "depth": "generic",
+          "strictness": "generic",
+          "maxChars": "generic",
+          "model_tier": "generic",
+          "angles": "op",
+          "harshness": "op",
+          "allowInject": "op",
+          "voice": "op"
+        },
+        "unknownKeys": [],
+        "genericOnly": false
+      }
+    },
+    "structure": {
+      "boundary": false,
+      "output": "对外交付/02-大纲.md",
+      "kit": "plot",
+      "op": "structure-design",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": {
+        "values": {
+          "depth": "标准",
+          "strictness": "标准",
+          "maxChars": 4000,
+          "model_tier": "high",
+          "fuseCount": 2,
+          "injectUncertainty": true,
+          "steps": "三步"
+        },
+        "defs": {
+          "depth": {
+            "type": "enum",
+            "enum": [
+              "浅",
+              "标准",
+              "深"
+            ],
+            "default": "标准",
+            "desc": "本步投入深度：浅=先出可用版本，标准=默认，深=加采样与自检",
+            "effect": "提高 = 更充分但更慢更贵；连续无打回时可降档"
+          },
+          "strictness": {
+            "type": "enum",
+            "enum": [
+              "宽松",
+              "标准",
+              "严格"
+            ],
+            "default": "标准",
+            "desc": "判定尺度：本步自检与断言执行时把握的宽严",
+            "effect": "提高 = 早暴露问题（打回率↑、返工↓）；打回率已高时不宜再提"
+          },
+          "maxChars": {
+            "type": "number",
+            "min": 200,
+            "max": 40000,
+            "default": 4000,
+            "unit": "字",
+            "desc": "本步产物正文的篇幅上限（超出即视为未收敛）",
+            "effect": "提高 = 允许更长产物；成本随字数上升"
+          },
+          "model_tier": {
+            "type": "enum",
+            "enum": [
+              "high",
+              "lite"
+            ],
+            "default": "high",
+            "desc": "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
+            "effect": "文学与结构判断节点必须 high；机械整理类可降 lite"
+          },
+          "fuseCount": {
+            "type": "number",
+            "default": 2,
+            "min": 0,
+            "desc": "融合的结构数",
+            "effect": "提高 = 更独特、可读性风险上升",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "injectUncertainty": {
+            "type": "boolean",
+            "default": true,
+            "desc": "是否输出不确定因素注入提案",
+            "effect": "关掉 = 单薄问题被掩盖",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "steps": {
+            "type": "enum",
+            "default": "三步",
+            "enum": [
+              "两步",
+              "三步"
+            ],
+            "desc": "深挖/改造/融合的执行粒度",
+            "effect": "两步 = 快，三步 = 稳",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          }
+        },
+        "sources": {
+          "depth": "generic",
+          "strictness": "generic",
+          "maxChars": "generic",
+          "model_tier": "generic",
+          "fuseCount": "op",
+          "injectUncertainty": "op",
+          "steps": "op"
+        },
+        "unknownKeys": [],
+        "genericOnly": false
+      }
+    },
+    "gate-r2": {
+      "boundary": false,
+      "output": "内部/意见/多视角意见书-gate-r2.md",
+      "kit": "plot",
+      "op": "plot-redline",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": {
+        "values": {
+          "depth": "标准",
+          "strictness": "标准",
+          "maxChars": 4000,
+          "model_tier": "high",
+          "angles": 4,
+          "harshness": "标准",
+          "allowInject": true,
+          "voice": "说人话"
+        },
+        "defs": {
+          "depth": {
+            "type": "enum",
+            "enum": [
+              "浅",
+              "标准",
+              "深"
+            ],
+            "default": "标准",
+            "desc": "本步投入深度：浅=先出可用版本，标准=默认，深=加采样与自检",
+            "effect": "提高 = 更充分但更慢更贵；连续无打回时可降档"
+          },
+          "strictness": {
+            "type": "enum",
+            "enum": [
+              "宽松",
+              "标准",
+              "严格"
+            ],
+            "default": "标准",
+            "desc": "判定尺度：本步自检与断言执行时把握的宽严",
+            "effect": "提高 = 早暴露问题（打回率↑、返工↓）；打回率已高时不宜再提"
+          },
+          "maxChars": {
+            "type": "number",
+            "min": 200,
+            "max": 40000,
+            "default": 4000,
+            "unit": "字",
+            "desc": "本步产物正文的篇幅上限（超出即视为未收敛）",
+            "effect": "提高 = 允许更长产物；成本随字数上升"
+          },
+          "model_tier": {
+            "type": "enum",
+            "enum": [
+              "high",
+              "lite"
+            ],
+            "default": "high",
+            "desc": "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
+            "effect": "文学与结构判断节点必须 high；机械整理类可降 lite"
+          },
+          "angles": {
+            "type": "number",
+            "default": 4,
+            "min": 0,
+            "desc": "代入的评审视角数（读者/编剧/甲方…）",
+            "effect": "提高 = 更全面、成本线性上升",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "harshness": {
+            "type": "enum",
+            "default": "标准",
+            "enum": [
+              "温和",
+              "标准",
+              "苛刻"
+            ],
+            "desc": "苛刻程度",
+            "effect": "提高 = 更多打回更少漏网；过高会空转",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "allowInject": {
+            "type": "boolean",
+            "default": true,
+            "desc": "框架单薄时是否允许提交流程重构建议",
+            "effect": "关掉 = 只报问题不给方案",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "voice": {
+            "type": "enum",
+            "default": "说人话",
+            "enum": [
+              "说人话",
+              "念指标"
+            ],
+            "desc": "意见书的语体",
+            "effect": "念指标 = 读者读不懂，说人话 = 可执行",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          }
+        },
+        "sources": {
+          "depth": "generic",
+          "strictness": "generic",
+          "maxChars": "generic",
+          "model_tier": "generic",
+          "angles": "op",
+          "harshness": "op",
+          "allowInject": "op",
+          "voice": "op"
+        },
+        "unknownKeys": [],
+        "genericOnly": false
+      }
+    },
+    "proposal": {
+      "boundary": false,
+      "output": "内部/稿本/选题方案.md",
+      "kit": "search",
+      "op": "topic-proposal",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": {
+        "values": {
+          "depth": "标准",
+          "strictness": "标准",
+          "maxChars": 4000,
+          "model_tier": "high",
+          "outlineDepth": "粗纲",
+          "firstEpisodes": 3,
+          "banBizLanguage": true
+        },
+        "defs": {
+          "depth": {
+            "type": "enum",
+            "enum": [
+              "浅",
+              "标准",
+              "深"
+            ],
+            "default": "标准",
+            "desc": "本步投入深度：浅=先出可用版本，标准=默认，深=加采样与自检",
+            "effect": "提高 = 更充分但更慢更贵；连续无打回时可降档"
+          },
+          "strictness": {
+            "type": "enum",
+            "enum": [
+              "宽松",
+              "标准",
+              "严格"
+            ],
+            "default": "标准",
+            "desc": "判定尺度：本步自检与断言执行时把握的宽严",
+            "effect": "提高 = 早暴露问题（打回率↑、返工↓）；打回率已高时不宜再提"
+          },
+          "maxChars": {
+            "type": "number",
+            "min": 200,
+            "max": 40000,
+            "default": 4000,
+            "unit": "字",
+            "desc": "本步产物正文的篇幅上限（超出即视为未收敛）",
+            "effect": "提高 = 允许更长产物；成本随字数上升"
+          },
+          "model_tier": {
+            "type": "enum",
+            "enum": [
+              "high",
+              "lite"
+            ],
+            "default": "high",
+            "desc": "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
+            "effect": "文学与结构判断节点必须 high；机械整理类可降 lite"
+          },
+          "outlineDepth": {
+            "type": "enum",
+            "default": "粗纲",
+            "enum": [
+              "粗纲",
+              "细纲"
+            ],
+            "desc": "大纲的颗粒度",
+            "effect": "细纲 = 更快进入成稿也更贵",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "firstEpisodes": {
+            "type": "number",
+            "default": 3,
+            "min": 0,
+            "desc": "前三集初稿的集数",
+            "effect": "提高 = 交付更重",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "banBizLanguage": {
+            "type": "boolean",
+            "default": true,
+            "desc": "禁止出现商业分析语言",
+            "effect": "关掉 = 方案串味",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          }
+        },
+        "sources": {
+          "depth": "generic",
+          "strictness": "generic",
+          "maxChars": "generic",
+          "model_tier": "generic",
+          "outlineDepth": "op",
+          "firstEpisodes": "op",
+          "banBizLanguage": "op"
+        },
+        "unknownKeys": [],
+        "genericOnly": false
+      }
+    },
+    "baseline": {
+      "boundary": false,
+      "output": "内部/稿本/选题方案-爽版-基线.md",
+      "kit": "search",
+      "op": "topic-proposal",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": {
+        "values": {
+          "depth": "标准",
+          "strictness": "标准",
+          "maxChars": 4000,
+          "model_tier": "high",
+          "outlineDepth": "粗纲",
+          "firstEpisodes": 3,
+          "banBizLanguage": true
+        },
+        "defs": {
+          "depth": {
+            "type": "enum",
+            "enum": [
+              "浅",
+              "标准",
+              "深"
+            ],
+            "default": "标准",
+            "desc": "本步投入深度：浅=先出可用版本，标准=默认，深=加采样与自检",
+            "effect": "提高 = 更充分但更慢更贵；连续无打回时可降档"
+          },
+          "strictness": {
+            "type": "enum",
+            "enum": [
+              "宽松",
+              "标准",
+              "严格"
+            ],
+            "default": "标准",
+            "desc": "判定尺度：本步自检与断言执行时把握的宽严",
+            "effect": "提高 = 早暴露问题（打回率↑、返工↓）；打回率已高时不宜再提"
+          },
+          "maxChars": {
+            "type": "number",
+            "min": 200,
+            "max": 40000,
+            "default": 4000,
+            "unit": "字",
+            "desc": "本步产物正文的篇幅上限（超出即视为未收敛）",
+            "effect": "提高 = 允许更长产物；成本随字数上升"
+          },
+          "model_tier": {
+            "type": "enum",
+            "enum": [
+              "high",
+              "lite"
+            ],
+            "default": "high",
+            "desc": "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
+            "effect": "文学与结构判断节点必须 high；机械整理类可降 lite"
+          },
+          "outlineDepth": {
+            "type": "enum",
+            "default": "粗纲",
+            "enum": [
+              "粗纲",
+              "细纲"
+            ],
+            "desc": "大纲的颗粒度",
+            "effect": "细纲 = 更快进入成稿也更贵",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "firstEpisodes": {
+            "type": "number",
+            "default": 3,
+            "min": 0,
+            "desc": "前三集初稿的集数",
+            "effect": "提高 = 交付更重",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "banBizLanguage": {
+            "type": "boolean",
+            "default": true,
+            "desc": "禁止出现商业分析语言",
+            "effect": "关掉 = 方案串味",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          }
+        },
+        "sources": {
+          "depth": "generic",
+          "strictness": "generic",
+          "maxChars": "generic",
+          "model_tier": "generic",
+          "outlineDepth": "op",
+          "firstEpisodes": "op",
+          "banBizLanguage": "op"
+        },
+        "unknownKeys": [],
+        "genericOnly": false
+      }
+    },
+    "gate-r3": {
+      "boundary": false,
+      "output": "内部/意见/多视角意见书-gate-r3.md",
+      "kit": "plot",
+      "op": "plot-redline",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": {
+        "values": {
+          "depth": "标准",
+          "strictness": "标准",
+          "maxChars": 4000,
+          "model_tier": "high",
+          "angles": 4,
+          "harshness": "标准",
+          "allowInject": true,
+          "voice": "说人话"
+        },
+        "defs": {
+          "depth": {
+            "type": "enum",
+            "enum": [
+              "浅",
+              "标准",
+              "深"
+            ],
+            "default": "标准",
+            "desc": "本步投入深度：浅=先出可用版本，标准=默认，深=加采样与自检",
+            "effect": "提高 = 更充分但更慢更贵；连续无打回时可降档"
+          },
+          "strictness": {
+            "type": "enum",
+            "enum": [
+              "宽松",
+              "标准",
+              "严格"
+            ],
+            "default": "标准",
+            "desc": "判定尺度：本步自检与断言执行时把握的宽严",
+            "effect": "提高 = 早暴露问题（打回率↑、返工↓）；打回率已高时不宜再提"
+          },
+          "maxChars": {
+            "type": "number",
+            "min": 200,
+            "max": 40000,
+            "default": 4000,
+            "unit": "字",
+            "desc": "本步产物正文的篇幅上限（超出即视为未收敛）",
+            "effect": "提高 = 允许更长产物；成本随字数上升"
+          },
+          "model_tier": {
+            "type": "enum",
+            "enum": [
+              "high",
+              "lite"
+            ],
+            "default": "high",
+            "desc": "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
+            "effect": "文学与结构判断节点必须 high；机械整理类可降 lite"
+          },
+          "angles": {
+            "type": "number",
+            "default": 4,
+            "min": 0,
+            "desc": "代入的评审视角数（读者/编剧/甲方…）",
+            "effect": "提高 = 更全面、成本线性上升",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "harshness": {
+            "type": "enum",
+            "default": "标准",
+            "enum": [
+              "温和",
+              "标准",
+              "苛刻"
+            ],
+            "desc": "苛刻程度",
+            "effect": "提高 = 更多打回更少漏网；过高会空转",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "allowInject": {
+            "type": "boolean",
+            "default": true,
+            "desc": "框架单薄时是否允许提交流程重构建议",
+            "effect": "关掉 = 只报问题不给方案",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "voice": {
+            "type": "enum",
+            "default": "说人话",
+            "enum": [
+              "说人话",
+              "念指标"
+            ],
+            "desc": "意见书的语体",
+            "effect": "念指标 = 读者读不懂，说人话 = 可执行",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          }
+        },
+        "sources": {
+          "depth": "generic",
+          "strictness": "generic",
+          "maxChars": "generic",
+          "model_tier": "generic",
+          "angles": "op",
+          "harshness": "op",
+          "allowInject": "op",
+          "voice": "op"
+        },
+        "unknownKeys": [],
+        "genericOnly": false
+      }
+    },
+    "first3": {
+      "boundary": false,
+      "output": "对外交付/04-成品剧本试稿.md",
+      "kit": "prose",
+      "op": "script-final",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": {
+        "values": {
+          "depth": "标准",
+          "strictness": "标准",
+          "maxChars": 4000,
+          "model_tier": "high",
+          "annotationLevel": "中括号备注",
+          "forbidInternalMark": true,
+          "sceneHeaderStyle": "场次号+场景"
+        },
+        "defs": {
+          "depth": {
+            "type": "enum",
+            "enum": [
+              "浅",
+              "标准",
+              "深"
+            ],
+            "default": "标准",
+            "desc": "本步投入深度：浅=先出可用版本，标准=默认，深=加采样与自检",
+            "effect": "提高 = 更充分但更慢更贵；连续无打回时可降档"
+          },
+          "strictness": {
+            "type": "enum",
+            "enum": [
+              "宽松",
+              "标准",
+              "严格"
+            ],
+            "default": "标准",
+            "desc": "判定尺度：本步自检与断言执行时把握的宽严",
+            "effect": "提高 = 早暴露问题（打回率↑、返工↓）；打回率已高时不宜再提"
+          },
+          "maxChars": {
+            "type": "number",
+            "min": 200,
+            "max": 40000,
+            "default": 4000,
+            "unit": "字",
+            "desc": "本步产物正文的篇幅上限（超出即视为未收敛）",
+            "effect": "提高 = 允许更长产物；成本随字数上升"
+          },
+          "model_tier": {
+            "type": "enum",
+            "enum": [
+              "high",
+              "lite"
+            ],
+            "default": "high",
+            "desc": "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
+            "effect": "文学与结构判断节点必须 high；机械整理类可降 lite"
+          },
+          "annotationLevel": {
+            "type": "enum",
+            "default": "中括号备注",
+            "enum": [
+              "中括号备注",
+              "内联"
+            ],
+            "desc": "特殊镜头/旁白的标注法",
+            "effect": "内联 = 与台词混排，演员易误读",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "forbidInternalMark": {
+            "type": "boolean",
+            "default": true,
+            "desc": "禁止出现钩型/时长/尾钩等内部标注",
+            "effect": "关掉 = 交付件泄露生产标记",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "sceneHeaderStyle": {
+            "type": "enum",
+            "default": "场次号+场景",
+            "enum": [
+              "场次号+场景",
+              "简洁"
+            ],
+            "desc": "场次头写法",
+            "effect": "简洁 = 与拍摄方约定不一致",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          }
+        },
+        "sources": {
+          "depth": "generic",
+          "strictness": "generic",
+          "maxChars": "generic",
+          "model_tier": "generic",
+          "annotationLevel": "op",
+          "forbidInternalMark": "op",
+          "sceneHeaderStyle": "op"
+        },
+        "unknownKeys": [],
+        "genericOnly": false
+      }
+    },
+    "gate-r4": {
+      "boundary": false,
+      "output": "内部/意见/多视角意见书-gate-r4.md",
+      "kit": "plot",
+      "op": "plot-redline",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": {
+        "values": {
+          "depth": "标准",
+          "strictness": "标准",
+          "maxChars": 4000,
+          "model_tier": "high",
+          "angles": 4,
+          "harshness": "标准",
+          "allowInject": true,
+          "voice": "说人话"
+        },
+        "defs": {
+          "depth": {
+            "type": "enum",
+            "enum": [
+              "浅",
+              "标准",
+              "深"
+            ],
+            "default": "标准",
+            "desc": "本步投入深度：浅=先出可用版本，标准=默认，深=加采样与自检",
+            "effect": "提高 = 更充分但更慢更贵；连续无打回时可降档"
+          },
+          "strictness": {
+            "type": "enum",
+            "enum": [
+              "宽松",
+              "标准",
+              "严格"
+            ],
+            "default": "标准",
+            "desc": "判定尺度：本步自检与断言执行时把握的宽严",
+            "effect": "提高 = 早暴露问题（打回率↑、返工↓）；打回率已高时不宜再提"
+          },
+          "maxChars": {
+            "type": "number",
+            "min": 200,
+            "max": 40000,
+            "default": 4000,
+            "unit": "字",
+            "desc": "本步产物正文的篇幅上限（超出即视为未收敛）",
+            "effect": "提高 = 允许更长产物；成本随字数上升"
+          },
+          "model_tier": {
+            "type": "enum",
+            "enum": [
+              "high",
+              "lite"
+            ],
+            "default": "high",
+            "desc": "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
+            "effect": "文学与结构判断节点必须 high；机械整理类可降 lite"
+          },
+          "angles": {
+            "type": "number",
+            "default": 4,
+            "min": 0,
+            "desc": "代入的评审视角数（读者/编剧/甲方…）",
+            "effect": "提高 = 更全面、成本线性上升",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "harshness": {
+            "type": "enum",
+            "default": "标准",
+            "enum": [
+              "温和",
+              "标准",
+              "苛刻"
+            ],
+            "desc": "苛刻程度",
+            "effect": "提高 = 更多打回更少漏网；过高会空转",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "allowInject": {
+            "type": "boolean",
+            "default": true,
+            "desc": "框架单薄时是否允许提交流程重构建议",
+            "effect": "关掉 = 只报问题不给方案",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "voice": {
+            "type": "enum",
+            "default": "说人话",
+            "enum": [
+              "说人话",
+              "念指标"
+            ],
+            "desc": "意见书的语体",
+            "effect": "念指标 = 读者读不懂，说人话 = 可执行",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          }
+        },
+        "sources": {
+          "depth": "generic",
+          "strictness": "generic",
+          "maxChars": "generic",
+          "model_tier": "generic",
+          "angles": "op",
+          "harshness": "op",
+          "allowInject": "op",
+          "voice": "op"
+        },
+        "unknownKeys": [],
+        "genericOnly": false
+      }
+    },
+    "delivery": {
+      "boundary": false,
+      "output": "对外交付/选题交付页.html",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": null
+    },
+    "polish": {
+      "boundary": false,
+      "output": "对外交付/03-剧本试稿.md",
+      "kit": "prose",
+      "op": "dialogue-polish",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": {
+        "values": {
+          "depth": "标准",
+          "strictness": "标准",
+          "maxChars": 4000,
+          "model_tier": "high",
+          "passes": 3,
+          "maskTest": true,
+          "aiTraceDeck": "24类",
+          "preserveVoice": true
+        },
+        "defs": {
+          "depth": {
+            "type": "enum",
+            "enum": [
+              "浅",
+              "标准",
+              "深"
+            ],
+            "default": "标准",
+            "desc": "本步投入深度：浅=先出可用版本，标准=默认，深=加采样与自检",
+            "effect": "提高 = 更充分但更慢更贵；连续无打回时可降档"
+          },
+          "strictness": {
+            "type": "enum",
+            "enum": [
+              "宽松",
+              "标准",
+              "严格"
+            ],
+            "default": "标准",
+            "desc": "判定尺度：本步自检与断言执行时把握的宽严",
+            "effect": "提高 = 早暴露问题（打回率↑、返工↓）；打回率已高时不宜再提"
+          },
+          "maxChars": {
+            "type": "number",
+            "min": 200,
+            "max": 40000,
+            "default": 4000,
+            "unit": "字",
+            "desc": "本步产物正文的篇幅上限（超出即视为未收敛）",
+            "effect": "提高 = 允许更长产物；成本随字数上升"
+          },
+          "model_tier": {
+            "type": "enum",
+            "enum": [
+              "high",
+              "lite"
+            ],
+            "default": "high",
+            "desc": "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
+            "effect": "文学与结构判断节点必须 high；机械整理类可降 lite"
+          },
+          "passes": {
+            "type": "number",
+            "default": 3,
+            "min": 0,
+            "desc": "逐句过的遍数（声口/处境/去AI味）",
+            "effect": "降低 = 省成本但机味残留",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "maskTest": {
+            "type": "boolean",
+            "default": true,
+            "desc": "遮名三句测试（遮住名字能认出谁说话）",
+            "effect": "关掉 = 人物声口趋同",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "aiTraceDeck": {
+            "type": "enum",
+            "default": "24类",
+            "enum": [
+              "精简",
+              "24类"
+            ],
+            "desc": "去AI味清单的档位",
+            "effect": "精简 = 只查高频类，漏检增加",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "preserveVoice": {
+            "type": "boolean",
+            "default": true,
+            "desc": "保留作者原有节奏不改成标准腔",
+            "effect": "关掉 = 全部对话变成同一种腔调",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          }
+        },
+        "sources": {
+          "depth": "generic",
+          "strictness": "generic",
+          "maxChars": "generic",
+          "model_tier": "generic",
+          "passes": "op",
+          "maskTest": "op",
+          "aiTraceDeck": "op",
+          "preserveVoice": "op"
+        },
+        "unknownKeys": [],
+        "genericOnly": false
+      }
+    },
+    "miniguided": {
+      "boundary": false,
+      "output": "对外交付/03-小纲.docx",
+      "kit": "plot",
+      "op": "scene-breakdown",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": {
+        "values": {
+          "depth": "标准",
+          "strictness": "标准",
+          "maxChars": 4000,
+          "model_tier": "high",
+          "shotsPerScene": 6,
+          "includeRationale": true,
+          "dialogLevel": "达意"
+        },
+        "defs": {
+          "depth": {
+            "type": "enum",
+            "enum": [
+              "浅",
+              "标准",
+              "深"
+            ],
+            "default": "标准",
+            "desc": "本步投入深度：浅=先出可用版本，标准=默认，深=加采样与自检",
+            "effect": "提高 = 更充分但更慢更贵；连续无打回时可降档"
+          },
+          "strictness": {
+            "type": "enum",
+            "enum": [
+              "宽松",
+              "标准",
+              "严格"
+            ],
+            "default": "标准",
+            "desc": "判定尺度：本步自检与断言执行时把握的宽严",
+            "effect": "提高 = 早暴露问题（打回率↑、返工↓）；打回率已高时不宜再提"
+          },
+          "maxChars": {
+            "type": "number",
+            "min": 200,
+            "max": 40000,
+            "default": 4000,
+            "unit": "字",
+            "desc": "本步产物正文的篇幅上限（超出即视为未收敛）",
+            "effect": "提高 = 允许更长产物；成本随字数上升"
+          },
+          "model_tier": {
+            "type": "enum",
+            "enum": [
+              "high",
+              "lite"
+            ],
+            "default": "high",
+            "desc": "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
+            "effect": "文学与结构判断节点必须 high；机械整理类可降 lite"
+          },
+          "shotsPerScene": {
+            "type": "number",
+            "default": 6,
+            "min": 0,
+            "desc": "每个场景的分镜数",
+            "effect": "提高 = 成稿更细、小纲更慢",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "includeRationale": {
+            "type": "boolean",
+            "default": true,
+            "desc": "文末附创作思路页",
+            "effect": "关掉 = 客户批注时缺少依据",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "dialogLevel": {
+            "type": "enum",
+            "default": "达意",
+            "enum": [
+              "达意",
+              "打磨"
+            ],
+            "desc": "分镜里台词的打磨程度",
+            "effect": "改成打磨 = 与成稿阶段重复劳动",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          }
+        },
+        "sources": {
+          "depth": "generic",
+          "strictness": "generic",
+          "maxChars": "generic",
+          "model_tier": "generic",
+          "shotsPerScene": "op",
+          "includeRationale": "op",
+          "dialogLevel": "op"
+        },
+        "unknownKeys": [],
+        "genericOnly": false
+      }
+    },
+    "intake": {
+      "boundary": false,
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": null
+    },
+    "gate-r5": {
+      "boundary": false,
+      "output": "内部/意见/多视角意见书-gate-r5.md",
+      "kit": "plot",
+      "op": "plot-redline",
+      "nodeConfig": {},
+      "toolOverride": null,
+      "resolved": {
+        "values": {
+          "depth": "标准",
+          "strictness": "标准",
+          "maxChars": 4000,
+          "model_tier": "high",
+          "angles": 4,
+          "harshness": "标准",
+          "allowInject": true,
+          "voice": "说人话"
+        },
+        "defs": {
+          "depth": {
+            "type": "enum",
+            "enum": [
+              "浅",
+              "标准",
+              "深"
+            ],
+            "default": "标准",
+            "desc": "本步投入深度：浅=先出可用版本，标准=默认，深=加采样与自检",
+            "effect": "提高 = 更充分但更慢更贵；连续无打回时可降档"
+          },
+          "strictness": {
+            "type": "enum",
+            "enum": [
+              "宽松",
+              "标准",
+              "严格"
+            ],
+            "default": "标准",
+            "desc": "判定尺度：本步自检与断言执行时把握的宽严",
+            "effect": "提高 = 早暴露问题（打回率↑、返工↓）；打回率已高时不宜再提"
+          },
+          "maxChars": {
+            "type": "number",
+            "min": 200,
+            "max": 40000,
+            "default": 4000,
+            "unit": "字",
+            "desc": "本步产物正文的篇幅上限（超出即视为未收敛）",
+            "effect": "提高 = 允许更长产物；成本随字数上升"
+          },
+          "model_tier": {
+            "type": "enum",
+            "enum": [
+              "high",
+              "lite"
+            ],
+            "default": "high",
+            "desc": "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
+            "effect": "文学与结构判断节点必须 high；机械整理类可降 lite"
+          },
+          "angles": {
+            "type": "number",
+            "default": 4,
+            "min": 0,
+            "desc": "代入的评审视角数（读者/编剧/甲方…）",
+            "effect": "提高 = 更全面、成本线性上升",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "harshness": {
+            "type": "enum",
+            "default": "标准",
+            "enum": [
+              "温和",
+              "标准",
+              "苛刻"
+            ],
+            "desc": "苛刻程度",
+            "effect": "提高 = 更多打回更少漏网；过高会空转",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "allowInject": {
+            "type": "boolean",
+            "default": true,
+            "desc": "框架单薄时是否允许提交流程重构建议",
+            "effect": "关掉 = 只报问题不给方案",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          },
+          "voice": {
+            "type": "enum",
+            "default": "说人话",
+            "enum": [
+              "说人话",
+              "念指标"
+            ],
+            "desc": "意见书的语体",
+            "effect": "念指标 = 读者读不懂，说人话 = 可执行",
+            "tunable_by": [
+              "user",
+              "optimizer"
+            ]
+          }
+        },
+        "sources": {
+          "depth": "generic",
+          "strictness": "generic",
+          "maxChars": "generic",
+          "model_tier": "generic",
+          "angles": "op",
+          "harshness": "op",
+          "allowInject": "op",
+          "voice": "op"
+        },
+        "unknownKeys": [],
+        "genericOnly": false
+      }
+    }
+  }
+}

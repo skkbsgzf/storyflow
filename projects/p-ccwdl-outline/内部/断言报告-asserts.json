@@ -1,0 +1,40 @@
+{
+  "mode": "aesthetic",
+  "node": "asserts",
+  "minitool": "check_aesthetic_asserts",
+  "checked": [
+    "内部/稿本/分集大纲.md"
+  ],
+  "results": [
+    {
+      "name": "exists",
+      "status": "pass",
+      "detail": "2268 chars"
+    },
+    {
+      "name": "no-debris",
+      "status": "pass"
+    },
+    {
+      "name": "AE-SKIP-NON-BEAT",
+      "status": "warn",
+      "detail": "非拍级产物，美学断言不适用（转红方视角层）"
+    }
+  ],
+  "declared": [],
+  "contract": [
+    {
+      "rel": "内部/稿本/分集大纲.md",
+      "declared": 0,
+      "checked": [],
+      "unverified": []
+    }
+  ],
+  "summary": {
+    "declared": 0,
+    "machineChecked": 0,
+    "unverified": 0,
+    "block": 0
+  },
+  "note": "check_aesthetic_asserts：引擎机器可查维度全量 + 节点声明断言逐条裁（0 条声明，0 条无机器校验器→归评审/红方剖面，未执行且不冒充通过）"
+}

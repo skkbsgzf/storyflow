@@ -1,0 +1,170 @@
+{
+  "snapshots": {
+    "tropes": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T17:09:25.538Z",
+        "note": "submit r1·梗卡.md",
+        "files": {
+          "内部/稿本/梗卡.md": {
+            "hash": "6f3c4f424655",
+            "path": "snapshots/tropes/r1/内部/稿本/梗卡.md"
+          }
+        }
+      }
+    ],
+    "analysis": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T17:10:17.741Z",
+        "note": "submit r1·01-选题报告.md",
+        "files": {
+          "对外交付/01-选题报告.md": {
+            "hash": "2ef92cc8a5fd",
+            "path": "snapshots/analysis/r1/对外交付/01-选题报告.md"
+          }
+        }
+      }
+    ],
+    "gate-r1": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T17:11:02.443Z",
+        "note": "submit r1·多视角意见书-gate-r1.md",
+        "files": {
+          "内部/意见/多视角意见书-gate-r1.md": {
+            "hash": "dc301ab69aa4",
+            "path": "snapshots/gate-r1/r1/内部/意见/多视角意见书-gate-r1.md"
+          }
+        }
+      }
+    ],
+    "bible": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T17:13:00.099Z",
+        "note": "submit r1·世界观圣经.md",
+        "files": {
+          "世界书/世界观圣经.md": {
+            "hash": "fcaf79c9420d",
+            "path": "snapshots/bible/r1/世界书/世界观圣经.md"
+          }
+        }
+      }
+    ],
+    "red-s2": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T17:13:51.589Z",
+        "note": "submit r1·多视角意见书-red-s2.md",
+        "files": {
+          "内部/意见/多视角意见书-red-s2.md": {
+            "hash": "3e9652bbb48b",
+            "path": "snapshots/red-s2/r1/内部/意见/多视角意见书-red-s2.md"
+          }
+        }
+      }
+    ],
+    "outline3": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T17:14:44.306Z",
+        "note": "submit r1·单元剧大纲.md",
+        "files": {
+          "内部/稿本/单元剧大纲.md": {
+            "hash": "3c3a83c69081",
+            "path": "snapshots/outline3/r1/内部/稿本/单元剧大纲.md"
+          }
+        }
+      }
+    ],
+    "red-s3": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T17:15:11.050Z",
+        "note": "submit r1·多视角意见书-red-s3.md",
+        "files": {
+          "内部/意见/多视角意见书-red-s3.md": {
+            "hash": "3e9b7d68e459",
+            "path": "snapshots/red-s3/r1/内部/意见/多视角意见书-red-s3.md"
+          }
+        }
+      }
+    ],
+    "chapter": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T17:20:29.029Z",
+        "note": "submit r1·第1章.md",
+        "files": {
+          "章节正文/第1章.md": {
+            "hash": "8e378d4717b4",
+            "path": "snapshots/chapter/r1/章节正文/第1章.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-17T17:22:32.435Z",
+        "note": "submit r1·第2章.md",
+        "files": {
+          "章节正文/第2章.md": {
+            "hash": "dd74e5b81bd4",
+            "path": "snapshots/chapter/r2/章节正文/第2章.md"
+          }
+        }
+      },
+      {
+        "round": 3,
+        "ts": "2026-09-17T17:23:45.282Z",
+        "note": "submit r1·第3章.md",
+        "files": {
+          "章节正文/第3章.md": {
+            "hash": "b45ffbbc9fcd",
+            "path": "snapshots/chapter/r3/章节正文/第3章.md"
+          }
+        }
+      }
+    ],
+    "polish": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T17:27:02.274Z",
+        "note": "submit r1·02-前三章终稿.md",
+        "files": {
+          "对外交付/02-前三章终稿.md": {
+            "hash": "4b42464c5a10",
+            "path": "snapshots/polish/r1/对外交付/02-前三章终稿.md"
+          }
+        }
+      }
+    ],
+    "src": [
+      {
+        "round": 1,
+        "ts": "2026-09-18 01:31",
+        "note": "",
+        "files": {
+          "选题素材.md": {
+            "hash": "5a5232e17ac3",
+            "path": "snapshots/src/r1/选题素材.md"
+          }
+        }
+      }
+    ],
+    "gate-final": [
+      {
+        "round": 1,
+        "ts": "2026-09-17T17:32:24.001Z",
+        "note": "submit r1·多视角意见书-gate-final.md",
+        "files": {
+          "内部/意见/多视角意见书-gate-final.md": {
+            "hash": "c72a4c29d634",
+            "path": "snapshots/gate-final/r1/内部/意见/多视角意见书-gate-final.md"
+          }
+        }
+      }
+    ]
+  },
+  "inputs": {}
+}

@@ -1,0 +1,536 @@
+{
+  "artifacts": [
+    {
+      "path": "内部/kb-market.md",
+      "node": "market",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "4d11e6c973bb",
+      "ts": "2026-09-17T16:30:08.512Z"
+    },
+    {
+      "path": "选题素材.md",
+      "node": "src",
+      "producer": "kernel:novel-txt",
+      "inputs": {},
+      "round": 1,
+      "sha1": "5641d8097e3f",
+      "ts": "2026-09-17T16:30:08.515Z"
+    },
+    {
+      "path": "内部/稿本/梗卡.md",
+      "node": "tropes",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "5641d8097e3f"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1833 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        }
+      ],
+      "sha1": "92150521a901",
+      "ts": "2026-09-17T16:31:47.716Z"
+    },
+    {
+      "path": "内部/断言报告-combo.json",
+      "node": "combo",
+      "producer": "minitool:check_trope_combo",
+      "inputs": {
+        "内部/稿本/梗卡.md": "92150521a901"
+      },
+      "round": 1,
+      "sha1": "8978be26c7e4",
+      "ts": "2026-09-17T16:31:47.733Z"
+    },
+    {
+      "path": "内部/kb-benchmark.md",
+      "node": "benchmark",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "86d2c6efcc01",
+      "ts": "2026-09-17T16:31:47.738Z"
+    },
+    {
+      "path": "内部/稿本/热点素材.md",
+      "node": "zeitgeist",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "5641d8097e3f"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1058 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        }
+      ],
+      "sha1": "a94655ff88ea",
+      "ts": "2026-09-17T16:33:29.093Z"
+    },
+    {
+      "path": "对外交付/01-选题报告.md",
+      "node": "analysis",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "选题素材.md": "5641d8097e3f",
+        "内部/稿本/梗卡.md": "92150521a901",
+        "内部/稿本/热点素材.md": "a94655ff88ea"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2068 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        },
+        {
+          "name": "AE-SKIP-NON-BEAT",
+          "status": "warn",
+          "detail": "非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "cd84e534edfb",
+      "ts": "2026-09-17T16:34:30.578Z"
+    },
+    {
+      "path": "内部/意见/多视角意见书-gate-r1.md",
+      "node": "gate-r1",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "对外交付/01-选题报告.md": "cd84e534edfb"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1129 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        }
+      ],
+      "sha1": "3a75a08f1615",
+      "ts": "2026-09-17T16:35:09.940Z"
+    },
+    {
+      "path": "内部/稿本/选题方案-爽版-基线.md",
+      "node": "baseline",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "对外交付/01-选题报告.md": "cd84e534edfb"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "964 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        }
+      ],
+      "sha1": "cad6beeb98d3",
+      "ts": "2026-09-17T16:36:39.754Z"
+    },
+    {
+      "path": "对外交付/02-大纲.md",
+      "node": "structure",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "对外交付/01-选题报告.md": "cd84e534edfb"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2269 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        },
+        {
+          "name": "AE-SKIP-NON-BEAT",
+          "status": "warn",
+          "detail": "非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "2b35f3931b07",
+      "ts": "2026-09-17T16:40:35.957Z"
+    },
+    {
+      "path": "内部/意见/多视角意见书-gate-r2.md",
+      "node": "gate-r2",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "对外交付/02-大纲.md": "2b35f3931b07"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1055 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        }
+      ],
+      "sha1": "2af2f14f4c09",
+      "ts": "2026-09-17T16:41:22.048Z"
+    },
+    {
+      "path": "内部/稿本/选题方案.md",
+      "node": "proposal",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "对外交付/02-大纲.md": "2b35f3931b07"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1753 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        }
+      ],
+      "sha1": "3946aa888429",
+      "ts": "2026-09-17T16:42:09.262Z"
+    },
+    {
+      "path": "内部/意见/多视角意见书-gate-r3.md",
+      "node": "gate-r3",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/稿本/选题方案.md": "3946aa888429",
+        "内部/稿本/选题方案-爽版-基线.md": "cad6beeb98d3"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "860 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        }
+      ],
+      "sha1": "1b5adfde2afe",
+      "ts": "2026-09-17T16:42:38.607Z"
+    },
+    {
+      "path": "对外交付/03-小纲.docx",
+      "node": "miniguided",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/稿本/选题方案.md": "3946aa888429",
+        "内部/稿本/选题方案-爽版-基线.md": "cad6beeb98d3"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "41012 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "beat-count",
+          "status": "pass",
+          "detail": "0 beats"
+        },
+        {
+          "name": "ep-title",
+          "status": "pass"
+        },
+        {
+          "name": "AE-SKIP-NON-BEAT",
+          "status": "warn",
+          "detail": "非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "a3162e4eabd3",
+      "ts": "2026-09-17T16:46:38.323Z"
+    },
+    {
+      "path": "内部/意见/多视角意见书-gate-r4.md",
+      "node": "gate-r4",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "对外交付/03-小纲.docx": "a3162e4eabd3"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "728 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        }
+      ],
+      "sha1": "ad835e4068e3",
+      "ts": "2026-09-17T16:47:02.987Z"
+    },
+    {
+      "path": "对外交付/04-成品剧本试稿.md",
+      "node": "first3",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "对外交付/03-小纲.docx": "a3162e4eabd3"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "3711 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        },
+        {
+          "name": "AE-SCRIPT-FRONT",
+          "status": "pass",
+          "detail": "前置件齐备（背景/主角/剧情概括）"
+        },
+        {
+          "name": "AE-SCRIPT-PURITY",
+          "status": "pass",
+          "detail": "无过程标注泄漏"
+        },
+        {
+          "name": "AE-SCRIPT-BRACKET",
+          "status": "pass",
+          "detail": "【】标注 28 处（场景/动作）"
+        },
+        {
+          "name": "AE-VIS-EMPTY",
+          "status": "pass",
+          "detail": "画面信息合格（无心理/抒情标注）"
+        },
+        {
+          "name": "AE-OUTPUT-PURITY",
+          "status": "pass",
+          "detail": "无执行元数据（标记台账共享）"
+        },
+        {
+          "name": "AE-CONT-KNOW",
+          "status": "pass",
+          "detail": "切片未见越权专名（引号词条×台账比对；语义级越权归红方）"
+        },
+        {
+          "name": "AE-CONT-ITEM",
+          "status": "pass",
+          "detail": "数字事实切片一致（5 条台账事实比对；语义级矛盾归红方）"
+        },
+        {
+          "name": "AE-CONT-FORESHADOW",
+          "status": "warn",
+          "detail": "非章节产物，逾期切片不适用"
+        }
+      ],
+      "sha1": "abbbd7a2e257",
+      "ts": "2026-09-17T16:54:04.072Z"
+    },
+    {
+      "path": "对外交付/03-剧本试稿.md",
+      "node": "polish",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "对外交付/04-成品剧本试稿.md": "abbbd7a2e257"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "3720 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        },
+        {
+          "name": "AE-SCRIPT-FRONT",
+          "status": "pass",
+          "detail": "前置件齐备（背景/主角/剧情概括）"
+        },
+        {
+          "name": "AE-SCRIPT-PURITY",
+          "status": "pass",
+          "detail": "无过程标注泄漏"
+        },
+        {
+          "name": "AE-SCRIPT-BRACKET",
+          "status": "pass",
+          "detail": "【】标注 28 处（场景/动作）"
+        },
+        {
+          "name": "AE-VIS-EMPTY",
+          "status": "pass",
+          "detail": "画面信息合格（无心理/抒情标注）"
+        },
+        {
+          "name": "AE-OUTPUT-PURITY",
+          "status": "pass",
+          "detail": "无执行元数据（标记台账共享）"
+        },
+        {
+          "name": "AE-CONT-KNOW",
+          "status": "pass",
+          "detail": "切片未见越权专名（引号词条×台账比对；语义级越权归红方）"
+        },
+        {
+          "name": "AE-CONT-ITEM",
+          "status": "pass",
+          "detail": "数字事实切片一致（5 条台账事实比对；语义级矛盾归红方）"
+        },
+        {
+          "name": "AE-CONT-FORESHADOW",
+          "status": "warn",
+          "detail": "非章节产物，逾期切片不适用"
+        }
+      ],
+      "sha1": "0f306b9da5ce",
+      "ts": "2026-09-17T16:56:04.607Z"
+    },
+    {
+      "path": "内部/意见/多视角意见书-gate-r5.md",
+      "node": "gate-r5",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "对外交付/04-成品剧本试稿.md": "abbbd7a2e257",
+        "对外交付/03-剧本试稿.md": "0f306b9da5ce"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "793 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "7d667fdeb03f",
+      "ts": "2026-09-17T16:56:27.629Z"
+    },
+    {
+      "path": "对外交付/选题交付页.html",
+      "node": "delivery",
+      "producer": "minitool:render_html",
+      "inputs": {},
+      "delivery": true,
+      "round": 1,
+      "sha1": "5a652c1fc5ec",
+      "ts": "2026-09-17T16:56:27.648Z"
+    }
+  ]
+}

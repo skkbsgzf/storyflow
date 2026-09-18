@@ -11,36 +11,7 @@
     {
       "name": "exists",
       "status": "pass",
-      "detail": "2194 chars"
-    },
-    {
-      "name": "no-debris",
-      "status": "pass"
-    },
-    {
-      "name": "AE-PROSE-TRIPLET",
-      "status": "pass",
-      "detail": "无三连排比"
-    },
-    {
-      "name": "AE-PROSE-NOTBUT",
-      "status": "pass",
-      "detail": "「不是A(而)是B」2 处（配额 2）"
-    },
-    {
-      "name": "AE-PROSE-RHYTHM",
-      "status": "pass",
-      "detail": "突然/仿佛/似乎 0 处（≤2）"
-    },
-    {
-      "name": "AE-PROSE-SLOP",
-      "status": "pass",
-      "detail": "无 AI 高频词"
-    },
-    {
-      "name": "exists",
-      "status": "pass",
-      "detail": "1769 chars"
+      "detail": "2609 chars"
     },
     {
       "name": "no-debris",
@@ -69,7 +40,36 @@
     {
       "name": "exists",
       "status": "pass",
-      "detail": "1870 chars"
+      "detail": "2114 chars"
+    },
+    {
+      "name": "no-debris",
+      "status": "pass"
+    },
+    {
+      "name": "AE-PROSE-TRIPLET",
+      "status": "pass",
+      "detail": "无三连排比"
+    },
+    {
+      "name": "AE-PROSE-NOTBUT",
+      "status": "pass",
+      "detail": "「不是A(而)是B」0 处（配额 2）"
+    },
+    {
+      "name": "AE-PROSE-RHYTHM",
+      "status": "pass",
+      "detail": "突然/仿佛/似乎 0 处（≤2）"
+    },
+    {
+      "name": "AE-PROSE-SLOP",
+      "status": "pass",
+      "detail": "无 AI 高频词"
+    },
+    {
+      "name": "exists",
+      "status": "pass",
+      "detail": "2397 chars"
     },
     {
       "name": "no-debris",
@@ -83,7 +83,7 @@
     {
       "name": "AE-PROSE-NOTBUT",
       "status": "pass",
-      "detail": "「不是A(而)是B」2 处（配额 2）"
+      "detail": "「不是A(而)是B」1 处（配额 2）"
     },
     {
       "name": "AE-PROSE-RHYTHM",

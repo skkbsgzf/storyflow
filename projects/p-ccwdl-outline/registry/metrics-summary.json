@@ -1,0 +1,234 @@
+{
+  "format": "metrics-summary@1",
+  "runId": "run-mu5rwaff-yyec1h",
+  "events": 6,
+  "byNode": {
+    "constraints": {
+      "nodeId": "constraints",
+      "runs": 0,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 0,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 0,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [
+        "pass"
+      ]
+    },
+    "choreo": {
+      "nodeId": "choreo",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 8,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "plot",
+      "op": "plot-choreographer"
+    },
+    "asserts": {
+      "nodeId": "asserts",
+      "runs": 0,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 0,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 0,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [
+        "pass"
+      ]
+    },
+    "redline": {
+      "nodeId": "redline",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 3,
+      "assertBlock": 1,
+      "retries": 1,
+      "ctxOffered": 7,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 7,
+      "efficiency": 0,
+      "verdicts": [
+        "rejected"
+      ],
+      "kit": "plot",
+      "op": "plot-redline"
+    }
+  },
+  "byTool": {
+    "plot.plot-choreographer": {
+      "nodeId": "plot.plot-choreographer",
+      "kit": "plot",
+      "op": "plot-choreographer",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 8,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "choreo"
+      ]
+    },
+    "plot.plot-redline": {
+      "nodeId": "plot.plot-redline",
+      "kit": "plot",
+      "op": "plot-redline",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 3,
+      "assertBlock": 1,
+      "retries": 1,
+      "ctxOffered": 7,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 7,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "redline"
+      ]
+    }
+  },
+  "knowledge": [
+    {
+      "id": "kb/aesthetic/conflict-escalation",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/emotion-curve",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/ending",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/pacing-density",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/reversal",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/scene-value",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/market/constraints",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "内部/kb-constraints.md",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/ai-trace",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/constitution",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/perspective-review",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/platform-compliance",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/redline-scoring",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/unreasonable-highlight",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "内部/断言报告-asserts.json",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    }
+  ],
+  "gates": [],
+  "window": {
+    "from": "2026-09-17T16:57:47.234Z",
+    "to": "2026-09-17T17:00:37.712Z"
+  }
+}

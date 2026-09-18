@@ -2,8 +2,8 @@
   "runId": "run-mu3kjmhg-coltmb",
   "projectId": "p-fq-001",
   "flowId": "novel-fanqie",
-  "flowVersion": "2.2.1",
-  "flowHash": "02ea4dc8",
+  "flowVersion": "2.4.0",
+  "flowHash": "39cb7960",
   "status": "suspended",
   "plan": {
     "order": [
@@ -100,34 +100,43 @@
     },
     "audit": {
       "status": "done",
-      "round": 5,
+      "round": 18,
       "stale": false,
-      "lastArtifact": "内部/断言报告-audit.json"
+      "lastArtifact": "内部/断言报告-audit.json",
+      "committed": []
     },
     "polish": {
       "status": "done",
-      "round": 4,
+      "round": 25,
       "lastArtifact": "对外交付/02-前三章终稿.md",
-      "stale": false
+      "stale": false,
+      "committed": []
     },
     "gate-final": {
       "status": "awaiting",
-      "round": 1,
-      "stale": true
+      "round": 10,
+      "stale": true,
+      "committed": [],
+      "verdict": "send-back"
     },
     "chapter": {
       "status": "done",
-      "round": 1,
+      "round": 15,
       "lastArtifact": "章节正文/第3章.md",
-      "stale": false
+      "stale": false,
+      "committed": [
+        "章节正文/第1章.md",
+        "章节正文/第2章.md",
+        "章节正文/第3章.md"
+      ]
     }
   },
   "gate": {
     "verdict": "awaiting",
     "node": "gate-final",
-    "round": 1,
+    "round": 10,
     "token": "approval:p-fq-001:run-mu3kjmhg-coltmb:gate-final",
-    "at": "2026-09-16T20:51:52.288Z",
+    "at": "2026-09-17T03:21:20.384Z",
     "note": "终稿验收（用户读三章）"
   },
   "inputs": {
@@ -152,5 +161,5 @@
     "S4": "semi"
   },
   "focus": "gate-final",
-  "lastRejectReason": "用户流程重构指令：网文≠编剧——网文是多故事集合体（世界观串联的单元剧）。选题阶段发散性强（好梗集合：大模型/思维链/harness 素材爆炸点细化+调研融合即可），餐馆抹黑只是单元剧候选绝非主线（分清主次）；暗线先行：先搞世界观（力量体系/矛盾/力量来源，wiki 化 RAG 串联设定），大纲轻量化，成稿重心=五问（人设/冲突/梗/节目效果/AI味）。flow 已升 v2.0.0（episodic-webnovel 结构宪法 + world-forge + episodic-outline）。根因=S1 选题契约与产物结构"
+  "lastRejectReason": "用户判词：三章都不行，都需要改——细节不够、描写没有代入感、不清晰。按根因退 S4 入口（chapter）重做"
 }

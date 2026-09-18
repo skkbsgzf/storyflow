@@ -1,0 +1,897 @@
+{
+  "format": "metrics-summary@1",
+  "runId": "run-mu5qwqjv-fn4mlx",
+  "events": 40,
+  "byNode": {
+    "market": {
+      "nodeId": "market",
+      "runs": 0,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 0,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 0,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [
+        "pass"
+      ]
+    },
+    "tropes": {
+      "nodeId": "tropes",
+      "runs": 1,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 5,
+      "assertBlock": 1,
+      "retries": 1,
+      "ctxOffered": 8,
+      "ctxUsed": 1,
+      "hitRate": 0.125,
+      "consumedBy": 1,
+      "cost": 7,
+      "efficiency": 0.14285714285714285,
+      "verdicts": [
+        "rejected"
+      ],
+      "kit": "search",
+      "op": "find-trope"
+    },
+    "zeitgeist": {
+      "nodeId": "zeitgeist",
+      "runs": 1,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 5,
+      "assertBlock": 1,
+      "retries": 1,
+      "ctxOffered": 1,
+      "ctxUsed": 1,
+      "hitRate": 1,
+      "consumedBy": 1,
+      "cost": 7,
+      "efficiency": 0.14285714285714285,
+      "verdicts": [
+        "rejected"
+      ],
+      "kit": "search",
+      "op": "topic-zeitgeist"
+    },
+    "src": {
+      "nodeId": "src",
+      "runs": 0,
+      "submits": 0,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 0,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 0,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 3,
+      "cost": 0.000001,
+      "efficiency": 3000000,
+      "verdicts": []
+    },
+    "combo": {
+      "nodeId": "combo",
+      "runs": 0,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 0,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 0,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [
+        "pass"
+      ]
+    },
+    "benchmark": {
+      "nodeId": "benchmark",
+      "runs": 0,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 0,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 0,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [
+        "pass"
+      ]
+    },
+    "analysis": {
+      "nodeId": "analysis",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 3,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 12,
+      "ctxUsed": 3,
+      "hitRate": 0.25,
+      "consumedBy": 3,
+      "cost": 0.000001,
+      "efficiency": 3000000,
+      "verdicts": [],
+      "kit": "search",
+      "op": "topic-analysis-report"
+    },
+    "gate-r1": {
+      "nodeId": "gate-r1",
+      "runs": 1,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 3,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 7,
+      "ctxUsed": 1,
+      "hitRate": 0.14285714285714285,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [
+        "pass"
+      ],
+      "kit": "plot",
+      "op": "plot-redline"
+    },
+    "baseline": {
+      "nodeId": "baseline",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 3,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 7,
+      "ctxUsed": 1,
+      "hitRate": 0.14285714285714285,
+      "consumedBy": 1,
+      "cost": 0.000001,
+      "efficiency": 1000000,
+      "verdicts": [],
+      "kit": "search",
+      "op": "topic-proposal"
+    },
+    "gate-r3": {
+      "nodeId": "gate-r3",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 3,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 15,
+      "ctxUsed": 2,
+      "hitRate": 0.13333333333333333,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [
+        "pass"
+      ],
+      "kit": "plot",
+      "op": "plot-redline"
+    },
+    "structure": {
+      "nodeId": "structure",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 3,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 6,
+      "ctxUsed": 1,
+      "hitRate": 0.16666666666666666,
+      "consumedBy": 2,
+      "cost": 0.000001,
+      "efficiency": 2000000,
+      "verdicts": [],
+      "kit": "plot",
+      "op": "structure-design"
+    },
+    "gate-r2": {
+      "nodeId": "gate-r2",
+      "runs": 1,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 3,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 7,
+      "ctxUsed": 1,
+      "hitRate": 0.14285714285714285,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [
+        "pass"
+      ],
+      "kit": "plot",
+      "op": "plot-redline"
+    },
+    "proposal": {
+      "nodeId": "proposal",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 3,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 7,
+      "ctxUsed": 1,
+      "hitRate": 0.14285714285714285,
+      "consumedBy": 1,
+      "cost": 0.000001,
+      "efficiency": 1000000,
+      "verdicts": [],
+      "kit": "search",
+      "op": "topic-proposal"
+    },
+    "miniguided": {
+      "nodeId": "miniguided",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 8,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 2,
+      "cost": 0.000001,
+      "efficiency": 2000000,
+      "verdicts": [],
+      "kit": "plot",
+      "op": "scene-breakdown"
+    },
+    "gate-r4": {
+      "nodeId": "gate-r4",
+      "runs": 1,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 3,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 7,
+      "ctxUsed": 1,
+      "hitRate": 0.14285714285714285,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [
+        "pass"
+      ],
+      "kit": "plot",
+      "op": "plot-redline"
+    },
+    "first3": {
+      "nodeId": "first3",
+      "runs": 1,
+      "submits": 3,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 28,
+      "assertBlock": 2,
+      "retries": 2,
+      "ctxOffered": 7,
+      "ctxUsed": 1,
+      "hitRate": 0.14285714285714285,
+      "consumedBy": 1,
+      "cost": 14,
+      "efficiency": 0.07142857142857142,
+      "verdicts": [
+        "rejected",
+        "rejected"
+      ],
+      "kit": "prose",
+      "op": "script-final"
+    },
+    "polish": {
+      "nodeId": "polish",
+      "runs": 1,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 21,
+      "assertBlock": 1,
+      "retries": 1,
+      "ctxOffered": 5,
+      "ctxUsed": 1,
+      "hitRate": 0.2,
+      "consumedBy": 0,
+      "cost": 7,
+      "efficiency": 0,
+      "verdicts": [
+        "rejected"
+      ],
+      "kit": "prose",
+      "op": "dialogue-polish"
+    },
+    "gate-r5": {
+      "nodeId": "gate-r5",
+      "runs": 1,
+      "submits": 0,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 0,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 8,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "plot",
+      "op": "plot-redline"
+    }
+  },
+  "byTool": {
+    "search.find-trope": {
+      "nodeId": "search.find-trope",
+      "kit": "search",
+      "op": "find-trope",
+      "runs": 1,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 5,
+      "assertBlock": 1,
+      "retries": 1,
+      "ctxOffered": 8,
+      "ctxUsed": 1,
+      "hitRate": 0.125,
+      "consumedBy": 1,
+      "cost": 7,
+      "efficiency": 0.14285714285714285,
+      "verdicts": [],
+      "nodes": [
+        "tropes"
+      ]
+    },
+    "search.topic-zeitgeist": {
+      "nodeId": "search.topic-zeitgeist",
+      "kit": "search",
+      "op": "topic-zeitgeist",
+      "runs": 1,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 5,
+      "assertBlock": 1,
+      "retries": 1,
+      "ctxOffered": 1,
+      "ctxUsed": 1,
+      "hitRate": 1,
+      "consumedBy": 1,
+      "cost": 7,
+      "efficiency": 0.14285714285714285,
+      "verdicts": [],
+      "nodes": [
+        "zeitgeist"
+      ]
+    },
+    "search.topic-analysis-report": {
+      "nodeId": "search.topic-analysis-report",
+      "kit": "search",
+      "op": "topic-analysis-report",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 3,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 12,
+      "ctxUsed": 3,
+      "hitRate": 0.25,
+      "consumedBy": 3,
+      "cost": 0.000001,
+      "efficiency": 3000000,
+      "verdicts": [],
+      "nodes": [
+        "analysis"
+      ]
+    },
+    "plot.plot-redline": {
+      "nodeId": "plot.plot-redline",
+      "kit": "plot",
+      "op": "plot-redline",
+      "runs": 6,
+      "submits": 8,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 12,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 44,
+      "ctxUsed": 5,
+      "hitRate": 0.11363636363636363,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "gate-r1",
+        "gate-r3",
+        "gate-r2",
+        "gate-r4",
+        "gate-r5"
+      ]
+    },
+    "search.topic-proposal": {
+      "nodeId": "search.topic-proposal",
+      "kit": "search",
+      "op": "topic-proposal",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 6,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 14,
+      "ctxUsed": 2,
+      "hitRate": 0.14285714285714285,
+      "consumedBy": 2,
+      "cost": 0.000001,
+      "efficiency": 2000000,
+      "verdicts": [],
+      "nodes": [
+        "baseline",
+        "proposal"
+      ]
+    },
+    "plot.structure-design": {
+      "nodeId": "plot.structure-design",
+      "kit": "plot",
+      "op": "structure-design",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 3,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 6,
+      "ctxUsed": 1,
+      "hitRate": 0.16666666666666666,
+      "consumedBy": 2,
+      "cost": 0.000001,
+      "efficiency": 2000000,
+      "verdicts": [],
+      "nodes": [
+        "structure"
+      ]
+    },
+    "plot.scene-breakdown": {
+      "nodeId": "plot.scene-breakdown",
+      "kit": "plot",
+      "op": "scene-breakdown",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 8,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 2,
+      "cost": 0.000001,
+      "efficiency": 2000000,
+      "verdicts": [],
+      "nodes": [
+        "miniguided"
+      ]
+    },
+    "prose.script-final": {
+      "nodeId": "prose.script-final",
+      "kit": "prose",
+      "op": "script-final",
+      "runs": 1,
+      "submits": 3,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 28,
+      "assertBlock": 2,
+      "retries": 2,
+      "ctxOffered": 7,
+      "ctxUsed": 1,
+      "hitRate": 0.14285714285714285,
+      "consumedBy": 1,
+      "cost": 14,
+      "efficiency": 0.07142857142857142,
+      "verdicts": [],
+      "nodes": [
+        "first3"
+      ]
+    },
+    "prose.dialogue-polish": {
+      "nodeId": "prose.dialogue-polish",
+      "kit": "prose",
+      "op": "dialogue-polish",
+      "runs": 1,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 21,
+      "assertBlock": 1,
+      "retries": 1,
+      "ctxOffered": 5,
+      "ctxUsed": 1,
+      "hitRate": 0.2,
+      "consumedBy": 0,
+      "cost": 7,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "polish"
+      ]
+    }
+  },
+  "knowledge": [
+    {
+      "id": "kb/trope/chongsheng-fuchou",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/trope/dalian-nuezha",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/trope/liufang-zhongtian",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/trope/majia-diaoma",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/trope/na-billionaire",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/trope/na-fantasy",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "内部/kb-market.md",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/market/snapshot",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/market/structure",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/trope/*",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/oversight",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/market/constraints",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/market/internet-feel-formulas",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/market/market-structure",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/market/meme-rules",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/market/setting-rules",
+      "offered": 3,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "内部/kb-benchmark.md",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "内部/断言报告-combo.json",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/market/*",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/structure/episodic-webnovel",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/ai-trace",
+      "offered": 16,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/constitution",
+      "offered": 12,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/perspective-review",
+      "offered": 10,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/platform-compliance",
+      "offered": 10,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/redline-scoring",
+      "offered": 10,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/unreasonable-highlight",
+      "offered": 10,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/assertions.json",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/character",
+      "offered": 8,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/conflict-escalation",
+      "offered": 4,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/dialogue",
+      "offered": 8,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/structure/catalog",
+      "offered": 6,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/*",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/benchmark/*",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/pacing-density",
+      "offered": 6,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/reversal",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/hook-3s",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/scene-value",
+      "offered": 4,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/method/longform-engineering",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/naturalness-zh",
+      "offered": 4,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "对外交付/03-剧本试稿.md",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "内部/稿本/选题方案-爽版-基线.md",
+      "offered": 5,
+      "used": 1,
+      "hitRate": 0.2
+    },
+    {
+      "id": "内部/稿本/选题方案.md",
+      "offered": 4,
+      "used": 1,
+      "hitRate": 0.25
+    },
+    {
+      "id": "对外交付/04-成品剧本试稿.md",
+      "offered": 3,
+      "used": 1,
+      "hitRate": 0.3333333333333333
+    },
+    {
+      "id": "选题素材.md",
+      "offered": 6,
+      "used": 3,
+      "hitRate": 0.5
+    },
+    {
+      "id": "内部/稿本/梗卡.md",
+      "offered": 2,
+      "used": 1,
+      "hitRate": 0.5
+    },
+    {
+      "id": "内部/稿本/热点素材.md",
+      "offered": 2,
+      "used": 1,
+      "hitRate": 0.5
+    },
+    {
+      "id": "对外交付/01-选题报告.md",
+      "offered": 6,
+      "used": 3,
+      "hitRate": 0.5
+    },
+    {
+      "id": "对外交付/02-大纲.md",
+      "offered": 4,
+      "used": 2,
+      "hitRate": 0.5
+    },
+    {
+      "id": "对外交付/03-小纲.docx",
+      "offered": 4,
+      "used": 2,
+      "hitRate": 0.5
+    }
+  ],
+  "gates": [],
+  "window": {
+    "from": "2026-09-17T16:30:08.513Z",
+    "to": "2026-09-17T16:56:04.621Z"
+  }
+}

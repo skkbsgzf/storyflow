@@ -1,0 +1,15 @@
+{
+  "format": "optimize@1",
+  "flowId": "novel-fanqie",
+  "at": "2026-09-17T14:07:36.305Z",
+  "policy": {
+    "kit_boundary": "always",
+    "gate_mode": "auto",
+    "adapt": "propose"
+  },
+  "metrics": {
+    "events": 0,
+    "window": {}
+  },
+  "proposals": []
+}

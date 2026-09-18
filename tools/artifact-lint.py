@@ -1,47 +1,51 @@
-"""artifact-lint · 过程交付件格式体检（规范 R4 §二/§三/§四）
+"""artifact-lint · 过程交付件格式体检（规范 R6 §五：模块分段布局）
 
-对象：projects/<id>/ 下的过程交付件 .md（内部/ · 对外交付/ · 章节正文/ · 世界书/）
-单一事实源：contracts/artifact-header.schema.json（头部字段）+ 本文件（目录准入/命名/污染）
+对象：projects/<id>/ 下的 .md 过程交付件。
+单一事实源：contracts/artifact-header.schema.json（R6 头部：八项必填）+ 本文件（目录准入/命名/污染）。
 
+R6 目录格局：
+  新区（R6 合法区）：输入/ · 世界书/ · NN-模块名/（01-选题、02-方案…）· 交付/
+  旧区（已退役，待搬迁）：根级散件 · 内部/ · 对外交付/ · 章节正文/
+  机器区（不检）：registry/ · snapshots/ · kit/ · assets/ · .git/
+
+判定规则（按头部代际分流，存量项目不受惊）：
+  R6 头部（有 module 无 class）  → 全字段严格校验（E）；且必须落在新区，旧区=目录违规（E）
+  R4 头部（有 class）           → 旧区=「待搬迁」warn；新区=「旧头待迁移」warn（不阻断批量转换窗口）
+  无头部                        → 「未迁移」warn（铁律 10：只列清单，不自动搬、不阻断）
 检查项（E=error 阻断，W=warning 提示）：
-  E1 头部存在且可解析（前 4 行内出现 ---）
-  E2 九项必填齐全：artifact/id/class/node/round/state/at/by/upstream；artifact 恒为 1
-  E3 class ↔ 目录互为逆函数（opinion|receipt|basis|draft|deliverable|world|input）
-  E4 命名不承载轮次：v\\d / 第N版 / -rN（-rN 仅在构成节点判别时允许，如 -gate-r1）
-  E5 正文两行规则：首行一级标题 + 紧接一行 > 摘要（≤80 字符）
-  E6 污染禁令：会话口吻 / 工具残留 / 版本叙述
-  E7 round 与 state.json nodes[].round 一致（有 state 时）
-  E8 根级只允许输入材料（kind:novel-txt 产物），其余 .md 一律目录违规
-  E9 upstream 元素形如 路径@sha1前12
-  W1 收据类（内部/收据/）应为覆盖式：同 (node, basename) 多轮并存 → 提示（历轮归 snapshots/）
-  W2 review 缺失（未过门的过程件应为 review: null，别默默省略）
+  E-HEAD   R6 头部缺失字段 / artifact≠1 / 多余键（additionalProperties:false）/ 占位符
+  E-FIELD  id / module / node / state / by / upstream / review 逐项对冻结契约校验
+  E-PLACE  R6 头部文件落在旧区；node 不得是连接件（<x>.link 不产 artifact）
+  E-NAME   文件名承载轮次（vN / 第N版 / -rN）——仅对带头部文件
+  E-BODY   正文两行规则（首行一级标题 + 紧接 > 摘要）· 污染禁令（会话口吻/工具残留/版本叙述）
+  W-MOVE   旧区文件待搬迁（对应 docs/项目目录搬迁清单-*.md，人批后另批执行）
+  W-LEGACY R4 头部待迁移（去 class/round/version，加 module）
+  W-IDDIR  id 首段与 module 不一致 / world.·input. 前缀与所在目录不符
+  W-RCPT   registry/receipts/ 同 (node, basename) 多份收据（应为覆盖式）
 用法：
   python tools/artifact-lint.py [projectId ...]     # 缺省扫描 projects/ 全部项目
-  python tools/artifact-lint.py --require-header    # 头部缺失也报 error（迁移完成后用于 CI 收口）
-退出码：有 error=1；--strict 让 warning 也失败
-
-存量项目策略（规范 §六）：既有项目不做盘上文件搬迁。—— 未带 artifact@1 头部的历史文件
-一律记 warn（"未迁移"），不阻断；一旦某文件带了头部，它就是"新格式"，按 E 严格校验。
+退出码：有 error=1；--strict 让 warning 也失败。
+红线：本工具只读；禁止自动搬迁存量文件（铁律 10），禁止补拍快照洗白红档。
 """
-import json, sys, re, glob
+import json, sys, re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 STRICT = "--strict" in sys.argv
-REQUIRE_HEADER = "--require-header" in sys.argv
 
-HEADER_REQUIRED = ("artifact", "id", "class", "node", "round", "state", "at", "by", "upstream")
-CLASS_DIRS = {
-    "opinion": ("内部/意见/",),
-    "receipt": ("内部/收据/",),
-    "basis": ("内部/依据/",),
-    "draft": ("内部/稿本/",),
-    "deliverable": ("对外交付/", "章节正文/"),
-    "world": ("世界书/",),
-    "input": (),  # 根级
-}
-HEADER_DIRS = ("内部/", "对外交付/", "章节正文/", "世界书/")
-MACHINE_DIRS = ("registry/", "snapshots/", "assets/", ".git/")
+HEADER_REQUIRED = ("artifact", "id", "module", "node", "state", "at", "by", "upstream")
+HEADER_KEYS = set(HEADER_REQUIRED) | {"review"}
+MACHINE_DIRS = ("registry/", "snapshots/", "kit/", "assets/", ".git/")
+NEW_ZONE = re.compile(r"^(输入/|世界书/|\d{2}-[^/]+/|交付/)")
+LEGACY_ZONE = re.compile(r"^(内部/|对外交付/|章节正文/)")
+ID_RE = re.compile(
+    r"^([a-z][a-z0-9-]*\.[a-z0-9-]+(\.[a-z0-9-]+)*|world\.[^.]+\.[^.]+|input\.[^.]+)$"
+)
+NODE_RE = re.compile(r"^[a-z][a-z0-9-]*\.[a-z][a-z0-9-]*(\.link)?$")
+MODULE_RE = re.compile(r"^[a-z][a-z0-9-]*$")
+BY_RE = re.compile(r"^(module/[a-z][a-z0-9-]*\.[a-z0-9-]+|core/[a-z0-9_]+|user)$")
+LINK_RE = re.compile(r"^[a-z][a-z0-9-]*\.link$")
+UPSTREAM_RE = re.compile(r"^(kb/[A-Za-z0-9_./-]+|[^@\s]+@[0-9a-f]{6,12})$")
 
 POLLUTION = (
     ("会话口吻", re.compile(r"^(思考[：:]|分析过程|让我|我先|用户说|用户要求|用户想要|我需要|首先我|接下来我|按照要求|根据要求)")),
@@ -116,31 +120,70 @@ def parse_header(text: str):
     return out
 
 
-def state_rounds(proj: Path):
-    try:
-        st = json.loads((proj / "state.json").read_text(encoding="utf-8"))
-        return {k: (v or {}).get("round") for k, v in (st.get("nodes") or {}).items()}
-    except Exception:
-        return {}
+def header_generation(head) -> str:
+    """头部代际：r6（带 module——R6 判别标记，混入的 class 等旧键由严格通道报多余键）/ r4 / none。"""
+    if not isinstance(head, dict):
+        return "none"
+    if "module" in head:
+        return "r6"
+    if "class" in head or "round" in head or "node" in head:
+        return "r4"
+    return "none"
 
 
-def project_inputs(proj: Path):
-    """根级输入材料白名单：state/flow 里 kind:novel-txt 节点的产物。"""
-    allow = set()
-    try:
-        st = json.loads((proj / "state.json").read_text(encoding="utf-8"))
-        fid = st.get("flowId")
-        if fid:
-            f = json.loads((ROOT / "flows" / fid / "flow.json").read_text(encoding="utf-8"))
-            for _, n in (f.get("graph") or {}).get("nodes", {}).items():
-                if n.get("kind") == "novel-txt" and n.get("output"):
-                    allow.add(str(n["output"]).replace("\\", "/"))
-    except Exception:
+def check_r6(head, tag):
+    """R6 头部逐项对 contracts/artifact-header.schema.json 校验。"""
+    errors = []
+    for k in HEADER_REQUIRED:
+        if k not in head:
+            errors.append(f"{tag} R6 头部缺字段 {k}（八项必填）")
+    if head.get("artifact") != 1:
+        errors.append(f"{tag} artifact 须为 1，实为 {head.get('artifact')!r}")
+    for k in head:
+        if k not in HEADER_KEYS:
+            errors.append(f"{tag} 头部多余键「{k}」——R6 已删 class/round/version（版本归 git+snapshots）")
+    if not ID_RE.match(str(head.get("id", ""))):
+        errors.append(f"{tag} id「{head.get('id')}」非法（<实例id>.<tool> | world.<类>.<名> | input.<名>）")
+    if not MODULE_RE.match(str(head.get("module", ""))):
+        errors.append(f"{tag} module「{head.get('module')}」非法（模块实例 id，如 m2）")
+    node = str(head.get("node") or "")
+    if not NODE_RE.match(node):
+        errors.append(f"{tag} node「{node}」非法（<实例id>.<tool>）")
+    elif node.endswith(".link"):
+        errors.append(f"{tag} node 不得是连接件（<x>.link 不产 artifact）")
+    if head.get("state") not in ("draft", "final"):
+        errors.append(f"{tag} state={head.get('state')!r} 非法（draft|final；旧 reviewed/superseded 由 snapshots+git 承担）")
+    if "<" in str(head.get("at", "")):
+        errors.append(f"{tag} at 仍是模板占位符「{head.get('at')}」——须填实际产出时间")
+    if head.get("by") and not BY_RE.match(str(head["by"])):
+        errors.append(f"{tag} by「{head.get('by')}」非法（module/<实例id>.<tool> | core/<minitool> | user）")
+    if not isinstance(head.get("upstream"), list):
+        errors.append(f"{tag} upstream 须为列表（无依赖写 []）")
+    else:
+        for u in head["upstream"]:
+            if not UPSTREAM_RE.match(str(u)):
+                errors.append(f"{tag} upstream 元素须形如 路径@sha1前12 或 知识卡 id（kb/…）：「{u}」")
+    rv = head.get("review", "missing")
+    if rv == "missing":
+        pass  # review 可省略（等于 null）；写了就必须合法
+    elif rv is None:
         pass
-    return allow
+    elif isinstance(rv, dict):
+        if not LINK_RE.match(str(rv.get("link", ""))):
+            errors.append(f"{tag} review.link「{rv.get('link')}」非法（<实例id>.link）")
+        if rv.get("verdict") not in ("pass", "reject"):
+            errors.append(f"{tag} review.verdict={rv.get('verdict')!r} 非法（R6 两值：pass|reject）")
+        if rv.get("reason") and len(str(rv["reason"])) > 80:
+            errors.append(f"{tag} review.reason 超长（≤40 字）")
+        for k in rv:
+            if k not in ("link", "verdict", "at", "by", "reason"):
+                errors.append(f"{tag} review 多余键「{k}」")
+    else:
+        errors.append(f"{tag} review 须为 null 或对象（link/verdict/at/by/reason），实为 {rv!r}")
+    return errors
 
 
-def lint_file(proj: Path, rel: str, rounds: dict, inputs: set):
+def lint_file(proj: Path, rel: str):
     errors, warnings = [], []
     rel = rel.replace("\\", "/")
     if any(rel.startswith(d) for d in MACHINE_DIRS):
@@ -148,135 +191,119 @@ def lint_file(proj: Path, rel: str, rounds: dict, inputs: set):
     if not rel.endswith(".md"):
         return errors, warnings
     abs_ = proj / rel
-    text = abs_.read_text(encoding="utf-8", errors="replace")
+    try:
+        text = abs_.read_text(encoding="utf-8", errors="replace")
+    except Exception:
+        return errors, warnings
     tag = f"[{proj.name}/{rel}]"
     in_root = "/" not in rel
-
-    # 未带 artifact@1 头部 = 存量文件。策略见文件头：记 warn「未迁移」，不阻断；
-    # 但根级出现过程件即使未迁移也要报 —— 那正是"过程文件在根级堆一堆"的病。
-    is_new_format = parse_header(text) is not None and bool(re.search(r"^artifact\s*:\s*1\s*$", text.split("\n---", 1)[0], re.M))
-    if not is_new_format:
-        if in_root and rel not in inputs:
-            yield_level = errors if REQUIRE_HEADER else warnings
-            yield_level.append(
-                f"{tag} 根级过程件（应入 内部/{{意见,收据,依据,稿本}} 或 对外交付/；规范 §一）"
-            )
-        elif any(rel.startswith(d) for d in HEADER_DIRS):
-            msg = f"{tag} 未迁移：缺 artifact@1 头部（规范 §二）"
-            (errors if REQUIRE_HEADER else warnings).append(msg)
-        return errors, warnings
-
-    managed = any(rel.startswith(d) for d in HEADER_DIRS)
-    if not managed:
-        return errors, warnings
+    is_new_zone = bool(NEW_ZONE.match(rel)) if not in_root else False
+    is_legacy = in_root or bool(LEGACY_ZONE.match(rel))
 
     head = parse_header(text)
-    if not head:
-        errors.append(f"{tag} 缺 artifact@1 头部（须以 --- 开头，见 docs/规范-项目文件与流程配置-R4.md）")
+    gen = header_generation(head)
+
+    if gen == "none":
+        # 无头部：存量/骨架文件。只列清单不阻断；旧区的病根（根级堆过程件）提示语指向搬迁清单。
+        if is_legacy:
+            warnings.append(f"{tag} W-MOVE 待搬迁：无头部旧区文件（见 docs/项目目录搬迁清单-{proj.name}.md）")
+        else:
+            warnings.append(f"{tag} 未迁移：无 artifact 头部（新区 {rel.split('/', 1)[0]}/）")
         return errors, warnings
 
-    for k in HEADER_REQUIRED:
-        if k not in head:
-            errors.append(f"{tag} 头部缺字段 {k}（九项必填，见规范 §二）")
-    if head.get("artifact") != 1:
-        errors.append(f"{tag} artifact 须为 1，实为 {head.get('artifact')!r}")
-    if not isinstance(head.get("upstream"), list):
-        errors.append(f"{tag} upstream 须为列表（无依赖写 []）")
-    else:
-        for u in head["upstream"]:
-            if not re.match(r"^[^@]+@[0-9a-f]{6,12}$", str(u)):
-                errors.append(f"{tag} upstream 元素须形如 路径@sha1前12：「{u}」")
-    if not re.match(r"^[a-z]+(\.[a-z0-9-]+)+$", str(head.get("id", ""))):
-        warnings.append(f"{tag} id「{head.get('id')}」建议形如 <kit>.<op> | core.<minitool>")
-    if "<" in str(head.get("at", "")):
-        errors.append(f"{tag} at 仍是模板占位符「{head.get('at')}」——须填实际产出时间")
-    if head.get("round") is not None and head.get("version") not in (None, f"v{head['round']}"):
-        errors.append(f"{tag} version={head.get('version')} 与 round={head['round']} 不一致（version 恒等于 round 的呈现）")
-    if head.get("by") and not re.match(r"^(kit/[a-z]+\.[a-z0-9-]+|core/[a-z0-9_]+|user)$", str(head["by"])):
-        warnings.append(f"{tag} by「{head['by']}」建议 <kit>.<op> / core/<minitool> / user")
-    if "review" not in head:
-        warnings.append(f"{tag} 头部缺 review（未过门写 review: null）")
-    elif isinstance(head.get("review"), dict):
-        rv = head["review"]
-        if rv.get("verdict") and rv["verdict"] not in (
-            "none", "awaiting", "pass", "pass-with-conditions", "send-back", "reject",
-        ):
-            errors.append(f"{tag} review.verdict 非法 {rv['verdict']}")
-        if rv.get("reason") and len(str(rv["reason"])) > 80:
-            warnings.append(f"{tag} review.reason 超长（≤40 字）")
+    if gen == "r4":
+        if is_new_zone:
+            warnings.append(f"{tag} W-LEGACY 旧 R4 头部落进新区：去 class/round/version、加 module（R6 §五）")
+        else:
+            warnings.append(f"{tag} W-LEGACY R4 头部待迁移（W-MOVE：见搬迁清单）")
+        return errors, warnings
 
-    # 目录准入
-    cls = head.get("class")
-    if cls not in CLASS_DIRS:
-        errors.append(f"{tag} class 非法 {cls!r}（合法：{'|'.join(CLASS_DIRS)}）")
-    elif cls == "input":
-        if not in_root:
-            errors.append(f"{tag} class=input 应在项目根级，实为 {rel}")
-    elif not any(rel.startswith(d) for d in CLASS_DIRS[cls]):
-        errors.append(f"{tag} class={cls} 应落 {' 或 '.join(CLASS_DIRS[cls])}，实为 {rel}")
+    # R6 头部：严格校验
+    errors += check_r6(head, tag)
+    if is_legacy:
+        errors.append(f"{tag} E-PLACE R6 产物落在退役区「{'项目根' if in_root else rel.split('/', 1)[0]}/」"
+                      f"（合法区：输入/ 世界书/ NN-模块名/ 交付/）")
+    # id ↔ 归属一致性（提示级：契约未硬性约束，先观察）
+    hid = str(head.get("id") or "")
+    if hid.startswith("world.") and not rel.startswith("世界书/"):
+        warnings.append(f"{tag} W-IDDIR world. 产物应在 世界书/，实为 {rel}")
+    if hid.startswith("input.") and not rel.startswith("输入/"):
+        warnings.append(f"{tag} W-IDDIR input. 产物应在 输入/，实为 {rel}")
+    if not (hid.startswith("world.") or hid.startswith("input.")):
+        first = hid.split(".", 1)[0]
+        if first and first != str(head.get("module")):
+            warnings.append(f"{tag} W-IDDIR id 首段「{first}」≠ module「{head.get('module')}」")
 
-    # round 一致性
+    # 命名不承载轮次
     node = str(head.get("node") or "")
-    if node and rounds.get(node) is not None and head.get("round") is not None:
-        if int(head["round"]) != int(rounds[node]):
-            errors.append(f"{tag} round={head['round']} ≠ state.json nodes[{node}].round={rounds[node]}")
-
-    # 命名
     base = Path(rel).name
     stem = base.replace(node, "") if node else base
     for label, pat in ROUND_IN_NAME:
         if pat.search(stem):
-            errors.append(f"{tag} 文件名含轮次标记（{label}）；文件名不承载轮次，判别用 -<节点id>")
+            errors.append(f"{tag} E-NAME 文件名含轮次标记（{label}）；判别用 -<节点id>，版本归 snapshots")
             break
 
-    # 正文规则 + 污染
+    # 正文两行规则 + 污染
     after = text[text.find("\n---", 3) + 4 :].lstrip()
     lines = [l for l in after.split("\n") if l.strip()]
     if not lines:
-        errors.append(f"{tag} 正文为空")
+        errors.append(f"{tag} E-BODY 正文为空")
     else:
         if not re.match(r"^#\s", lines[0]):
-            errors.append(f"{tag} 正文首行须为一级标题，实为「{lines[0][:30]}」")
+            errors.append(f"{tag} E-BODY 正文首行须为一级标题，实为「{lines[0][:30]}」")
         second = lines[1] if len(lines) > 1 else ""
         if second and not second.startswith(">"):
-            errors.append(f"{tag} 标题后须紧接一行 > 摘要（≤60 字）")
+            errors.append(f"{tag} E-BODY 标题后须紧接一行 > 摘要（≤80 字符）")
         elif second.startswith(">") and len(second.lstrip("> ")) > 80:
-            errors.append(f"{tag} 摘要超长（>80 字符）")
+            errors.append(f"{tag} E-BODY 摘要超长（>80 字符）")
     for i, ln in enumerate(after.split("\n")):
         t = ln.strip()
         if not t:
             continue
         for label, pat in POLLUTION:
             if pat.search(t):
-                errors.append(f"{tag} 正文污染·{label} @L{i+1}：{t[:40]}")
-
-    # 收据覆盖式提示：同 node 多份收据
-    if rel.startswith("内部/收据/"):
-        sibs = [p.name for p in (proj / "内部" / "收据").glob(f"*-{node}*.md")] if node else []
-        if len(sibs) > 1:
-            warnings.append(f"{tag} 收据应为覆盖式（同节点一份）；发现 {len(sibs)} 份：{', '.join(sorted(sibs)[:4])}")
+                errors.append(f"{tag} E-BODY 正文污染·{label} @L{i+1}：{t[:40]}")
     return errors, warnings
+
+
+def receipt_overlays(proj: Path):
+    """收据应为覆盖式：registry/receipts/ 同 (node, basename) 多份 → W。"""
+    out = []
+    rdir = proj / "registry" / "receipts"
+    if not rdir.is_dir():
+        return out
+    seen = {}
+    for p in sorted(rdir.glob("*.md")):
+        head = parse_header(p.read_text(encoding="utf-8", errors="replace") or "")
+        node = str((head or {}).get("node") or "")
+        if not node:
+            continue
+        key = (node, re.sub(r"[-_]r\d+", "", p.stem))
+        seen.setdefault(key, []).append(p.name)
+    for (node, stem), names in sorted(seen.items()):
+        if len(names) > 1:
+            out.append(f"[{proj.name}/registry/receipts] W-RCPT 收据应覆盖式：节点 {node} 有 {len(names)} 份「{stem}*」：{', '.join(sorted(names)[:4])}")
+    return out
 
 
 def main() -> int:
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     projects = [ROOT / "projects" / a for a in args] if args else sorted(
-        p for p in (ROOT / "projects").glob("*") if p.is_dir()
+        p for p in (ROOT / "projects").glob("*") if p.is_dir() and not p.name.startswith("_")
     )
     if not projects:
         print("未找到项目目录")
         return 0
-    total_e = total_w = 0
-    total_files = 0
+    total_e = total_w = total_files = 0
     for proj in projects:
-        rounds, inputs = state_rounds(proj), project_inputs(proj)
         errs_all, warns_all = [], []
         for p in sorted(proj.rglob("*.md")):
             rel = p.relative_to(proj).as_posix()
-            e, w = lint_file(proj, rel, rounds, inputs)
+            e, w = lint_file(proj, rel)
             total_files += 1
             errs_all += e
             warns_all += w
+        errs_all += receipt_overlays(proj)
         total_e += len(errs_all)
         total_w += len(warns_all)
         for x in errs_all:
@@ -285,6 +312,7 @@ def main() -> int:
             print("WARN ", x)
         print(f"  · {proj.name}: {len(errs_all)} errors ｜ {len(warns_all)} warnings")
     print(f"--- {len(projects)} projects ｜ {total_files} md ｜ {total_e} errors ｜ {total_w} warnings")
+    print("--- 存量口径：旧区文件只列清单（W-MOVE），搬迁须人批 docs/项目目录搬迁清单-*.md 后另批执行")
     return 1 if total_e or (STRICT and total_w) else 0
 
 

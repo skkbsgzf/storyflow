@@ -682,6 +682,228 @@
             "path": "snapshots/chapter/r5/世界书/设定/文风档.md"
           }
         }
+      },
+      {
+        "round": 6,
+        "ts": "2026-09-16T21:07:55.063Z",
+        "note": "submit r3",
+        "files": {
+          "章节正文/第1章.md": {
+            "hash": "c815a928a32c",
+            "path": "snapshots/chapter/r6/章节正文/第1章.md"
+          }
+        }
+      },
+      {
+        "round": 7,
+        "ts": "2026-09-17 05:08",
+        "note": "v7 回写：三遍法修订进章节正文（与终稿 v7 同文）",
+        "files": {
+          "章节正文/第1章.md": {
+            "hash": "c815a928a32c",
+            "path": "snapshots/chapter/r7/章节正文/第1章.md"
+          },
+          "章节正文/第2章.md": {
+            "hash": "f05fee1bbe4b",
+            "path": "snapshots/chapter/r7/章节正文/第2章.md"
+          },
+          "章节正文/第3章.md": {
+            "hash": "af157e301b46",
+            "path": "snapshots/chapter/r7/章节正文/第3章.md"
+          }
+        }
+      },
+      {
+        "round": 8,
+        "ts": "2026-09-16T21:50:34.787Z",
+        "note": "submit r5",
+        "files": {
+          "章节正文/第1章.md": {
+            "hash": "4d0daa5e4ff8",
+            "path": "snapshots/chapter/r8/章节正文/第1章.md"
+          }
+        }
+      },
+      {
+        "round": 9,
+        "ts": "2026-09-17 05:51",
+        "note": "",
+        "files": {
+          "章节正文/第1章.md": {
+            "hash": "4d0daa5e4ff8",
+            "path": "snapshots/chapter/r9/章节正文/第1章.md"
+          },
+          "章节正文/第2章.md": {
+            "hash": "3e42a31c8bfa",
+            "path": "snapshots/chapter/r9/章节正文/第2章.md"
+          },
+          "章节正文/第3章.md": {
+            "hash": "ab04658c8b33",
+            "path": "snapshots/chapter/r9/章节正文/第3章.md"
+          }
+        }
+      },
+      {
+        "round": 10,
+        "ts": "2026-09-16T22:15:57.835Z",
+        "note": "submit r7",
+        "files": {
+          "章节正文/第1章.md": {
+            "hash": "4d0daa5e4ff8",
+            "path": "snapshots/chapter/r10/章节正文/第1章.md"
+          }
+        }
+      },
+      {
+        "round": 11,
+        "ts": "2026-09-17 06:16",
+        "note": "",
+        "files": {
+          "章节正文/第1章.md": {
+            "hash": "4d0daa5e4ff8",
+            "path": "snapshots/chapter/r11/章节正文/第1章.md"
+          },
+          "章节正文/第2章.md": {
+            "hash": "985d93bc3e73",
+            "path": "snapshots/chapter/r11/章节正文/第2章.md"
+          },
+          "章节正文/第3章.md": {
+            "hash": "1401030043af",
+            "path": "snapshots/chapter/r11/章节正文/第3章.md"
+          }
+        }
+      },
+      {
+        "round": 12,
+        "ts": "2026-09-17T00:33:59.001Z",
+        "note": "submit r8·第1章.md",
+        "files": {
+          "章节正文/第1章.md": {
+            "hash": "4d0daa5e4ff8",
+            "path": "snapshots/chapter/r12/章节正文/第1章.md"
+          }
+        }
+      },
+      {
+        "round": 13,
+        "ts": "2026-09-17T00:33:59.155Z",
+        "note": "submit r8·第2章.md",
+        "files": {
+          "章节正文/第2章.md": {
+            "hash": "16ff068d56b9",
+            "path": "snapshots/chapter/r13/章节正文/第2章.md"
+          }
+        }
+      },
+      {
+        "round": 14,
+        "ts": "2026-09-17T00:33:59.308Z",
+        "note": "submit r9·第3章.md",
+        "files": {
+          "章节正文/第3章.md": {
+            "hash": "6d321c2d31c8",
+            "path": "snapshots/chapter/r14/章节正文/第3章.md"
+          }
+        }
+      },
+      {
+        "round": 15,
+        "ts": "2026-09-17T01:10:39.845Z",
+        "note": "submit r10·第1章.md",
+        "files": {
+          "章节正文/第1章.md": {
+            "hash": "4d9383b28e65",
+            "path": "snapshots/chapter/r15/章节正文/第1章.md"
+          }
+        }
+      },
+      {
+        "round": 16,
+        "ts": "2026-09-17T01:10:39.999Z",
+        "note": "submit r10·第2章.md",
+        "files": {
+          "章节正文/第2章.md": {
+            "hash": "596d5a722ffc",
+            "path": "snapshots/chapter/r16/章节正文/第2章.md"
+          }
+        }
+      },
+      {
+        "round": 17,
+        "ts": "2026-09-17T01:10:40.163Z",
+        "note": "submit r11·第3章.md",
+        "files": {
+          "章节正文/第3章.md": {
+            "hash": "606d0920690f",
+            "path": "snapshots/chapter/r17/章节正文/第3章.md"
+          }
+        }
+      },
+      {
+        "round": 18,
+        "ts": "2026-09-17T02:16:24.111Z",
+        "note": "submit r12·第1章.md",
+        "files": {
+          "章节正文/第1章.md": {
+            "hash": "b4f0e09a0d59",
+            "path": "snapshots/chapter/r18/章节正文/第1章.md"
+          }
+        }
+      },
+      {
+        "round": 19,
+        "ts": "2026-09-17T02:16:24.265Z",
+        "note": "submit r12·第2章.md",
+        "files": {
+          "章节正文/第2章.md": {
+            "hash": "a82630967d44",
+            "path": "snapshots/chapter/r19/章节正文/第2章.md"
+          }
+        }
+      },
+      {
+        "round": 20,
+        "ts": "2026-09-17T02:16:24.428Z",
+        "note": "submit r13·第3章.md",
+        "files": {
+          "章节正文/第3章.md": {
+            "hash": "7c26b3119840",
+            "path": "snapshots/chapter/r20/章节正文/第3章.md"
+          }
+        }
+      },
+      {
+        "round": 21,
+        "ts": "2026-09-17T03:21:19.623Z",
+        "note": "submit r14·第1章.md",
+        "files": {
+          "章节正文/第1章.md": {
+            "hash": "c2c7d4d22e32",
+            "path": "snapshots/chapter/r21/章节正文/第1章.md"
+          }
+        }
+      },
+      {
+        "round": 22,
+        "ts": "2026-09-17T03:21:19.774Z",
+        "note": "submit r14·第2章.md",
+        "files": {
+          "章节正文/第2章.md": {
+            "hash": "f52dd3a6af87",
+            "path": "snapshots/chapter/r22/章节正文/第2章.md"
+          }
+        }
+      },
+      {
+        "round": 23,
+        "ts": "2026-09-17T03:21:19.927Z",
+        "note": "submit r15·第3章.md",
+        "files": {
+          "章节正文/第3章.md": {
+            "hash": "48ac1be5d3eb",
+            "path": "snapshots/chapter/r23/章节正文/第3章.md"
+          }
+        }
       }
     ],
     "polish": [
@@ -726,6 +948,189 @@
           "对外交付/02-前三章终稿.md": {
             "hash": "e9818f03ffa8",
             "path": "snapshots/polish/r4/对外交付/02-前三章终稿.md"
+          }
+        }
+      },
+      {
+        "round": 5,
+        "ts": "2026-09-16T21:01:57.829Z",
+        "note": "submit r6",
+        "files": {
+          "对外交付/02-前三章终稿.md": {
+            "hash": "8a274f1abadc",
+            "path": "snapshots/polish/r5/对外交付/02-前三章终稿.md"
+          }
+        }
+      },
+      {
+        "round": 6,
+        "ts": "2026-09-17 05:01",
+        "note": "v7 三遍法执行版：声口1/处境1/机味5",
+        "files": {
+          "对外交付/02-前三章终稿.md": {
+            "hash": "011d12557458",
+            "path": "snapshots/polish/r6/对外交付/02-前三章终稿.md"
+          },
+          "内部/修订对照表.md": {
+            "hash": "3b17eb2b1299",
+            "path": "snapshots/polish/r6/内部/修订对照表.md"
+          },
+          "内部/prose-scan-v7.md": {
+            "hash": "a641e6f6fffe",
+            "path": "snapshots/polish/r6/内部/prose-scan-v7.md"
+          }
+        }
+      },
+      {
+        "round": 7,
+        "ts": "2026-09-16T21:07:55.475Z",
+        "note": "submit r8",
+        "files": {
+          "对外交付/02-前三章终稿.md": {
+            "hash": "8a274f1abadc",
+            "path": "snapshots/polish/r7/对外交付/02-前三章终稿.md"
+          }
+        }
+      },
+      {
+        "round": 8,
+        "ts": "2026-09-16T21:49:11.937Z",
+        "note": "submit r11",
+        "files": {
+          "对外交付/02-前三章终稿.md": {
+            "hash": "e2ff096ec1e2",
+            "path": "snapshots/polish/r8/对外交付/02-前三章终稿.md"
+          }
+        }
+      },
+      {
+        "round": 9,
+        "ts": "2026-09-16T21:51:08.957Z",
+        "note": "submit r13",
+        "files": {
+          "对外交付/02-前三章终稿.md": {
+            "hash": "e2ff096ec1e2",
+            "path": "snapshots/polish/r9/对外交付/02-前三章终稿.md"
+          }
+        }
+      },
+      {
+        "round": 10,
+        "ts": "2026-09-17 05:51",
+        "note": "",
+        "files": {
+          "对外交付/02-前三章终稿.md": {
+            "hash": "1f047a79ab64",
+            "path": "snapshots/polish/r10/对外交付/02-前三章终稿.md"
+          },
+          "内部/修订对照表.md": {
+            "hash": "90e344720eca",
+            "path": "snapshots/polish/r10/内部/修订对照表.md"
+          },
+          "内部/deai-v8-诊断单.md": {
+            "hash": "f3c852fad9ec",
+            "path": "snapshots/polish/r10/内部/deai-v8-诊断单.md"
+          },
+          "内部/deai-v8-盲读.md": {
+            "hash": "2b872faae8e8",
+            "path": "snapshots/polish/r10/内部/deai-v8-盲读.md"
+          },
+          "内部/prose-scan-v8.md": {
+            "hash": "2929bf5b2a4c",
+            "path": "snapshots/polish/r10/内部/prose-scan-v8.md"
+          }
+        }
+      },
+      {
+        "round": 11,
+        "ts": "2026-09-16T22:15:57.422Z",
+        "note": "submit r15",
+        "files": {
+          "对外交付/02-前三章终稿.md": {
+            "hash": "79b963ad5f2e",
+            "path": "snapshots/polish/r11/对外交付/02-前三章终稿.md"
+          }
+        }
+      },
+      {
+        "round": 12,
+        "ts": "2026-09-16T22:16:07.031Z",
+        "note": "submit r17",
+        "files": {
+          "对外交付/02-前三章终稿.md": {
+            "hash": "79b963ad5f2e",
+            "path": "snapshots/polish/r12/对外交付/02-前三章终稿.md"
+          }
+        }
+      },
+      {
+        "round": 13,
+        "ts": "2026-09-17 06:16",
+        "note": "",
+        "files": {
+          "对外交付/02-前三章终稿.md": {
+            "hash": "c3cc42ea8ad0",
+            "path": "snapshots/polish/r13/对外交付/02-前三章终稿.md"
+          },
+          "内部/修订对照表.md": {
+            "hash": "6ad7378b99dc",
+            "path": "snapshots/polish/r13/内部/修订对照表.md"
+          },
+          "内部/评审表-终稿-r1.md": {
+            "hash": "8264202caa5e",
+            "path": "snapshots/polish/r13/内部/评审表-终稿-r1.md"
+          },
+          "内部/评审表-终稿-r2.md": {
+            "hash": "b798ce0779a0",
+            "path": "snapshots/polish/r13/内部/评审表-终稿-r2.md"
+          },
+          "内部/prose-scan-v9.md": {
+            "hash": "66c85c33ca68",
+            "path": "snapshots/polish/r13/内部/prose-scan-v9.md"
+          }
+        }
+      },
+      {
+        "round": 14,
+        "ts": "2026-09-17T00:34:11.533Z",
+        "note": "submit r19·02-前三章终稿.md",
+        "files": {
+          "对外交付/02-前三章终稿.md": {
+            "hash": "79b963ad5f2e",
+            "path": "snapshots/polish/r14/对外交付/02-前三章终稿.md"
+          }
+        }
+      },
+      {
+        "round": 15,
+        "ts": "2026-09-17T01:11:42.439Z",
+        "note": "submit r21·02-前三章终稿.md",
+        "files": {
+          "对外交付/02-前三章终稿.md": {
+            "hash": "208b4ccdffc5",
+            "path": "snapshots/polish/r15/对外交付/02-前三章终稿.md"
+          }
+        }
+      },
+      {
+        "round": 16,
+        "ts": "2026-09-17T02:16:54.310Z",
+        "note": "submit r23·02-前三章终稿.md",
+        "files": {
+          "对外交付/02-前三章终稿.md": {
+            "hash": "7da222e7dc8e",
+            "path": "snapshots/polish/r16/对外交付/02-前三章终稿.md"
+          }
+        }
+      },
+      {
+        "round": 17,
+        "ts": "2026-09-17T03:21:20.381Z",
+        "note": "submit r25·02-前三章终稿.md",
+        "files": {
+          "对外交付/02-前三章终稿.md": {
+            "hash": "bb36badb9e42",
+            "path": "snapshots/polish/r17/对外交付/02-前三章终稿.md"
           }
         }
       }

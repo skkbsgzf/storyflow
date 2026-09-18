@@ -1,0 +1,148 @@
+{
+  "artifacts": [
+    {
+      "path": "需求.md",
+      "node": "req",
+      "producer": "kernel:novel-txt",
+      "inputs": {},
+      "round": 1,
+      "sha1": "e60c5632e47c",
+      "ts": "2026-09-17T17:04:00.312Z"
+    },
+    {
+      "path": "内部/kb-market.md",
+      "node": "market",
+      "producer": "minitool:kb_load",
+      "inputs": {},
+      "round": 1,
+      "sha1": "23ca3191c0f0",
+      "ts": "2026-09-17T17:04:00.317Z"
+    },
+    {
+      "path": "内部/稿本/梗卡.md",
+      "node": "tropes",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {},
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1169 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "5ef90a329693",
+      "ts": "2026-09-17T17:05:40.031Z"
+    },
+    {
+      "path": "世界书/世界观圣经.md",
+      "node": "bible",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "内部/稿本/梗卡.md": "5ef90a329693"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1886 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        }
+      ],
+      "sha1": "2f6853efb058",
+      "ts": "2026-09-17T17:06:35.181Z"
+    },
+    {
+      "path": "内部/稿本/卷纲与章功能序列.md",
+      "node": "volume",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "世界书/世界观圣经.md": "2f6853efb058"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1529 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "artifact-header",
+          "status": "pass"
+        },
+        {
+          "name": "glossary",
+          "status": "pass",
+          "detail": "无他项目专名"
+        },
+        {
+          "name": "AE-CURVE-STALL",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-CURVE-TYPE",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-CUSHION",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-DESERT",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-END-MECH",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-REV-MIDPOINT",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-REV-SETUP",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "c81a3ea73e15",
+      "ts": "2026-09-17T17:07:20.216Z"
+    }
+  ]
+}

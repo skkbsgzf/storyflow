@@ -1,0 +1,182 @@
+{
+  "runId": "run-mu5qwqjv-fn4mlx",
+  "projectId": "p-ccwdl-topic",
+  "flowId": "topic-selection",
+  "flowVersion": "5.1.2",
+  "flowHash": "5859e533",
+  "status": "completed",
+  "plan": {
+    "order": [
+      "market",
+      "src",
+      "tropes",
+      "zeitgeist",
+      "combo",
+      "benchmark",
+      "analysis",
+      "gate-r1",
+      "baseline",
+      "structure",
+      "gate-r2",
+      "proposal",
+      "gate-r3",
+      "miniguided",
+      "gate-r4",
+      "first3",
+      "polish",
+      "gate-r5",
+      "delivery"
+    ]
+  },
+  "nodes": {
+    "src": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "选题素材.md"
+    },
+    "market": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "内部/kb-market.md"
+    },
+    "tropes": {
+      "status": "done",
+      "round": 1,
+      "failCount": 1,
+      "lastArtifact": "内部/稿本/梗卡.md",
+      "stale": false
+    },
+    "combo": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "内部/断言报告-combo.json"
+    },
+    "zeitgeist": {
+      "status": "done",
+      "round": 1,
+      "failCount": 1,
+      "lastArtifact": "内部/稿本/热点素材.md",
+      "stale": false
+    },
+    "benchmark": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "内部/kb-benchmark.md"
+    },
+    "analysis": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "对外交付/01-选题报告.md",
+      "stale": false
+    },
+    "gate-r1": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "内部/意见/多视角意见书-gate-r1.md",
+      "stale": false,
+      "verdict": "pass"
+    },
+    "structure": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "对外交付/02-大纲.md",
+      "stale": false
+    },
+    "gate-r2": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "内部/意见/多视角意见书-gate-r2.md",
+      "stale": false,
+      "verdict": "pass"
+    },
+    "proposal": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "内部/稿本/选题方案.md",
+      "stale": false
+    },
+    "baseline": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "内部/稿本/选题方案-爽版-基线.md",
+      "stale": false
+    },
+    "gate-r3": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "内部/意见/多视角意见书-gate-r3.md",
+      "stale": false,
+      "verdict": "pass"
+    },
+    "first3": {
+      "status": "done",
+      "round": 1,
+      "failCount": 2,
+      "lastArtifact": "对外交付/04-成品剧本试稿.md",
+      "stale": false
+    },
+    "gate-r4": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "内部/意见/多视角意见书-gate-r4.md",
+      "stale": false,
+      "verdict": "pass"
+    },
+    "delivery": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "对外交付/选题交付页.html"
+    },
+    "polish": {
+      "status": "done",
+      "round": 1,
+      "failCount": 1,
+      "lastArtifact": "对外交付/03-剧本试稿.md",
+      "stale": false
+    },
+    "miniguided": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "对外交付/03-小纲.docx",
+      "stale": false
+    },
+    "intake": {
+      "status": "none",
+      "round": 0
+    },
+    "gate-r5": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "内部/意见/多视角意见书-gate-r5.md",
+      "stale": false,
+      "verdict": "pass"
+    }
+  },
+  "gate": {
+    "verdict": "pass",
+    "node": "gate-r5",
+    "at": "2026-09-17T16:56:27.635Z",
+    "note": "R5 自动裁决：域内评审步，交卷断言全过即过"
+  },
+  "inputs": {
+    "project": "p-ccwdl-topic",
+    "direction": "曹操穿越到武大郎身上：三国枭雄之魂穿入水浒市井小贩，跨书穿+身份反差+市井权谋翻身",
+    "route": "dual",
+    "region": "CN",
+    "zeitgeist": true,
+    "platform": "短剧"
+  },
+  "comments": {},
+  "overlayHash": "f9a471b5",
+  "policy": {
+    "kit_boundary": "off",
+    "gate_mode": "auto",
+    "adapt": "propose"
+  },
+  "planHash": "ddc5bd73"
+}

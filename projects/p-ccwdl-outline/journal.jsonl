@@ -1,0 +1,18 @@
+{"ts":"2026-09-17T16:57:47.212Z","runId":"run-mu5rwaff-yyec1h","event":"run-start","actor":"kernel","detail":"outline-production@0.1.0-draft 计划 6 节点"}
+{"ts":"2026-09-17T16:57:47.231Z","runId":"run-mu5rwaff-yyec1h","event":"advance","actor":"kernel","nodeId":"src","detail":"源步 选题方案.md"}
+{"ts":"2026-09-17T16:57:47.235Z","runId":"run-mu5rwaff-yyec1h","event":"advance","actor":"kernel","nodeId":"constraints","detail":"内部/kb-constraints.md","refs":["内部/kb-constraints.md"]}
+{"ts":"2026-09-17T16:57:47.240Z","runId":"run-mu5rwaff-yyec1h","event":"advance","actor":"kernel","nodeId":"choreo","detail":"任务包产出（skill=plot-choreographer，上下文 1 件）"}
+{"ts":"2026-09-17T16:57:47.240Z","runId":"run-mu5rwaff-yyec1h","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：choreo（并行）"}
+{"ts":"2026-09-17T16:59:40.418Z","runId":"run-mu5rwaff-yyec1h","event":"warn","actor":"kernel","nodeId":"choreo","detail":"声明断言无机器校验器（未执行，归评审/红方剖面）：AE-CURVE-STALL、AE-CURVE-TYPE、AE-CUSHION、AE-DESERT、AE-END-MECH、AE-REV-MIDPOINT、AE-REV-SETUP","refs":["内部/稿本/分集大纲.md"]}
+{"ts":"2026-09-17T16:59:40.423Z","runId":"run-mu5rwaff-yyec1h","event":"submit","actor":"kernel","nodeId":"choreo","detail":"内部/稿本/分集大纲.md","refs":["内部/稿本/分集大纲.md"]}
+{"ts":"2026-09-17T16:59:40.423Z","runId":"run-mu5rwaff-yyec1h","event":"snapshot","actor":"kernel","nodeId":"choreo","detail":"r1·分集大纲.md","refs":["内部/稿本/分集大纲.md"]}
+{"ts":"2026-09-17T16:59:40.426Z","runId":"run-mu5rwaff-yyec1h","event":"note","actor":"kernel:overlay","detail":"编排变更 → 重编译计划：6 → 6 节点；新增 无；裁撤 无；失效 无","refs":[]}
+{"ts":"2026-09-17T16:59:40.426Z","runId":"run-mu5rwaff-yyec1h","event":"note","actor":"kernel:overlay","detail":"set-policy kit_boundary=off｜实验批：跨域门自动放行"}
+{"ts":"2026-09-17T16:59:40.426Z","runId":"run-mu5rwaff-yyec1h","event":"note","actor":"kernel:overlay","detail":"kit_boundary=off：不派生边界验收（全自动）"}
+{"ts":"2026-09-17T16:59:40.429Z","runId":"run-mu5rwaff-yyec1h","event":"advance","actor":"kernel","nodeId":"asserts","detail":"内部/断言报告-asserts.json","refs":["内部/断言报告-asserts.json"]}
+{"ts":"2026-09-17T16:59:40.434Z","runId":"run-mu5rwaff-yyec1h","event":"advance","actor":"kernel","nodeId":"redline","detail":"任务包产出（skill=plot-redline，上下文 1 件）"}
+{"ts":"2026-09-17T16:59:40.434Z","runId":"run-mu5rwaff-yyec1h","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：redline（并行）"}
+{"ts":"2026-09-17T17:00:37.714Z","runId":"run-mu5rwaff-yyec1h","event":"reject","actor":"kernel","nodeId":"redline","detail":"artifact-header: 摘要超长（>80 字符）","refs":["内部/意见/红方意见书-redline.md"]}
+{"ts":"2026-09-17T17:00:47.773Z","runId":"run-mu5rwaff-yyec1h","event":"submit","actor":"kernel","nodeId":"redline","detail":"内部/意见/红方意见书-redline.md","refs":["内部/意见/红方意见书-redline.md"]}
+{"ts":"2026-09-17T17:00:47.773Z","runId":"run-mu5rwaff-yyec1h","event":"snapshot","actor":"kernel","nodeId":"redline","detail":"r1·红方意见书-redline.md","refs":["内部/意见/红方意见书-redline.md"]}
+{"ts":"2026-09-17T17:00:47.776Z","runId":"run-mu5rwaff-yyec1h","event":"gate-open","actor":"kernel","nodeId":"fin","detail":"人工验收"}
