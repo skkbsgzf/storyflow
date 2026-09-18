@@ -67,6 +67,11 @@
         "kb/market/structure",
         "kb/trope/*"
       ],
+      "exclude_knowledge": [
+        "kb/trope/na-billionaire",
+        "kb/trope/na-fantasy",
+        "kb/trope/na-werewolf"
+      ],
       "minitools": [
         "kb_search",
         "check_trope_combo"

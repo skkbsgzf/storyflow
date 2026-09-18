@@ -16,7 +16,14 @@ import type { FlowDescriptor, RunState } from "../src/types.js";
 describe("kit@1 · 四域注册表", () => {
   it("四域全部加载且无歧义技能", () => {
     const reg = kitRegistry(ROOT);
-    expect(reg.all().map((k) => k.domain).sort()).toEqual(["plot", "prose", "search", "tool"]);
+    // 域是**分类轴**（4 类），kit 是可增的域包——`kits/detect` 与 `kits/tool` 同属 tool 域，
+    // 故 domain 数组会出现两个 "tool"。原断言写的是长度（["plot","prose","search","tool"]），
+    // 在 detect 落地的提交 fb0f49d 起就已经是红的（存量债，与 D1–D5 无关）。此处改为断言
+    // 「域轴不超过这 4 类」+「每个 kit 都能解析」，语义等同且不再随新域包漂移。
+    expect([...new Set(reg.all().map((k) => k.domain))].sort()).toEqual(["plot", "prose", "search", "tool"]);
+    for (const id of ["search", "plot", "prose", "tool", "detect"]) {
+      expect(reg.get(id), `kit ${id} 未加载`).toBeTruthy();
+    }
     expect(reg.ambiguousSkills()).toEqual([]);
     expect(reg.get("prose")!.ops["novel-deai"]).toBeTruthy();
   });

@@ -457,7 +457,13 @@ export class Kernel {
     captureSnapshot(projectDir, nodeId, { [rel]: fs.readFileSync(abs, "utf-8") }, `submit r${Math.max(ns.round, 1)}·${path.basename(rel)}`);
     // R5 指标：命中率 = 注入的标尺卡/上游件中，产物真正引用过的比例（信号取自 artifact@1 头部 upstream 与正文）
     try {
-      const injected = [...(opRef?.knowledge ?? []), ...upstreamFiles];
+      // D1（计量口径）：提交侧的提取清单必须与 dispatch 相**同一 id 空间**。
+      // dispatch 记的是装载后的精确卡 id（glob 已展开、预算已裁）+ 上下文 ref；
+      // 此处若改用 op 声明的**原始**清单，`kb/trope/*` 这类通配符会以字面形态占着分母、
+      // 永不可能命中 → 标尺卡命中率被系统性压到 0（_918test 实证：梗卡明明引用了 5 张，
+      // 计数仍是 0）。故重算任务包，取与派发完全同源的那份清单。
+      const pkg = buildTaskPackage(projectDir, flow, state, nodeId, eff.toolOverrides);
+      const injected = [...(pkg.knowledge ?? []).map((k) => k.id), ...pkg.context.map((c) => c.ref)];
       const usage = extractCtxUsage(fs.readFileSync(abs, "utf-8"), injected);
       this.metric(projectDir, state, nodeId, node, "submit", {
         ctx: usage,

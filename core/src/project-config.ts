@@ -33,18 +33,39 @@ export function loadProjectConfig(projectDir: string): ProjectConfig | undefined
 
 /**
  * 配置 → flow 输入（合并序：显式入参 > 配置 > flow 默认，故本函数产物会被显式入参覆盖）。
- * - 风格/AB测试 → route（AB优先：true=双版本+基线）
- * - 题材/需求/灵感 → direction 组合（flow 无 direction 输入则跳过）
- * - 其余字段原样回传入 state.inputs（背景卡与下游子代理可见）
+ *
+ * D2（enum 输入不吃配置）：此前只认 `风格`/`AB测试` 两个字段做**推导**，配置文件里直接写的
+ * `route: "dual"` 被整条忽略 → enum 型输入永远落回 flow 默认值。_918test 实证：两份
+ * `项目配置.json` 都写了 route=dual，`state.inputs.route` 却落在 "hot"，于是
+ * `when: {input: route, eq: dual}` 的「双版本对照」支线**两条线都没激活**——设计成了声明的谎言。
+ * 现在的顺序：
+ *   ① **直通**：配置里与 flow 输入同名的键原样透传（enum/string/number/boolean 都吃），
+ *      enum 取值不在 options 内**开跑前大声失败**（静默回落才是最难查的）；
+ *   ② **推导**（仅当 ① 没给）：`AB测试` 优先，其次 `风格`；
+ *   ③ 其余字段原样回传给背景卡与下游子代理。
  */
 export function configToInputs(cfg: ProjectConfig, flow: { inputs?: Record<string, unknown> }): Record<string, unknown> {
   const out: Record<string, unknown> = {};
-  if (typeof cfg.AB测试 === "boolean") {
-    out.route = cfg.AB测试 ? "dual" : styleToRoute(cfg.风格);
-  } else if (cfg.风格) {
-    out.route = styleToRoute(cfg.风格);
+  const declared = (flow.inputs ?? {}) as Record<string, { type?: string; options?: string[] } | undefined>;
+  // ① 直通：与 flow 输入同名的配置键优先
+  for (const key of Object.keys(declared)) {
+    const v = (cfg as Record<string, unknown>)[key];
+    if (v === undefined || v === null) continue;
+    const def = declared[key];
+    if (def?.type === "enum" && Array.isArray(def.options) && !def.options.includes(v as string)) {
+      throw new Error(
+        `${CONFIG_FILE} 的 ${key}=${String(v)} 不是合法取值（可选：${def.options.join(" / ")}）——enum 输入用错值必须拦在开跑前`,
+      );
+    }
+    out[key] = v;
   }
-  const hasDirection = "direction" in (flow.inputs ?? {});
+  // ② 推导（回退）：仅在 ① 未直接给 route 时才由出品定位推导
+  if (out.route === undefined) {
+    const derived =
+      typeof cfg.AB测试 === "boolean" ? (cfg.AB测试 ? "dual" : styleToRoute(cfg.风格)) : styleToRoute(cfg.风格);
+    if (derived !== undefined) out.route = derived;
+  }
+  const hasDirection = "direction" in declared;
   if (hasDirection && !out.direction) {
     const composed = [cfg.题材, cfg.需求, cfg.灵感].filter(Boolean).join("；");
     if (composed) out.direction = composed;

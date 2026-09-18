@@ -11,7 +11,7 @@ import { ProfileRegistry } from "./profiles.js";
 import { kitRegistry, resolveToolConfig, applyToolOverride, type ResolvedOp } from "./kits.js";
 import type { ToolOverride } from "./overlay.js";
 import { loadProjectConfig, configCardLines } from "./project-config.js";
-import { classOfPath, headerTemplate } from "./asserts.js";
+import { bodySkeleton, classOfPath, foreignOwnTerms, headerTemplate } from "./asserts.js";
 
 const CONTEXT_BUDGET = 20000;
 const SKILL_CAP = 6000;
@@ -305,6 +305,14 @@ export function buildTaskPackage(
     parts.push(`## 配置告警（写了却没人认的键——禁止假装生效）\n\n${cfg.unknownKeys.map((k) => `- ${k}`).join("\n")}`);
   }
   if (node.desc) parts.push(`## 本步要求\n\n${node.desc}`);
+  // D5：禁词表前置。与交卷时的 glossary 断言**同源**（他项目 own 词），但用途相反——
+  // 开跑前就告诉写手雷在哪，而不是写完了才打回（_918test：glossary 打回 2 次，全是别项目专名）。
+  const banned = foreignOwnTerms(ROOT, projectDir);
+  if (banned.length) {
+    parts.push(
+      `## 禁词表（本项目产物中不得出现；出现即 glossary 断言打回）\n\n${banned.map((w) => `- ${w}`).join("\n")}`,
+    );
+  }
   parts.push(
     `## 输出契约\n\n- 产物路径：${file}\n- 上游依据：${refs.join("、") || "（无）"}\n- 完成后经 flow_submit 提交，完整性断言不过 = 打回`,
   );
@@ -346,6 +354,7 @@ export function buildTaskPackage(
     round,
     by: opRef ? `kit/${opRef.kit}.${opRef.op}` : node.minitool ? `core/${node.minitool}` : "user",
     upstream: context.map((c) => `${c.ref}@${c.hash ?? "000000000000"}`),
+    skeleton: bodySkeleton(classOfPath(file)),
   });
   return pkg;
 }

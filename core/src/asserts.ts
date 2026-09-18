@@ -397,6 +397,19 @@ export function classOfPath(relPath: string): string {
   return "input";
 }
 
+/**
+ * 正文骨架（D5）：头部之后**必须长什么样**。
+ *
+ * headerTemplate 原先只渲染 YAML 头，正文格式靠断言在交卷时兜——而头部断言要求
+ * 「正文首行须为一级标题」「标题后须紧接一行 > 摘要」，没给骨架 = 让写手猜，
+ * _918test 里这是**最大单源打回（5+ 次）**。骨架把这条硬格式前置成可照抄的样子。
+ */
+export function bodySkeleton(cls: string): string[] {
+  const head = cls === "opinion" ? "# <意见书标题>" : "# <标题>";
+  const sum = cls === "opinion" ? "> <一句话结论，≤60 字>" : "> <一句话摘要，≤60 字，不得复述标题>";
+  return [head, sum, "", "<!-- 以上两行是硬格式，正文从这里开始；禁止出现过程元数据（统计/说明/本节小结） -->"];
+}
+
 /** 生成头部模板（派发给 agent，保证产物天生合规）。 */
 export function headerTemplate(opts: {
   id: string;
@@ -406,9 +419,11 @@ export function headerTemplate(opts: {
   by: string;
   upstream?: string[];
   reviewGate?: string;
+  /** D5：头部之后附正文骨架（留空 = 不附，兼容旧调用） */
+  skeleton?: string[];
 }): string {
   const up = opts.upstream?.length ? opts.upstream.map((u) => `  - ${u}`).join("\n") : "  []";
-  return [
+  const head = [
     "---",
     "artifact: 1",
     `id: ${opts.id}`,
@@ -427,7 +442,9 @@ export function headerTemplate(opts: {
         : "null"
     }`,
     "---",
-  ].join("\n");
+  ];
+  if (opts.skeleton?.length) head.push("", ...opts.skeleton);
+  return head.join("\n");
 }
 
 
@@ -437,6 +454,49 @@ export function headerTemplate(opts: {
  * 他项目的 own 词即本项目违禁词；该词若被本项目 own 词包含则豁免（青川 ⊂ 青川河）。
  * 本项目未登记词汇表 → 守卫未启用（返回 undefined）。
  */
+function readProjectOwn(projectsDir: string, id: string): string[] {
+  try {
+    const g = JSON.parse(fs.readFileSync(path.join(projectsDir, id, "词汇表.json"), "utf-8")) as { own?: unknown };
+    return Array.isArray(g.own) ? g.own.map(String) : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * 他项目 own 词中、本项目**不得出现**的那些（D5）。
+ *
+ * 与 `checkGlossary`（交卷后断言）**同源**，但用途相反：这里是在**派发时**就把禁词表下发，
+ * 让写手开跑前就知道雷在哪，而不是写完了才被打回。_918test 实证：glossary 打回 2 次
+ * （老周 / 思维链 / 魏峥——都是别的项目的专名），写手事前无从得知。
+ */
+export function foreignOwnTerms(root: string, projectDir: string): string[] {
+  const projectsDir = path.join(root, "projects");
+  const me = path.basename(projectDir);
+  const myOwn = readProjectOwn(projectsDir, me);
+  if (!myOwn.length) return [];
+  let dirs: string[];
+  try {
+    dirs = fs.readdirSync(projectsDir);
+  } catch {
+    return [];
+  }
+  const out = new Set<string>();
+  for (const dir of dirs) {
+    if (dir === me) continue;
+    try {
+      if (!fs.statSync(path.join(projectsDir, dir)).isDirectory()) continue;
+    } catch {
+      continue;
+    }
+    for (const term of readProjectOwn(projectsDir, dir)) {
+      if (!term || myOwn.some((o) => o.includes(term))) continue;
+      out.add(term);
+    }
+  }
+  return [...out].sort();
+}
+
 export function checkGlossary(root: string, projectDir: string, relPath: string): Validation | undefined {
   const projectsDir = path.join(root, "projects");
   let text: string;
@@ -445,16 +505,8 @@ export function checkGlossary(root: string, projectDir: string, relPath: string)
   } catch {
     return undefined;
   }
-  const readOwn = (id: string): string[] => {
-    try {
-      const g = JSON.parse(fs.readFileSync(path.join(projectsDir, id, "词汇表.json"), "utf-8")) as { own?: unknown };
-      return Array.isArray(g.own) ? g.own.map(String) : [];
-    } catch {
-      return [];
-    }
-  };
   const me = path.basename(projectDir);
-  const myOwn = readOwn(me);
+  const myOwn = readProjectOwn(projectsDir, me);
   if (!myOwn.length) return undefined;
   const hits: string[] = [];
   for (const dir of fs.readdirSync(projectsDir)) {
@@ -466,7 +518,7 @@ export function checkGlossary(root: string, projectDir: string, relPath: string)
       continue;
     }
     if (!isDir) continue;
-    for (const term of readOwn(dir)) {
+    for (const term of readProjectOwn(projectsDir, dir)) {
       if (!term || myOwn.some((o) => o.includes(term))) continue;
       if (text.includes(term)) hits.push(`${term}（来自 ${dir}）`);
     }

@@ -127,7 +127,12 @@ export function summarizeMetrics(
     s.assertBlock += e.asserts?.block ?? 0;
     s.retries = Math.max(s.retries, e.retries ?? 0);
     if (e.verdict) s.verdicts.push(e.verdict);
-    for (const id of e.ctx?.ids ?? []) kbOffered[id] = (kbOffered[id] ?? 0) + 1;
+    // 分母只在 dispatch 相计数（只有装载那一刻才知道"装了什么"）。提交相也带 ctx.ids 时若一并计数，
+    // 同一个 id 会被记两次、且两相 id 空间此前并不一致（glob 字面量 vs 展开后的具体条目）——
+    // 命中率因此失真。分子则取任何带 hitIds 的事件（实际只有 submit/core 会算）。
+    if (e.phase === "dispatch") {
+      for (const id of e.ctx?.ids ?? []) kbOffered[id] = (kbOffered[id] ?? 0) + 1;
+    }
     for (const id of e.ctx?.hitIds ?? []) {
       kbUsed[id] = (kbUsed[id] ?? 0) + 1;
       const producer = pathToNode[id];

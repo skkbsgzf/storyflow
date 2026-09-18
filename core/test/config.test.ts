@@ -143,4 +143,36 @@ describe("项目初始化配置 · 合并序与语义映射", () => {
     expect(configToInputs(config({ 项目: "x", 题材: "a", 需求: "b", 灵感: "c" }), flow).direction).toBe("a；b；c");
     expect(configToInputs(config({ 项目: "x" }), { inputs: {} }).direction).toBeUndefined(); // flow 无 direction 不硬塞
   });
+
+  it("D2：配置字面量与 flow 输入同名 → 直通（enum 也吃），非法值拦在开跑前", () => {
+    const flow = {
+      inputs: {
+        route: { type: "enum", options: ["hot", "calm", "dual"] },
+        direction: {},
+      },
+    };
+    // 字面 route 直通（此前只认 风格/AB测试 推导，配置写 dual 被整条忽略 → 落回默认）
+    expect(configToInputs(config({ route: "dual" }), flow).route).toBe("dual");
+    // 直通优先于推导：即便 风格=爽 / AB测试=false，字面值也压过推导
+    expect(configToInputs(config({ route: "calm" }), flow).route).toBe("calm");
+    // 未给 route 时仍走推导（回归）
+    expect(configToInputs(config({ AB测试: true }), flow).route).toBe("dual");
+    expect(configToInputs(config({ 风格: "标准" }), flow).route).toBe("calm");
+    // 非法 enum 值 → 开跑前大声失败（静默回落才是最难查的）
+    expect(() => configToInputs(config({ route: "wild" }), flow)).toThrow(/不是合法取值/);
+  });
+
+  it("D2：enum 输入真的进 state.inputs（端到端，配置写 dual 不再落 hot）", async () => {
+    const dir = path.join(root, "projects", "p-d2");
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, "选题素材.md"), "# 选题素材\n\n甲方点子：测试。\n", "utf-8");
+    fs.writeFileSync(
+      path.join(dir, "项目配置.json"),
+      JSON.stringify(config({ 项目: "p-d2", route: "dual", AB测试: false })),
+      "utf-8",
+    );
+    await kernel.flow_run("topic-selection", "p-d2", {});
+    const s = JSON.parse(fs.readFileSync(path.join(dir, "state.json"), "utf-8"));
+    expect(s.inputs.route).toBe("dual"); // 此前是 "hot"（被 风格/AB测试 推导覆盖）
+  });
 });
