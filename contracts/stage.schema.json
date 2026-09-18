@@ -1,8 +1,9 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://miniflow.dev/contracts/stage.schema.json",
-  "title": "stage@1 · Stage 封装包（命名 / 版本 / 可导入 / 市场分发单元）",
-  "description": "Stage = 可复用能力段的标准化封装：自带子图与验收门，声明适用品类与输入输出；flow 由 Stage 拼接而成（一个 Stage 也可独立成线）。",
+  "deprecated": true,
+  "title": "stage@1 · Stage 封装包（命名 / 版本 / 可导入 / 市场分发单元）【已废弃 · module-flow-v3】",
+  "description": "[DEPRECATED 2026-09-18] 由 module@1 取代（contracts/module.schema.json）：「自带子图与验收门的可复用段」演进为「工具箱 + 骨架 + 插槽的模块」，验收门退役为模块间连接件。本文件仅供历史对照。原描述：Stage = 可复用能力段的标准化封装：自带子图与验收门，声明适用品类与输入输出；flow 由 Stage 拼接而成（一个 Stage 也可独立成线）。",
   "type": "object",
   "required": ["format", "id", "name", "version", "applicability", "entry", "nodes", "edges"],
   "additionalProperties": false,

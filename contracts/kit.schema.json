@@ -1,8 +1,9 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://miniflow.dev/contracts/kit.schema.json",
-  "title": "kit@1 · 工种域单元（flow-pack 的子单位；R5 增补 op.config）",
-  "description": "kit 把一个「能力」的五个散落处（skill md + kb 条目 + minitool 登记 + flow 节点内联清单 + 可调配置项）粘回一个可引用单位。flow 节点不再手写知识清单，改写 kit+op 引用；装载由内核在 buildTaskPackage 单点执行。R5：每个 op 必须声明 config（内容配置项），使「tool 的位置」与「tool 的内容配置」都成为可被用户/优化 agent 调优的一等对象。",
+  "deprecated": true,
+  "title": "kit@1 · 工种域单元（flow-pack 的子单位；R5 增补 op.config）【已废弃 · module-flow-v3】",
+  "description": "[DEPRECATED 2026-09-18] 由 module@1 取代（contracts/module.schema.json）：kit 的 ops 平移为模块 ops，新增 capability/slot/also_fits/requires/adds 与 skeleton/caps。本文件仅供 WO-08 存量转换对照，不再被 flow@3 引用；kit-lint 对 kits/ 只提示迁移不报错。原描述：kit 把一个「能力」的五个散落处（skill md + kb 条目 + minitool 登记 + flow 节点内联清单 + 可调配置项）粘回一个可引用单位。flow 节点不再手写知识清单，改写 kit+op 引用；装载由内核在 buildTaskPackage 单点执行。R5：每个 op 必须声明 config（内容配置项），使「tool 的位置」与「tool 的内容配置」都成为可被用户/优化 agent 调优的一等对象。",
   "type": "object",
   "required": ["format", "id", "domain", "name", "ops"],
   "additionalProperties": false,

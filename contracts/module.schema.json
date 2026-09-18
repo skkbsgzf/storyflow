@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "miniflow/module",
+  "title": "module@1 · 工种工具箱（模块化 flow 的能力单元）",
+  "description": "modules/<id>/module.json。模块 = 一个认知工种的完整工具箱（ops）+ 默认骨架（skeleton）+ 插槽表 + 能力清单（caps）。取代 kit@1（见 contracts/kit.schema.json，已废弃）。flow@3 只引用模块序列，节点与边由内核 modules.ts::expandFlow 从骨架派生（R6 规范 §一/§三）。设计源：docs/规范-模块化flow与工具箱-R6.md。",
+  "type": "object",
+  "required": ["format", "id", "name", "ops", "skeleton", "caps"],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "const": "module@1" },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "模块 id，即 modules/<id>/ 目录名；flow@3 modules[].module 引用它"
+    },
+    "name": { "type": "string", "description": "工种名（如 编剧 / 检索 / 写作），面板模块卡片顶栏显示" },
+    "desc": { "type": "string" },
+    "version": { "type": "string" },
+    "ops": {
+      "type": "object",
+      "description": "工具箱：tool id → tool 定义（原 kit@1 的 op，字段沿用并新增插件四件套）",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/definitions/tool" }
+    },
+    "skeleton": {
+      "type": "object",
+      "description": "默认骨架 = 最小可用流水线。flow 不写 caps 时启用的就是它",
+      "required": ["spine", "edges"],
+      "additionalProperties": false,
+      "properties": {
+        "spine": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+          "description": "默认启用的 tool 序列（次序即执行次序）；每一项必须在 ops 中声明（module-lint E 级）"
+        },
+        "edges": {
+          "type": "array",
+          "description": "骨架内接线 [from, to]；两端都必须是 spine 成员（module-lint 校验）",
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" }
+          }
+        }
+      }
+    },
+    "caps": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 },
+      "description": "本模块可提供的全部能力标签（人类词，如 主线/人设/暗线/伏笔）。骨架覆盖其中子集，差值即可玩空间；前端能力标签条与 toolbox 抽屉以此渲染（caps 是唯一渲染依据）"
+    }
+  },
+  "definitions": {
+    "slot": {
+      "type": "string",
+      "pattern": "^(after|before):[a-z][a-z0-9-]*$|^end$",
+      "description": "插入点：after:<tool> / before:<tool> / end。锚点必须是本模块 ops 中声明的 tool"
+    },
+    "tool": {
+      "type": "object",
+      "required": ["title", "kind", "capability"],
+      "additionalProperties": false,
+      "properties": {
+        "title": { "type": "string", "description": "工具名（面板显示）" },
+        "desc": { "type": "string" },
+        "skill": { "type": "string", "description": "认知类 tool 绑定的技能档案（skills/<skill>.md）；与 minitool 二者其一" },
+        "minitool": { "type": "string", "description": "确定性 tool 绑定的 minitool（须在 minitools.json 登记）；与 skill 二者其一" },
+        "kind": {
+          "enum": ["produce", "review", "check"],
+          "default": "produce",
+          "description": "produce=产出步 / review=评审步（R6 下仍是普通 agent 节点，不是门）/ check=确定性校验步"
+        },
+        "knowledge": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "注入标尺的知识条目（kb/… 或 kb/…/* 通配）"
+        },
+        "asserts": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "声明断言（runDeclaredAsserts 单点执行，三态裁决，R5 §4.1 口径不变）"
+        },
+        "config": {
+          "type": "object",
+          "description": "内容配置旋钮表：key → {type, default, desc, enum?}。每个 tool 必须声明（R5 E7 口径沿用）",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["type", "desc"],
+            "properties": {
+              "type": { "enum": ["number", "string", "boolean", "enum"] },
+              "default": {},
+              "desc": { "type": "string" },
+              "enum": { "type": "array" }
+            }
+          }
+        },
+        "capability": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string" },
+          "description": "本 tool 提供什么能力（人类词）。渲染与选工具的唯一依据；必须 ⊆ 模块 caps（module-lint E 级）"
+        },
+        "slot": {
+          "$ref": "#/definitions/slot",
+          "description": "默认插入点。骨架成员可省略；非骨架成员必填（module-lint E 级）"
+        },
+        "also_fits": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/slot" },
+          "description": "其他允许的插入点（用户/优化器可改到这里）。缺省 []"
+        },
+        "requires": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+          "description": "前置 tool（未启用则本 tool 不可启用；展开器做可达性剪枝，缺失报错不静默丢）。缺省 []"
+        },
+        "adds": {
+          "type": "object",
+          "description": "插件式增量：插入后追加的断言 / 标尺 / 旋钮（伏笔/暗线类插件的载体）。缺省 {}",
+          "additionalProperties": false,
+          "properties": {
+            "asserts": { "type": "array", "items": { "type": "string" } },
+            "knowledge": { "type": "array", "items": { "type": "string" } },
+            "config": { "type": "object" }
+          }
+        }
+      }
+    }
+  }
+}

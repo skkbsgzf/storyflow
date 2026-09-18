@@ -1,559 +1,174 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "miniflow/flow",
-  "title": "flow 描述符（flow@2 · 统一配置）",
-  "description": "flows/<id>/flow.json。字段名唯一化 + 边参数化，见 docs/规范-项目文件与流程配置-R4.md 第五节。deprecated 字段内核仍可读但 lint 报 warn。",
+  "title": "flow@3 · 模块序列流程",
+  "description": "flows/<id>/flow.json。flow 不再手写节点与边——只写「模块序列」：走哪几个模块、每个模块要什么能力（caps）、模块之间怎么放行（link）。节点与边由内核 modules.ts::expandFlow 从 module@1 骨架派生（R6 规范 §二/§三）。取代 flow@2（graph/stages 手画形态废弃，一次性转换见 tools/flow-v3-migrate.py）。设计源：docs/规范-模块化flow与工具箱-R6.md。",
   "type": "object",
-  "required": [
-    "format",
-    "id",
-    "title",
-    "version",
-    "status",
-    "graph"
-  ],
+  "required": ["format", "id", "title", "version", "status", "modules"],
+  "additionalProperties": false,
   "properties": {
-    "format": {
-      "type": "string",
-      "pattern": "^flow@[12]$"
-    },
+    "format": { "const": "flow@3" },
     "id": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "流程 id，即 flows/<id>/ 目录名"
     },
-    "title": {
-      "type": "string"
-    },
-    "desc": {
-      "type": "string"
-    },
-    "version": {
-      "type": "string"
-    },
+    "title": { "type": "string" },
+    "desc": { "type": "string" },
+    "version": { "type": "string" },
     "status": {
-      "enum": [
-        "draft",
-        "official",
-        "deprecated"
-      ]
+      "enum": ["draft", "official", "retired"],
+      "description": "draft=草稿 / official=官方发布（商店可装）/ retired=退役"
     },
     "inputs": {
       "type": "object",
+      "description": "流程输入契约（开跑前由项目配置/CLI 装载）。键名 = 输入名",
       "additionalProperties": {
         "type": "object",
+        "required": ["type"],
         "properties": {
-          "type": {
-            "enum": [
-              "project",
-              "string",
-              "enum",
-              "number",
-              "boolean"
-            ]
-          },
-          "required": {
-            "type": "boolean"
-          },
+          "type": { "enum": ["project", "string", "number", "boolean", "enum"] },
+          "required": { "type": "boolean" },
           "default": {},
-          "options": {
+          "desc": { "type": "string" },
+          "options": { "type": "array", "description": "type=enum 的取值表" },
+          "bind": {
+            "type": "object",
+            "description": "输入绑定到模块级条件（R6 保留模块级 when）",
+            "properties": {
+              "edge": { "type": "string", "description": "受控边 id" },
+              "module": { "type": "string", "description": "受控模块实例 id" }
+            }
+          }
+        }
+      }
+    },
+    "defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "link": {
+          "enum": ["auto", "manual"],
+          "description": "模块实例未显式声明 link 时的缺省连接模式"
+        }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "description": "R6 简化：旧 kit_boundary / gate_mode 退役，运行时策略只剩 link_default（默认连接模式）+ 优化器口径（adapt）+ 预算（budget）",
+      "additionalProperties": false,
+      "properties": {
+        "link_default": {
+          "enum": ["auto", "manual"],
+          "description": "全局缺省连接模式；优先级 = 模块实例 link > defaults.link > policy.link_default"
+        },
+        "adapt": {
+          "enum": ["off", "propose", "apply"],
+          "description": "优化器权限：off=只观测 / propose=只出提案 / apply=低风险自动落地（R5 口径沿用）"
+        },
+        "budget": {
+          "type": "object",
+          "description": "成本预算（tokens/时延上限等），优化器超支预警用",
+          "additionalProperties": true
+        }
+      }
+    },
+    "modules": {
+      "type": "array",
+      "minItems": 1,
+      "description": "模块序列 = 流程本体。顺序即执行顺序；相邻实例之间由内核铸一个连接件节点 <实例id>.link",
+      "items": {
+        "type": "object",
+        "required": ["id", "module"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "description": "模块实例 id（全 flow 唯一、稳定）；派生节点 id 前缀 <实例id>.<tool>，连接件为 <实例id>.link"
+          },
+          "module": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "description": "引用 modules/<id>/module.json"
+          },
+          "link": {
+            "enum": ["auto", "manual"],
+            "description": "进入本模块的连接件模式；缺省取 defaults.link，再缺省取 policy.link_default"
+          },
+          "caps": {
             "type": "array",
-            "items": {
-              "type": "string"
+            "uniqueItems": true,
+            "items": { "type": "string" },
+            "description": "想要的能力集合（人类词，须 ⊆ 目标模块 caps）；缺省 = 骨架自带能力。写「伏笔」而不是 foreshadow-plant"
+          },
+          "insert": {
+            "type": "object",
+            "description": "显式把 tool 钉到插槽：{\"<slot>\": [\"<tool>\", …]}。slot/tool 必须存在于目标模块（flow-lint 校验）",
+            "additionalProperties": {
+              "type": "array",
+              "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" }
             }
           },
-          "min": {
-            "type": "number"
+          "iterate": {
+            "type": "object",
+            "description": "按单位重复执行（如按章/卷/集推进写作模块）",
+            "additionalProperties": false,
+            "properties": {
+              "unit": { "enum": ["chapter", "volume", "episode"], "description": "重复单位：章 / 卷 / 集" },
+              "over": { "type": "string", "description": "单位来源（上游产物字段名，如 卷纲 / 分集功能表）" },
+              "first": { "type": "integer", "minimum": 1, "description": "起始单位序号（如 first:1 从第 1 章起）" }
+            }
           },
-          "max": {
-            "type": "number"
+          "vary": {
+            "type": "object",
+            "description": "逐单位差异：{\"<单位序号>\": {caps:[…], insert:{…}}}（如第 13 章加伏笔回收能力）",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "caps": { "type": "array", "items": { "type": "string" } },
+                "insert": {
+                  "type": "object",
+                  "additionalProperties": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            }
           },
-          "desc": {
-            "type": "string"
+          "when": {
+            "type": "string",
+            "description": "模块级可选开关条件（绑定 inputs，如 题材类型）；节点级 when 已取消（模块内是线性骨架，无分支）"
           }
         }
       }
     },
     "outputs": {
       "type": "array",
-      "description": "交付出口清单（唯一交付真相）。路径缺省取该节点的 output（或 iterate.artifact）；path 仅当交付路径与之不同且是合格路径时出现。定序由 对外交付/NN- 前缀承担，不再设 order（避免第二处定序真相）",
+      "description": "流程交付出口：声明哪个模块实例产出什么交付物（R6 改 outputs[].node → outputs[].module；不再指向节点）",
       "items": {
         "type": "object",
-        "required": [
-          "node"
-        ],
+        "required": ["module", "title"],
         "additionalProperties": false,
         "properties": {
-          "node": {
+          "module": {
             "type": "string",
-            "description": "产它的节点（须存在于 graph.nodes）"
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "description": "产出该交付物的模块实例 id（须存在于 modules[]）"
           },
-          "path": {
-            "type": "string",
-            "description": "交付路径；缺省 = 节点 output"
-          },
-          "title": {
-            "type": "string",
-            "description": "交付名/说明（交付页标题）"
-          },
-          "audience": {
-            "type": "string",
-            "description": "给谁看"
-          },
-          "style": {
-            "type": "string",
-            "description": "按什么标准"
-          },
-          "file": {
-            "type": "string",
-            "deprecated": true,
-            "description": "→ 改用 path（缺省回落节点 output）"
-          },
-          "order": {
-            "type": "integer",
-            "deprecated": true,
-            "description": "→ 定序由 NN- 前缀承担"
-          },
-          "ext": {
-            "type": "string",
-            "deprecated": true
-          }
+          "title": { "type": "string", "description": "交付物名（如 前三章终稿）" },
+          "audience": { "type": "string", "description": "受众（如 平台编辑 / 甲方）" }
         }
       }
-    },
-    "policy": {
-      "type": "object",
-      "description": "R5 编排策略（生成式 flow 的默认旋钮）。运行时可被 projects/<id>/registry/overlay.json 的 set-policy 覆盖。",
-      "properties": {
-        "kit_boundary": {
-          "enum": ["always", "auto", "off"],
-          "default": "always",
-          "description": "kit 域切换处的人工验收：always 每处都挂 / auto 仅高风险跨界挂 / off 全自动"
-        },
-        "gate_mode": {
-          "enum": ["auto", "manual"],
-          "default": "auto",
-          "description": "非 kit-boundary 门节点的处理：auto=断言全过即自过（不阻塞）/ manual=仍按人工门挂起"
-        },
-        "adapt": {
-          "enum": ["off", "propose", "apply"],
-          "default": "propose",
-          "description": "优化 agent 的权力：off 只观测 / propose 产出提案待批 / apply 低风险规则自动落 overlay"
-        },
-        "budget": {
-          "type": "object",
-          "description": "自由预算（优化器的成本约束）",
-          "properties": {
-            "tokens": { "type": "number" },
-            "latencyMs": { "type": "number" },
-            "humanGates": { "type": "integer", "description": "本轮允许的人工验收次数上限" }
-          }
-        }
-      }
-    },
-    "stages": {
-      "type": "array",
-      "description": "R5：阶段不再是门的容器，只是给面板/背景卡用的语义分组。",
-      "items": {
-        "type": "object",
-        "required": [
-          "id",
-          "entry",
-          "gate"
-        ],
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "entry": {
-            "type": "string"
-          },
-          "gate": {
-            "type": "string"
-          },
-          "nodes": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "question": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "graph": {
-      "type": "object",
-      "required": [
-        "nodes",
-        "edges"
-      ],
-      "properties": {
-        "format": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "outputs": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "图的终点节点集合（拓扑概念，渲染用）。交付文件清单在顶层 outputs"
-        },
-        "nodes": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/$defs/node"
-          }
-        },
-        "edges": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/edge"
-          }
-        }
-      }
-    },
-    "quality": {
-      "type": "object"
-    },
-    "harness": {
-      "type": "object"
     },
     "changelog": {
-      "type": "array"
-    },
-    "deliverables": {
       "type": "array",
-      "deprecated": true,
-      "description": "→ 已并入 outputs[]（交付清单唯一化，规范 R4 §5.1）"
-    },
-    "internalArtifacts": {
-      "type": "array"
-    }
-  },
-  "$defs": {
-    "nodeCommon": {
-      "type": "object",
-      "required": [
-        "kind",
-        "title"
-      ],
-      "properties": {
-        "kind": {
-          "enum": [
-            "novel-txt",
-            "core",
-            "agent",
-            "gate",
-            "srd"
-          ]
-        },
-        "title": {
-          "type": "string"
-        },
-        "stage": {
-          "type": "string",
-          "description": "必须 ∈ 顶层 stages[].id"
-        },
-        "output": {
-          "type": "string",
-          "description": "产物路径（唯一字段名）。路径须落在准入目录内"
-        },
-        "desc": {
-          "type": "string"
-        },
-        "file": {
-          "type": "string",
-          "deprecated": true,
-          "description": "→ 改用 output"
-        },
-        "asserts": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "校验声明（唯一字段名）：美学断言 id / integrity"
-        },
-        "check": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "deprecated": true,
-          "description": "→ 改用 asserts（core 节点）"
-        },
-        "review": {
-          "type": "string",
-          "deprecated": true,
-          "description": "→ 改用 asserts（agent/gate 节点）"
-        },
-        "when": {
-          "$ref": "#/$defs/when",
-          "description": "节点级条件：可选模块开关。不活跃 = 该模块本次运行不参与（连同出入边裁出计划）"
-        }
-      }
-    },
-    "node": {
-      "allOf": [
-        {
-          "$ref": "#/$defs/nodeCommon"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "kit": {
-              "type": "string",
-              "description": "agent/gate：kit 域（search|plot|prose|tool|…）"
-            },
-            "op": {
-              "type": "string",
-              "description": "agent/gate：域内操作，须存在于 kits/<kit>/kit.json"
-            },
-            "skill": {
-              "type": "string",
-              "deprecated": true,
-              "description": "→ 由 kit+op 解析（兼容位）"
-            },
-            "minitool": {
-              "type": "string",
-              "description": "core：确定性工具名，须登记于 tools/minitools.json"
-            },
-            "loads": {
-              "description": "core：装载清单（kb 路径 / 上游文件 / 输入键）",
-              "oneOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              ]
-            },
-            "kb": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "deprecated": true,
-              "description": "→ 收编进 kit.json 的 op.knowledge"
-            },
-            "assist": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "agent：协作技能"
-            },
-            "iterate": {
-              "type": "object",
-              "description": "agent：迭代实例节点",
-              "required": [
-                "unit"
-              ],
-              "properties": {
-                "unit": {
-                  "type": "string"
-                },
-                "over": {
-                  "type": "string"
-                },
-                "artifact": {
-                  "type": "string"
-                },
-                "first": {
-                  "type": "integer"
-                }
-              }
-            },
-            "spotCheck": {
-              "type": "boolean"
-            },
-            "webSearch": {
-              "type": "boolean"
-            },
-            "policy": {
-              "type": "string"
-            },
-            "route": {
-              "type": "string"
-            },
-            "oversight": {
-              "type": "string"
-            },
-            "onFail": {
-              "type": "string",
-              "description": "core：失败动作 block|warn"
-            },
-            "filterBy": {
-              "type": "string",
-              "description": "core kb_load：按上游字段过滤装载"
-            },
-            "template": {
-              "type": "string"
-            },
-            "reviewers": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "deprecated": true,
-              "description": "→ R5 起红方视角不再是图上节点：收编为被判定 op 的 config（如 strictness / review_angles）"
-            },
-            "gate_role": {
-              "enum": [
-                "kit-boundary"
-              ],
-              "description": "gate：R5 起**唯一**合法值 kit-boundary（kit 域切换处的人工验收）。旧值 stage|final|spot 已废弃：门从图上节点降级为 op 的 asserts/config，人工裁决只保留在域边界。非 kit-boundary 的门节点由内核按 auto 语义处理（断言全过即自过，journal 留痕），不再阻塞。"
-            },
-            "config": {
-              "type": "object",
-              "description": "R5 内容配置项取值：覆盖 kit 侧 op.config 的 default（键须存在于 op.config，否则 lint warn）。键为工具自己的旋钮名，如 depth/style/maxChars/review_angles。",
-              "additionalProperties": {}
-            }
-          }
-        }
-      ]
-    },
-    "when": {
-      "description": "条件谓词：结构化对象（推荐）或字符串（兼容，可解析=warn，不可解析=block）。缺省 = 无条件",
-      "oneOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "verdict": {
-              "enum": [
-                "none",
-                "awaiting",
-                "pass",
-                "pass-with-conditions",
-                "send-back",
-                "reject"
-              ]
-            },
-            "challenge": {
-              "type": "boolean"
-            },
-            "cause": {
-              "type": "string",
-              "description": "根因指认，对照 state.lastRejectReason"
-            },
-            "input": {
-              "type": "string"
-            },
-            "eq": {},
-            "gt": {
-              "type": "number"
-            },
-            "lt": {
-              "type": "number"
-            },
-            "loop": {
-              "enum": [
-                "pending",
-                "exhausted"
-              ],
-              "description": "回边：还有/已无未完成实例"
-            },
-            "any": {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/when"
-              }
-            },
-            "all": {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/when"
-              }
-            }
-          }
-        }
-      ]
-    },
-    "edge": {
-      "type": "object",
-      "required": [
-        "id",
-        "from",
-        "to",
-        "role"
-      ],
-      "additionalProperties": false,
-      "properties": {
-        "id": {
-          "type": "string",
-          "pattern": "^e-[a-z0-9-]+$",
-          "description": "统一前缀 e-（拒绝 e1/e2 序号型）"
-        },
-        "from": {
-          "type": "string"
-        },
-        "to": {
-          "type": "string"
-        },
-        "role": {
-          "enum": [
-            "flow",
-            "reject",
-            "optional",
-            "loop",
-            "batch"
-          ]
-        },
-        "via": {
-          "type": "string",
-          "description": "执行语义；与目标节点一致时**派生、不写**。仅差异时填 <kit>.<op> | core.<minitool>"
-        },
-        "when": {
-          "$ref": "#/$defs/when"
-        },
-        "params": {
-          "type": "object",
-          "description": "面板可渲染的连线参数",
-          "properties": {
-            "scope": {
-              "type": "string",
-              "description": "reject：失效范围"
-            },
-            "mode": {
-              "type": "string",
-              "description": "reject：回注方式（定点重做/本阶段入口）"
-            },
-            "parallel": {
-              "type": "boolean",
-              "description": "同批并行"
-            }
-          }
-        },
-        "desc": {
-          "type": "string"
-        },
-        "optional": {
-          "type": "boolean",
-          "deprecated": true,
-          "description": "→ role:\"optional\""
-        },
-        "loop": {
-          "type": "boolean",
-          "deprecated": true,
-          "description": "→ role:\"loop\""
-        },
-        "transform": {
-          "type": "string",
-          "deprecated": true,
-          "description": "→ 删（派生自目标节点）或改用 via"
+      "description": "版本记录 [{version, date, changes[]}]",
+      "items": {
+        "type": "object",
+        "properties": {
+          "version": { "type": "string" },
+          "date": { "type": "string" },
+          "changes": { "type": "array", "items": { "type": "string" } }
         }
       }
     }

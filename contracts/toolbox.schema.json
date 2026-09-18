@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "miniflow/toolbox",
+  "title": "toolbox@1 · 能力标签 → 工具映射（渲染与选工具共用）",
+  "description": "由 module@1 + flow 模块实例的 caps 派生的渲染视图：前端工具箱抽屉（toolboxPaper）与能力标签条按此形状绘制，内核选工具（expandFlow）按同一映射接线。形状来源 contracts/module.schema.json；启用态 = flow 实例 caps/insert 的运行时结果。勾选工具 → 生成 overlay patch（set-module caps / insert-tool），不直接改 flow.json。见 docs/规范-模块化flow与工具箱-R6.md §六/§七。",
+  "type": "object",
+  "required": ["format", "modules"],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "const": "toolbox@1" },
+    "modules": {
+      "type": "object",
+      "description": "模块实例 id → 该实例的工具箱",
+      "additionalProperties": { "$ref": "#/definitions/moduleToolbox" }
+    }
+  },
+  "definitions": {
+    "moduleToolbox": {
+      "type": "object",
+      "required": ["module", "name", "caps", "capsEnabled", "groups"],
+      "additionalProperties": false,
+      "properties": {
+        "module": { "type": "string", "description": "模块 id" },
+        "name": { "type": "string", "description": "工种名" },
+        "desc": { "type": "string" },
+        "caps": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string" },
+          "description": "模块全部能力标签（标签条的「○ 可启用」全集）"
+        },
+        "capsEnabled": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string" },
+          "description": "已启用能力（标签条的「✓」；= flow 实例 caps ∪ 骨架覆盖能力）"
+        },
+        "spine": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "当前启用的节点序列（骨架 + 已启用插件，按执行次序）"
+        },
+        "groups": {
+          "type": "array",
+          "minItems": 1,
+          "description": "按能力分组的工具清单（抽屉主体）",
+          "items": {
+            "type": "object",
+            "required": ["cap", "tools"],
+            "additionalProperties": false,
+            "properties": {
+              "cap": { "type": "string", "description": "能力标签" },
+              "tools": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": ["tool", "title", "slot", "enabled"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "tool": { "type": "string", "description": "tool id（= module@1 ops 键）" },
+                    "title": { "type": "string" },
+                    "slot": {
+                      "$ref": "#/definitions/slotRef",
+                      "description": "启用时的插入点（默认 slot；用户可在 also_fits 内改）"
+                    },
+                    "alsoFits": { "type": "array", "items": { "$ref": "#/definitions/slotRef" } },
+                    "requires": { "type": "array", "items": { "type": "string" } },
+                    "enabled": {
+                      "type": "boolean",
+                      "description": "当前是否启用（骨架成员恒 true；插件由 flow 实例 caps/insert 决定）"
+                    },
+                    "defaultEnabled": {
+                      "type": "boolean",
+                      "description": "是否骨架成员（与 enabled 解耦——被 vary 关掉的骨架成员 enabled=false 但 defaultEnabled=true）"
+                    },
+                    "config": {
+                      "type": "object",
+                      "description": "该 tool 的旋钮表 + 逐键来源（抽屉展开可见）",
+                      "additionalProperties": { "type": "object" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "slotRef": {
+      "type": "string",
+      "pattern": "^(after|before):[a-z][a-z0-9-]*$|^end$"
+    }
+  }
+}

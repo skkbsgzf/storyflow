@@ -1,0 +1,184 @@
+{
+  "format": "module@1",
+  "id": "search",
+  "name": "检索",
+  "desc": "检索域：知识库与项目产物的确定性取数（纯机器件能力包，无常驻流水线节点）",
+  "version": "0.1.0",
+  "ops": {
+    "kb_load": {
+      "title": "知识装载",
+      "minitools": [
+        "kb_load"
+      ],
+      "desc": "按节点 loads 清单聚合知识文件，产出带来源注记的装载件",
+      "config": {
+        "dedupe": {
+          "type": "boolean",
+          "default": true,
+          "desc": "重复来源去重",
+          "effect": "关掉 = 同一条款重复占预算",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "sourceNote": {
+          "type": "boolean",
+          "default": true,
+          "desc": "每段带来源注记",
+          "effect": "关掉 = 无法回溯条款出处",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "maxChars": {
+          "type": "number",
+          "default": 40000,
+          "min": 0,
+          "desc": "装载总字数上限",
+          "effect": "超出即截断",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "知识装载"
+      ]
+    },
+    "kb_search": {
+      "title": "知识检索",
+      "minitools": [
+        "kb_search"
+      ],
+      "desc": "（planned，内核未实现，触达即 blocked）按 tags/关键词检索知识库条目",
+      "config": {
+        "limit": {
+          "type": "number",
+          "default": 8,
+          "min": 0,
+          "desc": "返回条目数上限",
+          "effect": "提高 = 召回更全、上下文更挤",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "tags": {
+          "type": "string",
+          "default": "",
+          "desc": "标签过滤（逗号分隔，空=不限）",
+          "effect": "缩小 = 更准也更窄",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "rerank": {
+          "type": "enum",
+          "default": "关键词",
+          "enum": [
+            "无",
+            "关键词",
+            "语义"
+          ],
+          "desc": "重排方式",
+          "effect": "语义 = 更准但更贵",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "知识检索"
+      ]
+    },
+    "kb_read": {
+      "title": "知识条目读取",
+      "minitools": [
+        "kb_read"
+      ],
+      "desc": "按条目 id 读取知识库内容——agent 节点场景已由 kit 标尺装载统一承担（assembler.loadKnowledge）",
+      "config": {
+        "mode": {
+          "type": "enum",
+          "default": "全文",
+          "enum": [
+            "全文",
+            "摘要"
+          ],
+          "desc": "读取模式",
+          "effect": "摘要 = 省预算丢细节",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "maxChars": {
+          "type": "number",
+          "default": 2000,
+          "min": 0,
+          "desc": "单条读取字数上限",
+          "effect": "超出即截断",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "条目读取"
+      ]
+    },
+    "flow_read_artifact": {
+      "title": "产物读取",
+      "minitools": [
+        "flow_read_artifact"
+      ],
+      "desc": "读取上游产物——已由任务包 context 上游摘录承担（assembler.buildTaskPackage）",
+      "config": {
+        "which": {
+          "type": "enum",
+          "default": "最新",
+          "enum": [
+            "最新",
+            "指定轮次"
+          ],
+          "desc": "读取哪一版产物",
+          "effect": "指定轮次 = 可复现历史判断",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "maxChars": {
+          "type": "number",
+          "default": 4000,
+          "min": 0,
+          "desc": "单件读取字数上限",
+          "effect": "超出即截断",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "产物读取"
+      ]
+    }
+  },
+  "skeleton": {
+    "spine": [],
+    "edges": []
+  },
+  "caps": [
+    "知识装载",
+    "知识检索",
+    "条目读取",
+    "产物读取"
+  ]
+}

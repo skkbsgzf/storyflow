@@ -1,0 +1,172 @@
+{
+  "format": "module@1",
+  "id": "delivery",
+  "name": "交付",
+  "desc": "交付域：成品出库——docx 硬断言导出、交付页渲染、客户批注回流解析",
+  "version": "0.1.0",
+  "ops": {
+    "export-doc": {
+      "script": "tools/export-doc.py",
+      "title": "export-doc.py",
+      "desc": "export-doc · 小纲/剧本 → Word doc 导出器（export_doc minitool 实现）",
+      "config": {
+        "style": {
+          "type": "enum",
+          "default": "默认",
+          "enum": [
+            "默认",
+            "公文",
+            "网文"
+          ],
+          "desc": "导出模板风格",
+          "effect": "换了 = 交付观感变化",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "verify": {
+          "type": "boolean",
+          "default": true,
+          "desc": "导出后计数/残渣硬断言",
+          "effect": "关掉 = 交付失败不会被发现",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "outDir": {
+          "type": "string",
+          "default": "对外交付",
+          "desc": "导出目录",
+          "effect": "越界路径会被内核拒绝",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "docx交付"
+      ],
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "asserts": [],
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "render_html": {
+      "title": "交付页渲染",
+      "minitools": [
+        "render_html"
+      ],
+      "desc": "静态单文件交付页生成",
+      "config": {
+        "theme": {
+          "type": "enum",
+          "default": "纸感",
+          "enum": [
+            "纸感",
+            "暗色",
+            "极简"
+          ],
+          "desc": "交付页主题",
+          "effect": "换了 = 交付观感变化",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "maxSections": {
+          "type": "number",
+          "default": 20,
+          "min": 0,
+          "desc": "合入的最大产物数",
+          "effect": "提高 = 页面更全也更长",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "inlineCss": {
+          "type": "boolean",
+          "default": true,
+          "desc": "样式内联（单文件离线可读）",
+          "effect": "关掉 = 离开仓库即掉样式",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "交付页"
+      ],
+      "slot": "end",
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "asserts": [],
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "docx_ingest": {
+      "title": "批注回流解析",
+      "minitools": [
+        "docx_ingest"
+      ],
+      "desc": "（planned，内核未实现，触达即 blocked）解析客户回传 docx 批注 → 结构化意见清单（批注回流=on 时触达）",
+      "config": {
+        "stripComments": {
+          "type": "boolean",
+          "default": true,
+          "desc": "解析后剥离原批注格式",
+          "effect": "关掉 = 意见清单带格式噪声",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "groupBy": {
+          "type": "enum",
+          "default": "段落",
+          "enum": [
+            "段落",
+            "批注人"
+          ],
+          "desc": "意见清单的分组方式",
+          "effect": "按批注人 = 便于追责",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "批注回流"
+      ],
+      "slot": "end",
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "asserts": [],
+        "knowledge": [],
+        "config": {}
+      }
+    }
+  },
+  "skeleton": {
+    "spine": [
+      "export-doc"
+    ],
+    "edges": []
+  },
+  "caps": [
+    "docx交付",
+    "交付页",
+    "批注回流"
+  ]
+}

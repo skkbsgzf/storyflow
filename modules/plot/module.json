@@ -1,0 +1,750 @@
+{
+  "format": "module@1",
+  "id": "plot",
+  "name": "编剧",
+  "desc": "编剧域：主线剧情、人设、世界观、暗线、伏笔悬念的编排——剧情在成文前锁定，成文层无权改戏",
+  "version": "0.1.0",
+  "ops": {
+    "structure-design": {
+      "skill": "structure-design",
+      "title": "structure-design",
+      "desc": "第二阶段技能——从结构目录选型并完成深挖/改造/融合三步，产出故事框架案（结构选型理由+骨架具体化+改造点+不确定因素注入提案），确保节奏对齐市场实盘。",
+      "knowledge": [
+        "kb/aesthetic/conflict-escalation",
+        "kb/aesthetic/pacing-density",
+        "kb/aesthetic/reversal",
+        "kb/market/setting-rules",
+        "kb/market/structure",
+        "kb/structure/catalog"
+      ],
+      "minitools": [
+        "kb_search",
+        "check_trope_combo"
+      ],
+      "config": {
+        "fuseCount": {
+          "type": "number",
+          "default": 2,
+          "min": 0,
+          "desc": "融合的结构数",
+          "effect": "提高 = 更独特、可读性风险上升",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "injectUncertainty": {
+          "type": "boolean",
+          "default": true,
+          "desc": "是否输出不确定因素注入提案",
+          "effect": "关掉 = 单薄问题被掩盖",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "steps": {
+          "type": "enum",
+          "default": "三步",
+          "enum": [
+            "两步",
+            "三步"
+          ],
+          "desc": "深挖/改造/融合的执行粒度",
+          "effect": "两步 = 快，三步 = 稳",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "结构"
+      ],
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "asserts": [],
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "plot-choreographer": {
+      "skill": "plot-choreographer",
+      "title": "plot-choreographer",
+      "desc": "剧情编排技能——把八段式策划案升级为可拍的三线骨架×分集功能表×卡点编排表；数据骨架（市场实盘）与美学标准（kb/aesthetic）双驱动。",
+      "knowledge": [
+        "kb/aesthetic/conflict-escalation",
+        "kb/aesthetic/emotion-curve",
+        "kb/aesthetic/ending",
+        "kb/aesthetic/pacing-density",
+        "kb/aesthetic/reversal",
+        "kb/aesthetic/scene-value",
+        "kb/market/constraints"
+      ],
+      "minitools": [
+        "check_aesthetic_asserts"
+      ],
+      "asserts": [
+        "AE-CURVE-STALL",
+        "AE-CURVE-TYPE",
+        "AE-CUSHION",
+        "AE-DESERT",
+        "AE-END-MECH",
+        "AE-REV-MIDPOINT",
+        "AE-REV-SETUP"
+      ],
+      "config": {
+        "actModel": {
+          "type": "enum",
+          "default": "八段式",
+          "enum": [
+            "八段式",
+            "三幕",
+            "单元剧"
+          ],
+          "desc": "结构模型选型",
+          "effect": "换了 = 分集功能表全表重排",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "cardDensity": {
+          "type": "enum",
+          "default": "标准",
+          "enum": [
+            "疏",
+            "标准",
+            "密"
+          ],
+          "desc": "分场卡密度",
+          "effect": "提高 = 每集卡点更多、拍摄成本更高",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "dataAnchor": {
+          "type": "enum",
+          "default": "市场实盘",
+          "enum": [
+            "市场实盘",
+            "母题",
+            "混合"
+          ],
+          "desc": "节奏的标尺来源",
+          "effect": "换成母题 = 少依赖实盘数据",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "lineCount": {
+          "type": "number",
+          "default": 3,
+          "min": 0,
+          "desc": "三线骨架的线数",
+          "effect": "提高 = 结构更丰富也更难收",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "主线"
+      ],
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "asserts": [],
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "novel-bible": {
+      "skill": "novel-bible",
+      "title": "novel-bible",
+      "desc": "长篇网文开书技能——三层问答定书（题材与核心情绪→主角与核心欲望→前十事件链），产出 World Bible 与卷纲前置件；三问答完才许开书。",
+      "knowledge": [
+        "kb/aesthetic/character",
+        "kb/aesthetic/conflict-escalation",
+        "kb/formats/webnovel-longform",
+        "kb/trope/*"
+      ],
+      "minitools": [
+        "kb_search",
+        "check_trope_combo"
+      ],
+      "assist": [
+        "internet-feel"
+      ],
+      "config": {
+        "quests": {
+          "type": "number",
+          "default": 3,
+          "min": 0,
+          "desc": "开书三问的问答轮数",
+          "effect": "提高 = 设定更稳，开书更慢",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "powerSystem": {
+          "type": "enum",
+          "default": "力量体系",
+          "enum": [
+            "力量体系",
+            "情绪体系",
+            "社会体系"
+          ],
+          "desc": "核心设定的骨架类型",
+          "effect": "换了 = 全书冲突来源换血",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "deadlineRounds": {
+          "type": "number",
+          "default": 3,
+          "min": 0,
+          "desc": "三问未答完最多许开书几轮",
+          "effect": "提高 = 更难卡住，也更容易带病开书",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "人设"
+      ],
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "asserts": [],
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "scene-breakdown": {
+      "skill": "scene-breakdown",
+      "title": "scene-breakdown",
+      "desc": "小纲阶段技能——把大纲拆成逐分镜的脚本 doc：每个分镜的场景/人物行动/台词，达意即可无需打磨；文末附创作思路页。输出 doc 格式供客户批注修改后回传。",
+      "knowledge": [
+        "kb/aesthetic/character",
+        "kb/aesthetic/dialogue",
+        "kb/aesthetic/hook-3s",
+        "kb/aesthetic/pacing-density",
+        "kb/aesthetic/scene-value",
+        "kb/method/longform-engineering"
+      ],
+      "minitools": [
+        "check_aesthetic_asserts"
+      ],
+      "config": {
+        "shotsPerScene": {
+          "type": "number",
+          "default": 6,
+          "min": 0,
+          "desc": "每个场景的分镜数",
+          "effect": "提高 = 成稿更细、小纲更慢",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "includeRationale": {
+          "type": "boolean",
+          "default": true,
+          "desc": "文末附创作思路页",
+          "effect": "关掉 = 客户批注时缺少依据",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "dialogLevel": {
+          "type": "enum",
+          "default": "达意",
+          "enum": [
+            "达意",
+            "打磨"
+          ],
+          "desc": "分镜里台词的打磨程度",
+          "effect": "改成打磨 = 与成稿阶段重复劳动",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "分场"
+      ],
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "asserts": [],
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "world-forge": {
+      "skill": "world-forge",
+      "title": "world-forge",
+      "desc": "网文开书技能（单元剧标准）——选题后先搞世界观：力量体系/势力矛盾/主角力量来源与代价/世界规则四件套；产出世界观圣经（人读）+ wiki 词条库（RAG，index.json+条目交叉链接）；人物动机从世界观长出来，不硬安。",
+      "knowledge": [
+        "kb/aesthetic/character",
+        "kb/aesthetic/conflict-escalation",
+        "kb/continuity/worldbook",
+        "kb/formats/webnovel-fastfood",
+        "kb/formats/webnovel-longform",
+        "kb/structure/episodic-webnovel",
+        "kb/trope/*",
+        "kb/craft/highlight-loop"
+      ],
+      "config": {
+        "factionCount": {
+          "type": "number",
+          "default": 3,
+          "min": 0,
+          "desc": "势力矛盾条数",
+          "effect": "提高 = 冲突来源更多，读者认知负担上升",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "powerCost": {
+          "type": "boolean",
+          "default": true,
+          "desc": "力量必须有代价",
+          "effect": "关掉 = 爽感无上限、后期崩盘",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "wikiEntries": {
+          "type": "number",
+          "default": 20,
+          "min": 0,
+          "desc": "wiki 词条库条目数",
+          "effect": "提高 = RAG 更全，索引成本上升",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "世界观"
+      ],
+      "slot": "before:structure-design",
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "asserts": [],
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "episodic-outline": {
+      "skill": "episodic-outline",
+      "title": "episodic-outline",
+      "desc": "网文大纲技能（单元剧标准·轻量）——暗线节点表 + 单元剧序列 + 首批单元细纲；不搞编剧式重型结构。大纲→成稿的重心在五问：人设立得住/冲突自然/梗多/节目效果足/没有AI味。",
+      "knowledge": [
+        "kb/aesthetic/pacing-density",
+        "kb/formats/webnovel-fastfood",
+        "kb/structure/episodic-webnovel",
+        "kb/craft/highlight-loop"
+      ],
+      "config": {
+        "units": {
+          "type": "number",
+          "default": 3,
+          "min": 0,
+          "desc": "首批细纲的单元数",
+          "effect": "提高 = 一次摊得更开，返工成本更大",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "hookPerUnit": {
+          "type": "boolean",
+          "default": true,
+          "desc": "每个单元末尾强制钩子",
+          "effect": "关掉 = 单元之间可能泄气",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "darklineDepth": {
+          "type": "enum",
+          "default": "标准",
+          "enum": [
+            "轻",
+            "标准",
+            "重"
+          ],
+          "desc": "暗线铺陈力度",
+          "effect": "提高 = 伏笔更厚，读者短期获得感下降",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "outlineDensity": {
+          "type": "enum",
+          "default": "标准",
+          "enum": [
+            "粗",
+            "标准",
+            "细"
+          ],
+          "desc": "细纲颗粒度",
+          "effect": "提高 = 写作期更省心、大纲期更贵",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "单元剧大纲"
+      ],
+      "slot": "end",
+      "also_fits": [],
+      "requires": [
+        "structure-design"
+      ],
+      "adds": {
+        "asserts": [],
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "script-drama-beat": {
+      "skill": "script-drama-beat",
+      "title": "短剧节拍表",
+      "desc": "竖屏短剧一集的硬格式：场次编号/△动作/台词内联情绪/前3秒钩子/结尾付费卡点体检；剧本是生产工具，不可拍摄内容是禁手。",
+      "knowledge": [
+        "kb/aesthetic/dialogue",
+        "kb/aesthetic/hook-3s",
+        "kb/aesthetic/pacing-density",
+        "kb/aesthetic/platform-compliance",
+        "kb/aesthetic/visual-poster"
+      ],
+      "minitools": [
+        "check_aesthetic_asserts"
+      ],
+      "asserts": [
+        "AE-BEAT-FORMAT",
+        "AE-CARD-END",
+        "AE-CONT-FORESHADOW",
+        "AE-CONT-ITEM",
+        "AE-CONT-KNOW",
+        "AE-DENSITY-CALM",
+        "AE-DENSITY-HOT",
+        "AE-HOOK-EVENT",
+        "AE-VIS-EMPTY"
+      ],
+      "config": {
+        "hookWindowSec": {
+          "type": "number",
+          "default": 3,
+          "min": 0,
+          "desc": "前几秒必须出现钩子",
+          "effect": "提高 = 更宽容；超过 5 秒观众已划走",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "paywallCard": {
+          "type": "boolean",
+          "default": true,
+          "desc": "结尾强制付费卡点体检",
+          "effect": "关掉 = 交付件可能不带商业钩子",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "shotNotation": {
+          "type": "enum",
+          "default": "△动作",
+          "enum": [
+            "△动作",
+            "平板",
+            "无"
+          ],
+          "desc": "镜头标注法",
+          "effect": "换了 = 与拍摄方约定不一致",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "短剧节拍"
+      ],
+      "slot": "after:scene-breakdown",
+      "also_fits": [
+        "end"
+      ],
+      "requires": [],
+      "adds": {
+        "asserts": [],
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "plot-redline": {
+      "skill": "plot-redline",
+      "title": "剧情红队·多方视角评审",
+      "desc": "红方评审技能 v2（视角代入制）——代入目标读者/一般读者/资深编剧/甲方四类人分别给意见，说人话不念指标；打回时指认根因阶段；框架可行但单薄时提案不确定因素注入。每个阶段验收门强制注入。",
+      "kind": "review",
+      "knowledge": [
+        "kb/aesthetic/ai-trace",
+        "kb/aesthetic/constitution",
+        "kb/aesthetic/perspective-review",
+        "kb/aesthetic/platform-compliance",
+        "kb/aesthetic/redline-scoring",
+        "kb/aesthetic/unreasonable-highlight",
+        "kb/structure/catalog"
+      ],
+      "minitools": [
+        "kb_read",
+        "kb_search",
+        "flow_read_artifact",
+        "check_aesthetic_asserts"
+      ],
+      "config": {
+        "angles": {
+          "type": "number",
+          "default": 4,
+          "min": 0,
+          "desc": "代入的评审视角数（读者/编剧/甲方…）",
+          "effect": "提高 = 更全面、成本线性上升",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "harshness": {
+          "type": "enum",
+          "default": "标准",
+          "enum": [
+            "温和",
+            "标准",
+            "苛刻"
+          ],
+          "desc": "苛刻程度",
+          "effect": "提高 = 更多打回更少漏网；过高会空转",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "allowInject": {
+          "type": "boolean",
+          "default": true,
+          "desc": "框架单薄时是否允许提交流程重构建议",
+          "effect": "关掉 = 只报问题不给方案",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "voice": {
+          "type": "enum",
+          "default": "说人话",
+          "enum": [
+            "说人话",
+            "念指标"
+          ],
+          "desc": "意见书的语体",
+          "effect": "念指标 = 读者读不懂，说人话 = 可执行",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "红队评审"
+      ],
+      "slot": "after:scene-breakdown",
+      "also_fits": [
+        "after:plot-choreographer",
+        "before:structure-design",
+        "end"
+      ],
+      "requires": [],
+      "adds": {
+        "asserts": [],
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "subplot-weave": {
+      "skill": "subplot-weave",
+      "title": "暗线编织",
+      "desc": "暗线编织技能——在主骨架之上叠加第二条叙事线（身份线/复仇线/情感线）：暗线锚点表（每锚点=明线事件+暗线推进量）、双轨咬合检查（暗线停摆=空转）、揭示节奏规划（铺垫→半揭→反转→兑现）；暗线只在编剧层锁定，成文层无权改戏。",
+      "kind": "produce",
+      "knowledge": [
+        "kb/structure/episodic-webnovel",
+        "kb/aesthetic/emotion-curve",
+        "kb/aesthetic/reversal",
+        "kb/craft/highlight-loop"
+      ],
+      "minitools": [
+        "check_aesthetic_asserts"
+      ],
+      "config": {
+        "weaveDensity": {
+          "type": "enum",
+          "default": "标准",
+          "enum": [
+            "轻",
+            "标准",
+            "重"
+          ],
+          "desc": "暗线锚点密度",
+          "effect": "提高 = 暗线更厚，读者短期获得感下降",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "revealCurve": {
+          "type": "boolean",
+          "default": true,
+          "desc": "强制产出揭示节奏规划（铺垫→半揭→反转→兑现）",
+          "effect": "关掉 = 暗线揭示时机随缘，反转乏力",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "暗线"
+      ],
+      "slot": "after:plot-choreographer",
+      "also_fits": [],
+      "requires": [
+        "plot-choreographer"
+      ],
+      "adds": {
+        "asserts": [],
+        "knowledge": [
+          "kb/structure/episodic-webnovel"
+        ],
+        "config": {}
+      }
+    },
+    "foreshadow-plant": {
+      "skill": "foreshadow-plant",
+      "title": "伏笔悬念插入",
+      "desc": "伏笔悬念插入技能——按伏笔台账在指定结构位点埋设伏笔（明面日常化伪装+暗面台账登记：埋设章/预期回收章/知情范围），产出伏笔点位表；埋设必须登记台账、到期必须回收（AE-CONT-FORESHADOW），不埋无回收主的死伏笔。",
+      "kind": "produce",
+      "knowledge": [
+        "kb/continuity/state-ledger",
+        "kb/continuity/worldbook",
+        "kb/craft/highlight-loop"
+      ],
+      "minitools": [
+        "continuity_commit",
+        "continuity_check"
+      ],
+      "config": {
+        "plantPerUnit": {
+          "type": "number",
+          "default": 2,
+          "min": 0,
+          "desc": "每单元埋设伏笔数上限",
+          "effect": "提高 = 网更密，回收负担上升",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "disguiseLevel": {
+          "type": "enum",
+          "default": "日常化",
+          "enum": [
+            "明示",
+            "半遮",
+            "日常化"
+          ],
+          "desc": "伏笔的明面伪装强度",
+          "effect": "越日常化 = 读者惊喜感越强，但埋设成本越高",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "伏笔",
+        "悬念"
+      ],
+      "slot": "before:scene-breakdown",
+      "also_fits": [],
+      "requires": [
+        "plot-choreographer"
+      ],
+      "adds": {
+        "asserts": [
+          "AE-CONT-FORESHADOW"
+        ],
+        "knowledge": [],
+        "config": {}
+      }
+    }
+  },
+  "skeleton": {
+    "spine": [
+      "structure-design",
+      "plot-choreographer",
+      "novel-bible",
+      "scene-breakdown"
+    ],
+    "edges": [
+      [
+        "structure-design",
+        "plot-choreographer"
+      ],
+      [
+        "novel-bible",
+        "plot-choreographer"
+      ],
+      [
+        "plot-choreographer",
+        "scene-breakdown"
+      ]
+    ]
+  },
+  "caps": [
+    "结构",
+    "主线",
+    "人设",
+    "分场",
+    "世界观",
+    "单元剧大纲",
+    "短剧节拍",
+    "暗线",
+    "伏笔",
+    "悬念",
+    "红队评审"
+  ]
+}

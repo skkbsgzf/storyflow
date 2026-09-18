@@ -1,0 +1,386 @@
+{
+  "format": "module@1",
+  "id": "topic",
+  "name": "选题",
+  "desc": "选题域：市场盘面调研取数——找梗/素材解剖/时代情绪/热点采集，产出结构化选题素材包",
+  "version": "0.1.0",
+  "ops": {
+    "find-trope": {
+      "skill": "find-trope",
+      "title": "find-trope",
+      "desc": "找梗技能——从市场梗库检索梗族、判定饱和度、选主梗辅梗、沿演化链找新变体落点；梗卡是选题方案的前置件。",
+      "knowledge": [
+        "kb/market/snapshot",
+        "kb/market/structure",
+        "kb/trope/*"
+      ],
+      "minitools": [
+        "kb_search",
+        "check_trope_combo"
+      ],
+      "config": {
+        "mainTropes": {
+          "type": "number",
+          "default": 1,
+          "min": 0,
+          "desc": "主梗数量",
+          "effect": "提高 = 焦点散",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "subTropes": {
+          "type": "number",
+          "default": 3,
+          "min": 0,
+          "desc": "辅梗数量",
+          "effect": "提高 = 组合更新鲜也更难落实",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "saturationCheck": {
+          "type": "boolean",
+          "default": true,
+          "desc": "判定梗族饱和度",
+          "effect": "关掉 = 选到烂梗",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "evolutionDepth": {
+          "type": "enum",
+          "default": "两代",
+          "enum": [
+            "一代",
+            "两代",
+            "链式"
+          ],
+          "desc": "沿演化链向上找的代数",
+          "effect": "越深越新、越难写",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "找梗"
+      ],
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "asserts": [],
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "material-dissect": {
+      "skill": "material-dissect",
+      "title": "material-dissect",
+      "desc": "选题素材解剖技能——申论式四层剥离（现象/利益/权力/结构），把热点事件聚合成关系结构与权力不对称，从关系逆位生成爽点候选，产出材料落位表。素材不解剖=假材料，梗不落位=装饰品。",
+      "knowledge": [
+        "kb/market/meme-rules",
+        "kb/market/topic-anatomy"
+      ],
+      "config": {
+        "layers": {
+          "type": "number",
+          "default": 4,
+          "min": 0,
+          "desc": "申论式剥离层数（现象/利益/权力/结构）",
+          "effect": "减少 = 素材停在表面",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "inversionCount": {
+          "type": "number",
+          "default": 3,
+          "min": 0,
+          "desc": "关系逆位生成的爽点候选数",
+          "effect": "提高 = 候选更多、筛选成本上升",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "placement": {
+          "type": "enum",
+          "default": "落位表",
+          "enum": [
+            "落位表",
+            "散点"
+          ],
+          "desc": "素材落位方式",
+          "effect": "散点 = 素材与结构脱钩",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "素材解剖"
+      ],
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "asserts": [],
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "topic-zeitgeist": {
+      "skill": "topic-zeitgeist",
+      "title": "时代情绪锚",
+      "desc": "主旋律与实时性技能——选题必须锚定一个近 30 天可举证的社会情绪，故事是该情绪的具象化；无锚点的选题是经典母题复读，缺共鸣乘数。",
+      "config": {
+        "windowDays": {
+          "type": "number",
+          "default": 30,
+          "min": 0,
+          "desc": "情绪锚点的可举证时间窗（天）",
+          "effect": "放宽 = 更容易凑数也更平庸",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "evidenceCount": {
+          "type": "number",
+          "default": 3,
+          "min": 0,
+          "desc": "锚点需要的举证条数",
+          "effect": "降低 = 锚点是拍脑袋",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "emotionAnchors": {
+          "type": "number",
+          "default": 1,
+          "min": 0,
+          "desc": "锚定的社会情绪数",
+          "effect": "提高 = 故事要兼顾的情绪更多",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "时代情绪锚"
+      ],
+      "slot": "after:find-trope",
+      "also_fits": [
+        "before:material-dissect"
+      ],
+      "requires": [],
+      "adds": {
+        "asserts": [],
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "internet-feel": {
+      "skill": "internet-feel",
+      "title": "internet-feel",
+      "desc": "网感技能——按市场公式产标题、一句话卖点、共情点与所有对外文案；每个字都在传递钩子或爽点，产出过 24 类去模板化自检。",
+      "knowledge": [
+        "kb/aesthetic/hook-3s",
+        "kb/aesthetic/naturalness-zh",
+        "kb/market/internet-feel"
+      ],
+      "minitools": [
+        "check_aesthetic_asserts"
+      ],
+      "config": {
+        "titleCount": {
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "desc": "标题候选数",
+          "effect": "提高 = 命中率上升、成本线性上升",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "formulaDeck": {
+          "type": "enum",
+          "default": "市场公式",
+          "enum": [
+            "市场公式",
+            "自创"
+          ],
+          "desc": "文案公式来源",
+          "effect": "自创 = 不稳定",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "templateCheck": {
+          "type": "enum",
+          "default": "24类",
+          "enum": [
+            "精简",
+            "24类"
+          ],
+          "desc": "去模板化自检档位",
+          "effect": "精简 = 漏检增加",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "网感文案"
+      ],
+      "slot": "after:material-dissect",
+      "also_fits": [
+        "end"
+      ],
+      "requires": [],
+      "adds": {
+        "asserts": [],
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "deconstruct-book": {
+      "skill": "deconstruct-book",
+      "title": "deconstruct-book",
+      "desc": "拆书技能——按拆书总协议把参考作品拆成六槽位可入库素材（梗/人设/剧情设计/导语/细化/片段），产出带替换变量与使用条件的 KB 候选条目；溯源纪律全程硬约束。",
+      "knowledge": [
+        "kb/aesthetic/character",
+        "kb/aesthetic/pacing-density",
+        "kb/deconstruct/protocol",
+        "kb/deconstruct/style-learning"
+      ],
+      "minitools": [
+        "kb_search",
+        "check_trope_combo"
+      ],
+      "config": {
+        "slots": {
+          "type": "number",
+          "default": 6,
+          "min": 0,
+          "desc": "入库槽位数（梗/人设/剧情设计/导语/细化/片段）",
+          "effect": "减少 = 拆书产出不完整",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "variableReplace": {
+          "type": "boolean",
+          "default": true,
+          "desc": "产出带替换变量的模板条目",
+          "effect": "关掉 = 素材不可复用",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "traceability": {
+          "type": "enum",
+          "default": "逐条溯源",
+          "enum": [
+            "逐条溯源",
+            "抽样"
+          ],
+          "desc": "溯源纪律强度",
+          "effect": "抽样 = 快但没法追责",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "拆书入库"
+      ],
+      "slot": "end",
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "asserts": [],
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "meme_harvest": {
+      "title": "热点素材采集",
+      "minitools": [
+        "meme_harvest"
+      ],
+      "desc": "（planned，内核未实现，触达即 blocked）外部热点/梗源采集（现由宿主 agent 步承担）",
+      "config": {
+        "sinceDays": {
+          "type": "number",
+          "default": 30,
+          "min": 0,
+          "desc": "回看天数",
+          "effect": "放宽 = 更全也更旧",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "limit": {
+          "type": "number",
+          "default": 20,
+          "min": 0,
+          "desc": "采集条数上限",
+          "effect": "提高 = 素材更多、筛选成本上升",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "default": [],
+          "desc": "素材来源清单（空=默认源）",
+          "effect": "限定来源 = 提升可控性",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "热点采集"
+      ]
+    }
+  },
+  "skeleton": {
+    "spine": [
+      "find-trope",
+      "material-dissect"
+    ],
+    "edges": [
+      [
+        "find-trope",
+        "material-dissect"
+      ]
+    ]
+  },
+  "caps": [
+    "找梗",
+    "素材解剖",
+    "时代情绪锚",
+    "网感文案",
+    "拆书入库",
+    "热点采集"
+  ]
+}
