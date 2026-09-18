@@ -234,6 +234,8 @@ export function expandFlow3(
       }
     }
     for (const [f, t] of enabledEdges) {
+      // 骨架边按 seq 序过滤反向边（否则插件桥接 + 分支依赖会成环）
+      if (seq.indexOf(f) >= seq.indexOf(t) && f !== t) continue;
       const viaSkill = mod.ops[t]?.skill;
       edges.push({ id: `e-${mid}-${f}-${t}`, from: `${mid}.${f}`, to: `${mid}.${t}`, role: "flow", ...(viaSkill ? { via: `skill.${viaSkill}` } : {}) });
     }

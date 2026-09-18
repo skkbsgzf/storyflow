@@ -1,0 +1,23 @@
+{
+  "format": "flow@3",
+  "id": "caocao-wudalang",
+  "title": "曹操穿越武大郎",
+  "desc": "R6 模块序列演示：选题→编剧(暗线+伏笔插件)→写作(3章iterate)→交付",
+  "version": "1.0.0",
+  "status": "draft",
+  "inputs": {
+    "direction": { "type": "string", "required": true, "desc": "题材方向" },
+    "chapters": { "type": "number", "default": 3, "desc": "试稿章数" }
+  },
+  "defaults": { "link": "auto" },
+  "policy": { "link_default": "auto", "adapt": "off" },
+  "modules": [
+    { "id": "m1", "module": "topic", "link": "auto", "caps": ["找梗", "素材解剖"] },
+    { "id": "m2", "module": "plot", "link": "manual", "caps": ["主线", "人设", "暗线", "伏笔"] },
+    { "id": "m3", "module": "prose", "link": "auto", "caps": ["正文"], "iterate": { "unit": "chapter", "over": "大纲", "first": 1 } },
+    { "id": "m4", "module": "delivery", "link": "auto" }
+  ],
+  "outputs": [
+    { "module": "m3", "title": "三章终稿", "audience": "番茄编辑" }
+  ]
+}

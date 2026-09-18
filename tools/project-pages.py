@@ -129,22 +129,32 @@ def static_module_views(flow3, reg):
 
 
 def effective_module_views(eff, reg):
-    """effective@2 的 composition 是内核算好的展开结果，直接采用。"""
+    """effective@2 的 composition 是内核算好的展开结果，直接采用（遍历 composition 数组本身）。
+    composition 可能是 dict（key=实例id）或 array（每项有 id 键）。"""
     views, notes = [], []
-    flow3 = eff.get("flow") or {}
-    comp = eff.get("composition") or {}
-    link_default = ((eff.get("policy") or {}).get("link_default")
-                    or (flow3.get("defaults") or {}).get("link") or "auto")
-    for i, inst in enumerate(flow3.get("modules") or []):
-        mod = reg.get(inst.get("module"))
-        if not mod:
-            notes.append(f"模块「{inst.get('module')}」在 modules/ 无声明，实例 {inst.get('id')} 跳过（显式回显）")
-            continue
-        c = comp.get(inst.get("id")) or {}
-        views.append(module_view(inst, mod, i + 1, link_default,
-                                 c.get("spine") or [], c.get("plugins") or []))
-        if c.get("dir"):
-            views[-1]["dir"] = c["dir"]
+    raw_comp = eff.get("composition") or {}
+    policy = eff.get("policy") or {}
+    link_default = policy.get("link_default") or "auto"
+    if isinstance(raw_comp, dict):
+        comp_items = list(raw_comp.values())
+    elif isinstance(raw_comp, list):
+        comp_items = raw_comp
+    else:
+        comp_items = []
+    for i, c in enumerate(comp_items):
+        mid = c.get("id", "")
+        dir_name = c.get("dir") or f"{i + 1:02d}-{mid}"
+        caps = c.get("caps") or []
+        caps_enabled = c.get("capsEnabled") or []
+        # composition 的 spine/plugins 已经是完整节点 id（<实例id>.<tool>），不再加前缀
+        spine = list(c.get("spine") or [])
+        plugins = list(c.get("plugins") or [])
+        views.append({
+            "id": mid, "module": c.get("module", mid), "name": c.get("name", mid),
+            "link": c.get("link", link_default), "order": i + 1, "dir": dir_name,
+            "caps": caps, "capsEnabled": caps_enabled,
+            "spine": spine, "plugins": plugins, "nodes": c.get("nodes") or [],
+        })
     return views, notes
 
 
