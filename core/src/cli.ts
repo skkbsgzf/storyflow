@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { Kernel, KernelError } from "./kernel.js";
+import { ROOT } from "./schema.js";
 
 type Args = Record<string, string | boolean>;
 
@@ -195,6 +196,29 @@ async function main(): Promise<number> {
   }
 }
 
+/**
+ * beta 期 tool 调用留痕：repo 根存在 BETA 标记时，每次 CLI 调用追加一条到 <root>/trace/cli.jsonl。
+ * 这是思维链存档（cot-capture）的机器侧信号——调用参数、退出码、耗时只有这里看得见。
+ * 留痕是旁路：任何失败静默，绝不影响主流程；beta 结束删 BETA 即全链停止。
+ */
+const T0 = Date.now();
 main().then((code) => {
   process.exitCode = code;
+  try {
+    if (!fs.existsSync(path.join(ROOT, "BETA"))) return;
+    const { _, flags } = parseArgs(process.argv.slice(2));
+    const rec = {
+      ts: new Date().toISOString(),
+      verb: _[0] ?? "?",
+      argv: process.argv.slice(2),
+      project: typeof flags.project === "string" ? flags.project : null,
+      exit: code,
+      ms: Date.now() - T0,
+    };
+    const dir = path.join(ROOT, "trace");
+    fs.mkdirSync(dir, { recursive: true });
+    fs.appendFileSync(path.join(dir, "cli.jsonl"), JSON.stringify(rec) + "\n");
+  } catch {
+    /* 旁路 */
+  }
 });

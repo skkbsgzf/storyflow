@@ -24,6 +24,7 @@ python tools/whereami.py            # 我在哪：项目/当前节点/必读输�
 ```
 
 - **成文架构纪律（2026-09-17）**：剧情前置锁定（编剧流分场卡/节拍卡），文学质量内置在成文流水线 `flows/novel-prose`（三专科层稿 + 成文师逐段六维盖章），polish 只做收尾薄修——禁止跳过分场直写正文、禁止逐行打补丁式对线、禁止在 polish 层救烂原文（屎上雕花禁令）。约束整合唯一入口：`kb/craft/prose-constraints` 六维路由总纲。
+- **beta 期思维链存档（2026-09-19）**：repo 根 `BETA` 标记存在期间，每轮执行收口跑 `python tools/cot-capture.py --project <id> --note <推理注记.md>`——推理注记**执行中随手写**（决策依据、取舍、打回根因），不事后补写；CLI 调用由内核自动留痕 `trace/cli.jsonl`（BETA 门控）。分析走 ZCode skill `cot-analyst`（定量 `tools/cot-analyze.py` + 定性 rubric），报告落 `docs/`。beta 结束删 `BETA` 即停，历史存档保留。
 
 ## 环境注意
 

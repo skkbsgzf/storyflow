@@ -1,0 +1,9 @@
+beta 测试期开关（2026-09-19 起）
+
+本文件存在期间：
+- 每次 miniflow CLI 调用自动留痕到 trace/cli.jsonl（内核 cli.ts 检测本文件）
+- 每轮执行收口跑 python tools/cot-capture.py --project <id> --note <推理注记>，
+  存档落 projects/<id>/内部/思维链/
+- 分析走 cot-analyst skill（定量 tools/cot-analyze.py + 定性 rubric）
+
+beta 结束：删除本文件即全链停止（历史存档与 trace 保留）。
