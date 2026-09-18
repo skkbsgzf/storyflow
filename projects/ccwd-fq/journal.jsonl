@@ -73,3 +73,7 @@
 {"ts":"2026-09-18T18:01:52.692Z","runId":"run-mu79dix0-k0fxpq","event":"verdict","actor":"kernel","nodeId":"itb-m4.export-doc","detail":"pass"}
 {"ts":"2026-09-18T18:01:52.697Z","runId":"run-mu79dix0-k0fxpq","event":"warn","actor":"kernel","nodeId":"m4.export-doc","detail":"minitool「(未声明)」未实现（M1 边界）——节点 m4.export-doc 保持未执行，不静默放行"}
 {"ts":"2026-09-18T18:02:07.922Z","runId":"run-mu79dix0-k0fxpq","event":"warn","actor":"kernel","nodeId":"m4.export-doc","detail":"minitool「(未声明)」未实现（M1 边界）——节点 m4.export-doc 保持未执行，不静默放行"}
+{"ts":"2026-09-18T19:28:41.204Z","runId":"run-mu79dix0-k0fxpq","event":"warn","actor":"kernel","nodeId":"m4.export-doc","detail":"minitool「(未声明)」未实现（M1 边界）——节点 m4.export-doc 保持未执行，不静默放行"}
+{"ts":"2026-09-18T19:33:59.026Z","runId":"run-mu79dix0-k0fxpq","event":"note","actor":"kernel:mine","detail":"编排挖掘包已组装（journal 76 事件 / 证据文件 6 件 / 打回记录 0 条）","refs":["registry/mine-package.json"]}
+{"ts":"2026-09-18T19:37:11.004Z","runId":"run-mu79dix0-k0fxpq","event":"advance","actor":"kernel","nodeId":"m4.export-doc","detail":"对外交付/prose-assembler.docx","refs":["对外交付/prose-assembler.docx"]}
+{"ts":"2026-09-18T19:37:11.006Z","runId":"run-mu79dix0-k0fxpq","event":"run-end","actor":"kernel","detail":"全部节点 done"}

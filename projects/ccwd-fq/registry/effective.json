@@ -190,6 +190,7 @@
       "op": "find-trope",
       "output": "01-选题/find-trope.md",
       "skill": "find-trope",
+      "minitool": "kb_search",
       "config": {
         "mainTropes": "@default:mainTropes",
         "subTropes": "@default:subTropes",
@@ -223,6 +224,7 @@
       "op": "structure-design",
       "output": "02-编剧/structure-design.md",
       "skill": "structure-design",
+      "minitool": "kb_search",
       "config": {
         "fuseCount": "@default:fuseCount",
         "injectUncertainty": "@default:injectUncertainty",
@@ -239,6 +241,7 @@
       "op": "plot-choreographer",
       "output": "02-编剧/plot-choreographer.md",
       "skill": "plot-choreographer",
+      "minitool": "check_aesthetic_asserts",
       "asserts": [
         "AE-CURVE-STALL",
         "AE-CURVE-TYPE",
@@ -265,6 +268,7 @@
       "op": "subplot-weave",
       "output": "02-编剧/subplot-weave.md",
       "skill": "subplot-weave",
+      "minitool": "check_aesthetic_asserts",
       "knowledge": [
         "kb/structure/episodic-webnovel",
         "kb/aesthetic/emotion-curve",
@@ -286,6 +290,7 @@
       "op": "novel-bible",
       "output": "02-编剧/novel-bible.md",
       "skill": "novel-bible",
+      "minitool": "kb_search",
       "config": {
         "quests": "@default:quests",
         "powerSystem": "@default:powerSystem",
@@ -302,6 +307,7 @@
       "op": "foreshadow-plant",
       "output": "02-编剧/foreshadow-plant.md",
       "skill": "foreshadow-plant",
+      "minitool": "continuity_commit",
       "asserts": [
         "AE-CONT-FORESHADOW"
       ],
@@ -320,6 +326,7 @@
       "op": "scene-breakdown",
       "output": "02-编剧/scene-breakdown.md",
       "skill": "scene-breakdown",
+      "minitool": "check_aesthetic_asserts",
       "config": {
         "shotsPerScene": "@default:shotsPerScene",
         "includeRationale": "@default:includeRationale",
@@ -376,6 +383,7 @@
       "op": "layer-canon",
       "output": "03-写作/layer-canon.md",
       "skill": "layer-canon",
+      "minitool": "continuity_check",
       "config": {
         "sliceUnit": "@default:sliceUnit",
         "newWordPolicy": "@default:newWordPolicy",
@@ -418,6 +426,7 @@
       "op": "novel-deai",
       "output": "03-写作/novel-deai.md",
       "skill": "novel-deai",
+      "minitool": "check_aesthetic_asserts",
       "config": {
         "passes": "@default:passes",
         "innerLoops": "@default:innerLoops",
@@ -442,6 +451,7 @@
       "kit": "delivery",
       "op": "export-doc",
       "output": "04-交付/export-doc.md",
+      "script": "tools/export-doc.py",
       "config": {
         "style": "@default:style",
         "verify": "@default:verify",
@@ -578,6 +588,7 @@
       "module": "m1",
       "output": "01-选题/find-trope.md",
       "skill": "find-trope",
+      "minitool": "kb_search",
       "nodeConfig": {
         "mainTropes": "@default:mainTropes",
         "subTropes": "@default:subTropes",
@@ -599,6 +610,7 @@
       "module": "m2",
       "output": "02-编剧/structure-design.md",
       "skill": "structure-design",
+      "minitool": "kb_search",
       "nodeConfig": {
         "fuseCount": "@default:fuseCount",
         "injectUncertainty": "@default:injectUncertainty",
@@ -609,6 +621,7 @@
       "module": "m2",
       "output": "02-编剧/plot-choreographer.md",
       "skill": "plot-choreographer",
+      "minitool": "check_aesthetic_asserts",
       "nodeConfig": {
         "actModel": "@default:actModel",
         "cardDensity": "@default:cardDensity",
@@ -620,6 +633,7 @@
       "module": "m2",
       "output": "02-编剧/subplot-weave.md",
       "skill": "subplot-weave",
+      "minitool": "check_aesthetic_asserts",
       "nodeConfig": {
         "weaveDensity": "@default:weaveDensity",
         "revealCurve": "@default:revealCurve"
@@ -629,6 +643,7 @@
       "module": "m2",
       "output": "02-编剧/novel-bible.md",
       "skill": "novel-bible",
+      "minitool": "kb_search",
       "nodeConfig": {
         "quests": "@default:quests",
         "powerSystem": "@default:powerSystem",
@@ -639,6 +654,7 @@
       "module": "m2",
       "output": "02-编剧/foreshadow-plant.md",
       "skill": "foreshadow-plant",
+      "minitool": "continuity_commit",
       "nodeConfig": {
         "plantPerUnit": "@default:plantPerUnit",
         "disguiseLevel": "@default:disguiseLevel"
@@ -648,6 +664,7 @@
       "module": "m2",
       "output": "02-编剧/scene-breakdown.md",
       "skill": "scene-breakdown",
+      "minitool": "check_aesthetic_asserts",
       "nodeConfig": {
         "shotsPerScene": "@default:shotsPerScene",
         "includeRationale": "@default:includeRationale",
@@ -683,6 +700,7 @@
       "module": "m3",
       "output": "03-写作/layer-canon.md",
       "skill": "layer-canon",
+      "minitool": "continuity_check",
       "nodeConfig": {
         "sliceUnit": "@default:sliceUnit",
         "newWordPolicy": "@default:newWordPolicy",
@@ -703,6 +721,7 @@
       "module": "m3",
       "output": "03-写作/novel-deai.md",
       "skill": "novel-deai",
+      "minitool": "check_aesthetic_asserts",
       "nodeConfig": {
         "passes": "@default:passes",
         "innerLoops": "@default:innerLoops",

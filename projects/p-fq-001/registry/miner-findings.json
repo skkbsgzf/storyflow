@@ -1,0 +1,69 @@
+{
+  "format": "miner-findings@1",
+  "flowId": "novel-fanqie",
+  "runId": "run-mu3kjmhg-coltmb",
+  "at": "2026-09-19T03:45:00+08:00",
+  "findings": [
+    {
+      "id": "Mstructure@gate-r1:命题澄清缺位",
+      "dimension": "structure",
+      "severity": "high",
+      "title": "命题类项目选题开工前无命题澄清确认——gate-r1 五连 send-back 全部源于需求变更",
+      "reason": "9-16 当日 gate-r1 连续 5 次打回（命题 v1→v4 + 流程重构），每次整阶段 7 节点失效，stale 事件累计 93 次。用户的最终 pass 判词（09:54）自己总结出了验收四问（新在哪/给谁看/话题度/爽点逆位）——这四问本应在 S1 开工前就摆到桌面上确认，而不是靠五轮全量返工撞出来。",
+      "evidence": [
+        { "source": "journal:verdict@2026-09-16T04:45", "quote": "gate-r1 send-back → src（本阶段，7 节点失效）：用户命题作文…重做选题；原A/B/C方向搁置" },
+        { "source": "journal:verdict@2026-09-16T09:40", "quote": "用户流程重构指令：网文≠编剧——网文是多故事集合体（世界观串联的单元剧）" },
+        { "source": "journal:Counter", "quote": "stale 事件 93 次 / verdict 9 次（433 事件中）" }
+      ],
+      "structural": "二选一（拍板）：① 选题模块骨架前置轻量「命题确认步」（输出四问确认单，用户一键过）；② 命题类项目出厂 overlay 将 gate-r1 置 manual 并在 S1 任务包头部注入「先对题意再动笔」强制段。"
+    },
+    {
+      "id": "Mquality@chapter:代入感知识缺口",
+      "dimension": "quality",
+      "severity": "high",
+      "title": "novel-chapter 已装 scene-value 仍被 gate-final 打回「细节不够、无代入感、不清晰」——库内缺该维度专项标尺",
+      "reason": "打回判词的三项不满都属于「感官细节密度/心理距离」维度；核对 kits/prose/kit.json，novel-chapter 已装 kb/aesthetic/scene-value（场景价值转变）与 ai-trace，但 knowledge/aesthetic/ 全库没有代入感/感官细节专项卡——装了最接近的卡仍打回，说明这是标尺饥荒，不是注入失误。chapter↔polish 交替 rerun 8 轮（20:50→03:21）全在无标尺状态下盲改。",
+      "evidence": [
+        { "source": "journal:379", "quote": "gate-final send-back → chapter：三章都不行，都需要改——细节不够、描写没有代入感、不清晰" },
+        { "source": "kits/prose/kit.json:novel-chapter", "quote": "knowledge 含 kb/aesthetic/ai-trace、kb/aesthetic/scene-value（无感官细节类卡）" },
+        { "source": "journal:rerun@20:50-03:21", "quote": "chapter/polish 交替 rerun ×8" }
+      ],
+      "patch": { "kind": "set-tool", "kit": "prose", "op": "novel-chapter", "add_knowledge": ["kb/aesthetic/sensory-detail（新建卡：感官细节密度/心理距离/具象化清单）"] }
+    },
+    {
+      "id": "Mstructure@gate-final:悬置",
+      "dimension": "structure",
+      "severity": "high",
+      "title": "gate-final 自 09-17 03:21 gate-open 后 40h+ 无裁决，r25 终稿悬置，项目卡在 S4",
+      "reason": "polish r25 终稿快照已落盘、验收门已开，但无人提交裁决——项目状态停格。同时暴露机制缺口：gate-open 长期挂起没有任何 due 提醒，flow_effect 的 mine.due 只盯挖掘不看门。",
+      "evidence": [
+        { "source": "journal:430", "quote": "snapshot polish r25·02-前三章终稿.md" },
+        { "source": "journal:431", "quote": "gate-open gate-final 终稿验收（用户读三章）——此后至 09-18 19:33 无 verdict" }
+      ],
+      "structural": "人工动作：flow_gate gate-final 出裁决（token 在 state.json）。机制侧（拍板）：内核 flow_effect 对 gate-open 超 24h 的项目出 due 提醒。"
+    },
+    {
+      "id": "Mcoverage@audit:降级路径无工具",
+      "dimension": "coverage",
+      "severity": "medium",
+      "title": "改 done 节点产物的五步降级路径无工具化收据入口——audit 2 分钟内 rerun ×3",
+      "reason": "20:50-20:52 三次 rerun audit 是绕流改稿后的补救重跑（对应事故复盘 docs/绕流改稿事故分析-R2.md：v5 虚报扫描+补拍快照被甲方揪出）。铁律 10 的五步降级目前靠手工串步骤，收据（prose-scan 落盘、修订对照表、重快照、flow-verify 复检）没有单命令载体，虚报风险仍在。",
+      "evidence": [
+        { "source": "journal:rerun@2026-09-16T20:50/20:51/20:52", "quote": "rerun audit scope 3 节点 ×3（2 分钟内）" },
+        { "source": "docs/绕流改稿事故分析-R2.md", "quote": "v5 虚报扫描+补拍快照洗白，被甲方人眼揪出" }
+      ],
+      "structural": "新增 tools/amend-artifact.py：声明绕流意图 → 实跑校验工具落收据 → 修订对照表登记 → 重快照 → flow-verify 复检，单命令闭环（拍板清单，tool 域开发项）。"
+    },
+    {
+      "id": "Mcost@metrics:计量盲区",
+      "dimension": "cost",
+      "severity": "medium",
+      "title": "p-fq-001 无 metrics.jsonl——run 主体先于计量底账，两主指标对该项目不可考",
+      "reason": "registry/ 下无 metrics.jsonl（flow_mine sources 无 metrics 源），命中率与 tool 效率无法回溯。该 run 已终结，重拍成本大于价值；D 轮修复后的 run（ccwd-fq 起）已默认落盘。",
+      "evidence": [
+        { "source": "tools/hitrate-recheck.mjs@p-fq-001", "quote": "无 metrics.jsonl: projects\\p-fq-001\\registry\\metrics.jsonl" }
+      ],
+      "structural": "无需编排动作——记账（metrics 自 D1-D5 修复起默认落盘，盲区随存量 run 终结自然收敛）。"
+    }
+  ]
+}

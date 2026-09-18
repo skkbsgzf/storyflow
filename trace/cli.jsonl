@@ -1,2 +1,16 @@
 {"ts":"2026-09-18T19:27:53.821Z","verb":"flow_list","argv":["flow_list"],"project":null,"exit":0,"ms":3}
 {"ts":"2026-09-18T19:28:41.206Z","verb":"flow_next","argv":["flow_next","--project","ccwd-fq"],"project":"ccwd-fq","exit":0,"ms":29}
+{"ts":"2026-09-18T19:33:58.747Z","verb":"flow_mine","argv":["flow_mine","--project","p-fq-001"],"project":"p-fq-001","exit":0,"ms":30}
+{"ts":"2026-09-18T19:33:59.027Z","verb":"flow_mine","argv":["flow_mine","--project","ccwd-fq"],"project":"ccwd-fq","exit":0,"ms":25}
+{"ts":"2026-09-18T19:37:11.007Z","verb":"flow_next","argv":["flow_next","--project","ccwd-fq"],"project":"ccwd-fq","exit":0,"ms":405}
+{"ts":"2026-09-18T19:37:29.414Z","verb":"flow_run","argv":["flow_run","--flow","caocao-wudalang","--project","ccwd-fq2","--direction","曹操魂穿武大郎：用兵法做炊饼、以权谋治小店；当武松推门而入时，发现弟弟已非吴下阿蒙","--chapters","3","--题材","历史穿越 + 美食（快餐抽象向）","--需求","曹操穿越成武大郎，从被鄙视的炊饼郎到权谋厨房之王的快餐爽文；前三章试稿","--灵感","三国最强枭雄的灵魂困在北宋最卑微的躯壳里；用兵法做炊饼、以权谋待客官；当武松回家时，发现哥哥不再是那个武大郎","--严肃性","探索"],"project":"ccwd-fq2","exit":0,"ms":35}
+{"ts":"2026-09-18T19:38:37.668Z","verb":"flow_submit","argv":["flow_submit","--project","ccwd-fq2","--node","m1.find-trope","--file","01-选题/find-trope.md"],"project":"ccwd-fq2","exit":0,"ms":123}
+{"ts":"2026-09-18T19:39:58.310Z","verb":"flow_submit","argv":["flow_submit","--project","ccwd-fq2","--node","m1.material-dissect","--file","01-选题/material-dissect.md"],"project":"ccwd-fq2","exit":0,"ms":142}
+{"ts":"2026-09-18T19:40:10.943Z","verb":"flow_gate","argv":["flow_gate","--project","ccwd-fq2","--node","m2.link","--verdict","pass"],"project":"ccwd-fq2","exit":0,"ms":31}
+{"ts":"2026-09-18T19:40:16.745Z","verb":"flow_gate","argv":["flow_gate","--project","ccwd-fq2","--node","m2.link","--verdict","pass"],"project":"ccwd-fq2","exit":1,"ms":24}
+{"ts":"2026-09-18T19:40:33.039Z","verb":"flow_next","argv":["flow_next","--project","ccwd-fq2"],"project":"ccwd-fq2","exit":0,"ms":29}
+{"ts":"2026-09-18T19:40:56.875Z","verb":"flow_gate","argv":["flow_gate","--project","ccwd-fq2","--node","itb-m2.structure-design","--verdict","pass","--comment","预授权自动审批（默认自动）"],"project":"ccwd-fq2","exit":0,"ms":34}
+{"ts":"2026-09-18T19:42:12.249Z","verb":"flow_submit","argv":["flow_submit","--project","ccwd-fq2","--node","m2.structure-design","--file","02-编剧/structure-design.md"],"project":"ccwd-fq2","exit":0,"ms":153}
+{"ts":"2026-09-18T19:42:18.089Z","verb":"flow_optimize","argv":["flow_optimize","--project","ccwd-fq"],"project":"ccwd-fq","exit":0,"ms":25}
+{"ts":"2026-09-18T19:42:18.365Z","verb":"flow_optimize","argv":["flow_optimize","--project","p-fq-001"],"project":"p-fq-001","exit":0,"ms":20}
+{"ts":"2026-09-18T19:43:37.861Z","verb":"flow_effect","argv":["flow_effect","--project","ccwd-fq"],"project":"ccwd-fq","exit":0,"ms":25}

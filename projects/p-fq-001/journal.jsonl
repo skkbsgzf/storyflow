@@ -430,3 +430,4 @@
 {"ts":"2026-09-17T03:21:20.382Z","runId":"run-mu3kjmhg-coltmb","event":"snapshot","actor":"kernel","nodeId":"polish","detail":"r25·02-前三章终稿.md","refs":["对外交付/02-前三章终稿.md"]}
 {"ts":"2026-09-17T03:21:20.384Z","runId":"run-mu3kjmhg-coltmb","event":"gate-open","actor":"kernel","nodeId":"gate-final","detail":"终稿验收（用户读三章）"}
 {"ts":"2026-09-17T15:53:46.855Z","runId":"run-mu3kjmhg-coltmb","event":"note","actor":"kernel:mine","detail":"编排挖掘包已组装（journal 400 事件 / 证据文件 46 件 / 打回记录 44 条）","refs":["registry/mine-package.json"]}
+{"ts":"2026-09-18T19:33:58.746Z","runId":"run-mu3kjmhg-coltmb","event":"note","actor":"kernel:mine","detail":"编排挖掘包已组装（journal 400 事件 / 证据文件 46 件 / 打回记录 45 条）","refs":["registry/mine-package.json"]}

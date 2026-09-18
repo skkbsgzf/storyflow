@@ -1,7 +1,7 @@
 {
   "format": "metrics-summary@1",
   "runId": "run-mu79dix0-k0fxpq",
-  "events": 29,
+  "events": 30,
   "byNode": {
     "m1.find-trope": {
       "nodeId": "m1.find-trope",
@@ -322,6 +322,28 @@
       "verdicts": [
         "pass"
       ]
+    },
+    "m4.export-doc": {
+      "nodeId": "m4.export-doc",
+      "runs": 0,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 0,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 0,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [
+        "pass"
+      ],
+      "kit": "delivery",
+      "op": "export-doc"
     }
   },
   "byTool": {
@@ -622,6 +644,29 @@
       "verdicts": [],
       "nodes": [
         "m3.novel-deai"
+      ]
+    },
+    "delivery.export-doc": {
+      "nodeId": "delivery.export-doc",
+      "kit": "delivery",
+      "op": "export-doc",
+      "runs": 0,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 0,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 0,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m4.export-doc"
       ]
     }
   },
@@ -928,6 +973,6 @@
   ],
   "window": {
     "from": "2026-09-18T17:54:51.032Z",
-    "to": "2026-09-18T18:01:52.691Z"
+    "to": "2026-09-18T19:37:11.004Z"
   }
 }
