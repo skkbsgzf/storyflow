@@ -22,6 +22,9 @@ def proj_dir(name):
 def sha1(text: str) -> str:
     return hashlib.sha1(text.encode("utf-8")).hexdigest()[:12]
 
+def sha1_bytes(data: bytes) -> str:
+    return hashlib.sha1(data).hexdigest()[:12]
+
 def load_index(project):
     p = proj_dir(project) / "snapshots" / "index.json"
     return json.load(open(p, encoding="utf-8")) if p.exists() else {"snapshots": {}, "inputs": {}}
@@ -45,11 +48,18 @@ def capture(project, node, file_map, note="", flow="topic-selection"):
     for name, src in file_map.items():
         if name.startswith(strip): name = name[len(strip):]
         if src and Path(src).exists():
-            text = Path(src).read_text(encoding="utf-8")
+            data = Path(src).read_bytes()
             dst = out_dir / name
             dst.parent.mkdir(parents=True, exist_ok=True)
-            dst.write_text(text, encoding="utf-8")
-            entry_files[name] = {"hash": sha1(text), "path": f"snapshots/{node}/r{r}/{name}"}
+            # 二进制产物（docx 等）按字节留档；文本按 utf-8 文本留档（hash 口径不变）
+            if b"\x00" in data[:4096]:
+                dst.write_bytes(data)
+                entry_files[name] = {"hash": sha1_bytes(data), "path": f"snapshots/{node}/r{r}/{name}",
+                                     "binary": True}
+            else:
+                text = data.decode("utf-8")
+                dst.write_text(text, encoding="utf-8")
+                entry_files[name] = {"hash": sha1(text), "path": f"snapshots/{node}/r{r}/{name}"}
         else:
             entry_files[name] = {"hash": None, "path": None}
     # 输入指纹：上游产物当前哈希（重跑前比对用）
@@ -98,8 +108,18 @@ def main():
             flow = json.load(open(ROOT / "kit" / "flow.json", encoding="utf-8"))
         else:
             flow = json.load(open(ROOT / "flows" / a.flow / "flow.json", encoding="utf-8"))
-        node = flow["graph"]["nodes"][a.node]
-        default_out = node.get("file")
+        if "graph" not in flow:
+            # flow@3（模块序列）：手画图不存在，从内核 effective@2 取派生节点（R6 生效编排事实源）
+            _eff = _proj / "registry" / "effective.json"
+            if not _eff.exists():
+                _sys.exit("flow@3 项目缺 registry/effective.json——先跑 flow_effect 生成生效编排")
+            _nodes = _json.load(open(_eff, encoding="utf-8")).get("nodes", {})
+            if a.node not in _nodes:
+                _sys.exit("effective@2 中无节点 {}（先跑 flow_effect 刷新）".format(a.node))
+            node = _nodes[a.node]
+        else:
+            node = flow["graph"]["nodes"][a.node]
+        default_out = node.get("file") or node.get("output")
         names = [x.strip() for x in a.files.split(",") if x.strip()] or ([default_out] if default_out else [])
         proj = proj_dir(a.project)
         fmap = {n: str(proj / n) for n in names}
