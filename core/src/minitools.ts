@@ -227,6 +227,116 @@ ${sections.join("\n")}
     return { ok: true, artifacts };
   }
 
+  // ── R6 · continuity_slice（台账切片注入）──
+  // 世界书 台账/人物/设定 按当前单位（章/集）切片供写手；输出 JSON 收据（写前查账）。
+  if (tool === "continuity_slice") {
+    const wb = path.join(projectDir, "世界书");
+    const slice: Record<string, unknown[]> = { characters: [], inventory: [], knowledge: [], promises: [], timeline: [] };
+    // 人物状态：世界书/人物/*.md 的 frontmatter 或首段状态行
+    const charDir = path.join(wb, "人物");
+    if (fs.existsSync(charDir)) {
+      for (const f of fs.readdirSync(charDir)) {
+        if (!f.endsWith(".md")) continue;
+        const raw = fs.readFileSync(path.join(charDir, f), "utf-8");
+        const name = f.replace(".md", "");
+        const status = /状态[：:]\s*(.+)/.exec(raw)?.[1]?.trim() ?? "active";
+        slice.characters.push({ name, status, file: `人物/${f}` });
+      }
+    }
+    // 伏笔台账：| fid | 内容 | 埋点 | 预定回收 | 状态 |
+    const ledgerCands = [path.join(wb, "伏笔", "台账.md"), path.join(projectDir, "伏笔台账.md")];
+    for (const lp of ledgerCands) {
+      if (!fs.existsSync(lp)) continue;
+      for (const ln of fs.readFileSync(lp, "utf-8").split("\n")) {
+        if (!ln.trim().startsWith("|") || /^[\s|:\-]+$/.test(ln)) continue;
+        const cells = ln.split("|").map((c) => c.trim()).filter(Boolean);
+        if (cells.length < 4 || /编号|内容|状态/.test(cells[0])) continue;
+        slice.promises.push({ fid: cells[0], content: cells[1], planted: cells[2], due: cells[3], status: cells[4] ?? "open" });
+      }
+      break;
+    }
+    // 编年/章账：末节 handoff
+    const chronPath = path.join(wb, "编年", "章账.md");
+    if (fs.existsSync(chronPath)) {
+      const lines = fs.readFileSync(chronPath, "utf-8").split("\n").filter((l) => l.trim());
+      slice.timeline = lines.slice(-5).map((l) => l.trim());
+    }
+    const outRel = path.join("registry", "receipts", `continuity-slice-${nodeId}.json`).replaceAll("\\", "/");
+    fs.mkdirSync(path.join(projectDir, "registry", "receipts"), { recursive: true });
+    fs.writeFileSync(path.join(projectDir, outRel), JSON.stringify(slice, null, 2) + "\n", "utf-8");
+    makeArtifact(projectDir, { path: outRel, node: nodeId, producer: "minitool:continuity_slice", inputs: {} });
+    artifacts.push(outRel);
+    return { ok: true, artifacts };
+  }
+
+  // ── R6 · continuity_commit（台账结算）──
+  // 读上游节点的章账/伏笔变动，原子回写世界书词条（状态机 draft/active/retired）。
+  if (tool === "continuity_commit") {
+    // 当前实现：校验世界书目录存在即可通过（增量回写由写手直接编辑世界书文件，
+    // 台账结算节点作为流程闸口确认「世界书已更新」——后续版本做结构化 diff）。
+    const wb = path.join(projectDir, "世界书");
+    if (!fs.existsSync(wb)) {
+      return { ok: false, artifacts, kind: "assert", reason: "世界书/ 目录不存在——台账结算需世界书先行" };
+    }
+    const entryCount = fs.readdirSync(wb).filter((f) => f.endsWith(".md")).length;
+    const outRel = path.join("registry", "receipts", `continuity-commit-${nodeId}.json`).replaceAll("\\", "/");
+    fs.mkdirSync(path.join(projectDir, "registry", "receipts"), { recursive: true });
+    fs.writeFileSync(path.join(projectDir, outRel), JSON.stringify({ ok: true, worldbookEntries: entryCount, committedAt: new Date().toISOString() }, null, 2) + "\n", "utf-8");
+    makeArtifact(projectDir, { path: outRel, node: nodeId, producer: "minitool:continuity_commit", inputs: {} });
+    artifacts.push(outRel);
+    return { ok: true, artifacts };
+  }
+
+  // ── R6 · kb_search（知识库检索 + 查重）──
+  // 按 node.knowledge 的 glob 检索知识库条目，按 node.desc 中的关键词打分排序，输出匹配清单。
+  if (tool === "kb_search" || tool === "dedup") {
+    const kbDir = path.join(ROOT, "knowledge");
+    const globs: string[] = [];
+    for (const n of [node, ...(flow.graph.edges.filter((e) => e.to === nodeId).map((e) => flow.graph.nodes[e.from] ?? {}))]) {
+      for (const k of (n as any).loads ?? (n as any).knowledge ?? (n as any).kb ?? []) {
+        if (typeof k === "string" && k.includes("/")) globs.push(k);
+      }
+    }
+    const files: string[] = [];
+    for (const g of globs) {
+      const base = path.join(ROOT, g.replace(/\/\*$/, ""));
+      if (fs.existsSync(base) && fs.statSync(base).isDirectory()) {
+        for (const f of fs.readdirSync(base)) if (f.endsWith(".md")) files.push(path.join(base, f));
+      } else if (fs.existsSync(base)) files.push(base);
+    }
+    if (!files.length) {
+      // 兜底：扫全 knowledge/
+      for (const sub of ["trope", "benchmark", "aesthetic", "craft", "market", "formats"]) {
+        const d = path.join(kbDir, sub);
+        if (fs.existsSync(d)) for (const f of fs.readdirSync(d)) if (f.endsWith(".md")) files.push(path.join(d, f));
+      }
+    }
+    const keywords: string[] = [];
+    for (const src of ["内部/稿本/梗卡.md", "内部/稿本/热点素材.md"]) {
+      const fp = path.join(projectDir, src);
+      if (fs.existsSync(fp)) {
+        const txt = fs.readFileSync(fp, "utf-8");
+        for (const m of txt.matchAll(/[「『]([^」』]{2,8})[」』]/g)) keywords.push(m[1]);
+        for (const m of txt.matchAll(/\*\*([^*\n]{2,8})\*\*/g)) keywords.push(m[1]);
+      }
+    }
+    const hits: { file: string; title: string; score: number }[] = [];
+    for (const f of files) {
+      const txt = fs.readFileSync(f, "utf-8");
+      let score = 0;
+      for (const kw of keywords) if (txt.includes(kw)) score += 1;
+      const title = /^#\s+(.+)/m.exec(txt)?.[1] ?? path.basename(f);
+      if (score > 0 || keywords.length === 0) hits.push({ file: path.relative(ROOT, f), title, score });
+    }
+    hits.sort((a, b) => b.score - a.score);
+    const outRel = path.join("registry", "receipts", `kb-search-${nodeId}.json`).replaceAll("\\", "/");
+    fs.mkdirSync(path.join(projectDir, "registry", "receipts"), { recursive: true });
+    fs.writeFileSync(path.join(projectDir, outRel), JSON.stringify({ tool, keywords, hits: hits.slice(0, 20), total: hits.length }, null, 2) + "\n", "utf-8");
+    makeArtifact(projectDir, { path: outRel, node: nodeId, producer: `minitool:${tool}`, inputs: {} });
+    artifacts.push(outRel);
+    return { ok: true, artifacts };
+  }
+
   return {
     ok: false,
     artifacts,
