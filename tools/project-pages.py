@@ -256,8 +256,29 @@ def main():
     annos = load_json(proj / "registry" / "批注与意见.json", None) \
         or load_json(proj / "内部" / "批注与意见.json", None) or {}
     files = scan_files(proj)
-    deliverables = sorted(p.relative_to(proj).as_posix().replace("\\", "/")
-                          for p in (proj / "交付").glob("*") if p.is_file()) if (proj / "交付").is_dir() else []
+    # 交付件：旧版目录（交付/ 对外交付/ 章节正文/）+ R6 模块交付目录（flow 最后一个模块的
+    # <NN>-名/ 与名字带「交付」的模块目录）。二进制（docx/pdf）不在 files，由前端走链接打开。
+    r6_dirs = set()
+    for v in module_views:
+        d = v.get("dir")
+        if not d:
+            continue
+        if "交付" in (v.get("name") or ""):
+            r6_dirs.add(d)
+    if module_views:
+        last = module_views[-1]
+        if last.get("dir"):
+            r6_dirs.add(last["dir"])
+    cand = []
+    for sub in ("交付", "对外交付", "章节正文"):
+        p = proj / sub
+        if p.is_dir():
+            cand.extend(q for q in p.rglob("*") if q.is_file())
+    for d in sorted(r6_dirs):
+        p = proj / d
+        if p.is_dir():
+            cand.extend(q for q in p.rglob("*") if q.is_file())
+    deliverables = sorted({q.relative_to(proj).as_posix().replace("\\", "/") for q in cand})
 
     payload = {
         "DATA": {
