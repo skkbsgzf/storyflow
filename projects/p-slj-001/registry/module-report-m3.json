@@ -1,0 +1,74 @@
+{
+  "format": "module-report@1",
+  "projectId": "p-slj-001",
+  "flowId": "caocao-wudalang",
+  "moduleId": "m3",
+  "moduleName": "m3",
+  "title": "文学化师 / novel-deai / 连接 · 写作（自动批准）",
+  "closedAt": "2026-09-18T22:11:23.741Z",
+  "io": {
+    "input": [
+      "direction",
+      "chapters",
+      "route",
+      "题材",
+      "需求",
+      "AB测试"
+    ],
+    "output": "03-写作/终稿.md"
+  },
+  "artifacts": [
+    {
+      "node": "m3.ghostwrite",
+      "op": "ghostwrite",
+      "path": "03-写作/正文.md",
+      "role": "process"
+    },
+    {
+      "node": "m3.novel-deai",
+      "op": "novel-deai",
+      "path": "03-写作/终稿.md",
+      "role": "deliverable"
+    }
+  ],
+  "acceptance": [
+    {
+      "node": "m3.novel-deai",
+      "assert": "AE-AI-QUOTA",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+    },
+    {
+      "node": "m3.novel-deai",
+      "assert": "AE-AI-STRUCT",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+    },
+    {
+      "node": "m3.novel-deai",
+      "assert": "AE-PROSE-SLOP",
+      "status": "pass",
+      "detail": "无 AI 高频词"
+    },
+    {
+      "node": "m3.novel-deai",
+      "assert": "AE-WNF-HOOK",
+      "status": "pass",
+      "detail": "章末钩型：悬念"
+    }
+  ],
+  "metrics": {
+    "submits": 3,
+    "retries": 1,
+    "tokensIn": 0,
+    "tokensOut": 0,
+    "latencyMs": 0,
+    "ctxOffered": 13,
+    "ctxUsed": 2,
+    "hitRate": 0.15384615384615385
+  },
+  "feedback": {
+    "annotations": 0,
+    "proposals": 0
+  }
+}

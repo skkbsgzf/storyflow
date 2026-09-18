@@ -1,0 +1,446 @@
+{
+  "format": "effective@2",
+  "flowId": "caocao-wudalang",
+  "flowVersion": "1.1.0",
+  "policy": {
+    "link_default": "auto",
+    "adapt": "propose"
+  },
+  "overlayHash": "r6-410cc95f",
+  "planHash": "c6ae12f8",
+  "links": [
+    {
+      "id": "m2.link",
+      "fromModule": "m1",
+      "toModule": "m2",
+      "mode": "manual"
+    },
+    {
+      "id": "m3.link",
+      "fromModule": "m2",
+      "toModule": "m3",
+      "mode": "auto"
+    },
+    {
+      "id": "m4.link",
+      "fromModule": "m3",
+      "toModule": "m4",
+      "mode": "auto"
+    }
+  ],
+  "composition": [
+    {
+      "id": "m1",
+      "module": "topic",
+      "name": "选题",
+      "order": 1,
+      "dir": "01-选题",
+      "link": "auto",
+      "caps": [
+        "找梗",
+        "素材解剖",
+        "时代情绪锚",
+        "网感文案",
+        "拆书入库",
+        "选题报告"
+      ],
+      "capsEnabled": [
+        "选题报告"
+      ],
+      "spine": [
+        "m1.topic-report"
+      ],
+      "plugins": [],
+      "nodes": [
+        "m1.topic-report"
+      ],
+      "io": {
+        "input": {
+          "from": "flow-input",
+          "shape": "一个灵感（点子/命题/素材，任一形态）"
+        },
+        "output": {
+          "file": "选题报告.md",
+          "audience": "作者（选题决策文档，兼作编剧模块唯一输入）"
+        },
+        "acceptance": {
+          "asserts": [
+            "AE-REPORT-DENSITY"
+          ]
+        }
+      }
+    },
+    {
+      "id": "m2",
+      "module": "plot",
+      "name": "编剧",
+      "order": 2,
+      "dir": "02-编剧",
+      "link": "manual",
+      "caps": [
+        "结构",
+        "主线",
+        "人设",
+        "分场",
+        "世界观",
+        "单元剧大纲",
+        "短剧节拍",
+        "暗线",
+        "伏笔",
+        "悬念",
+        "红队评审",
+        "编剧"
+      ],
+      "capsEnabled": [
+        "编剧"
+      ],
+      "spine": [
+        "m2.script-forge"
+      ],
+      "plugins": [],
+      "nodes": [
+        "m2.script-forge"
+      ],
+      "io": {
+        "input": {
+          "from": "topic",
+          "shape": "选题报告（梗选型+竞品对标+结构手法+可用话题）"
+        },
+        "output": {
+          "file": "剧本.md",
+          "audience": "写手（正文模块唯一输入；5W1H 结构化剧本 IR）"
+        },
+        "acceptance": {
+          "asserts": [
+            "AE-SCRIPT-FIELDS"
+          ]
+        }
+      }
+    },
+    {
+      "id": "m3",
+      "module": "prose",
+      "name": "写作",
+      "order": 3,
+      "dir": "03-写作",
+      "link": "auto",
+      "caps": [
+        "台词层",
+        "场景层",
+        "设定层",
+        "拼装盖章",
+        "终稿打磨",
+        "去机味",
+        "直写单章",
+        "剧本成稿",
+        "对话打磨",
+        "文学评审",
+        "视频提示词",
+        "正文"
+      ],
+      "capsEnabled": [
+        "正文",
+        "终稿打磨",
+        "去机味"
+      ],
+      "spine": [
+        "m3.ghostwrite",
+        "m3.novel-deai"
+      ],
+      "plugins": [],
+      "nodes": [
+        "m3.ghostwrite",
+        "m3.novel-deai"
+      ],
+      "io": {
+        "input": {
+          "from": "plot",
+          "shape": "剧本 IR（逐场行动/台词/价值/钩 + 伏笔登记）"
+        },
+        "output": {
+          "file": "终稿.md",
+          "audience": "读者（对外正文终稿，文学化+去AI味）"
+        },
+        "acceptance": {
+          "asserts": [
+            "AE-AI-QUOTA",
+            "AE-AI-STRUCT",
+            "AE-PROSE-SLOP",
+            "AE-WNF-HOOK"
+          ]
+        }
+      }
+    },
+    {
+      "id": "m4",
+      "module": "delivery",
+      "name": "交付",
+      "order": 4,
+      "dir": "04-交付",
+      "link": "auto",
+      "caps": [
+        "docx交付",
+        "交付页",
+        "批注回流"
+      ],
+      "capsEnabled": [
+        "docx交付"
+      ],
+      "spine": [
+        "m4.export-doc"
+      ],
+      "plugins": [],
+      "nodes": [
+        "m4.export-doc"
+      ],
+      "io": {
+        "input": {
+          "from": "prose",
+          "shape": "正文终稿（每模块一份成熟交付）"
+        },
+        "output": {
+          "file": "export-doc.docx",
+          "audience": "编辑/甲方（可批注 docx）"
+        },
+        "acceptance": {
+          "asserts": []
+        }
+      }
+    }
+  ],
+  "moduleDirs": {
+    "m1": "01-选题",
+    "m2": "02-编剧",
+    "m3": "03-写作",
+    "m4": "04-交付"
+  },
+  "nodes": {
+    "m1.topic-report": {
+      "kind": "agent",
+      "title": "选题报告师",
+      "stage": "m1",
+      "module": "m1",
+      "kit": "topic",
+      "op": "topic-report",
+      "output": "01-选题/选题报告.md",
+      "skill": "topic-report",
+      "minitool": "kb_search",
+      "asserts": [
+        "AE-REPORT-DENSITY"
+      ],
+      "config": {
+        "maxChars": "@default:maxChars",
+        "minTropeRows": "@default:minTropeRows"
+      },
+      "desc": "选题模块唯一交付工具：输入灵感 → 选题报告（梗选型+竞品对标+结构解剖+可用话题）。输入职责=灵感；输出职责=选题报告单件；验收职责=AE-REPORT-DENSITY"
+    },
+    "m2.script-forge": {
+      "kind": "agent",
+      "title": "剧本师",
+      "stage": "m2",
+      "module": "m2",
+      "kit": "plot",
+      "op": "script-forge",
+      "output": "02-编剧/剧本.md",
+      "skill": "script-forge",
+      "asserts": [
+        "AE-SCRIPT-FIELDS"
+      ],
+      "config": {
+        "minScenes": "@default:minScenes",
+        "maxChars": "@default:maxChars"
+      },
+      "desc": "编剧模块唯一交付工具：输入选题报告 → 结构化剧本 IR（逐场 5W1H/行动/台词/价值/钩 + 人物卡 + 伏笔登记）。输入职责=选题报告；输出职责=剧本单件；验收职责=AE-SCRIPT-FIELDS"
+    },
+    "m2.link": {
+      "kind": "gate",
+      "gate_role": "link",
+      "link_mode": "manual",
+      "title": "连接 · 编剧（待人工批准）",
+      "stage": "m2",
+      "module": "m2"
+    },
+    "m3.ghostwrite": {
+      "kind": "agent",
+      "title": "文学化师",
+      "stage": "m3",
+      "module": "m3",
+      "kit": "prose",
+      "op": "ghostwrite",
+      "output": "03-写作/正文.md",
+      "skill": "ghostwrite",
+      "config": {
+        "chapterMin": "@default:chapterMin",
+        "chapterMax": "@default:chapterMax"
+      },
+      "desc": "写作模块主交付工具：输入剧本 → 逐场文学化为正文（六维盖章自查/章末钩/纯净度）。输入职责=剧本；输出职责=正文单件；验收职责=既有 prose 断言表（章长/钩/纯度/台账）"
+    },
+    "m3.novel-deai": {
+      "kind": "agent",
+      "title": "novel-deai",
+      "stage": "m3",
+      "module": "m3",
+      "kit": "prose",
+      "op": "novel-deai",
+      "output": "03-写作/终稿.md",
+      "skill": "novel-deai",
+      "minitool": "check_aesthetic_asserts",
+      "asserts": [
+        "AE-AI-QUOTA",
+        "AE-AI-STRUCT",
+        "AE-PROSE-SLOP",
+        "AE-WNF-HOOK"
+      ],
+      "config": {
+        "passes": "@default:passes",
+        "innerLoops": "@default:innerLoops",
+        "coverageLaw": "@default:coverageLaw",
+        "metaphorBudget": "@default:metaphorBudget"
+      },
+      "desc": "快餐网文终稿打磨技能——四遍法打磨（声口校准→处境校准→比喻意象→节奏去机味）+ 多轮精修内环（评审官判分→定向修订→防劣化收敛），诊断先行、覆盖律硬门槛、盲读内环验收；产出可发布终稿与全套收据。"
+    },
+    "m3.link": {
+      "kind": "gate",
+      "gate_role": "link",
+      "link_mode": "auto",
+      "title": "连接 · 写作（自动批准）",
+      "stage": "m3",
+      "module": "m3"
+    },
+    "m4.export-doc": {
+      "kind": "core",
+      "title": "export-doc.py",
+      "stage": "m4",
+      "module": "m4",
+      "kit": "delivery",
+      "op": "export-doc",
+      "output": "04-交付/export-doc.docx",
+      "script": "tools/export-doc.py",
+      "config": {
+        "style": "@default:style",
+        "verify": "@default:verify",
+        "outDir": "@default:outDir"
+      },
+      "desc": "export-doc · 小纲/剧本 → Word doc 导出器（export_doc minitool 实现）"
+    },
+    "m4.link": {
+      "kind": "gate",
+      "gate_role": "link",
+      "link_mode": "auto",
+      "title": "连接 · 交付（自动批准）",
+      "stage": "m4",
+      "module": "m4"
+    }
+  },
+  "edges": [
+    {
+      "id": "e-m1-link",
+      "from": "m1.topic-report",
+      "to": "m2.link",
+      "role": "flow"
+    },
+    {
+      "id": "e-link-m2",
+      "from": "m2.link",
+      "to": "m2.script-forge",
+      "role": "flow"
+    },
+    {
+      "id": "e-m3-ghostwrite-novel-deai",
+      "from": "m3.ghostwrite",
+      "to": "m3.novel-deai",
+      "role": "flow",
+      "via": "skill.novel-deai"
+    },
+    {
+      "id": "e-m2-link",
+      "from": "m2.script-forge",
+      "to": "m3.link",
+      "role": "flow"
+    },
+    {
+      "id": "e-link-m3",
+      "from": "m3.link",
+      "to": "m3.ghostwrite",
+      "role": "flow"
+    },
+    {
+      "id": "e-m3-link",
+      "from": "m3.novel-deai",
+      "to": "m4.link",
+      "role": "flow"
+    },
+    {
+      "id": "e-link-m4",
+      "from": "m4.link",
+      "to": "m4.export-doc",
+      "role": "flow"
+    }
+  ],
+  "nodeConfig": {
+    "m1.topic-report": {
+      "module": "m1",
+      "output": "01-选题/选题报告.md",
+      "skill": "topic-report",
+      "minitool": "kb_search",
+      "nodeConfig": {
+        "maxChars": "@default:maxChars",
+        "minTropeRows": "@default:minTropeRows"
+      }
+    },
+    "m2.script-forge": {
+      "module": "m2",
+      "output": "02-编剧/剧本.md",
+      "skill": "script-forge",
+      "nodeConfig": {
+        "minScenes": "@default:minScenes",
+        "maxChars": "@default:maxChars"
+      }
+    },
+    "m2.link": {
+      "module": "m2",
+      "gateRole": "link",
+      "nodeConfig": {}
+    },
+    "m3.ghostwrite": {
+      "module": "m3",
+      "output": "03-写作/正文.md",
+      "skill": "ghostwrite",
+      "nodeConfig": {
+        "chapterMin": "@default:chapterMin",
+        "chapterMax": "@default:chapterMax"
+      }
+    },
+    "m3.novel-deai": {
+      "module": "m3",
+      "output": "03-写作/终稿.md",
+      "skill": "novel-deai",
+      "minitool": "check_aesthetic_asserts",
+      "nodeConfig": {
+        "passes": "@default:passes",
+        "innerLoops": "@default:innerLoops",
+        "coverageLaw": "@default:coverageLaw",
+        "metaphorBudget": "@default:metaphorBudget"
+      }
+    },
+    "m3.link": {
+      "module": "m3",
+      "gateRole": "link",
+      "nodeConfig": {}
+    },
+    "m4.export-doc": {
+      "module": "m4",
+      "output": "04-交付/export-doc.docx",
+      "nodeConfig": {
+        "style": "@default:style",
+        "verify": "@default:verify",
+        "outDir": "@default:outDir"
+      }
+    },
+    "m4.link": {
+      "module": "m4",
+      "gateRole": "link",
+      "nodeConfig": {}
+    }
+  }
+}

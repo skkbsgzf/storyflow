@@ -1,0 +1,100 @@
+{
+  "format": "optimize@1",
+  "flowId": "caocao-wudalang",
+  "at": "2026-09-18T22:11:33.084Z",
+  "policy": {
+    "link_default": "auto",
+    "adapt": "propose"
+  },
+  "metrics": {
+    "events": 15,
+    "window": {
+      "from": "2026-09-18T22:04:25.098Z",
+      "to": "2026-09-18T22:11:33.076Z"
+    }
+  },
+  "sources": [
+    "metrics"
+  ],
+  "mineStructural": [],
+  "proposals": [
+    {
+      "id": "R6@m2.link",
+      "rule": "R6-autogate-cleanup",
+      "severity": "low",
+      "risk": "low",
+      "title": "清掉旧评审节点：m2.link",
+      "reason": "R5 起域内质量由各 tool 的 asserts/config 承担，图上不再需要固定评审节点。纯汇合点，无产活、无裁决价值（R5 起域内质量由各 tool 的 asserts/config 承担）。裁掉后编排更短、更少串行屏障。",
+      "evidence": {
+        "rule": "R6-autogate-cleanup",
+        "metric": "gate.node",
+        "value": "连接 · 编剧（待人工批准）",
+        "samples": 0
+      },
+      "patch": {
+        "kind": "remove-node",
+        "id": "m2.link",
+        "rewire": "bridge",
+        "reason": "R5 门降级：纯汇合点不再需要常驻图上",
+        "evidence": {
+          "rule": "R6-autogate-cleanup",
+          "metric": "gate.node",
+          "value": "连接 · 编剧（待人工批准）",
+          "samples": 0
+        }
+      }
+    },
+    {
+      "id": "R6@m3.link",
+      "rule": "R6-autogate-cleanup",
+      "severity": "low",
+      "risk": "low",
+      "title": "清掉旧评审节点：m3.link",
+      "reason": "R5 起域内质量由各 tool 的 asserts/config 承担，图上不再需要固定评审节点。纯汇合点，无产活、无裁决价值（R5 起域内质量由各 tool 的 asserts/config 承担）。裁掉后编排更短、更少串行屏障。",
+      "evidence": {
+        "rule": "R6-autogate-cleanup",
+        "metric": "gate.node",
+        "value": "连接 · 写作（自动批准）",
+        "samples": 0
+      },
+      "patch": {
+        "kind": "remove-node",
+        "id": "m3.link",
+        "rewire": "bridge",
+        "reason": "R5 门降级：纯汇合点不再需要常驻图上",
+        "evidence": {
+          "rule": "R6-autogate-cleanup",
+          "metric": "gate.node",
+          "value": "连接 · 写作（自动批准）",
+          "samples": 0
+        }
+      }
+    },
+    {
+      "id": "R6@m4.link",
+      "rule": "R6-autogate-cleanup",
+      "severity": "low",
+      "risk": "low",
+      "title": "清掉旧评审节点：m4.link",
+      "reason": "R5 起域内质量由各 tool 的 asserts/config 承担，图上不再需要固定评审节点。纯汇合点，无产活、无裁决价值（R5 起域内质量由各 tool 的 asserts/config 承担）。裁掉后编排更短、更少串行屏障。",
+      "evidence": {
+        "rule": "R6-autogate-cleanup",
+        "metric": "gate.node",
+        "value": "连接 · 交付（自动批准）",
+        "samples": 0
+      },
+      "patch": {
+        "kind": "remove-node",
+        "id": "m4.link",
+        "rewire": "bridge",
+        "reason": "R5 门降级：纯汇合点不再需要常驻图上",
+        "evidence": {
+          "rule": "R6-autogate-cleanup",
+          "metric": "gate.node",
+          "value": "连接 · 交付（自动批准）",
+          "samples": 0
+        }
+      }
+    }
+  ]
+}

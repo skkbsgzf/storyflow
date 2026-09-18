@@ -1,0 +1,129 @@
+{
+  "artifacts": [
+    {
+      "path": "01-选题/选题报告.md",
+      "node": "m1.topic-report",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {},
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2871 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "AE-REPORT-DENSITY",
+          "status": "pass",
+          "detail": "梗/话题行 10、对标 30、热度数据 4 处"
+        }
+      ],
+      "sha1": "20c938328fad",
+      "ts": "2026-09-18T22:06:01.676Z"
+    },
+    {
+      "path": "02-编剧/剧本.md",
+      "node": "m2.script-forge",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "01-选题/选题报告.md": "20c938328fad"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "4034 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "AE-SCRIPT-FIELDS",
+          "status": "pass",
+          "detail": "9 场字段齐备（5W/行动/台词/价值）"
+        }
+      ],
+      "sha1": "817f5fbc138b",
+      "ts": "2026-09-18T22:08:10.733Z"
+    },
+    {
+      "path": "03-写作/正文.md",
+      "node": "m3.ghostwrite",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "02-编剧/剧本.md": "817f5fbc138b"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "3075 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "9f5802dc43c2",
+      "ts": "2026-09-18T22:10:08.099Z"
+    },
+    {
+      "path": "03-写作/终稿.md",
+      "node": "m3.novel-deai",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "03-写作/正文.md": "9f5802dc43c2"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "3190 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "AE-AI-QUOTA",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+        },
+        {
+          "name": "AE-AI-STRUCT",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+        },
+        {
+          "name": "AE-PROSE-SLOP",
+          "status": "pass",
+          "detail": "无 AI 高频词"
+        },
+        {
+          "name": "AE-WNF-HOOK",
+          "status": "pass",
+          "detail": "章末钩型：悬念"
+        }
+      ],
+      "sha1": "2a0a84e3e206",
+      "ts": "2026-09-18T22:11:23.662Z"
+    },
+    {
+      "path": "04-交付/export-doc.docx",
+      "node": "m4.export-doc",
+      "producer": "script:export-doc.py",
+      "inputs": {},
+      "round": 1,
+      "sha1": "6651ac6f0b38",
+      "ts": "2026-09-18T22:11:33.074Z"
+    }
+  ]
+}

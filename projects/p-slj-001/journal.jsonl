@@ -1,0 +1,42 @@
+{"ts":"2026-09-18T22:04:25.076Z","runId":"run-mu7iagz8-02qror","event":"run-start","actor":"kernel","detail":"caocao-wudalang@1.1.0 计划 8 节点"}
+{"ts":"2026-09-18T22:04:25.078Z","runId":"run-mu7iagz8-02qror","event":"note","actor":"kernel:config","detail":"初始化配置装载：风格=爽 AB=off"}
+{"ts":"2026-09-18T22:04:25.099Z","runId":"run-mu7iagz8-02qror","event":"advance","actor":"kernel","nodeId":"m1.topic-report","detail":"任务包产出（skill=topic-report，上下文 0 件）"}
+{"ts":"2026-09-18T22:04:25.099Z","runId":"run-mu7iagz8-02qror","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.topic-report（并行）"}
+{"ts":"2026-09-18T22:05:38.454Z","runId":"run-mu7iagz8-02qror","event":"reject","actor":"kernel","nodeId":"m1.topic-report","detail":"AE-REPORT-DENSITY: 热度数据（n/万）2 < 3 处（结论必须挂数据）","refs":["01-选题/选题报告.md"]}
+{"ts":"2026-09-18T22:05:45.482Z","runId":"run-mu7iagz8-02qror","event":"reject","actor":"kernel","nodeId":"m1.topic-report","detail":"AE-REPORT-DENSITY: 热度数据（n/万）2 < 3 处（结论必须挂数据）","refs":["01-选题/选题报告.md"]}
+{"ts":"2026-09-18T22:06:01.793Z","runId":"run-mu7iagz8-02qror","event":"submit","actor":"kernel","nodeId":"m1.topic-report","detail":"01-选题/选题报告.md","refs":["01-选题/选题报告.md"]}
+{"ts":"2026-09-18T22:06:01.794Z","runId":"run-mu7iagz8-02qror","event":"snapshot","actor":"kernel","nodeId":"m1.topic-report","detail":"r1·选题报告.md","refs":["01-选题/选题报告.md"]}
+{"ts":"2026-09-18T22:06:01.797Z","runId":"run-mu7iagz8-02qror","event":"note","actor":"kernel:overlay","detail":"编排变更 → 重编译计划：8 → 11 节点；新增 itb-m2.script-forge、itb-m3.ghostwrite、itb-m4.export-doc；裁撤 无；失效 无","refs":["itb-m2.script-forge","itb-m3.ghostwrite","itb-m4.export-doc"]}
+{"ts":"2026-09-18T22:06:01.797Z","runId":"run-mu7iagz8-02qror","event":"note","actor":"kernel:overlay","detail":"派生边界验收 itb-m2.script-forge：topic → plot（接管 1 条跨界入边 e-link-m2）"}
+{"ts":"2026-09-18T22:06:01.798Z","runId":"run-mu7iagz8-02qror","event":"note","actor":"kernel:overlay","detail":"派生边界验收 itb-m3.ghostwrite：plot → prose（接管 1 条跨界入边 e-link-m3）"}
+{"ts":"2026-09-18T22:06:01.798Z","runId":"run-mu7iagz8-02qror","event":"note","actor":"kernel:overlay","detail":"派生边界验收 itb-m4.export-doc：prose → delivery（接管 1 条跨界入边 e-link-m4）"}
+{"ts":"2026-09-18T22:06:01.799Z","runId":"run-mu7iagz8-02qror","event":"gate-open","actor":"kernel","nodeId":"m2.link","detail":"连接 · 编剧（待人工批准）"}
+{"ts":"2026-09-18T22:06:13.332Z","runId":"run-mu7iagz8-02qror","event":"verdict","actor":"kernel","nodeId":"m2.link","detail":"pass（R6 连接件：放行）：B组代裁（用户指令：从零跑完一轮，剧本落地）；批注通道常开，事后批注进提案池","refs":[]}
+{"ts":"2026-09-18T22:06:13.336Z","runId":"run-mu7iagz8-02qror","event":"gate-open","actor":"kernel","nodeId":"itb-m2.script-forge","detail":"跨域交接验收：topic → plot"}
+{"ts":"2026-09-18T22:06:38.888Z","runId":"run-mu7iagz8-02qror","event":"verdict","actor":"kernel","nodeId":"itb-m2.script-forge","detail":"pass：B组代裁：交接件齐备（选题报告已过密度验收）"}
+{"ts":"2026-09-18T22:06:38.896Z","runId":"run-mu7iagz8-02qror","event":"advance","actor":"kernel","nodeId":"m2.script-forge","detail":"任务包产出（skill=script-forge，上下文 1 件）"}
+{"ts":"2026-09-18T22:06:38.896Z","runId":"run-mu7iagz8-02qror","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.script-forge（并行）"}
+{"ts":"2026-09-18T22:06:39.144Z","runId":"run-mu7iagz8-02qror","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.script-forge（并行）"}
+{"ts":"2026-09-18T22:08:10.832Z","runId":"run-mu7iagz8-02qror","event":"submit","actor":"kernel","nodeId":"m2.script-forge","detail":"02-编剧/剧本.md","refs":["02-编剧/剧本.md"]}
+{"ts":"2026-09-18T22:08:10.833Z","runId":"run-mu7iagz8-02qror","event":"snapshot","actor":"kernel","nodeId":"m2.script-forge","detail":"r1·剧本.md","refs":["02-编剧/剧本.md"]}
+{"ts":"2026-09-18T22:08:10.837Z","runId":"run-mu7iagz8-02qror","event":"verdict","actor":"kernel","nodeId":"m3.link","detail":"auto-pass（R6 连接件：自动批准）"}
+{"ts":"2026-09-18T22:08:10.837Z","runId":"run-mu7iagz8-02qror","event":"gate-open","actor":"kernel","nodeId":"itb-m3.ghostwrite","detail":"跨域交接验收：plot → prose"}
+{"ts":"2026-09-18T22:08:25.020Z","runId":"run-mu7iagz8-02qror","event":"verdict","actor":"kernel","nodeId":"itb-m3.ghostwrite","detail":"pass：B组代裁：剧本 IR 过 AE-SCRIPT-FIELDS，交接齐备"}
+{"ts":"2026-09-18T22:08:25.028Z","runId":"run-mu7iagz8-02qror","event":"advance","actor":"kernel","nodeId":"m3.ghostwrite","detail":"任务包产出（skill=ghostwrite，上下文 1 件）"}
+{"ts":"2026-09-18T22:08:25.028Z","runId":"run-mu7iagz8-02qror","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m3.ghostwrite（并行）"}
+{"ts":"2026-09-18T22:08:25.268Z","runId":"run-mu7iagz8-02qror","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m3.ghostwrite（并行）"}
+{"ts":"2026-09-18T22:10:08.184Z","runId":"run-mu7iagz8-02qror","event":"submit","actor":"kernel","nodeId":"m3.ghostwrite","detail":"03-写作/正文.md","refs":["03-写作/正文.md"]}
+{"ts":"2026-09-18T22:10:08.184Z","runId":"run-mu7iagz8-02qror","event":"snapshot","actor":"kernel","nodeId":"m3.ghostwrite","detail":"r1·正文.md","refs":["03-写作/正文.md"]}
+{"ts":"2026-09-18T22:10:08.190Z","runId":"run-mu7iagz8-02qror","event":"advance","actor":"kernel","nodeId":"m3.novel-deai","detail":"任务包产出（skill=novel-deai，上下文 1 件）"}
+{"ts":"2026-09-18T22:10:08.190Z","runId":"run-mu7iagz8-02qror","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m3.novel-deai（并行）"}
+{"ts":"2026-09-18T22:10:08.424Z","runId":"run-mu7iagz8-02qror","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m3.novel-deai（并行）"}
+{"ts":"2026-09-18T22:10:54.752Z","runId":"run-mu7iagz8-02qror","event":"reject","actor":"kernel","nodeId":"m3.novel-deai","detail":"AE-WNF-HOOK: 章末无钩（末三段无悬念？/转折词/情绪信号）——每章结尾必须留钩","refs":["03-写作/终稿.md"]}
+{"ts":"2026-09-18T22:11:23.661Z","runId":"run-mu7iagz8-02qror","event":"warn","actor":"kernel","nodeId":"m3.novel-deai","detail":"声明断言无机器校验器（未执行，归评审/红方剖面）：AE-AI-QUOTA、AE-AI-STRUCT","refs":["03-写作/终稿.md"]}
+{"ts":"2026-09-18T22:11:23.741Z","runId":"run-mu7iagz8-02qror","event":"submit","actor":"kernel","nodeId":"m3.novel-deai","detail":"03-写作/终稿.md","refs":["03-写作/终稿.md"]}
+{"ts":"2026-09-18T22:11:23.741Z","runId":"run-mu7iagz8-02qror","event":"snapshot","actor":"kernel","nodeId":"m3.novel-deai","detail":"r1·终稿.md","refs":["03-写作/终稿.md"]}
+{"ts":"2026-09-18T22:11:23.745Z","runId":"run-mu7iagz8-02qror","event":"verdict","actor":"kernel","nodeId":"m4.link","detail":"auto-pass（R6 连接件：自动批准）"}
+{"ts":"2026-09-18T22:11:23.746Z","runId":"run-mu7iagz8-02qror","event":"gate-open","actor":"kernel","nodeId":"itb-m4.export-doc","detail":"跨域交接验收：prose → delivery"}
+{"ts":"2026-09-18T22:11:32.776Z","runId":"run-mu7iagz8-02qror","event":"verdict","actor":"kernel","nodeId":"itb-m4.export-doc","detail":"pass：B组代裁：终稿过四断言验收（WNF-HOOK/SLOP 修订后过），交接齐备"}
+{"ts":"2026-09-18T22:11:33.076Z","runId":"run-mu7iagz8-02qror","event":"advance","actor":"kernel","nodeId":"m4.export-doc","detail":"04-交付/export-doc.docx","refs":["04-交付/export-doc.docx"]}
+{"ts":"2026-09-18T22:11:33.076Z","runId":"run-mu7iagz8-02qror","event":"run-end","actor":"kernel","detail":"全部节点 done"}
+{"ts":"2026-09-18T22:11:33.083Z","runId":"run-mu7iagz8-02qror","event":"note","actor":"kernel:mine","detail":"编排挖掘包已组装（journal 41 事件 / 证据文件 4 件 / 打回记录 0 条）","refs":["registry/mine-package.json"]}

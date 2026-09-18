@@ -1,0 +1,50 @@
+{
+  "format": "module-report@1",
+  "projectId": "p-slj-001",
+  "flowId": "caocao-wudalang",
+  "moduleId": "m2",
+  "moduleName": "m2",
+  "title": "剧本师 / 连接 · 编剧（待人工批准）",
+  "closedAt": "2026-09-18T22:08:10.832Z",
+  "io": {
+    "input": [
+      "direction",
+      "chapters",
+      "route",
+      "题材",
+      "需求",
+      "AB测试"
+    ],
+    "output": "02-编剧/剧本.md"
+  },
+  "artifacts": [
+    {
+      "node": "m2.script-forge",
+      "op": "script-forge",
+      "path": "02-编剧/剧本.md",
+      "role": "deliverable"
+    }
+  ],
+  "acceptance": [
+    {
+      "node": "m2.script-forge",
+      "assert": "AE-SCRIPT-FIELDS",
+      "status": "pass",
+      "detail": "9 场字段齐备（5W/行动/台词/价值）"
+    }
+  ],
+  "metrics": {
+    "submits": 2,
+    "retries": 0,
+    "tokensIn": 0,
+    "tokensOut": 0,
+    "latencyMs": 0,
+    "ctxOffered": 6,
+    "ctxUsed": 5,
+    "hitRate": 0.8333333333333334
+  },
+  "feedback": {
+    "annotations": 0,
+    "proposals": 0
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "runId": "run-mu7iagz8-02qror",
+  "projectId": "p-slj-001",
+  "flowId": "caocao-wudalang",
+  "flowVersion": "1.1.0",
+  "flowHash": "9949d6c9",
+  "status": "completed",
+  "plan": {
+    "order": [
+      "m1.topic-report",
+      "m2.link",
+      "itb-m2.script-forge",
+      "m2.script-forge",
+      "m3.link",
+      "itb-m3.ghostwrite",
+      "m3.ghostwrite",
+      "m3.novel-deai",
+      "m4.link",
+      "itb-m4.export-doc",
+      "m4.export-doc"
+    ]
+  },
+  "nodes": {
+    "m1.topic-report": {
+      "status": "done",
+      "round": 1,
+      "failCount": 2,
+      "lastArtifact": "01-选题/选题报告.md",
+      "stale": false
+    },
+    "m2.script-forge": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/剧本.md",
+      "stale": false
+    },
+    "m2.link": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "m3.ghostwrite": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "03-写作/正文.md",
+      "stale": false
+    },
+    "m3.novel-deai": {
+      "status": "done",
+      "round": 1,
+      "failCount": 1,
+      "lastArtifact": "03-写作/终稿.md",
+      "stale": false
+    },
+    "m3.link": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "m4.export-doc": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "04-交付/export-doc.docx"
+    },
+    "m4.link": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "itb-m2.script-forge": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "itb-m3.ghostwrite": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "itb-m4.export-doc": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    }
+  },
+  "gate": {
+    "verdict": "pass",
+    "node": "itb-m4.export-doc",
+    "at": "2026-09-18T22:11:32.775Z",
+    "note": "B组代裁：终稿过四断言验收（WNF-HOOK/SLOP 修订后过），交接齐备"
+  },
+  "inputs": {
+    "project": "p-slj-001",
+    "direction": "水利局梗×短剧公式：人人都退我偏偏不退的守闸人",
+    "chapters": 3,
+    "route": "hot",
+    "题材": "现实题材短剧",
+    "需求": "从零跑通小说流 v2 全模块；短剧剧本落地",
+    "AB测试": false
+  },
+  "comments": {},
+  "overlayHash": "314efa96",
+  "policy": {
+    "kit_boundary": "always",
+    "gate_mode": "auto",
+    "adapt": "propose"
+  },
+  "planHash": "c6ae12f8",
+  "lastRejectReason": ""
+}
