@@ -1,0 +1,54 @@
+{
+  "format": "module@1",
+  "id": "drama",
+  "name": "成剧",
+  "desc": "成剧域：剧本 IR → B拍分集分镜剧本（可拍摄/可导出/可批注的短剧剧本）",
+  "version": "0.1.0",
+  "ops": {
+    "scene-breakdown": {
+      "skill": "scene-breakdown",
+      "title": "小纲师·分镜脚本",
+      "desc": "剧本 IR → 逐集 B拍分镜剧本（第X集/拍号｜钩型｜秒/分镜/台词/表演/尾钩），短剧模块唯一交付件",
+      "kind": "produce",
+      "model_tier": "high",
+      "output": "分镜剧本.md",
+      "knowledge": [
+        "kb/aesthetic/character",
+        "kb/aesthetic/dialogue",
+        "kb/aesthetic/hook-3s",
+        "kb/aesthetic/pacing-density",
+        "kb/aesthetic/scene-value",
+        "kb/method/longform-engineering"
+      ],
+      "asserts": ["AE-BEAT-FORMAT", "AE-VIS-EMPTY", "AE-HOOK-EVENT"],
+      "capability": ["分集分镜"],
+      "config": {
+        "shotsPerScene": {
+          "type": "number",
+          "default": 3,
+          "desc": "每场拍数下限",
+          "effect": "改了 = 节奏颗粒度变化",
+          "tunable_by": ["user", "optimizer"]
+        },
+        "dialogLevel": {
+          "type": "enum",
+          "default": "标准",
+          "enum": ["精简", "标准", "加密"],
+          "desc": "台词密度档位",
+          "effect": "改了 = 单集信息量变化",
+          "tunable_by": ["user", "optimizer"]
+        }
+      },
+      "also_fits": [],
+      "requires": [],
+      "adds": { "asserts": [], "knowledge": [], "config": {} }
+    }
+  },
+  "skeleton": { "spine": ["scene-breakdown"], "edges": [] },
+  "caps": ["分集分镜"],
+  "io": {
+    "input": { "from": "plot", "shape": "剧本 IR（逐场 5W/行动/台词/价值/钩 + 伏笔登记）" },
+    "output": { "file": "分镜剧本.md", "audience": "导演/制片（可拍摄分镜，导出可批注 docx）" },
+    "acceptance": { "asserts": ["AE-BEAT-FORMAT", "AE-VIS-EMPTY", "AE-HOOK-EVENT"] }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "format": "module-report@1",
+  "projectId": "p-slj-002",
+  "flowId": "drama-flow",
+  "moduleId": "m1",
+  "moduleName": "m1",
+  "title": "选题报告师",
+  "closedAt": "2026-09-18T22:45:44.675Z",
+  "io": {
+    "input": [
+      "direction",
+      "episodes",
+      "route",
+      "题材",
+      "需求",
+      "AB测试"
+    ],
+    "output": "01-选题/选题报告.md"
+  },
+  "artifacts": [
+    {
+      "node": "m1.topic-report",
+      "op": "topic-report",
+      "path": "01-选题/选题报告.md",
+      "role": "deliverable"
+    }
+  ],
+  "acceptance": [
+    {
+      "node": "m1.topic-report",
+      "assert": "AE-REPORT-DENSITY",
+      "status": "pass",
+      "detail": "梗/话题行 10、对标 30、热度数据 4 处"
+    }
+  ],
+  "metrics": {
+    "submits": 1,
+    "retries": 0,
+    "tokensIn": 0,
+    "tokensOut": 0,
+    "latencyMs": 0,
+    "ctxOffered": 5,
+    "ctxUsed": 5,
+    "hitRate": 1
+  },
+  "feedback": {
+    "annotations": 0,
+    "proposals": 0
+  }
+}
