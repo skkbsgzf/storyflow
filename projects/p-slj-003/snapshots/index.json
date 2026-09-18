@@ -1,0 +1,62 @@
+{
+  "snapshots": {
+    "m1.topic-report": [
+      {
+        "round": 1,
+        "ts": "2026-09-18T22:55:27.076Z",
+        "note": "submit r1·选题报告.md",
+        "files": {
+          "01-选题/选题报告.md": {
+            "hash": "20c938328fad",
+            "path": "snapshots/m1.topic-report/r1/01-选题/选题报告.md"
+          }
+        }
+      }
+    ],
+    "m2.script-forge": [
+      {
+        "round": 1,
+        "ts": "2026-09-18T22:56:38.401Z",
+        "note": "submit r1·剧本.md",
+        "files": {
+          "02-编剧/剧本.md": {
+            "hash": "148b90783928",
+            "path": "snapshots/m2.script-forge/r1/02-编剧/剧本.md"
+          }
+        }
+      }
+    ],
+    "m3.scene-breakdown": [
+      {
+        "round": 1,
+        "ts": "2026-09-18T22:57:53.150Z",
+        "note": "submit r1·分镜剧本.md",
+        "files": {
+          "03-成剧/分镜剧本.md": {
+            "hash": "d17c534bb573",
+            "path": "snapshots/m3.scene-breakdown/r1/03-成剧/分镜剧本.md"
+          }
+        }
+      }
+    ],
+    "m4.export-doc": [
+      {
+        "round": 1,
+        "ts": "2026-09-19 06:58",
+        "note": "export-doc 自动快照（plain）→ export-doc.docx",
+        "files": {
+          "03-成剧/分镜剧本.md": {
+            "hash": "42308ab62086",
+            "path": "snapshots/m4.export-doc/r1/03-成剧/分镜剧本.md"
+          },
+          "04-交付/export-doc.docx": {
+            "hash": "587710de9120",
+            "path": "snapshots/m4.export-doc/r1/04-交付/export-doc.docx",
+            "binary": true
+          }
+        }
+      }
+    ]
+  },
+  "inputs": {}
+}

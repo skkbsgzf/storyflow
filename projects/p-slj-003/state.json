@@ -1,0 +1,107 @@
+{
+  "runId": "run-mu7k43fg-cle9jp",
+  "projectId": "p-slj-003",
+  "flowId": "drama-flow",
+  "flowVersion": "1.0.0",
+  "flowHash": "c2a30af6",
+  "status": "completed",
+  "plan": {
+    "order": [
+      "m1.topic-report",
+      "m2.link",
+      "itb-m2.script-forge",
+      "m2.script-forge",
+      "m3.link",
+      "itb-m3.scene-breakdown",
+      "m3.scene-breakdown",
+      "m4.link",
+      "itb-m4.export-doc",
+      "m4.export-doc"
+    ]
+  },
+  "nodes": {
+    "m1.topic-report": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "01-选题/选题报告.md",
+      "stale": false
+    },
+    "m2.script-forge": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/剧本.md",
+      "stale": false
+    },
+    "m2.link": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "m3.scene-breakdown": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "03-成剧/分镜剧本.md",
+      "stale": false
+    },
+    "m3.link": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "m4.export-doc": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "04-交付/export-doc.docx"
+    },
+    "m4.link": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "itb-m2.script-forge": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "itb-m3.scene-breakdown": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "itb-m4.export-doc": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    }
+  },
+  "gate": {
+    "verdict": "pass",
+    "node": "itb-m4.export-doc",
+    "at": "2026-09-18T22:58:15.407Z",
+    "note": "B组代裁：分镜剧本 22 拍一次过三断言（紧凑版）"
+  },
+  "inputs": {
+    "project": "p-slj-003",
+    "direction": "水利局梗×短剧公式：人人都退我偏偏不退的守闸人（紧凑冲突版）",
+    "episodes": 6,
+    "route": "hot",
+    "题材": "现实题材竖屏短剧",
+    "需求": "对标短剧制作标准：冲突前置/反派主动出招/回合制/集末双钩",
+    "AB测试": false
+  },
+  "comments": {},
+  "overlayHash": "dbd07b6e",
+  "policy": {
+    "kit_boundary": "always",
+    "gate_mode": "auto",
+    "adapt": "propose"
+  },
+  "planHash": "99fa9ecd"
+}

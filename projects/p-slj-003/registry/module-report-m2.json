@@ -1,0 +1,50 @@
+{
+  "format": "module-report@1",
+  "projectId": "p-slj-003",
+  "flowId": "drama-flow",
+  "moduleId": "m2",
+  "moduleName": "m2",
+  "title": "剧本师 / 连接 · 编剧（自动批准）",
+  "closedAt": "2026-09-18T22:56:38.477Z",
+  "io": {
+    "input": [
+      "direction",
+      "episodes",
+      "route",
+      "题材",
+      "需求",
+      "AB测试"
+    ],
+    "output": "02-编剧/剧本.md"
+  },
+  "artifacts": [
+    {
+      "node": "m2.script-forge",
+      "op": "script-forge",
+      "path": "02-编剧/剧本.md",
+      "role": "deliverable"
+    }
+  ],
+  "acceptance": [
+    {
+      "node": "m2.script-forge",
+      "assert": "AE-SCRIPT-FIELDS",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+    }
+  ],
+  "metrics": {
+    "submits": 2,
+    "retries": 0,
+    "tokensIn": 0,
+    "tokensOut": 0,
+    "latencyMs": 0,
+    "ctxOffered": 7,
+    "ctxUsed": 4,
+    "hitRate": 0.5714285714285714
+  },
+  "feedback": {
+    "annotations": 0,
+    "proposals": 0
+  }
+}

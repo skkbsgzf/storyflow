@@ -384,29 +384,28 @@ export function reportDensityAssert(text: string): Validation {
 }
 
 /**
- * AE-SCRIPT-FIELDS（block）· 小说流 v2 m2「剧本」验收职责：
- * 结构化 IR 字段齐备——每场须有 5W 行 / 行动 / 台词 / 价值 / 钩；场数 ≥6（三章 × ≥3 场）。
- * 剧本是格式化数据（5W1H/行动/背景/场景/台词），写作模块据此文学化。
+ * AE-SCRIPT-FIELDS（block）· 剧本验收职责（2026-09-19 用户口径重写）：
+ * 正常剧本格式——逐集（第X集），每集有 场景头 / 角色:台词（≥2 行）/ 动作（△ 或 行动）/ 集末「卡点：」。
+ * 5W1H 字段行废止：剧本要通顺流畅，结构意图（每段表达什么、什么效果）写在创作里，不摆表单。
  */
 export function scriptFieldsAssert(text: string): Validation {
   const problems: string[] = [];
-  const scenes = text.split(/^###\s*场/gm).slice(1);
-  if (scenes.length < 6) problems.push(`场数 ${scenes.length} < 6（三章每章至少 3 场）`);
-  const miss = { w: 0, act: 0, dlg: 0, val: 0, hook: 0 };
-  for (const [i, s] of scenes.entries()) {
-    if (!/5W|谁[=：]/.test(s)) miss.w++;
-    if (!/行动[:：]/.test(s)) miss.act++;
-    if (!/台词[:：]/.test(s)) miss.dlg++;
-    if (!/价值[:：]/.test(s)) miss.val++;
-    if (!/钩[:：]/.test(s) && i === scenes.length - 1) miss.hook++;
+  const eps = text.split(/(?=^第[一二三四五六七八九十百0-9]+集\s*(?:《|$))/gm).filter((s) => /^第[一二三四五六七八九十百0-9]+集/.test(s));
+  if (eps.length < 3) problems.push(`集数 ${eps.length} < 3（试稿至少 3 集，每集一个完整冲突回合）`);
+  let missScene = 0, missDlg = 0, missAct = 0, missCard = 0;
+  for (const e of eps) {
+    if (!/场景[:：]/.test(e)) missScene++;
+    const dlgLines = e.split("\n").filter((l) => /^[^\s△][^：\n]{1,12}(（[^）]*）)?：/.test(l.trim())).length;
+    if (dlgLines < 2) missDlg++;
+    if (!/△|动作[:：]|（[^）]*(走|站|坐|推|抓|扔|抬|举|跑)[^）]*）/.test(e)) missAct++;
+    if (!/卡点[:：]/.test(e)) missCard++;
   }
-  if (miss.w) problems.push(`${miss.w} 场缺 5W 行`);
-  if (miss.act) problems.push(`${miss.act} 场缺「行动」`);
-  if (miss.dlg) problems.push(`${miss.dlg} 场缺「台词」`);
-  if (miss.val) problems.push(`${miss.val} 场缺「价值」`);
-  if (miss.hook) problems.push("末场缺「钩」（全剧收束钩必填，章末钩另在行动/价值里体现）");
+  if (missScene) problems.push(`${missScene} 集缺「场景：」头`);
+  if (missDlg) problems.push(`${missDlg} 集缺台词（角色名：台词 至少 2 行）`);
+  if (missAct) problems.push(`${missAct} 集缺动作（△ 或 动作：）`);
+  if (missCard) problems.push(`${missCard} 集缺集末「卡点：」（每集必须回答：观众为什么看下一集）`);
   return problems.length === 0
-    ? { name: "AE-SCRIPT-FIELDS", status: "pass", detail: `${scenes.length} 场字段齐备（5W/行动/台词/价值）` }
+    ? { name: "AE-SCRIPT-FIELDS", status: "pass", detail: `${eps.length} 集剧本格式齐备（场景/台词/动作/卡点）` }
     : { name: "AE-SCRIPT-FIELDS", status: "block", detail: problems.join("；") };
 }
 

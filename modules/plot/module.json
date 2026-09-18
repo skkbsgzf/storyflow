@@ -728,7 +728,9 @@
         "kb/aesthetic/conflict-escalation",
         "kb/aesthetic/reversal",
         "kb/aesthetic/character",
-        "kb/craft/highlight-loop"
+        "kb/craft/highlight-loop",
+        "kb/aesthetic/pacing-density",
+        "kb/aesthetic/hook-3s"
       ],
       "asserts": [
         "AE-SCRIPT-FIELDS"
