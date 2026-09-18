@@ -168,10 +168,24 @@
      }
     },
     "moduleFiles": {
+     "type": "array",
+     "description": "模块产物分级视图（W-02/W-04）：每模块 {id,name,dir,deliverable,audience,process[]}——deliverable=io.output.file 落盘件，process=模块目录其余",
+     "items": {
+      "type": "object"
+     }
+    },
+    "kits": {
      "type": "object",
-     "description": "模块产物分级视图：moduleId → {deliverable, process[]}（模块唯一交付 + 过程件清单）",
+     "description": "kit 注册表摘要（模板 kitOpOf 消费）：kit → {domain,title,ops:{op:{title,knowledge,asserts,minitools}}}。sources: modules/*/module.json + kits/*/kit.json 合并",
      "additionalProperties": {
       "type": "object"
+     }
+    },
+    "kbTitles": {
+     "type": "object",
+     "description": "kb id → 中文标题（knowledge/index.json entries）",
+     "additionalProperties": {
+      "type": "string"
      }
     }
    },
@@ -179,7 +193,7 @@
   },
   "EFF": {
    "type": "object",
-   "description": "registry/effective.json（effective@2）：生效编排，内核 expandFlow 单点派生落盘，页面只消费不重算",
+   "description": "registry/effective.json（effective@2）：生效编排，内核 expandFlow 单点派生落盘，页面只消费不重算；composition 为对象数组（每项含 id/module/name/dir/link/caps/spine/plugins/nodes）",
    "required": [
     "format",
     "policy",

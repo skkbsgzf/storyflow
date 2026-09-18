@@ -145,18 +145,53 @@ def effective_module_views(eff, reg):
     for i, c in enumerate(comp_items):
         mid = c.get("id", "")
         dir_name = c.get("dir") or f"{i + 1:02d}-{mid}"
+        mod = reg.get(c.get("module", mid)) or {}
         caps = c.get("caps") or []
         caps_enabled = c.get("capsEnabled") or []
         # composition 的 spine/plugins 已经是完整节点 id（<实例id>.<tool>），不再加前缀
         spine = list(c.get("spine") or [])
         plugins = list(c.get("plugins") or [])
         views.append({
-            "id": mid, "module": c.get("module", mid), "name": c.get("name", mid),
+            "id": mid, "module": c.get("module", mid), "name": c.get("name") or mod.get("name") or mid,
             "link": c.get("link", link_default), "order": i + 1, "dir": dir_name,
             "caps": caps, "capsEnabled": caps_enabled,
             "spine": spine, "plugins": plugins, "nodes": c.get("nodes") or [],
+            "io": mod.get("io"),
         })
     return views, notes
+
+
+def kits_summary_build():
+    """DATA.kits 摘要（模板 kitOpOf 消费）：modules（flow@3 源）与 kits（flow@2 源）合并，
+    op 级带 title/knowledge/asserts/minitools——节点页「知识依据/校验/可用工具」行的事实源。"""
+    out = {}
+
+    def put(kid, k):
+        ops = {}
+        for op_id, o in (k.get("ops") or {}).items():
+            ops[op_id] = {
+                "title": o.get("title") or op_id,
+                "knowledge": o.get("knowledge") or [],
+                "asserts": o.get("asserts") or [],
+                "minitools": o.get("minitools") or [],
+            }
+        out[kid] = {"domain": k.get("domain") or kid, "title": k.get("name") or k.get("desc") or kid, "ops": ops}
+
+    for p in sorted(ROOT.glob("modules/*/module.json")):
+        d = load_json(p, None)
+        if d and d.get("id"):
+            put(d["id"], d)
+    for p in sorted(ROOT.glob("kits/*/kit.json")):
+        d = load_json(p, None)
+        if d and d.get("id") and d["id"] not in out:
+            put(d["id"], d)
+    return out
+
+
+def kb_titles_build():
+    """DATA.kbTitles：kb id → 中文标题（knowledge/index.json）。"""
+    idx = load_json(ROOT / "knowledge" / "index.json", {}) or {}
+    return {e.get("id"): (e.get("title") or e.get("id")) for e in (idx.get("entries") or []) if e.get("id")}
 
 
 def scan_files(proj: Path):
@@ -322,6 +357,8 @@ def main():
             "deliverables": deliverables,
             "moduleFiles": module_files,
             "moduleReports": module_reports,
+            "kits": kits_summary_build(),
+            "kbTitles": kb_titles_build(),
             "inputs": runstate.get("inputs") or {},
             "annos": annos.get("annos") or {},
             "projects": projects_switcher(),

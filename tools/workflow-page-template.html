@@ -305,8 +305,8 @@ textarea{width:100%;min-height:340px;background:var(--bg-ctl);color:var(--ink);b
   <select id="proj-switch" class="tb" title="切换项目（生成时快照）"></select>
   <span class="ver" id="v"></span><span class="sp"></span>
   <button class="tb" onclick="importFlowHint()" title="流商店：浏览 / 搜索全部生产线，一键导入到当前项目">⇪ 导入新流</button>
-  <button class="tb" onclick="openDeliverables()" title="产物管理：章节文档 / 剧本多格式 / 对外交付">📦 产物管理</button>
-  <button class="tb" onclick="openWorldbook()" title="世界书：设定/人物/势力/地理/编年/伏笔/底牌（文件即真相）——大纲与成稿之间的设定中间件">▦ 中间件</button>
+  <button class="tb" onclick="openDeliverables()" title="产物管理：模块交付件 / 过程件内幕 / 旧目录交付">📦 产物管理</button>
+  <button class="tb" id="mw-btn" onclick="openWorldbook()" title="世界书：设定/人物/势力/地理/编年/伏笔/底牌（文件即真相）——大纲与成稿之间的设定中间件">▦ 中间件</button>
   <button class="tb" onclick="openShelf()" title="打开右侧文档架">▤ 文档架</button>
   <a class="tb" id="dl-link" href="#" style="display:none">交付产物页 →</a>
 </header>
@@ -369,6 +369,10 @@ if (DATA.annos) RS.annos = DATA.annos;
 /* 未迁移面板的缺失键回填（WO-07 面板重写后可删）：只补默认值，不做双名兜底 */
 DATA.snapshots = DATA.snapshots || {}; DATA.kits = DATA.kits || {}; DATA.kbTitles = DATA.kbTitles || {};
 DATA.nodeFields = DATA.nodeFields || []; DATA.flowsIndex = DATA.flowsIndex || []; DATA.skillsIndex = DATA.skillsIndex || [];
+/* 中间件按钮 tooltip 随实际产出变化：无世界书目录时明说，不挂空承诺 */
+(()=>{ const b=document.getElementById("mw-btn"); if(!b) return;
+  b.title = Object.keys(files).some(f=>f.startsWith("世界书/")) ? b.title
+    : "中间件 · 设定真相库：本流程未产出世界书目录（设定职能见过程件，如 World Bible / 编剧层的设定文件）"; })();
 /* ---------- 文件多版本索引（来自快照）：diff 呈现的数据底座 ---------- */
 const fileVersions = {};
 Object.entries(DATA.snapshots || {}).forEach(([nid, lst]) => (lst || []).forEach(s => {
@@ -429,8 +433,9 @@ const ZH = {"find-trope":"找梗师","internet-feel":"网感师","plot-choreogra
   "check_aesthetic_asserts":"审美断言","check_contract_compliance":"约束对账","docx_ingest":"批注解析",
   "continuity_slice":"台账切片","continuity_commit":"台账结算","meme_harvest":"梗素材采集"};
 const ST_ZH = {"done":"已完成","awaiting":"待决","pending":"待重跑","none":"未启动"};
-const STAGE_ZH = {"S1":"调研","S2":"结构","S3":"大纲","S4":"小纲","S5":"成稿"};
-const STAGE_COLOR = {"S1":"#5e7d5a","S2":"#4f6d8c","S3":"#9c6b4a","S4":"#7d5f8a","S5":"#a5546b"};
+/* 阶段键双口径：flow@2=S1..S5；flow@3 派生节点 stage=模块实例 id（m1..m6），色板沿用模块色 */
+const STAGE_ZH = {"S1":"调研","S2":"结构","S3":"大纲","S4":"小纲","S5":"成稿","m1":"模块 1","m2":"模块 2","m3":"模块 3","m4":"模块 4","m5":"模块 5","m6":"模块 6"};
+const STAGE_COLOR = {"S1":"#5e7d5a","S2":"#4f6d8c","S3":"#9c6b4a","S4":"#7d5f8a","S5":"#a5546b","m1":"#5e7d5a","m2":"#4f6d8c","m3":"#9c6b4a","m4":"#7d5f8a","m5":"#a5546b","m6":"#5e7d5a"};
 
 /* ---------- 运行状态 ---------- */
 function st(n){ const s = (RS.nodes[n]||{}).status || "none"; return s; }
@@ -745,9 +750,20 @@ function configPaper(n){
   if (!rec || !rec.resolved) {
     const m = nodes[n]||{};
     if (!m.kit || !m.op) return "";
+    // 生效层未编译出 resolved：按节点声明就地展示，并给出可落地的改写通道（W-07·语义适配）
+    const keys = Object.keys(m.config||{});
+    const patch = JSON.stringify({patches:[{kind:"set-tool", kit:m.kit, op:m.op, reason:"<为什么改>", config:Object.fromEntries(keys.map(k=>[k,"<新值>"]))}]}, null, 1);
     return `<div class="paper"><div class="doc-h"><span>内容配置项</span><span>${m.kit}.${m.op}</span></div><div class="md">
-      <p class="msg">本节点未能在生效编排中解析出 tool（kit 注册表里查不到 <code>${m.kit}.${m.op}</code>）。
-      kit 注册表是配置声明的唯一事实源——查不到即无旋钮可调，请先修 <code>kits/${m.kit}/kit.json</code>。</p></div></div>`;
+      <p class="msg">生效层未能解析出本节点的旋钮生效值（registry/effective.json 的 nodeConfig 缺 resolved 编译结果）。
+      以下按节点声明展示，不保证已生效；请重跑 <code>flow_effect</code> 刷新。</p>
+      <div class="kv">
+        <span class="k">生效优先级</span><span class="v">项目 overlay &gt; 本节点 config &gt; tool 默认 &gt; 通用默认 <span class="msg">按 tool 归口：<code>set-tool</code> 改的是「这件事怎么做」，换位置照样生效</span></span>
+        ${keys.length?`<span class="k">声明旋钮</span><span class="v">${keys.map(k=>`<code>${k}=${String(m.config[k])}</code>`).join(" ")}</span>`:`<span class="k">声明旋钮</span><span class="v"><span class="msg">无（本 tool 未声明内容配置项）</span></span>`}
+      </div>
+      <p class="msg" style="margin-top:12px">改写方式：编排配置改动落 <code>registry/overlay.json</code>，内核重编译计划后生效——</p>
+      <div class="patched">${escapeHtml(patch)}</div>
+      <p class="msg">落到项目：<code>npx tsx src/cli.ts flow_overlay --project ${DATA.project} --patches patch.json --reason "…" --replan</code>；优化 agent 的自动提案走 <code>flow_optimize</code>，结构类改动一律待批。</p>
+    </div></div>`;
   }
   const r = rec.resolved, defs = r.defs||{}, vals = r.values||{}, src = r.sources||{};
   const SRC_ZH = {overlay:"项目覆盖", node:"本节点", op:"tool 默认", generic:"通用默认"};
@@ -801,16 +817,16 @@ function orchestrationPaper(){
   const gates=(METRICS&&METRICS.gates)||[];
   return `<div class="paper"><div class="doc-h"><span>生成式编排（当前生效）</span><span>${EFF?EFF.format:"bootstrap"}</span></div><div class="md">
     <div class="kv">
-      <span class="k">策略</span><span class="v">kit 边界验收 <code>${pol.kit_boundary||"-"}</code> ｜ 域内门 <code>${pol.gate_mode||"-"}</code> ｜ 自动调优 <code>${pol.adapt||"-"}</code>
-        <span class="msg">gate_mode=auto ⇒ 域内门断言全过即自过；人只在 kit 边界被叫</span></span>
+      <span class="k">策略</span><span class="v">模块间连接件默认 <code>${pol.link_default||"auto"}</code> ｜ 自动调优 <code>${pol.adapt||"-"}</code>
+        <span class="msg">连接件 manual 才有人工放行；域内质量归各 tool 的 asserts/config</span></span>
       <span class="k">编排指纹</span><span class="v"><code>${(EFF&&EFF.overlayHash)||"-"}</code>${EFF&&EFF.planHash?` ｜ 计划 <code>${EFF.planHash}</code>`:""}</span>
-      <span class="k">边界验收</span><span class="v">${(EFF&&EFF.boundaries||[]).length} 处${(EFF&&EFF.boundaries||[]).length?`：${EFF.boundaries.map(b=>`<code>${b}</code>`).join(" ")}`:""} <span class="msg">域切换处自动派生，唯一的人工裁决点</span></span>
+      <span class="k">边界验收（模块间连接件）</span><span class="v">${(EFF&&EFF.links||[]).length} 处${(EFF&&EFF.links||[]).length?`，其中人工放行 <b>${(EFF.links||[]).filter(l=>l.mode==="manual").length}</b> 处`:""} <span class="msg">模块间交接；manual 驳回 = 整个上游模块重跑</span></span>
       <span class="k">项目覆盖</span><span class="v">${OVERLAY?`${(OVERLAY.patches||[]).length} 条补丁（applied ${(OVERLAY.patches||[]).filter(p=>!p.status||p.status==="applied").length}）`:`<span class="msg">无（项目未改写编排）</span>`}</span>
       <span class="k">优化提案</span><span class="v">${props.length?`${props.length} 条，其中待批 <b>${pending.length}</b>${pending.length?`：${pending.map(p=>`<code>${p.id||p.rule||"?"}</code> ${p.reason||""}`).join("；")}`:""}`:`<span class="msg">未产出（跑 flow_optimize 生成）</span>`}</span>
       <span class="k">指标事件</span><span class="v">${METRICS?`${METRICS.events} 条`:`<span class="msg">未采样</span>`}</span>
-      ${gates.length?`<span class="k">裁决分布</span><span class="v">${gates.map(g=>`<code>${g.nodeId}</code> 通过 ${g.passes} / 打回 ${g.sendBacks}（${g.phase}）`).join(" · ")}</span>`:""}
+      ${gates.length?`<span class="k">裁决分布</span><span class="v">${gates.map(g=>`<code>${g.nodeId}</code> 通过 ${g.passes} / 打回 ${g.sendBacks}（边界门）`).join(" · ")}</span>`:""}
     </div>
-    ${(EFF&&EFF.composition||[]).length?`<p class="msg">装载记录：<br>${EFF.composition.join("<br>")}</p>`:""}
+    ${(EFF&&Array.isArray(EFF.composition)&&EFF.composition.length)?`<p class="msg">装载记录：<br>${EFF.composition.map(c=>typeof c==="string"?c:`<code>${c.id||"?"}</code> ${c.name||""}（${(c.spine||[]).length} 骨架${(c.plugins||[]).length?` + ${(c.plugins||[]).length} 插件`:""}）`).join("<br>")}</p>`:""}
     <p class="msg">tool 的位置与内容配置都可被改写：位置走 <code>place-node / remove-node / set-op / add-edge</code>，内容配置走 <code>set-tool</code>。
     结构类改动永远不自动落地（人批），配置类在 <code>adapt=apply</code> 下可自动落地并留下 evidence。</p>
   </div></div>`;
@@ -858,7 +874,7 @@ function render(){
     const s = st(n);
     d.className = `node k-${m.kind||"agent"}` + (meta.plugin?" k-plugin":"") + (sel===n?" sel":"");
     d.style.left = x+"px"; d.style.top = y+"px";
-    const zhTag = m.skill ? (ZH[m.skill]||m.skill) : (m.minitool ? (ZH[m.minitool]||m.minitool) : "");
+    const zhTag = m.skill ? (ZH[m.skill]||m.skill) : (m.minitool ? (ZH[m.minitool]||m.minitool) : (m.script ? "脚本" : ""));
     d.innerHTML = `<div class="accent" style="background:${meta.color||"#b8b0a4"}"></div>
       <div class="hd"><span class="dot st-${s}" title="${ST_ZH[s]||s}"></span><span class="zh">${zhTitle(m)}</span></div>
       <div class="sub">${zhTag}${meta.plugin?`<span class="par" title="插件工具：经插槽插入（slot/insert），不在模块默认骨架里">插件</span>`:""}${meta.orphan?`<span class="par" title="该节点不在 DATA.modules 任何实例的 spine 中（内核与页面数据不同步，显式可见）">未归属</span>`:""}</div>
@@ -1339,11 +1355,12 @@ function nodeInfoPaper(n,m){
   return `<div class="paper"><div class="doc-h"><span>节点说明</span><span>${n}</span></div><div class="md">
     <div class="kv">
     <span class="k">节点</span><span class="v">${n}</span>
-    <span class="k">类型</span><span class="v">${m.kind}${m.stage?` ｜ <b style="color:${STAGE_COLOR[m.stage]}">${m.stage} ${STAGE_ZH[m.stage]||""}</b>`:""}</span>
+    <span class="k">类型</span><span class="v">${m.kind}${m.stage?` ｜ <b style="color:${STAGE_COLOR[m.stage]||"var(--ink)"}">${m.stage} ${STAGE_ZH[m.stage]||""}</b>`:""}</span>
     <span class="k">说明</span><span class="v">${m.title||"-"}</span>
     ${k?`<span class="k">能力</span><span class="v"><code>${k.kit}.${k.op}</code> <span class="msg">${k.ktitle||k.domain}${k.def.title&&k.def.title!==k.op?` · ${k.def.title}`:""}</span></span>`:""}
     ${m.skill?`<span class="k">技能</span><span class="v"><code>skills/${m.skill}.md</code></span>`:""}
     ${m.minitool?`<span class="k">工具</span><span class="v"><code>${m.minitool}</code> <span class="msg">确定性步骤 · 零 token</span></span>`:""}
+    ${m.script?`<span class="k">脚本执行体</span><span class="v"><code>${m.script}</code> <span class="msg">外部确定性脚本 · 零 token · 内核 spawn（快照由脚本自带完成）</span></span>`:""}
     ${(m.assist||[]).length?`<span class="k">协作</span><span class="v">${m.assist.join("、")}</span>`:""}
     ${know.length?`<span class="k">知识依据</span><span class="v">${know.map(x=>`<code title="${x}">${kbTitle(x)}</code>`).join(" ")}</span>`:""}
     ${asrt.length?`<span class="k">校验</span><span class="v">${asrt.map(x=>`<code>${x}</code>`).join(" ")}</span>`:""}
@@ -1357,10 +1374,12 @@ function nodeInfoPaper(n,m){
     ${m.route?`<span class="k">路由</span><span class="v"><code>${typeof m.route==="object"?JSON.stringify(m.route):m.route}</code> <span class="msg">由 flow.inputs 取值驱动</span></span>`:""}
     ${m.filterBy?`<span class="k">筛选</span><span class="v"><code>${m.filterBy}</code></span>`:""}
     ${m.reviewers?`<span class="k">评审席位</span><span class="v">${[].concat(m.reviewers).join("、")}</span>`:""}
-    ${m.gate_role==="kit-boundary"?`<span class="k">门角色</span><span class="v"><b style="color:#7a5c1e">kit 边界验收</b>（跨域交接，全流程唯一的人工裁决点）</span>`
-      :(m.kind==="gate"&&!isBoundaryNode(n)&&(m.output||m.skill||m.op||m.minitool)
+    ${m.gate_role==="link"?`<span class="k">门角色</span><span class="v"><b style="color:#7a5c1e">模块间连接件</b>（${m.link_mode==="manual"?"<b>manual</b> · 人工放行":"auto · 自动放行"}）<span class="msg">R6 语义：模块交接的唯一裁决点——manual 驳回 = 整个上游模块重跑，不是单节点打回</span></span>`
+      :(m.gate_role==="kit-boundary"||m.gate_role==="boundary"?`<span class="k">门角色</span><span class="v"><b style="color:#7a5c1e">跨域交接验收门</b>（flow@3：等价于模块间连接件，人工放行）</span>`
+      :m.gate_role?`<span class="k">门角色</span><span class="v">${m.gate_role} <span class="msg">R5 遗留门角色（stage/final/spot）已退役——域内门降级为自动放行，人的裁决只在模块间连接件</span></span>`
+      :(m.kind==="gate"&&(m.output||m.skill||m.op||m.minitool)
         ? `<span class="k">门角色</span><span class="v"><b>域内评审步</b>（非纯汇合点）<span class="msg">R5 语义：这一步照跑、产物照出，但裁决自动——域内质量由该 tool 的 asserts/config 承担。产物若长期无人消费，优化器会提案裁掉它。</span></span>`
-        : (m.gate_role?`<span class="k">门角色</span><span class="v">${m.gate_role} <span class="msg">R5 已废弃旧门角色（stage/final/spot）——域内门降级为自动放行，人的裁决只留在 kit 边界</span></span>`:""))}
+        : ""))}
     ${m.oversight?`<span class="k">监督</span><span class="v">${typeof m.oversight==="object"?JSON.stringify(m.oversight):m.oversight}</span>`:""}
     ${m.template?`<span class="k">模板</span><span class="v"><code>${m.template}</code></span>`:""}
     ${m.iterate?`<span class="k">迭代</span><span class="v">⟲ 每${m.iterate.unit}一个实例 · 来源 ${m.iterate.over||"-"} · 产物 ${m.iterate.artifact||"-"}${m.iterate.first?` · 本期前 ${m.iterate.first} ${m.iterate.unit}`:""}</span>`:""}
@@ -1372,7 +1391,7 @@ function nodeInfoPaper(n,m){
       Object.entries(EFF.nodeConfig[n].resolved.sources).map(([k,s])=>(s==="overlay"||s==="node")
         ? `<code>${k}=${Array.isArray(EFF.nodeConfig[n].resolved.values[k])?EFF.nodeConfig[n].resolved.values[k].join("、"):String(EFF.nodeConfig[n].resolved.values[k])}</code>`
         : "").join(" ")||`<span class="msg">全部为默认值（详见下方「内容配置项」页）</span>`}</span>`:""}
-    <span class="k">状态</span><span class="v">${ST_ZH[st(n)]}（第 ${(RS.nodes[n]||{}).round||1} 轮）</span>
+    <span class="k">状态</span><span class="v">${ST_ZH[st(n)]||st(n)}（第 ${(RS.nodes[n]||{}).round||1} 轮）</span>
     </div><p class="msg">${m.desc||""}</p></div></div>`;
 }
 function commentPaper(key, title){
@@ -1414,11 +1433,12 @@ function bindComment(key){
 function verdictBar(n){
   const v=(RS.nodes[n]||{}).verdict||"awaiting";
   const sts=(flow.stages||[]); const gi=sts.findIndex(s=>s.gate===n);
-  const opts=sts.slice(0, gi+1).reverse().map(s=>`<option value="${s.id}">${s.id} ${s.name}（根因）</option>`).join("");
+  // flow@3：stages 为派生模块段，无 gate 归属——根因选择器隐藏，驳回语义 = 整个上游模块重跑
+  const opts=gi>=0 ? sts.slice(0, gi+1).reverse().map(s=>`<option value="${s.id}">${s.id} ${s.name}（根因）</option>`).join("") : "";
   return `<span style="font-size:calc(12px*var(--fs,1))">验收门 · 当前裁决 <b>${v}</b></span>
     ${opts?`<select id="vroot" style="border:1px solid #c9c1b2;border-radius:var(--r-m);height:26px;padding:0 6px;font-size:calc(12px*var(--fs,1));background:#fff">${opts}</select>`:""}
     <button class="bt" id="vg" style="border-color:#5a8a5e;color:#3d6b45;font-weight:700">通过</button>
-    <button class="bt" id="vn" style="border-color:#a5433a;color:#8c352c;font-weight:700">驳回（按根因回注）</button>
+    <button class="bt" id="vn" style="border-color:#a5433a;color:#8c352c;font-weight:700">${opts?"驳回（按根因回注）":"驳回（上游模块重跑）"}</button>
     <span class="msg">红方四视角意见书为必读件；裁决权默认人工。</span>`;
 }
 function bindVerdict(n){
@@ -1428,12 +1448,32 @@ function bindVerdict(n){
   nn.onclick=()=>{
     const sts=(flow.stages||[]);
     const rootSel=document.getElementById("vroot");
+    RS.nodes[n].verdict="send-back"; RS.nodes[n].status="awaiting";
+    if (!sts.length){
+      // flow@3 语义：模块验收驳回 = 整个上游模块回退重跑（连接件驳回的等价操作）
+      const myMid=(nodes[n]||{}).module||(nodes[n]||{}).stage;
+      const inst=(DATA.modules||[]).find(x=>x.id===myMid);
+      const firstNode=(inst&&inst.spine&&inst.spine[0])||Object.keys(nodes).find(x=>(nodes[x].stage||nodes[x].module)===myMid);
+      if (firstNode && RS.nodes[firstNode]){
+        Object.keys(nodes).forEach(x=>{
+          if ((nodes[x].stage||nodes[x].module)===myMid && RS.nodes[x] && !nodes[x].gate_role){
+            RS.nodes[x].status="pending"; RS.nodes[x].round=(RS.nodes[x].round||1)+1;
+          }
+        });
+        const order=Object.keys(nodes);
+        const ti=order.indexOf(firstNode);
+        order.slice(ti+1).forEach(x=>{ if(RS.nodes[x]&&RS.nodes[x].status==="done"){ RS.nodes[x].status="pending"; RS.nodes[x].stale=true; } });
+        RS.nodes[n].root_cause_module=myMid;
+      }
+      render(); openNodeDoc(n); return;
+    }
     const rootId=rootSel?rootSel.value:(sts[0]&&sts[0].id);
     const ri=sts.findIndex(s=>s.id===rootId);
-    RS.nodes[n].verdict="send-back"; RS.nodes[n].status="awaiting"; RS.nodes[n].root_cause_stage=rootId;
-    (sts[ri].nodes||[]).forEach(nid=>{ if (RS.nodes[nid]) { RS.nodes[nid].status="pending"; RS.nodes[nid].round=(RS.nodes[nid].round||1)+1; } });
+    RS.nodes[n].root_cause_stage=rootId;
+    (sts[ri]&&(sts[ri].nodes||[])).forEach(nid=>{ if (RS.nodes[nid]) { RS.nodes[nid].status="pending"; RS.nodes[nid].round=(RS.nodes[nid].round||1)+1; } });
     const order=Object.keys(nodes);
-    const ti=order.indexOf(sts[ri].nodes[0]||order[0]);
+    const firstOfStage=sts[ri]&&sts[ri].nodes&&sts[ri].nodes[0];
+    const ti=order.indexOf(firstOfStage||order[0]);
     order.slice(ti+1).forEach(x=>{ if(RS.nodes[x]&&RS.nodes[x].status==="done"){ RS.nodes[x].status="pending"; RS.nodes[x].stale=true; } });
     render(); openNodeDoc(n);
   };
@@ -1582,7 +1622,9 @@ function openShelf(){
     }).join("");
   }
   const capMap={"对外交付":"对外交付","内部":"内部产物","过程文件":"过程文件"};
-  for (const g of ["对外交付","内部","过程文件"]){
+  // W-07 架分组收敛：有模块分组数据（DATA.moduleFiles）时，过程文件按模块折叠展示，替代旧的平铺长列表
+  const mf=DATA.moduleFiles||[];
+  for (const g of ["对外交付","内部"]){
     const lst=groups[g].filter(f=>!dlvAll.includes(f)); if(!lst.length) continue;
     h+=`<div class="shelf-cap">${capMap[g]} · ${lst.length}</div>`;
     h+=lst.map(f=>{
@@ -1590,6 +1632,29 @@ function openShelf(){
       const no=g==="对外交付" ? f.slice(5,7) : g==="内部" ? "内" : "程";
       return `<div class="shelf-row" data-f="${f}"><span class="no">${no}</span><span class="nm">${nm.replace(/\.md$/,"")}</span><span class="go">打开 →</span></div>`;
     }).join("");
+  }
+  // 过程文件：有模块分组数据时按模块折叠（默认收起），否则平铺
+  const procAll=groups["过程文件"].filter(f=>!dlvAll.includes(f));
+  if (procAll.length){
+    if (mf.length){
+      h+=`<div class="shelf-cap">模块过程件 · ${procAll.length}（点模块展开）</div>`;
+      mf.forEach(m=>{
+        const proc=(m.process||[]).filter(f=>procAll.includes(f));
+        if(!proc.length) return;
+        h+=`<details><summary class="shelf-cap" style="cursor:pointer;margin:14px auto 6px">${m.id} ${m.name||""} · ${proc.length} 件</summary>`;
+        h+=proc.map(f=>`<div class="shelf-row" data-f="${f}"><span class="no">程</span><span class="nm">${f.replace(/^\d{2}-[^/]+\//,"").replace(/\.md$/,"")}</span><span class="go">打开 →</span></div>`).join("");
+        h+=`</details>`;
+      });
+      const strayProc=procAll.filter(f=>!mf.some(m=>(m.process||[]).includes(f)));
+      if (strayProc.length){
+        h+=`<details><summary class="shelf-cap" style="cursor:pointer;margin:14px auto 6px">未归属模块 · ${strayProc.length} 件</summary>`;
+        h+=strayProc.map(f=>`<div class="shelf-row" data-f="${f}"><span class="no">程</span><span class="nm">${f.replace(/\.md$/,"")}</span><span class="go">打开 →</span></div>`).join("");
+        h+=`</details>`;
+      }
+    } else {
+      h+=`<div class="shelf-cap">过程文件 · ${procAll.length}</div>`;
+      h+=procAll.map(f=>`<div class="shelf-row" data-f="${f}"><span class="no">程</span><span class="nm">${f.replace(/\.md$/,"")}</span><span class="go">打开 →</span></div>`).join("");
+    }
   }
   dBody.innerHTML=h;
   dBody.querySelectorAll(".shelf-row[data-f]").forEach(r=>r.addEventListener("click",()=>openFileDoc(r.dataset.f)));
@@ -1657,19 +1722,26 @@ function openDeliverables(){
   const r6dlv = dlv.filter(f => /^\d{2}-交付\//.test(f));
   const other = dlv.filter(f => !f.startsWith("对外交付/") && !/^\d{2}-交付\//.test(f));
   let h = "";
-  // 章节模式（小说）：iterate.first 个槽位
+  // 章节模式（小说）：iterate.first 个槽位——first≤1（合并稿交付）或槽位全空时隐藏，避免误导
   if (itNode){
     const [n, m] = itNode;
     const it = m.iterate;
     const total = it.first || 1;
-    h += `<div class="paper"><div class="doc-h"><span>章节文档 · ${zhTitle(m)}</span><span>⟲ ${it.unit} × ${total}</span></div><div class="md">`;
+    const rows = [];
     for (let i = 1; i <= total; i++){
       const cand = (it.artifact || "章节正文/第{n}章.md").replace("{n}", i);
       const exists = files[cand] !== undefined || dlv.includes(cand);
-      if (exists) h += `<div class="shelf-row" data-f="${cand}"><span class="no">${i}</span><span class="nm">${cand}</span><span class="go">打开 →</span></div>`;
-      else h += `<div class="shelf-row" style="opacity:.55;cursor:default"><span class="no">${i}</span><span class="nm">${cand}（虚位，待成稿）</span><span class="go">—</span></div>`;
+      rows.push({cand, exists});
     }
-    h += `</div><p class="msg">迭代节点「${zhTitle(m)}」每${it.unit}一个实例；来源：${it.over||"-"}。</p></div>`;
+    const anyExists = rows.some(r=>r.exists);
+    if (total > 1 || anyExists){
+      h += `<div class="paper"><div class="doc-h"><span>章节文档 · ${zhTitle(m)}</span><span>⟲ ${it.unit} × ${total}</span></div><div class="md">`;
+      rows.forEach((r,i)=>{
+        h += r.exists ? `<div class="shelf-row" data-f="${r.cand}"><span class="no">${i+1}</span><span class="nm">${r.cand}</span><span class="go">打开 →</span></div>`
+                      : `<div class="shelf-row" style="opacity:.55;cursor:default"><span class="no">${i+1}</span><span class="nm">${r.cand}（虚位，待成稿）</span><span class="go">—</span></div>`;
+      });
+      h += `</div><p class="msg">迭代节点「${zhTitle(m)}」每${it.unit}一个实例；来源：${it.over||"-"}。</p></div>`;
+    }
   }
   // 对外交付：md 可编辑；其他格式（docx/html）走服务器相对链接
   h += `<div class="shelf-cap">对外交付 · ${delivered.length}</div>`;
@@ -2324,8 +2396,8 @@ function renderEffectiveBanner(){
   const box=document.getElementById("eff-banner"); if(!box) return;
   let h="";
   if (LEGACY_CANVAS){
-    h=`<div class="banner">本页画布为空：registry/effective.json 不是 <b>effective@2</b>（存量 flow@2 项目或尚未跑内核）。
-      跑 <code>flow_effect</code>（flow@3 转换后）重新生成本页即可看到「模块横向拼接」的生效编排。
+    h=`<div class="banner">本页画布为空：当前显示的是 <b>bootstrap 编排</b>——registry/effective.json 不是 <b>effective@2</b>（存量 flow@2 项目或尚未跑内核）。
+      恢复路径：跑 <code>npx tsx src/cli.ts flow_effect --project ${DATA.project}</code>（flow@3 转换后）重新生成本页，即可看到「模块横向拼接」的生效编排。
       盘上旧数据未动；目录搬迁见 docs/项目目录搬迁清单。</div>`;
   } else {
     const mods=(DATA.modules||[]).length;
@@ -2409,7 +2481,7 @@ function renderStore(){
       <div class="sc-head"><span class="st-ico" style="background:${bg}">${g}</span>
         <span style="min-width:0"><div class="sc-name">${stEsc(f.title)}</div><div class="sc-id">${stEsc(f.id)} · v${stEsc(f.version)} <span class="sc-ver${f.official?" rel":""}">${f.official?"官方发布":"初稿"}</span></div></span></div>
       <div class="sc-desc">${stEsc(f.desc)||"（无简介）"}</div>
-      <div class="sc-foot"><span class="sc-stat">${[(f.stages||[]).length?((f.stages||[]).length+" 阶段"):"", f.nNodes?(f.nNodes+" 节点"):"", (f.skills||[]).length?((f.skills||[]).length+" 技能"):""].filter(Boolean).join(" · ")}</span>${stBadge(f)}
+      <div class="sc-foot"><span class="sc-stat">${[(f.stages||[]).length?((f.stages||[]).length+" 阶段"):"", (f.modules||[]).length?((f.modules||[]).length+" 模块"):"", f.nNodes?(f.nNodes+" 节点"):"", (f.skills||[]).length?((f.skills||[]).length+" 技能"):""].filter(Boolean).join(" · ")}</span>${stBadge(f)}
         ${cur?"":`<button class="sc-go" data-imp="${stEsc(f.id)}">导入 →</button>`}
         ${f.hasDemo?`<button class="sc-go" data-demo="${stEsc(f.id)}" title="从官方 Demo 一键创建新项目（配置+输入已就绪）">装 Demo</button>`:""}
       </div></div>`;
@@ -2440,7 +2512,7 @@ function renderStoreDetail(){
       <button class="sd-ghost" id="st-close2">继续浏览</button>
       ${f.hasDemo?`<button class="sd-ghost" id="st-demo" style="border-color:var(--accent);color:var(--accent);font-weight:700">装官方 Demo（新项目）</button>`:""}</div>
     <div class="sd-sec"><h4>规模</h4><div class="sd-stats">
-      <div class="sd-stat"><b>${(f.stages||[]).length||"-"}</b><span>阶段</span></div>
+      ${(f.modules||[]).length?`<div class="sd-stat"><b>${(f.modules||[]).length}</b><span>模块</span></div>`:`<div class="sd-stat"><b>${(f.stages||[]).length||"-"}</b><span>阶段</span></div>`}
       <div class="sd-stat"><b>${f.nNodes??"-"}</b><span>节点</span></div>
       <div class="sd-stat"><b>${f.nAgents??"-"}</b><span>Agent 步</span></div>
       <div class="sd-stat"><b>${f.nGates??"-"}</b><span>验收门</span></div>
