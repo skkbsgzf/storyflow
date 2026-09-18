@@ -1,7 +1,7 @@
 {
   "format": "metrics-summary@1",
   "runId": "run-mu7d1iqy-xoqa2d",
-  "events": 21,
+  "events": 33,
   "byNode": {
     "m1.find-trope": {
       "nodeId": "m1.find-trope",
@@ -216,9 +216,9 @@
       "ctxOffered": 6,
       "ctxUsed": 6,
       "hitRate": 1,
-      "consumedBy": 0,
+      "consumedBy": 1,
       "cost": 0.000001,
-      "efficiency": 0,
+      "efficiency": 1000000,
       "verdicts": [],
       "kit": "prose",
       "op": "layer-voices"
@@ -226,6 +226,86 @@
     "m3.layer-scenes": {
       "nodeId": "m3.layer-scenes",
       "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 6,
+      "ctxUsed": 6,
+      "hitRate": 1,
+      "consumedBy": 1,
+      "cost": 0.000001,
+      "efficiency": 1000000,
+      "verdicts": [],
+      "kit": "prose",
+      "op": "layer-scenes"
+    },
+    "m3.layer-canon": {
+      "nodeId": "m3.layer-canon",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 6,
+      "ctxUsed": 6,
+      "hitRate": 1,
+      "consumedBy": 2,
+      "cost": 0.000001,
+      "efficiency": 2000000,
+      "verdicts": [],
+      "kit": "prose",
+      "op": "layer-canon"
+    },
+    "m3.prose-assembler": {
+      "nodeId": "m3.prose-assembler",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 16,
+      "ctxUsed": 12,
+      "hitRate": 0.75,
+      "consumedBy": 1,
+      "cost": 0.000001,
+      "efficiency": 1000000,
+      "verdicts": [],
+      "kit": "prose",
+      "op": "prose-assembler"
+    },
+    "m3.novel-deai": {
+      "nodeId": "m3.novel-deai",
+      "runs": 2,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 14,
+      "ctxUsed": 3,
+      "hitRate": 0.21428571428571427,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "prose",
+      "op": "novel-deai"
+    },
+    "itb-m4.export-doc": {
+      "nodeId": "itb-m4.export-doc",
+      "runs": 0,
       "submits": 0,
       "tokensIn": 0,
       "tokensOut": 0,
@@ -233,15 +313,37 @@
       "assertPass": 0,
       "assertBlock": 0,
       "retries": 0,
-      "ctxOffered": 6,
+      "ctxOffered": 0,
       "ctxUsed": 0,
       "hitRate": 0,
       "consumedBy": 0,
       "cost": 0.000001,
       "efficiency": 0,
-      "verdicts": [],
-      "kit": "prose",
-      "op": "layer-scenes"
+      "verdicts": [
+        "pass"
+      ]
+    },
+    "m4.export-doc": {
+      "nodeId": "m4.export-doc",
+      "runs": 0,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 0,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 0,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [
+        "pass"
+      ],
+      "kit": "delivery",
+      "op": "export-doc"
     }
   },
   "byTool": {
@@ -444,9 +546,9 @@
       "ctxOffered": 6,
       "ctxUsed": 6,
       "hitRate": 1,
-      "consumedBy": 0,
+      "consumedBy": 1,
       "cost": 0.000001,
-      "efficiency": 0,
+      "efficiency": 1000000,
       "verdicts": [],
       "nodes": [
         "m3.layer-voices"
@@ -457,14 +559,106 @@
       "kit": "prose",
       "op": "layer-scenes",
       "runs": 1,
-      "submits": 0,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 6,
+      "ctxUsed": 6,
+      "hitRate": 1,
+      "consumedBy": 1,
+      "cost": 0.000001,
+      "efficiency": 1000000,
+      "verdicts": [],
+      "nodes": [
+        "m3.layer-scenes"
+      ]
+    },
+    "prose.layer-canon": {
+      "nodeId": "prose.layer-canon",
+      "kit": "prose",
+      "op": "layer-canon",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 6,
+      "ctxUsed": 6,
+      "hitRate": 1,
+      "consumedBy": 2,
+      "cost": 0.000001,
+      "efficiency": 2000000,
+      "verdicts": [],
+      "nodes": [
+        "m3.layer-canon"
+      ]
+    },
+    "prose.prose-assembler": {
+      "nodeId": "prose.prose-assembler",
+      "kit": "prose",
+      "op": "prose-assembler",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 16,
+      "ctxUsed": 12,
+      "hitRate": 0.75,
+      "consumedBy": 1,
+      "cost": 0.000001,
+      "efficiency": 1000000,
+      "verdicts": [],
+      "nodes": [
+        "m3.prose-assembler"
+      ]
+    },
+    "prose.novel-deai": {
+      "nodeId": "prose.novel-deai",
+      "kit": "prose",
+      "op": "novel-deai",
+      "runs": 2,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 14,
+      "ctxUsed": 3,
+      "hitRate": 0.21428571428571427,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m3.novel-deai"
+      ]
+    },
+    "delivery.export-doc": {
+      "nodeId": "delivery.export-doc",
+      "kit": "delivery",
+      "op": "export-doc",
+      "runs": 0,
+      "submits": 1,
       "tokensIn": 0,
       "tokensOut": 0,
       "latencyMs": 0,
       "assertPass": 0,
       "assertBlock": 0,
       "retries": 0,
-      "ctxOffered": 6,
+      "ctxOffered": 0,
       "ctxUsed": 0,
       "hitRate": 0,
       "consumedBy": 0,
@@ -472,7 +666,7 @@
       "efficiency": 0,
       "verdicts": [],
       "nodes": [
-        "m3.layer-scenes"
+        "m4.export-doc"
       ]
     }
   },
@@ -484,22 +678,22 @@
       "hitRate": 0
     },
     {
-      "id": "kb/aesthetic/metaphor-zh",
-      "offered": 1,
+      "id": "kb/aesthetic/naturalness-zh",
+      "offered": 2,
       "used": 0,
       "hitRate": 0
     },
     {
       "id": "kb/deconstruct/style-learning",
-      "offered": 1,
-      "used": 0,
-      "hitRate": 0
+      "offered": 5,
+      "used": 1,
+      "hitRate": 0.2
     },
     {
-      "id": "03-写作/layer-voices.md",
-      "offered": 1,
-      "used": 0,
-      "hitRate": 0
+      "id": "kb/aesthetic/metaphor-zh",
+      "offered": 3,
+      "used": 1,
+      "hitRate": 0.3333333333333333
     },
     {
       "id": "kb/trope/liufang-zhongtian",
@@ -508,16 +702,22 @@
       "hitRate": 0.5
     },
     {
-      "id": "kb/craft/prose-constraints",
+      "id": "kb/aesthetic/character",
+      "offered": 6,
+      "used": 3,
+      "hitRate": 0.5
+    },
+    {
+      "id": "03-写作/prose-assembler.md",
       "offered": 2,
       "used": 1,
       "hitRate": 0.5
     },
     {
       "id": "kb/craft/user-style-rules",
-      "offered": 2,
-      "used": 1,
-      "hitRate": 0.5
+      "offered": 5,
+      "used": 3,
+      "hitRate": 0.6
     },
     {
       "id": "kb/aesthetic/pacing-density",
@@ -526,16 +726,16 @@
       "hitRate": 0.6666666666666666
     },
     {
-      "id": "kb/aesthetic/scene-value",
-      "offered": 3,
-      "used": 2,
-      "hitRate": 0.6666666666666666
+      "id": "kb/aesthetic/ai-trace",
+      "offered": 4,
+      "used": 3,
+      "hitRate": 0.75
     },
     {
-      "id": "kb/aesthetic/character",
-      "offered": 3,
-      "used": 2,
-      "hitRate": 0.6666666666666666
+      "id": "kb/aesthetic/slop-list",
+      "offered": 4,
+      "used": 3,
+      "hitRate": 0.75
     },
     {
       "id": "kb/trope/chongsheng-fuchou",
@@ -628,6 +828,12 @@
       "hitRate": 1
     },
     {
+      "id": "kb/aesthetic/scene-value",
+      "offered": 3,
+      "used": 3,
+      "hitRate": 1
+    },
+    {
       "id": "kb/market/constraints",
       "offered": 1,
       "used": 1,
@@ -647,8 +853,8 @@
     },
     {
       "id": "kb/craft/highlight-loop",
-      "offered": 3,
-      "used": 3,
+      "offered": 5,
+      "used": 5,
       "hitRate": 1
     },
     {
@@ -671,14 +877,14 @@
     },
     {
       "id": "kb/continuity/state-ledger",
-      "offered": 1,
-      "used": 1,
+      "offered": 2,
+      "used": 2,
       "hitRate": 1
     },
     {
       "id": "kb/continuity/worldbook",
-      "offered": 1,
-      "used": 1,
+      "offered": 2,
+      "used": 2,
       "hitRate": 1
     },
     {
@@ -706,9 +912,39 @@
       "hitRate": 1
     },
     {
+      "id": "kb/craft/prose-constraints",
+      "offered": 5,
+      "used": 5,
+      "hitRate": 1
+    },
+    {
       "id": "02-编剧/scene-breakdown.md",
       "offered": 1,
       "used": 1,
+      "hitRate": 1
+    },
+    {
+      "id": "03-写作/layer-voices.md",
+      "offered": 1,
+      "used": 1,
+      "hitRate": 1
+    },
+    {
+      "id": "03-写作/layer-scenes.md",
+      "offered": 1,
+      "used": 1,
+      "hitRate": 1
+    },
+    {
+      "id": "kb/formats/webnovel-fastfood",
+      "offered": 2,
+      "used": 2,
+      "hitRate": 1
+    },
+    {
+      "id": "03-写作/layer-canon.md",
+      "offered": 2,
+      "used": 2,
       "hitRate": 1
     }
   ],
@@ -726,10 +962,17 @@
       "passes": 1,
       "sendBacks": 0,
       "samples": 1
+    },
+    {
+      "nodeId": "itb-m4.export-doc",
+      "phase": "gate",
+      "passes": 1,
+      "sendBacks": 0,
+      "samples": 1
     }
   ],
   "window": {
     "from": "2026-09-18T19:37:29.411Z",
-    "to": "2026-09-18T19:50:00.738Z"
+    "to": "2026-09-18T20:06:55.367Z"
   }
 }

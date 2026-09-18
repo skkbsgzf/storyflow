@@ -1138,6 +1138,35 @@ export class Kernel {
     } catch {
       mine = { due: events.length >= 8, events: events.length, eventsAtLastMine: 0 };
     }
+    // 验收门悬置提醒（挖掘 M3）：gate-open 超 24h 无人裁决 → due 列表置顶提示。
+    // 依据 journal 最近一次 gate-open 时间；project status 已 completed 的不再提示。
+    const gatesDue: { nodeId: string; openAt: string; hours: number }[] = [];
+    if (state.status !== "completed") {
+      try {
+        const jlines = fs.readFileSync(path.join(projectDir, "journal.jsonl"), "utf-8").split("\n");
+        const lastOpenAt: Record<string, string> = {};
+        for (const l of jlines) {
+          if (!l.trim()) continue;
+          try {
+            const e = JSON.parse(l) as { ts?: string; event?: string; nodeId?: string; detail?: string };
+            if (e.event === "gate-open" && e.nodeId && e.ts) lastOpenAt[e.nodeId] = e.ts;
+          } catch {
+            /* 半行跳过 */
+          }
+        }
+        const DAY = 24 * 3600 * 1000;
+        for (const [nid, ns] of Object.entries(state.nodes ?? {})) {
+          if (ns.status !== "awaiting") continue;
+          const openAt = lastOpenAt[nid] ?? (state.gate?.node === nid ? state.gate.at : undefined);
+          if (!openAt) continue;
+          const hours = (Date.now() - Date.parse(openAt)) / (3600 * 1000);
+          if (hours >= 24) gatesDue.push({ nodeId: nid, openAt, hours: Math.round(hours) });
+        }
+        gatesDue.sort((a, b) => b.hours - a.hours);
+      } catch {
+        /* journal 缺失 = 无提醒（旁路） */
+      }
+    }
     return {
       projectId,
       flowId: eff.flow.id,
@@ -1150,6 +1179,7 @@ export class Kernel {
       overlay: overlay ? { origin: overlay.origin, patches: overlay.patches, history: overlay.history ?? [] } : null,
       metrics: { events: events.length, window: summary.window, byTool: summary.byTool, knowledge: summary.knowledge, gates: summary.gates },
       mine,
+      gatesDue,
     };
   }
 

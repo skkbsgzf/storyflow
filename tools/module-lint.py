@@ -15,6 +15,8 @@
   E-BINDING       tool 无执行体：skill|minitools|script 三者皆缺
   E-SKILL-MISSING op.skill 档案不存在（skills/<id>.md）
   E-MINITOOL-UNKNOWN op.minitools 未登记在 tools/minitools.json
+  E-MINITOOL-IMPL    op.minitools 条目 impl 非 kernel|check-integrity（planned/None =
+                     声明了但内核无执行体——ccwd-fq export-doc 事故的 lint 侧闭环）
   E-SCRIPT-MISSING   op.script 对应 tools/<script>.py 不存在
   E-KB-UNKNOWN    op.knowledge / adds.knowledge 条目不在 knowledge/index.json
   E-MODEL-TIER    model_tier 不在 high|low（勘误 §十一.13）
@@ -154,6 +156,12 @@ def lint_module(path, kb_index, minitools_reg):
         for mt in op.get("minitools", []) or []:
             if mt not in minitools_reg:
                 E("E-MINITOOL-UNKNOWN", f"minitool 未登记：{mt}", oid)
+            else:
+                # 注册 ≠ 实现：impl 只有 kernel|check-integrity 才有内核执行体
+                # （ccwd-fq 事故：export-doc 声明层齐全、执行层 "(未声明)"，flow 永不能 completed）
+                impl = (minitools_reg.get(mt) or {}).get("impl") if isinstance(minitools_reg.get(mt), dict) else None
+                if impl not in ("kernel", "check-integrity"):
+                    E("E-MINITOOL-IMPL", f"minitool {mt} 内核无执行体（impl={impl!r}，须 kernel|check-integrity）", oid)
         if op.get("script"):
             # script 值形态不一（"analyze-kakaxing" / "analyze-kakaxing.py" / "tools/x.py"）——规范化到文件名
             target = Path(op["script"]).name
@@ -260,11 +268,11 @@ def main():
                 e for e in entries if isinstance(e, str)
             }
     mt_path = ROOT / "tools" / "minitools.json"
-    mt_reg = set()
+    mt_reg = {}
     if mt_path.exists():
         mreg = load(mt_path)
         reg = mreg.get("minitools", mreg) if isinstance(mreg, dict) else mreg
-        mt_reg = set(reg.keys()) if isinstance(reg, dict) else {m.get("id") for m in reg if isinstance(m, dict)}
+        mt_reg = reg if isinstance(reg, dict) else {m.get("id"): m for m in reg if isinstance(m, dict)}
 
     mod_dir = ROOT / "modules"
     if FILE:

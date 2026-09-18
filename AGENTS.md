@@ -13,7 +13,7 @@
 7. **交付即快照**：产物落盘后用 `python tools/snapshot.py capture <flow> <project> <node> --files <相对路径>` 留档（M1 后自动化）。
 8. **流程身份绑定**：项目工具链（页面生成/快照/导出）的 flowId 一律取自项目 `state.json` 的 `flowId` 绑定，传参不一致即中止；禁止凭记忆假设项目属于哪个流程（事故：p-fq-001 被挂上 topic-selection 串图）。
 9. **正文纯净**：过程元数据（节点/skill/轮次/输入清单/隔离声明/数据快照口径）只进宿主思维链与 journal，绝不进产物正文（AE-OUTPUT-PURITY，block；机械校验 `tools/check-purity.py`）。
-10. **改 done 节点产物必须走 flow**：已完成节点的产物要修改，走 `flow_rerun`；内核暂不支持时（如 iterate 实例重派发）走五步降级路径——改前声明绕流意图 → 实跑校验工具并**落盘收据**（如 `tools/prose-scan.py`）→ 修订对照表登记 → 重快照 → `python tools/flow-verify.py <project>` 复检无红档。一切「已扫描/已校验」声明必须引用收据文件，无收据=删声明（事故复盘：docs/绕流改稿事故分析-R2.md——v5 虚报扫描+补拍快照洗白，被甲方人眼揪出）。
+10. **改 done 节点产物必须走 flow**：已完成节点的产物要修改，走 `flow_rerun`；内核暂不支持时（如 iterate 实例重派发）走五步降级路径，**单命令载体 `python tools/amend-artifact.py --project <id> --node <id> --file <rel> --reason "<理由>"`**（①声明绕流意图入 journal → ②实跑校验落收据 → ③修订对照表登记 → ④重快照 → ⑤flow-verify 复检，任一步失败即中止；理由为空直接拒绝）。一切「已扫描/已校验」声明必须引用收据文件，无收据=删声明（事故复盘：docs/绕流改稿事故分析-R2.md——v5 虚报扫描+补拍快照洗白，被甲方人眼揪出）。
 11. **能力必须有家（kit@1）**：技能必须归入 `kits/<域>/kit.json` 四域之一（search 检索取数 / plot 剧情 / prose 文学 / tool 确定性底座；检测评估能力打包于 kits/detect，domain=tool）；flow 节点用 `kit`+`op` 引用，**禁止再手写 `kb` 清单**——两套真相=漂移（R1 报告：47 个 agent 节点中 40 个 node.kb 与技能自称不匹配，且 node.kb 内核从不读取，声明全空转）。守门人 `python tools/kit-lint.py`，0 error 方可提交。
 
 ## 项目开工口径（每个创作轮次）

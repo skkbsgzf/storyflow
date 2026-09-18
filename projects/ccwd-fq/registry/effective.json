@@ -7,7 +7,7 @@
     "adapt": "propose"
   },
   "overlayHash": "r6-2a4dbc91",
-  "planHash": "cbaa9695",
+  "planHash": "ed5369c5",
   "links": [
     {
       "id": "m2.link",
@@ -41,8 +41,7 @@
         "素材解剖",
         "时代情绪锚",
         "网感文案",
-        "拆书入库",
-        "热点采集"
+        "拆书入库"
       ],
       "capsEnabled": [
         "找梗",
@@ -383,7 +382,6 @@
       "op": "layer-canon",
       "output": "03-写作/layer-canon.md",
       "skill": "layer-canon",
-      "minitool": "continuity_check",
       "config": {
         "sliceUnit": "@default:sliceUnit",
         "newWordPolicy": "@default:newWordPolicy",
@@ -401,9 +399,6 @@
       "output": "03-写作/prose-assembler.md",
       "skill": "prose-assembler",
       "asserts": [
-        "AE-CONT-FORESHADOW",
-        "AE-CONT-ITEM",
-        "AE-CONT-KNOW",
         "AE-PROSE-NOTBUT",
         "AE-PROSE-RHYTHM",
         "AE-PROSE-SLOP",
@@ -450,7 +445,7 @@
       "module": "m4",
       "kit": "delivery",
       "op": "export-doc",
-      "output": "04-交付/export-doc.md",
+      "output": "04-交付/export-doc.docx",
       "script": "tools/export-doc.py",
       "config": {
         "style": "@default:style",
@@ -700,7 +695,6 @@
       "module": "m3",
       "output": "03-写作/layer-canon.md",
       "skill": "layer-canon",
-      "minitool": "continuity_check",
       "nodeConfig": {
         "sliceUnit": "@default:sliceUnit",
         "newWordPolicy": "@default:newWordPolicy",
@@ -736,7 +730,7 @@
     },
     "m4.export-doc": {
       "module": "m4",
-      "output": "04-交付/export-doc.md",
+      "output": "04-交付/export-doc.docx",
       "nodeConfig": {
         "style": "@default:style",
         "verify": "@default:verify",

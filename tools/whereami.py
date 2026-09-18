@@ -19,6 +19,24 @@ def load_flow(flow_id):
     return json.load(open(p, encoding="utf-8")) if p.exists() else None
 
 
+def effective_flow(proj, flow_id):
+    """flow@3 的图不手画——消费内核落盘的 registry/effective.json（单点派生事实源，
+    本工具不重实现 expandFlow3）。"""
+    p = proj / "registry" / "effective.json"
+    if not p.exists():
+        return None
+    try:
+        eff = json.load(open(p, encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if flow_id and eff.get("flowId") and eff["flowId"] != flow_id:
+        return None
+    nodes, edges = eff.get("nodes") or {}, eff.get("edges") or []
+    if not nodes:
+        return None
+    return {"id": flow_id, "graph": {"nodes": nodes, "edges": edges}, "outputs": []}
+
+
 def match_flow(state):
     """run-state 未记录 flowId：按节点 id 重叠度匹配 flows/*。"""
     best, best_ov = None, 0
@@ -76,9 +94,13 @@ def analyze(project):
     flow = None
     if state.get("flowId"):
         flow = load_flow(state["flowId"])
+        if flow is not None and "graph" not in flow:
+            # flow@3（模块序列）：图取内核 effective 派生事实源
+            flow = effective_flow(proj, state["flowId"]) or flow
     if flow is None:
-        flow = match_flow(state)
-    out = {"project": project, "flow": flow.get("id") if flow else None, "state": state, "legacy": legacy}
+        flow = match_flow(state) or effective_flow(proj, state.get("flowId"))
+    out = {"project": project, "flow": flow.get("id") if flow else None, "state": state, "legacy": legacy,
+           "flowObj": flow}
     if not flow:
         out["error"] = "无法匹配 flow（flows/ 下无节点重叠项）"
         return out
@@ -122,7 +144,7 @@ def render_block(a):
     L = [f"PROJECT: {a['project']} ｜ FLOW: {a.get('flow') or '?'}" + ("（legacy run-state）" if a.get("legacy") else "")]
     if a.get("error"):
         return L + [f"ERROR: {a['error']}"]
-    f = load_flow(a["flow"]) if isinstance(a.get("flow"), str) else a.get("flow")
+    f = a.get("flowObj") or (load_flow(a["flow"]) if isinstance(a.get("flow"), str) else a.get("flow"))
     g = a["state"].get("gate", {})
     L.append(f"GATE: {g.get('verdict')}" + (f"（{g.get('note','')}）" if g.get("note") else ""))
     fo = a.get("focus", {})

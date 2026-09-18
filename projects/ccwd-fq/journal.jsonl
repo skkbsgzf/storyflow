@@ -77,3 +77,8 @@
 {"ts":"2026-09-18T19:33:59.026Z","runId":"run-mu79dix0-k0fxpq","event":"note","actor":"kernel:mine","detail":"编排挖掘包已组装（journal 76 事件 / 证据文件 6 件 / 打回记录 0 条）","refs":["registry/mine-package.json"]}
 {"ts":"2026-09-18T19:37:11.004Z","runId":"run-mu79dix0-k0fxpq","event":"advance","actor":"kernel","nodeId":"m4.export-doc","detail":"对外交付/prose-assembler.docx","refs":["对外交付/prose-assembler.docx"]}
 {"ts":"2026-09-18T19:37:11.006Z","runId":"run-mu79dix0-k0fxpq","event":"run-end","actor":"kernel","detail":"全部节点 done"}
+{"ts":"2026-09-18T20:05:54.849Z","runId":"run-mu79dix0-k0fxpq","event":"note","actor":"user","detail":"编排改写：applied 0 / proposed 2"}
+{"ts":"2026-09-18T20:06:02.173Z","runId":"run-mu79dix0-k0fxpq","event":"note","actor":"user","detail":"编排改写：applied 0 / proposed 2｜用户拍板：拍板项全部落地（本轮对话确认）"}
+{"ts":"2026-09-18T20:06:25.557Z","runId":"run-mu79dix0-k0fxpq","event":"note","actor":"user","detail":"编排改写：applied 2 / proposed 0｜用户拍板（本轮对话）：N2 注入收窄两条 applied"}
+{"ts":"2026-09-18T20:06:25.579Z","runId":"run-mu79dix0-k0fxpq","event":"note","actor":"kernel:overlay","detail":"编排变更 → 重编译计划：20 → 17 节点；新增 无；裁撤 itb-m2.structure-design、itb-m3.layer-voices、itb-m4.export-doc；失效 无","refs":["itb-m2.structure-design","itb-m3.layer-voices","itb-m4.export-doc"]}
+{"ts":"2026-09-18T20:06:25.582Z","runId":"run-mu79dix0-k0fxpq","event":"run-end","actor":"kernel","detail":"全部节点 done"}

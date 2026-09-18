@@ -155,6 +155,29 @@ def main():
     for fp in sorted(glob.glob(str(ROOT / "flows" / "*" / "flow.json"))):
         fl = load(fp)
         fid = fl.get("id", Path(fp).parent.name)
+        if "graph" not in fl:
+            # flow@3（模块序列）：无手画图。派生节点的 kit/op 声明以内核 effective@2 为准
+            # （module-lint 管模块声明层；此处只对「跑过的项目」能核到派生面，缺 effective 跳过并显式回显）
+            eff_seen = False
+            for eff_path in sorted(glob.glob(str(ROOT / "projects" / "*" / "registry" / "effective.json"))):
+                try:
+                    eff = load(Path(eff_path))
+                except Exception:
+                    continue
+                if eff.get("flowId") != fid:
+                    continue
+                eff_seen = True
+                for nid, n in (eff.get("nodes") or {}).items():
+                    s, kit, op = n.get("skill"), n.get("kit"), n.get("op")
+                    na = n.get("asserts") or []
+                    if isinstance(na, str):
+                        na = [na]
+                    if na:
+                        node_asserts[f"{fid}/{nid}"] = list(na)
+                        node_meta[f"{fid}/{nid}"] = {"kind": n.get("kind", ""), "minitool": n.get("minitool", "")}
+            if not eff_seen:
+                print(f"  [skip] flow@3「{fid}」无已跑项目的 effective@2——派生面 kit/op 免检（module-lint 覆盖声明层）")
+            continue
         for nid, n in fl["graph"]["nodes"].items():
             s, kit, op = n.get("skill"), n.get("kit"), n.get("op")
             na = n.get("asserts") or n.get("check") or []

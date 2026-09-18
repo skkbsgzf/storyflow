@@ -1,7 +1,7 @@
 {
   "kb": "miniflow-knowledge",
   "version": "2026-09-15",
-  "updated": "2026-09-17",
+  "updated": "2026-09-19",
   "note": "知识库索引。md 条目由 frontmatter 汇总；generated 条目（trope/benchmark/market）随数据快照滚动重建（tools/distill-kakaxing.mjs）。",
   "types": {
     "aesthetic-standard": "审美判定标准（什么叫好：维度、条款、阈值）",
@@ -758,6 +758,25 @@
         "all"
       ],
       "file": "craft/highlight-loop.md"
+    },
+    {
+      "id": "kb/aesthetic/sensory-detail",
+      "type": "aesthetic-standard",
+      "title": "感官细节密度与心理距离标准",
+      "dimension": "sensory",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/sensory-detail.md"
+    },
+    {
+      "id": "kb/market/brief-four-questions",
+      "type": "market-standard",
+      "title": "命题四问确认单（开工前对题）",
+      "routes": [
+        "all"
+      ],
+      "file": "market/brief-four-questions.md"
     }
   ]
 }

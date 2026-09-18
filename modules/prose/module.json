@@ -149,9 +149,6 @@
         "kb/craft/prose-constraints",
         "kb/craft/user-style-rules"
       ],
-      "minitools": [
-        "continuity_check"
-      ],
       "config": {
         "sliceUnit": {
           "type": "enum",
@@ -219,9 +216,6 @@
         "kb/craft/highlight-loop"
       ],
       "asserts": [
-        "AE-CONT-FORESHADOW",
-        "AE-CONT-ITEM",
-        "AE-CONT-KNOW",
         "AE-PROSE-NOTBUT",
         "AE-PROSE-RHYTHM",
         "AE-PROSE-SLOP",
@@ -366,11 +360,11 @@
         "kb/continuity/state-ledger",
         "kb/deconstruct/style-learning",
         "kb/formats/webnovel-longform",
-        "kb/method/longform-engineering"
+        "kb/method/longform-engineering",
+        "kb/aesthetic/sensory-detail"
       ],
       "minitools": [
-        "check_aesthetic_asserts",
-        "continuity_check"
+        "check_aesthetic_asserts"
       ],
       "asserts": [
         "AE-AI-QUOTA",

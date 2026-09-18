@@ -176,7 +176,9 @@ export function expandFlow3(
       const kind = op.kind === "check" ? "core" : "agent"; // 规则 4：review 也是普通 agent 节点
       const baseOut = (op as any).output
         ? String((op as any).output).split("/").pop()
-        : `${toolId}.md`;
+        : op.script
+          ? `${toolId}.docx` // script 壳产物是导出的 docx：声明路径必须与落盘一致（flow-verify 对账）
+          : `${toolId}.md`;
       nodes[nid] = {
         kind,
         title: op.title ?? toolId,

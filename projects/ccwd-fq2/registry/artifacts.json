@@ -258,6 +258,183 @@
       ],
       "sha1": "660c19f6506d",
       "ts": "2026-09-18T19:51:30.028Z"
+    },
+    {
+      "path": "03-写作/layer-canon.md",
+      "node": "m3.layer-canon",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "03-写作/layer-scenes.md": "660c19f6506d"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2921 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "f6d4067d1862",
+      "ts": "2026-09-18T19:52:49.245Z"
+    },
+    {
+      "path": "03-写作/prose-assembler.md",
+      "node": "m3.prose-assembler",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "03-写作/layer-canon.md": "f6d4067d1862"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "3650 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "AE-CONT-FORESHADOW",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-CONT-ITEM",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-CONT-KNOW",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-PROSE-NOTBUT",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-PROSE-RHYTHM",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-PROSE-SLOP",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-PROSE-TRIPLET",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-WNF-HOOK",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "92a1a7cbf235",
+      "ts": "2026-09-18T19:54:30.240Z"
+    },
+    {
+      "path": "03-写作/prose-assembler.md",
+      "node": "m3.prose-assembler",
+      "round": 3,
+      "producer": "host-submit",
+      "inputs": {
+        "03-写作/layer-canon.md": "f6d4067d1862"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "6415 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "AE-CONT-FORESHADOW",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-CONT-ITEM",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-CONT-KNOW",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-PROSE-NOTBUT",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-PROSE-RHYTHM",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-PROSE-SLOP",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-PROSE-TRIPLET",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-WNF-HOOK",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "f5012ee94cc3",
+      "ts": "2026-09-18T20:04:01.479Z"
+    },
+    {
+      "path": "03-写作/novel-deai.md",
+      "node": "m3.novel-deai",
+      "round": 2,
+      "producer": "host-submit",
+      "inputs": {
+        "03-写作/prose-assembler.md": "f5012ee94cc3"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "6111 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "6443ce82da1f",
+      "ts": "2026-09-18T20:06:45.945Z"
+    },
+    {
+      "path": "04-交付/export-doc.docx",
+      "node": "m4.export-doc",
+      "producer": "script:export-doc.py",
+      "inputs": {},
+      "round": 1,
+      "sha1": "f5882beb83e3",
+      "ts": "2026-09-18T20:06:55.365Z"
     }
   ]
 }

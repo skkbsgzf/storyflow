@@ -217,6 +217,41 @@ export function resolveNodeOp(
 }
 
 /**
+ * 某节点最近一次「声明断言无机器校验器」warn 里的 unverified id 清单（journal 尾扫）。
+ * 供评审步任务包注入（语义断言闭环）；journal 缺失/解析失败 = 空清单（旁路不阻断）。
+ */
+function latestUnverified(projectDir: string, nodeId: string): string[] {
+  try {
+    const p = path.join(projectDir, "journal.jsonl");
+    if (!fs.existsSync(p)) return [];
+    const lines = fs.readFileSync(p, "utf-8").split("\n");
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const l = lines[i].trim();
+      if (!l) continue;
+      let e: { nodeId?: string; event?: string; detail?: string };
+      try {
+        e = JSON.parse(l);
+      } catch {
+        continue;
+      }
+      if (e.nodeId === nodeId && e.event === "warn" && typeof e.detail === "string" && e.detail.includes("声明断言无机器校验器")) {
+        const idx = e.detail.indexOf("：");
+        return idx >= 0
+          ? e.detail
+              .slice(idx + 1)
+              .split("、")
+              .map((s) => s.trim())
+              .filter((s) => /^[A-Z]/.test(s))
+          : [];
+      }
+    }
+  } catch {
+    /* 旁路 */
+  }
+  return [];
+}
+
+/**
  * 任务包组装（上下文纪律的执行点）：
  * - 节点域隔离：只带本节点上游产物
  * - 哈希锚定：每个 context 条目带 sha1 前 12 位
@@ -312,6 +347,21 @@ export function buildTaskPackage(
     parts.push(
       `## 禁词表（本项目产物中不得出现；出现即 glossary 断言打回）\n\n${banned.map((w) => `- ${w}`).join("\n")}`,
     );
+  }
+  // R5 语义断言闭环（挖掘 N4）：kind=gate 的评审步「归评审」的 unverified 断言必须有真实
+  // 消费方——auto 评审步交卷即 pass，语义断言会零消费落空。这里把上游最近一次提交的
+  // unverified 清单注入评审任务包，评审 LLM 照单真读真裁（结论写进意见书/交卷 notes）。
+  if (node.kind === "gate") {
+    const rows: string[] = [];
+    for (const up of new Set(ups)) {
+      const un = latestUnverified(projectDir, up);
+      if (un.length) rows.push(`- ${up}：${un.join("、")}`);
+    }
+    if (rows.length) {
+      parts.push(
+        `## 语义断言清单（机器不验，本步须逐条人裁）\n\n以下断言引擎无校验器、登记为 unverified——它们是否达标由你裁决：逐条给出 pass / 不达标（写明理由），放行即代表你已确认全部达标。\n\n${rows.join("\n")}`,
+      );
+    }
   }
   parts.push(
     `## 输出契约\n\n- 产物路径：${file}\n- 上游依据：${refs.join("、") || "（无）"}\n- 完成后经 flow_submit 提交，完整性断言不过 = 打回`,

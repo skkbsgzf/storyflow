@@ -25,6 +25,16 @@ def main(project):
     proj = ROOT / "projects" / project
     state = json.load(open(proj / "state.json", encoding="utf-8"))
     flow = json.load(open(ROOT / "flows" / state["flowId"] / "flow.json", encoding="utf-8"))
+    if "graph" not in flow:
+        # flow@3（模块序列）：手画图不存在，读内核 persistEffective 落盘的 effective@2（扁平
+        # nodes/edges，R6 生效编排事实源）。flow@3 outputs 是模块级语义声明（无路径），
+        # 产物路径唯一事实源是派生节点的 output 字段，故 outputs 置空。
+        eff_path = proj / "registry" / "effective.json"
+        if not eff_path.exists():
+            print("flow@3 项目缺 registry/effective.json——先跑 flow_effect 生成生效编排")
+            sys.exit(1)
+        eff = json.load(open(eff_path, encoding="utf-8"))
+        flow = {"graph": {"nodes": eff.get("nodes", {}), "edges": eff.get("edges", [])}, "outputs": []}
     reg = json.load(open(proj / "registry" / "artifacts.json", encoding="utf-8")).get("artifacts", [])
     snaps = json.load(open(proj / "snapshots" / "index.json", encoding="utf-8")).get("snapshots", {})
 

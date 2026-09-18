@@ -187,49 +187,7 @@
       "capability": [
         "台账结算"
       ]
-    },
-    "continuity_check": {
-      "title": "连续性校验",
-      "minitools": [
-        "continuity_check"
-      ],
-      "desc": "（planned，内核未实现，触达即 blocked）台账矛盾/知情范围越权/伏笔逾期——当前由 check_aesthetic_asserts 的 AE-CONT-* 承担，待拆为独立 minitool",
-      "kind": "produce",
-      "config": {
-        "dims": {
-          "type": "array",
-          "default": [
-            "矛盾",
-            "知情范围",
-            "伏笔逾期"
-          ],
-          "desc": "参与的检查维度",
-          "effect": "减少 = 更快但漏检",
-          "tunable_by": [
-            "user",
-            "optimizer"
-          ]
-        },
-        "severityFloor": {
-          "type": "enum",
-          "default": "block",
-          "enum": [
-            "warn",
-            "block"
-          ],
-          "desc": "最低阻断级别",
-          "effect": "调成 warn = 只提示不拦",
-          "tunable_by": [
-            "user",
-            "optimizer"
-          ]
-        }
-      },
-      "capability": [
-        "连续性校验"
-      ]
-    },
-    "analyze-kakaxing": {
+    },    "analyze-kakaxing": {
       "script": "tools/analyze-kakaxing.py",
       "title": "analyze-kakaxing.py",
       "desc": "kakaxing 语料分析：题材×热度、八段式策划案解析、句式与梗族挖掘。确定性、零 LLM。",

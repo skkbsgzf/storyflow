@@ -128,13 +128,6 @@
       "events": 400,
       "tail": [
         {
-          "ts": "2026-09-17T00:33:59.314Z",
-          "runId": "run-mu3kjmhg-coltmb",
-          "event": "advance",
-          "actor": "kernel",
-          "detail": "就绪批派发 1 项：polish（并行）"
-        },
-        {
           "ts": "2026-09-17T00:34:11.533Z",
           "runId": "run-mu3kjmhg-coltmb",
           "event": "submit",
@@ -703,18 +696,20 @@
           "actor": "kernel",
           "nodeId": "gate-final",
           "detail": "终稿验收（用户读三章）"
+        },
+        {
+          "ts": "2026-09-17T15:53:46.855Z",
+          "runId": "run-mu3kjmhg-coltmb",
+          "event": "note",
+          "actor": "kernel:mine",
+          "detail": "编排挖掘包已组装（journal 400 事件 / 证据文件 46 件 / 打回记录 44 条）",
+          "refs": [
+            "registry/mine-package.json"
+          ]
         }
       ]
     },
     "sendBacks": [
-      {
-        "ts": "2026-09-16T09:01:02.955Z",
-        "runId": "run-mu3kjmhg-coltmb",
-        "event": "stale",
-        "actor": "kernel",
-        "nodeId": "src",
-        "detail": "本阶段打回失效，待重算"
-      },
       {
         "ts": "2026-09-16T09:01:02.956Z",
         "runId": "run-mu3kjmhg-coltmb",
@@ -889,6 +884,16 @@
           "audit",
           "polish"
         ]
+      },
+      {
+        "ts": "2026-09-17T15:53:46.855Z",
+        "runId": "run-mu3kjmhg-coltmb",
+        "event": "note",
+        "actor": "kernel:mine",
+        "detail": "编排挖掘包已组装（journal 400 事件 / 证据文件 46 件 / 打回记录 44 条）",
+        "refs": [
+          "registry/mine-package.json"
+        ]
       }
     ],
     "metrics": {
@@ -927,6 +932,7 @@
       "内部/成文节拍卡.md",
       "内部/批注与意见.json",
       "内部/拆书参考书单.md",
+      "内部/收据/朱雀检测-20260918-013005-ffb22c.json",
       "内部/断言报告-audit.json",
       "内部/断言报告-combo.json",
       "内部/时停体炼化报告.md",
@@ -942,8 +948,7 @@
       "世界书/index.json",
       "世界书/人物/尖嘴哥.md",
       "世界书/人物/陈大海.md",
-      "世界书/人物/陈母.md",
-      "世界书/人物/陈潮生.md"
+      "世界书/人物/陈母.md"
     ],
     "assertReports": [
       "内部/断言报告-audit.json",

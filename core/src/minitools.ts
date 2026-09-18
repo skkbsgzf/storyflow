@@ -82,11 +82,17 @@ export async function runCoreNode(
       return { ok: false, artifacts, kind: "assert", reason: `script ${script} 找不到上游 md 产物（沿上游 BFS 无命中）` };
     }
     const cfg = (node as { config?: Record<string, unknown> }).config ?? {};
-    const outDir = typeof cfg.outDir === "string" && !cfg.outDir.startsWith("@") ? cfg.outDir : "对外交付";
-    const outRel = path.join(outDir, path.basename(src).replace(/\.md$/i, "") + ".docx").replaceAll("\\", "/");
+    // 落盘路径以节点声明 output 为准（expandFlow3 对 script op 派生 `<模块目录>/<toolId>.docx`）——
+    // 声明与落盘不一致 = flow-verify 必红（ccwd-fq 首跑教训）；outDir 仅作无声明时的兜底。
+    const declared = typeof (node as { output?: string }).output === "string" ? (node as { output?: string }).output! : "";
+    const outRel = declared.endsWith(".docx")
+      ? declared
+      : path.join(typeof cfg.outDir === "string" && !cfg.outDir.startsWith("@") ? cfg.outDir : "对外交付",
+                  path.basename(src).replace(/\.md$/i, "") + ".docx").replaceAll("\\", "/");
+    const outParent = path.dirname(path.join(projectDir, outRel));
     const title =
       /^#\s+(.+)$/m.exec(fs.readFileSync(path.join(projectDir, src), "utf-8"))?.[1]?.trim() ?? path.basename(src, ".md");
-    fs.mkdirSync(path.join(projectDir, outDir), { recursive: true });
+    fs.mkdirSync(outParent, { recursive: true });
     const pid = path.basename(projectDir);
     const { execFile } = await import("node:child_process");
     const { promisify } = await import("node:util");

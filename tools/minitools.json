@@ -29,18 +29,23 @@
     },
     "continuity_slice": {
       "name": "台账切片",
-      "impl": "planned",
-      "desc": "世界书 台账/章账 按章切片供写手"
+      "impl": "kernel",
+      "desc": "世界书 台账/章账 按章切片供写手（M1 已实装，core/src/minitools.ts）"
     },
     "continuity_commit": {
       "name": "台账结算",
-      "impl": "planned",
-      "desc": "章回写手待登记清单回写世界书词条（状态机 draft/active/retired）"
+      "impl": "kernel",
+      "desc": "章回写手待登记清单回写世界书词条（状态机 draft/active/retired）（M1 已实装）"
     },
     "kb_search": {
       "name": "知识检索",
-      "impl": "planned",
-      "desc": "按 tags/关键词检索知识库条目"
+      "impl": "kernel",
+      "desc": "按 tags/关键词检索知识库条目（M1 已实装；dedup 同函数承担）"
+    },
+    "dedup": {
+      "name": "条目去重",
+      "impl": "kernel",
+      "desc": "知识条目去重（M1 已实装，kb_search 同路径）"
     },
     "meme_harvest": {
       "name": "热点素材采集",

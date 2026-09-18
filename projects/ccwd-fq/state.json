@@ -10,7 +10,6 @@
       "m1.find-trope",
       "m1.material-dissect",
       "m2.link",
-      "itb-m2.structure-design",
       "m2.structure-design",
       "m2.plot-choreographer",
       "m2.subplot-weave",
@@ -18,14 +17,12 @@
       "m2.foreshadow-plant",
       "m2.scene-breakdown",
       "m3.link",
-      "itb-m3.layer-voices",
       "m3.layer-voices",
       "m3.layer-scenes",
       "m3.layer-canon",
       "m3.prose-assembler",
       "m3.novel-deai",
       "m4.link",
-      "itb-m4.export-doc",
       "m4.export-doc"
     ]
   },
@@ -131,24 +128,6 @@
       "round": 1,
       "verdict": "pass",
       "stale": false
-    },
-    "itb-m2.structure-design": {
-      "status": "done",
-      "round": 1,
-      "verdict": "pass",
-      "stale": false
-    },
-    "itb-m3.layer-voices": {
-      "status": "done",
-      "round": 1,
-      "verdict": "pass",
-      "stale": false
-    },
-    "itb-m4.export-doc": {
-      "status": "done",
-      "round": 1,
-      "verdict": "pass",
-      "stale": false
     }
   },
   "gate": {
@@ -169,12 +148,11 @@
     "AB测试": false
   },
   "comments": {},
-  "overlayHash": "539534b4",
+  "overlayHash": "r6-2a4dbc91",
   "policy": {
-    "kit_boundary": "always",
-    "gate_mode": "auto",
+    "link_default": "auto",
     "adapt": "propose"
   },
-  "planHash": "cbaa9695",
+  "planHash": "ed5369c5",
   "lastRejectReason": ""
 }

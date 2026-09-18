@@ -4,7 +4,7 @@
   "flowId": "caocao-wudalang",
   "flowVersion": "1.0.0",
   "flowHash": "45bcaf50",
-  "status": "awaiting_input",
+  "status": "completed",
   "plan": {
     "order": [
       "m1.find-trope",
@@ -97,16 +97,24 @@
       "stale": false
     },
     "m3.layer-canon": {
-      "status": "awaiting",
-      "round": 0
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "03-写作/layer-canon.md",
+      "stale": false
     },
     "m3.prose-assembler": {
-      "status": "none",
-      "round": 0
+      "status": "done",
+      "round": 3,
+      "lastArtifact": "03-写作/prose-assembler.md",
+      "stale": false,
+      "committed": []
     },
     "m3.novel-deai": {
-      "status": "none",
-      "round": 0
+      "status": "done",
+      "round": 2,
+      "stale": false,
+      "committed": [],
+      "lastArtifact": "03-写作/novel-deai.md"
     },
     "m3.link": {
       "status": "done",
@@ -115,12 +123,16 @@
       "stale": false
     },
     "m4.export-doc": {
-      "status": "none",
-      "round": 0
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "04-交付/export-doc.docx"
     },
     "m4.link": {
-      "status": "none",
-      "round": 0
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
     },
     "itb-m2.structure-design": {
       "status": "done",
@@ -135,14 +147,16 @@
       "stale": false
     },
     "itb-m4.export-doc": {
-      "status": "none",
-      "round": 0
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
     }
   },
   "gate": {
     "verdict": "pass",
-    "node": "itb-m3.layer-voices",
-    "at": "2026-09-18T19:48:40.954Z",
+    "node": "itb-m4.export-doc",
+    "at": "2026-09-18T20:06:55.086Z",
     "note": "预授权自动审批"
   },
   "inputs": {
@@ -162,6 +176,5 @@
     "adapt": "propose"
   },
   "planHash": "cbaa9695",
-  "focus": "m3.layer-canon",
   "lastRejectReason": ""
 }

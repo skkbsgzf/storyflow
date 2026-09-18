@@ -65,7 +65,8 @@
       "knowledge": [
         "kb/market/snapshot",
         "kb/market/structure",
-        "kb/trope/*"
+        "kb/trope/*",
+        "kb/market/brief-four-questions"
       ],
       "exclude_knowledge": [
         "kb/trope/na-billionaire",

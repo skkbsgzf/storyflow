@@ -6,11 +6,179 @@
     "link_default": "auto",
     "adapt": "propose"
   },
-  "overlayHash": "539534b4",
+  "overlayHash": "r6-2a4dbc91",
   "planHash": "cbaa9695",
-  "links": [],
-  "composition": [],
-  "moduleDirs": {},
+  "links": [
+    {
+      "id": "m2.link",
+      "fromModule": "m1",
+      "toModule": "m2",
+      "mode": "manual"
+    },
+    {
+      "id": "m3.link",
+      "fromModule": "m2",
+      "toModule": "m3",
+      "mode": "auto"
+    },
+    {
+      "id": "m4.link",
+      "fromModule": "m3",
+      "toModule": "m4",
+      "mode": "auto"
+    }
+  ],
+  "composition": [
+    {
+      "id": "m1",
+      "module": "topic",
+      "name": "选题",
+      "order": 1,
+      "dir": "01-选题",
+      "link": "auto",
+      "caps": [
+        "找梗",
+        "素材解剖",
+        "时代情绪锚",
+        "网感文案",
+        "拆书入库"
+      ],
+      "capsEnabled": [
+        "找梗",
+        "素材解剖"
+      ],
+      "spine": [
+        "m1.find-trope",
+        "m1.material-dissect"
+      ],
+      "plugins": [],
+      "nodes": [
+        "m1.find-trope",
+        "m1.material-dissect"
+      ]
+    },
+    {
+      "id": "m2",
+      "module": "plot",
+      "name": "编剧",
+      "order": 2,
+      "dir": "02-编剧",
+      "link": "manual",
+      "caps": [
+        "结构",
+        "主线",
+        "人设",
+        "分场",
+        "世界观",
+        "单元剧大纲",
+        "短剧节拍",
+        "暗线",
+        "伏笔",
+        "悬念",
+        "红队评审"
+      ],
+      "capsEnabled": [
+        "结构",
+        "主线",
+        "暗线",
+        "人设",
+        "伏笔",
+        "悬念",
+        "分场"
+      ],
+      "spine": [
+        "m2.structure-design",
+        "m2.plot-choreographer",
+        "m2.novel-bible",
+        "m2.scene-breakdown"
+      ],
+      "plugins": [
+        "m2.subplot-weave",
+        "m2.foreshadow-plant"
+      ],
+      "nodes": [
+        "m2.structure-design",
+        "m2.plot-choreographer",
+        "m2.subplot-weave",
+        "m2.novel-bible",
+        "m2.foreshadow-plant",
+        "m2.scene-breakdown"
+      ]
+    },
+    {
+      "id": "m3",
+      "module": "prose",
+      "name": "写作",
+      "order": 3,
+      "dir": "03-写作",
+      "link": "auto",
+      "caps": [
+        "台词层",
+        "场景层",
+        "设定层",
+        "拼装盖章",
+        "终稿打磨",
+        "去机味",
+        "直写单章",
+        "剧本成稿",
+        "对话打磨",
+        "文学评审",
+        "视频提示词"
+      ],
+      "capsEnabled": [
+        "台词层",
+        "场景层",
+        "设定层",
+        "拼装盖章",
+        "终稿打磨",
+        "去机味"
+      ],
+      "spine": [
+        "m3.layer-voices",
+        "m3.layer-scenes",
+        "m3.layer-canon",
+        "m3.prose-assembler",
+        "m3.novel-deai"
+      ],
+      "plugins": [],
+      "nodes": [
+        "m3.layer-voices",
+        "m3.layer-scenes",
+        "m3.layer-canon",
+        "m3.prose-assembler",
+        "m3.novel-deai"
+      ]
+    },
+    {
+      "id": "m4",
+      "module": "delivery",
+      "name": "交付",
+      "order": 4,
+      "dir": "04-交付",
+      "link": "auto",
+      "caps": [
+        "docx交付",
+        "交付页",
+        "批注回流"
+      ],
+      "capsEnabled": [
+        "docx交付"
+      ],
+      "spine": [
+        "m4.export-doc"
+      ],
+      "plugins": [],
+      "nodes": [
+        "m4.export-doc"
+      ]
+    }
+  ],
+  "moduleDirs": {
+    "m1": "01-选题",
+    "m2": "02-编剧",
+    "m3": "03-写作",
+    "m4": "04-交付"
+  },
   "nodes": {
     "m1.find-trope": {
       "kind": "agent",
@@ -214,7 +382,6 @@
       "op": "layer-canon",
       "output": "03-写作/layer-canon.md",
       "skill": "layer-canon",
-      "minitool": "continuity_check",
       "config": {
         "sliceUnit": "@default:sliceUnit",
         "newWordPolicy": "@default:newWordPolicy",
@@ -281,7 +448,7 @@
       "module": "m4",
       "kit": "delivery",
       "op": "export-doc",
-      "output": "04-交付/export-doc.md",
+      "output": "04-交付/export-doc.docx",
       "script": "tools/export-doc.py",
       "config": {
         "style": "@default:style",
@@ -297,24 +464,6 @@
       "title": "连接 · 交付（自动批准）",
       "stage": "m4",
       "module": "m4"
-    },
-    "itb-m2.structure-design": {
-      "kind": "gate",
-      "gate_role": "kit-boundary",
-      "title": "跨域交接验收：topic → plot",
-      "desc": "R5 唯一保留的人工验收点：topic 域的产物交给 plot 域执行前，由人确认交接口径（范围/术语/依据）。域内质量由各 tool 自己的 asserts 与 config 负责。"
-    },
-    "itb-m3.layer-voices": {
-      "kind": "gate",
-      "gate_role": "kit-boundary",
-      "title": "跨域交接验收：plot → prose",
-      "desc": "R5 唯一保留的人工验收点：plot 域的产物交给 prose 域执行前，由人确认交接口径（范围/术语/依据）。域内质量由各 tool 自己的 asserts 与 config 负责。"
-    },
-    "itb-m4.export-doc": {
-      "kind": "gate",
-      "gate_role": "kit-boundary",
-      "title": "跨域交接验收：prose → delivery",
-      "desc": "R5 唯一保留的人工验收点：prose 域的产物交给 delivery 域执行前，由人确认交接口径（范围/术语/依据）。域内质量由各 tool 自己的 asserts 与 config 负责。"
     }
   },
   "edges": [
@@ -376,7 +525,7 @@
     {
       "id": "e-link-m2",
       "from": "m2.link",
-      "to": "itb-m2.structure-design",
+      "to": "m2.structure-design",
       "role": "flow"
     },
     {
@@ -416,7 +565,7 @@
     {
       "id": "e-link-m3",
       "from": "m3.link",
-      "to": "itb-m3.layer-voices",
+      "to": "m3.layer-voices",
       "role": "flow"
     },
     {
@@ -428,29 +577,8 @@
     {
       "id": "e-link-m4",
       "from": "m4.link",
-      "to": "itb-m4.export-doc",
-      "role": "flow"
-    },
-    {
-      "id": "e-itb-m2.structure-design-out",
-      "from": "itb-m2.structure-design",
-      "to": "m2.structure-design",
-      "role": "flow",
-      "desc": "边界验收通过后放行"
-    },
-    {
-      "id": "e-itb-m3.layer-voices-out",
-      "from": "itb-m3.layer-voices",
-      "to": "m3.layer-voices",
-      "role": "flow",
-      "desc": "边界验收通过后放行"
-    },
-    {
-      "id": "e-itb-m4.export-doc-out",
-      "from": "itb-m4.export-doc",
       "to": "m4.export-doc",
-      "role": "flow",
-      "desc": "边界验收通过后放行"
+      "role": "flow"
     }
   ],
   "nodeConfig": {
@@ -570,7 +698,6 @@
       "module": "m3",
       "output": "03-写作/layer-canon.md",
       "skill": "layer-canon",
-      "minitool": "continuity_check",
       "nodeConfig": {
         "sliceUnit": "@default:sliceUnit",
         "newWordPolicy": "@default:newWordPolicy",
@@ -606,7 +733,7 @@
     },
     "m4.export-doc": {
       "module": "m4",
-      "output": "04-交付/export-doc.md",
+      "output": "04-交付/export-doc.docx",
       "nodeConfig": {
         "style": "@default:style",
         "verify": "@default:verify",
@@ -616,18 +743,6 @@
     "m4.link": {
       "module": "m4",
       "gateRole": "link",
-      "nodeConfig": {}
-    },
-    "itb-m2.structure-design": {
-      "gateRole": "kit-boundary",
-      "nodeConfig": {}
-    },
-    "itb-m3.layer-voices": {
-      "gateRole": "kit-boundary",
-      "nodeConfig": {}
-    },
-    "itb-m4.export-doc": {
-      "gateRole": "kit-boundary",
       "nodeConfig": {}
     }
   }

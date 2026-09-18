@@ -667,8 +667,7 @@
         "kb/craft/highlight-loop"
       ],
       "minitools": [
-        "continuity_commit",
-        "continuity_check"
+        "continuity_commit"
       ],
       "config": {
         "plantPerUnit": {

@@ -40,3 +40,15 @@ review: null
 ## 待批 patch（flow_optimize 已登记，--apply 需人工确认）
 
 - M2：novel-chapter add_knowledge ← sensory-detail 新卡（先建卡再生效）
+
+## 实现台账（2026-09-19 用户拍板「全部落地」后）
+
+- M1 命题澄清：knowledge 新卡 `kb/market/brief-four-questions`（四问确认单，含 block 级
+  「先对题后动笔」条款），接入 search.find-trope op 标尺——结构前置门留待 WO-08 flow@3 迁移时一并入骨架。
+- M2 代入感缺口：knowledge 新卡 `kb/aesthetic/sensory-detail`（密度/心理距离/具象化转译 +
+  block 级「抽象情绪裸奔」），接入 prose.novel-chapter 标尺。
+- M3 悬置：内核 `flow_effect` 新增 `gatesDue`（gate-open 超 24h 置顶提醒）——本项目
+  gate-final 实测输出 41h。人工裁决仍待你执行（flow_gate gate-final）。
+- M4 降级路径：`tools/amend-artifact.py` 单命令五步闭环（空理由拒绝、逐步留痕、
+  flow-verify 退出码判定）；AGENTS.md 铁律 10 已更新指向。
+- M5 计量盲区：维持记账（不重拍）。

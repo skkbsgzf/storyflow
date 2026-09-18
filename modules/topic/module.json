@@ -322,52 +322,8 @@
         "knowledge": [],
         "config": {}
       }
-    },
-    "meme_harvest": {
-      "title": "热点素材采集",
-      "minitools": [
-        "meme_harvest"
-      ],
-      "desc": "（planned，内核未实现，触达即 blocked）外部热点/梗源采集（现由宿主 agent 步承担）",
-      "kind": "produce",
-      "config": {
-        "sinceDays": {
-          "type": "number",
-          "default": 30,
-          "min": 0,
-          "desc": "回看天数",
-          "effect": "放宽 = 更全也更旧",
-          "tunable_by": [
-            "user",
-            "optimizer"
-          ]
-        },
-        "limit": {
-          "type": "number",
-          "default": 20,
-          "min": 0,
-          "desc": "采集条数上限",
-          "effect": "提高 = 素材更多、筛选成本上升",
-          "tunable_by": [
-            "user",
-            "optimizer"
-          ]
-        },
-        "sources": {
-          "type": "array",
-          "default": [],
-          "desc": "素材来源清单（空=默认源）",
-          "effect": "限定来源 = 提升可控性",
-          "tunable_by": [
-            "user",
-            "optimizer"
-          ]
-        }
-      },
-      "capability": [
-        "热点采集"
-      ]
     }
+
   },
   "skeleton": {
     "spine": [
@@ -386,7 +342,6 @@
     "素材解剖",
     "时代情绪锚",
     "网感文案",
-    "拆书入库",
-    "热点采集"
+    "拆书入库"
   ]
 }

@@ -244,7 +244,8 @@
         "kb/continuity/state-ledger",
         "kb/deconstruct/style-learning",
         "kb/formats/webnovel-longform",
-        "kb/method/longform-engineering"
+        "kb/method/longform-engineering",
+        "kb/aesthetic/sensory-detail"
       ],
       "minitools": [
         "check_aesthetic_asserts",
@@ -471,9 +472,6 @@
         "kb/craft/highlight-loop"
       ],
       "asserts": [
-        "AE-CONT-FORESHADOW",
-        "AE-CONT-ITEM",
-        "AE-CONT-KNOW",
         "AE-PROSE-NOTBUT",
         "AE-PROSE-RHYTHM",
         "AE-PROSE-SLOP",

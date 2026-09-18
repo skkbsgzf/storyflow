@@ -129,6 +129,69 @@
           }
         }
       }
+    ],
+    "m3.layer-canon": [
+      {
+        "round": 1,
+        "ts": "2026-09-18T19:52:49.248Z",
+        "note": "submit r1·layer-canon.md",
+        "files": {
+          "03-写作/layer-canon.md": {
+            "hash": "f6d4067d1862",
+            "path": "snapshots/m3.layer-canon/r1/03-写作/layer-canon.md"
+          }
+        }
+      }
+    ],
+    "m3.prose-assembler": [
+      {
+        "round": 1,
+        "ts": "2026-09-18T19:54:30.242Z",
+        "note": "submit r1·prose-assembler.md",
+        "files": {
+          "03-写作/prose-assembler.md": {
+            "hash": "92a1a7cbf235",
+            "path": "snapshots/m3.prose-assembler/r1/03-写作/prose-assembler.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-18T20:04:01.481Z",
+        "note": "submit r3·prose-assembler.md",
+        "files": {
+          "03-写作/prose-assembler.md": {
+            "hash": "f5012ee94cc3",
+            "path": "snapshots/m3.prose-assembler/r2/03-写作/prose-assembler.md"
+          }
+        }
+      }
+    ],
+    "m3.novel-deai": [
+      {
+        "round": 1,
+        "ts": "2026-09-18T20:06:45.948Z",
+        "note": "submit r2·novel-deai.md",
+        "files": {
+          "03-写作/novel-deai.md": {
+            "hash": "6443ce82da1f",
+            "path": "snapshots/m3.novel-deai/r1/03-写作/novel-deai.md"
+          }
+        }
+      }
+    ],
+    "m4.export-doc": [
+      {
+        "round": 1,
+        "ts": "2026-09-19 04:06",
+        "note": "export-doc 自动快照：0 beats / 0 eps → export-doc.docx",
+        "files": {
+          "03-写作/novel-deai.md": {
+            "hash": "0b4602cdf0c8",
+            "path": "snapshots/m4.export-doc/r1/03-写作/novel-deai.md"
+          }
+        }
+      }
     ]
   },
   "inputs": {}

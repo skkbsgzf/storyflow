@@ -49,3 +49,22 @@ proposeFromMetrics 按 metrics-summary 的**旧字面口径**自动派生。概�
 概念命中）——**批量 apply 会误删在工作的标尺**。处置：等 proposeFromMetrics 换新口径
 （或逐条过 hitrate-recheck 复核）后再批。本次 2 条 miner patch（N2/N3）不受此影响：
 它们依据的是重检后的数字。
+
+## 实现台账（2026-09-19 用户拍板「全部落地」后）
+
+- N1 执行体断链：① `tools/minitools.json` 对账（continuity_slice/commit、kb_search 实为已实装，
+  改 planned→kernel；补登 dedup）；② module-lint 新增 **E-MINITOOL-IMPL**（impl 非
+  kernel/check-integrity 即 error）——首跑即清除 6 颗潜伏雷（base/continuity_check、
+  delivery/docx_ingest、topic/meme_harvest 三件未实装机器件摘出工具箱，3 处 skill op
+  的未实装 sidecar 剔除）；③ 并行实现已收编（script 壳执行体），本项目据此走完 delivery。
+- N2 注入收窄：证据复核后**收缩**——novel-bible 仅剔 `webnovel-longform`、prose-assembler
+  仅剔 `webnovel-fastfood`（overlay P-nctx-1/2 已 applied+replan）；novel-deai 不动
+  （0 命中证据被空壳产物污染，等 ccwd-fq2 干净 run 再议）；「剔未选梗卡」撤案
+  （3 张 trope 全是选中组合，原提案误判）。
+- N3 断言挪层：AE-CONT-* 从 prose-assembler 摘除（中间件必空转）；novel-chapter
+  经核**本就声明**（其产物路径在切片门内）， Kits/prose + modules/prose 已同步。
+- N4 语义断言零消费：内核 buildTaskPackage 对 kind=gate 评审步注入「语义断言清单」
+  （上游最近 unverified 逐条人裁）；本轮两项目实测无误注入段，真实消费待下一个
+  带语义断言的评审步 run 验证。
+- 遗留红档 3 处（ccwd-fq 首跑历史，如实保留）：novel-deai 空壳 done、prose-assembler
+  快照后漂移、export-doc 旧声明路径——均系收编前跑出的产物卫生问题，fq2 重跑即清。

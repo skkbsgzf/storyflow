@@ -1,0 +1,33 @@
+{
+  "format": "flow-overlay@1",
+  "flowId": "caocao-wudalang",
+  "origin": "optimizer",
+  "reason": "N2 注入收窄（第二轮挖掘）：概念层重检确认零消费、且与步骤职能无关的格式卡下架；novel-deai 不动（其 0 命中证据被空壳产物污染）",
+  "basedOn": {
+    "flowVersion": "1.0.0",
+    "metricsWindow": "run-mu79dix0-k0fxpq",
+    "evidence": [
+      "kb.zero-hit-after-concept-recheck@novel-bible:kb/formats/webnovel-longform",
+      "kb.zero-hit-after-concept-recheck@prose-assembler:kb/formats/webnovel-fastfood",
+      "tools/hitrate-recheck.mjs:字面9%→概念58%，剩余零命中14张为可裁候选"
+    ]
+  },
+  "patches": [
+    {
+      "kind": "set-tool",
+      "kit": "prose",
+      "op": "novel-bible",
+      "remove_knowledge": ["kb/formats/webnovel-longform"],
+      "reason": "世界观圣经步不需要长篇形态标准（格式卡）；重检零消费。3 张选中梗卡保留——世界观必须长在梗上",
+      "status": "proposed"
+    },
+    {
+      "kind": "set-tool",
+      "kit": "prose",
+      "op": "prose-assembler",
+      "remove_knowledge": ["kb/formats/webnovel-fastfood"],
+      "reason": "拼装盖章步不需要快餐文形态标准；重检零消费",
+      "status": "proposed"
+    }
+  ]
+}
