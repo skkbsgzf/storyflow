@@ -53,6 +53,60 @@ export async function runCoreNode(
   const tool = node.minitool ?? "";
   const artifacts: string[] = [];
 
+  // ── script 执行体（module@1 kind=check 壳，R6 §一.11「script 壳入箱」）──
+  // 外部确定性脚本，零 token，内核 spawn。调用约定：
+  //   python <ROOT>/<script> <projects/<id>/<src>> <projects/<id>/<out>> --title <首标题> --node <id> --flow <flowId>
+  // src = 沿上游边 BFS（跳过 link/gate 等无产物接缝）找到的最近 md 产物；
+  // 快照由脚本自带 --node 完成（铁律 7），这里只补 artifact 注册。
+  const script = (node as { script?: string }).script;
+  if (script) {
+    const scriptPath = path.join(ROOT, script);
+    if (!fs.existsSync(scriptPath)) {
+      return { ok: false, artifacts, kind: "missing", reason: `script 执行体不存在: ${script}` };
+    }
+    let src: string | undefined;
+    const seen = new Set<string>([nodeId]);
+    const queue = flow.graph.edges.filter((e) => e.to === nodeId).map((e) => e.from);
+    while (queue.length && !src) {
+      const up = queue.shift()!;
+      if (seen.has(up)) continue;
+      seen.add(up);
+      const last = state.nodes[up]?.lastArtifact;
+      if (last && last.endsWith(".md") && fs.existsSync(path.join(projectDir, last))) {
+        src = last;
+        break;
+      }
+      for (const e of flow.graph.edges) if (e.to === up) queue.push(e.from);
+    }
+    if (!src) {
+      return { ok: false, artifacts, kind: "assert", reason: `script ${script} 找不到上游 md 产物（沿上游 BFS 无命中）` };
+    }
+    const cfg = (node as { config?: Record<string, unknown> }).config ?? {};
+    const outDir = typeof cfg.outDir === "string" && !cfg.outDir.startsWith("@") ? cfg.outDir : "对外交付";
+    const outRel = path.join(outDir, path.basename(src).replace(/\.md$/i, "") + ".docx").replaceAll("\\", "/");
+    const title =
+      /^#\s+(.+)$/m.exec(fs.readFileSync(path.join(projectDir, src), "utf-8"))?.[1]?.trim() ?? path.basename(src, ".md");
+    fs.mkdirSync(path.join(projectDir, outDir), { recursive: true });
+    const pid = path.basename(projectDir);
+    const { execFile } = await import("node:child_process");
+    const { promisify } = await import("node:util");
+    try {
+      await promisify(execFile)(
+        "python",
+        [scriptPath, path.join("projects", pid, src), path.join("projects", pid, outRel),
+         "--title", title, "--node", nodeId, "--flow", state.flowId ?? ""].filter((a) => a !== ""),
+        { cwd: ROOT, windowsHide: true, maxBuffer: 32 * 1024 * 1024 },
+      );
+    } catch (e) {
+      const tail = String((e as { stderr?: string })?.stderr ?? (e as { message?: string })?.message ?? "")
+        .split("\n").filter(Boolean).slice(-5).join(" ｜ ");
+      return { ok: false, artifacts, kind: "assert", reason: `script ${script} 退出非零：${tail}` };
+    }
+    makeArtifact(projectDir, { path: outRel, node: nodeId, producer: `script:${path.basename(script)}`, inputs: {} });
+    artifacts.push(outRel);
+    return { ok: true, artifacts };
+  }
+
   if (tool === "kb_load") {
     const files = resolveLoads(node.loads);
     if (files.length === 0) {

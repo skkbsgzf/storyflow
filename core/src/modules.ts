@@ -186,7 +186,11 @@ export function expandFlow3(
         op: toolId,
         output: `${dir}/${baseOut}`,
         ...(op.skill ? { skill: op.skill } : {}),
+        // 执行体三选一（module@1）：skill=agent 认知步；minitools[0]=内建机器件；
+        // script=外部确定性脚本（kind=check 壳，如 export-doc）——core 步由内核 spawn（R6 §一.11）
         ...(op.minitool ? { minitool: op.minitool } : {}),
+        ...(Array.isArray(op.minitools) && op.minitools.length ? { minitool: op.minitools[0] } : {}),
+        ...(op.script ? { script: op.script } : {}),
         ...(op.asserts?.length || adds.asserts?.length
           ? { asserts: [...new Set([...(op.asserts ?? []), ...(adds.asserts ?? [])])] }
           : {}),
