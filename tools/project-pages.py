@@ -75,6 +75,7 @@ def module_view(inst, mod, order, link_default, spine, plugins):
         "dir": f"{order:02d}-{mod.get('name') or mod['id']}",
         "caps": caps_all, "capsEnabled": caps_enabled,
         "spine": spine, "plugins": plugins,
+        "io": mod.get("io"),
     }
 
 
@@ -280,6 +281,35 @@ def main():
             cand.extend(q for q in p.rglob("*") if q.is_file())
     deliverables = sorted({q.relative_to(proj).as_posix().replace("\\", "/") for q in cand})
 
+    # W-02 产物可见性分级：模块收敛交付件 = io.output.file（每模块一份成熟交付）；
+    # 模块目录内其余产物 = 过程件（前端默认收进「模块内幕」折叠区）。
+    module_files = []
+    for v in module_views:
+        d = v.get("dir")
+        if not d:
+            continue
+        pdir = proj / d
+        allf = sorted(q.relative_to(proj).as_posix().replace("\\", "/")
+                      for q in pdir.rglob("*") if q.is_file()) if pdir.is_dir() else []
+        io_out = ((v.get("io") or {}).get("output") or {}).get("file")
+        dlv = f"{d}/{io_out}" if io_out else None
+        module_files.append({
+            "id": v["id"], "name": v.get("name") or v["id"], "dir": d,
+            "deliverable": dlv if (dlv and dlv in allf) else None,
+            "audience": ((v.get("io") or {}).get("output") or {}).get("audience") or "",
+            "process": [f for f in allf if f != dlv],
+        })
+
+    # W-04 模块结果报告读模型（内核 persistModuleReports 落盘，页面只读）
+    module_reports = {}
+    for q in sorted((proj / "registry").glob("module-report-*.json")):
+        try:
+            mr = load_json(q, None)
+        except Exception:
+            mr = None
+        if isinstance(mr, dict) and mr.get("moduleId"):
+            module_reports[mr["moduleId"]] = mr
+
     payload = {
         "DATA": {
             "project": project_id,
@@ -290,6 +320,8 @@ def main():
             "files": files,
             "runstate": runstate,
             "deliverables": deliverables,
+            "moduleFiles": module_files,
+            "moduleReports": module_reports,
             "inputs": runstate.get("inputs") or {},
             "annos": annos.get("annos") or {},
             "projects": projects_switcher(),

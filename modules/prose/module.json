@@ -351,7 +351,13 @@
         "knowledge": [],
         "config": {}
       },
-      "output": "终稿.md"
+      "output": "终稿.md",
+      "asserts": [
+        "AE-AI-QUOTA",
+        "AE-AI-STRUCT",
+        "AE-PROSE-SLOP",
+        "AE-WNF-HOOK"
+      ]
     },
     "novel-chapter": {
       "skill": "novel-chapter",
@@ -817,5 +823,23 @@
     "文学评审",
     "视频提示词",
     "正文"
-  ]
+  ],
+  "io": {
+    "input": {
+      "from": "plot",
+      "shape": "剧本 IR（逐场行动/台词/价值/钩 + 伏笔登记）"
+    },
+    "output": {
+      "file": "终稿.md",
+      "audience": "读者（对外正文终稿，文学化+去AI味）"
+    },
+    "acceptance": {
+      "asserts": [
+        "AE-AI-QUOTA",
+        "AE-AI-STRUCT",
+        "AE-PROSE-SLOP",
+        "AE-WNF-HOOK"
+      ]
+    }
+  }
 }

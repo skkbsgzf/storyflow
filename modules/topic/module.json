@@ -392,5 +392,20 @@
     "网感文案",
     "拆书入库",
     "选题报告"
-  ]
+  ],
+  "io": {
+    "input": {
+      "from": "flow-input",
+      "shape": "一个灵感（点子/命题/素材，任一形态）"
+    },
+    "output": {
+      "file": "选题报告.md",
+      "audience": "作者（选题决策文档，兼作编剧模块唯一输入）"
+    },
+    "acceptance": {
+      "asserts": [
+        "AE-REPORT-DENSITY"
+      ]
+    }
+  }
 }

@@ -13,6 +13,10 @@
   E-FIELD-UNKNOWN tool 携带契约白名单外的字段（additionalProperties:false 的等价检查）
   E-KIND          kind 缺失或不在 produce|review|check（勘误 §十一.14：必填，不靠缺省隐含）
   E-BINDING       tool 无执行体：skill|minitools|script 三者皆缺
+  E-IO-REQUIRED   spine 非空的模块缺 io 职责三件套（工单 W-01：输入/输出/验收声明式契约）
+  E-IO-FILE       io.output.file 与末位 spine 工具产物文件名不一致（声明=落盘，W-02 可见性依赖）
+  E-IO-ACCEPT-UNKNOWN io.acceptance.asserts 引用本模块 ops 未声明的断言 id（验收职责必须真挂载）
+  W-IO-ACCEPT-EMPTY   io.acceptance.asserts 为空——模块交付无机器验收（显式可见，不冒充有验收）
   E-SKILL-MISSING op.skill 档案不存在（skills/<id>.md）
   E-MINITOOL-UNKNOWN op.minitools 未登记在 tools/minitools.json
   E-MINITOOL-IMPL    op.minitools 条目 impl 非 kernel|check-integrity（planned/None =
@@ -230,6 +234,36 @@ def lint_module(path, kb_index, minitools_reg):
     for s in spine:
         if s not in ops:
             E("E-SPINE-UNKNOWN", f"spine 引用未声明的 tool：{s}")
+
+    # ── W-01 模块职责三件套（io）：spine 模块必填，输出/验收必须真挂载 ──
+    io = d.get("io")
+    if spine:
+        if not io:
+            E("E-IO-REQUIRED", "spine 非空的模块缺 io 职责三件套（input/output/acceptance）")
+        else:
+            bad = [k for k in ("input", "output", "acceptance") if not isinstance(io.get(k), dict)]
+            if bad:
+                E("E-IO-REQUIRED", f"io 缺段：{bad}")
+            else:
+                last_op = ops.get(spine[-1], {})
+                # 回退规则与 expandFlow3 逐字一致：显式 output > script 壳 .docx > 默认 .md
+                if last_op.get("output"):
+                    want = Path(str(last_op["output"])).name
+                elif last_op.get("script"):
+                    want = f"{spine[-1]}.docx"
+                else:
+                    want = f"{spine[-1]}.md"
+                got = Path(str(io["output"].get("file", ""))).name
+                if got != want:
+                    E("E-IO-FILE", f"io.output.file「{got}」≠ 末位 spine 工具产物「{want}」（声明=落盘）")
+                declared_asserts = set()
+                for oid2, op2 in ops.items():
+                    declared_asserts.update(op2.get("asserts") or [])
+                for aid in io["acceptance"].get("asserts", []) or []:
+                    if aid not in declared_asserts:
+                        E("E-IO-ACCEPT-UNKNOWN", f"验收断言 {aid} 未声明在本模块任何 ops 的 asserts 上", "io")
+                if not io["acceptance"].get("asserts"):
+                    W("W-IO-ACCEPT-EMPTY", "验收断言为空——模块交付无机器验收", "io")
 
     cycle = has_cycle(requires)
     if cycle:

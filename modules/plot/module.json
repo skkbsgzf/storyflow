@@ -787,5 +787,20 @@
     "悬念",
     "红队评审",
     "编剧"
-  ]
+  ],
+  "io": {
+    "input": {
+      "from": "topic",
+      "shape": "选题报告（梗选型+竞品对标+结构手法+可用话题）"
+    },
+    "output": {
+      "file": "剧本.md",
+      "audience": "写手（正文模块唯一输入；5W1H 结构化剧本 IR）"
+    },
+    "acceptance": {
+      "asserts": [
+        "AE-SCRIPT-FIELDS"
+      ]
+    }
+  }
 }

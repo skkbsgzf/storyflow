@@ -97,6 +97,18 @@ function writeFixture(root: string): void {
 }
 
 describe("R6 · 模块展开器（expandFlow3）", () => {
+  it("W-01 职责三件套：module.json io 原样传播进 composition（机器消费面）", () => {
+    const flow = JSON.parse(
+      fs.readFileSync(path.join(ROOT, "flows", "caocao-wudalang", "flow.json"), "utf-8"),
+    );
+    const r = expandFlow3(ROOT, flow);
+    const m1 = r.modules.find((m) => m.id === "m1");
+    expect(m1?.io).toBeTruthy();
+    expect(m1?.io?.output?.file).toBe("选题报告.md");
+    expect(m1?.io?.acceptance?.asserts).toContain("AE-REPORT-DENSITY");
+    expect(m1?.io?.input?.from).toBe("flow-input");
+  });
+
   it("默认骨架：flow 不写 caps → 只启骨架 4 节点，跨模块经连接件接线", () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "miniflow-mod1-"));
     writeFixture(root);

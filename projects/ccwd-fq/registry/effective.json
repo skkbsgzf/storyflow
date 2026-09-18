@@ -1,12 +1,12 @@
 {
   "format": "effective@2",
   "flowId": "caocao-wudalang",
-  "flowVersion": "1.0.0",
+  "flowVersion": "1.1.0",
   "policy": {
     "link_default": "auto",
     "adapt": "propose"
   },
-  "overlayHash": "r6-2a4dbc91",
+  "overlayHash": "r6-410cc95f",
   "planHash": "89c9a42e",
   "links": [
     {
@@ -41,21 +41,34 @@
         "素材解剖",
         "时代情绪锚",
         "网感文案",
-        "拆书入库"
+        "拆书入库",
+        "选题报告"
       ],
       "capsEnabled": [
-        "找梗",
-        "素材解剖"
+        "选题报告"
       ],
       "spine": [
-        "m1.find-trope",
-        "m1.material-dissect"
+        "m1.topic-report"
       ],
       "plugins": [],
       "nodes": [
-        "m1.find-trope",
-        "m1.material-dissect"
-      ]
+        "m1.topic-report"
+      ],
+      "io": {
+        "input": {
+          "from": "flow-input",
+          "shape": "一个灵感（点子/命题/素材，任一形态）"
+        },
+        "output": {
+          "file": "选题报告.md",
+          "audience": "作者（选题决策文档，兼作编剧模块唯一输入）"
+        },
+        "acceptance": {
+          "asserts": [
+            "AE-REPORT-DENSITY"
+          ]
+        }
+      }
     },
     {
       "id": "m2",
@@ -75,35 +88,34 @@
         "暗线",
         "伏笔",
         "悬念",
-        "红队评审"
+        "红队评审",
+        "编剧"
       ],
       "capsEnabled": [
-        "结构",
-        "主线",
-        "暗线",
-        "人设",
-        "伏笔",
-        "悬念",
-        "分场"
+        "编剧"
       ],
       "spine": [
-        "m2.structure-design",
-        "m2.plot-choreographer",
-        "m2.novel-bible",
-        "m2.scene-breakdown"
+        "m2.script-forge"
       ],
-      "plugins": [
-        "m2.subplot-weave",
-        "m2.foreshadow-plant"
-      ],
+      "plugins": [],
       "nodes": [
-        "m2.structure-design",
-        "m2.plot-choreographer",
-        "m2.subplot-weave",
-        "m2.novel-bible",
-        "m2.foreshadow-plant",
-        "m2.scene-breakdown"
-      ]
+        "m2.script-forge"
+      ],
+      "io": {
+        "input": {
+          "from": "topic",
+          "shape": "选题报告（梗选型+竞品对标+结构手法+可用话题）"
+        },
+        "output": {
+          "file": "剧本.md",
+          "audience": "写手（正文模块唯一输入；5W1H 结构化剧本 IR）"
+        },
+        "acceptance": {
+          "asserts": [
+            "AE-SCRIPT-FIELDS"
+          ]
+        }
+      }
     },
     {
       "id": "m3",
@@ -123,31 +135,41 @@
         "剧本成稿",
         "对话打磨",
         "文学评审",
-        "视频提示词"
+        "视频提示词",
+        "正文"
       ],
       "capsEnabled": [
-        "台词层",
-        "场景层",
-        "设定层",
-        "拼装盖章",
+        "正文",
         "终稿打磨",
         "去机味"
       ],
       "spine": [
-        "m3.layer-voices",
-        "m3.layer-scenes",
-        "m3.layer-canon",
-        "m3.prose-assembler",
+        "m3.ghostwrite",
         "m3.novel-deai"
       ],
       "plugins": [],
       "nodes": [
-        "m3.layer-voices",
-        "m3.layer-scenes",
-        "m3.layer-canon",
-        "m3.prose-assembler",
+        "m3.ghostwrite",
         "m3.novel-deai"
-      ]
+      ],
+      "io": {
+        "input": {
+          "from": "plot",
+          "shape": "剧本 IR（逐场行动/台词/价值/钩 + 伏笔登记）"
+        },
+        "output": {
+          "file": "终稿.md",
+          "audience": "读者（对外正文终稿，文学化+去AI味）"
+        },
+        "acceptance": {
+          "asserts": [
+            "AE-AI-QUOTA",
+            "AE-AI-STRUCT",
+            "AE-PROSE-SLOP",
+            "AE-WNF-HOOK"
+          ]
+        }
+      }
     },
     {
       "id": "m4",
@@ -170,7 +192,20 @@
       "plugins": [],
       "nodes": [
         "m4.export-doc"
-      ]
+      ],
+      "io": {
+        "input": {
+          "from": "prose",
+          "shape": "正文终稿（每模块一份成熟交付）"
+        },
+        "output": {
+          "file": "export-doc.docx",
+          "audience": "编辑/甲方（可批注 docx）"
+        },
+        "acceptance": {
+          "asserts": []
+        }
+      }
     }
   ],
   "moduleDirs": {
@@ -180,158 +215,42 @@
     "m4": "04-交付"
   },
   "nodes": {
-    "m1.find-trope": {
+    "m1.topic-report": {
       "kind": "agent",
-      "title": "find-trope",
+      "title": "选题报告师",
       "stage": "m1",
       "module": "m1",
       "kit": "topic",
-      "op": "find-trope",
-      "output": "01-选题/find-trope.md",
-      "skill": "find-trope",
+      "op": "topic-report",
+      "output": "01-选题/选题报告.md",
+      "skill": "topic-report",
       "minitool": "kb_search",
-      "config": {
-        "mainTropes": "@default:mainTropes",
-        "subTropes": "@default:subTropes",
-        "saturationCheck": "@default:saturationCheck",
-        "evolutionDepth": "@default:evolutionDepth"
-      },
-      "desc": "找梗技能——从市场梗库检索梗族、判定饱和度、选主梗辅梗、沿演化链找新变体落点；梗卡是选题方案的前置件。"
-    },
-    "m1.material-dissect": {
-      "kind": "agent",
-      "title": "material-dissect",
-      "stage": "m1",
-      "module": "m1",
-      "kit": "topic",
-      "op": "material-dissect",
-      "output": "01-选题/material-dissect.md",
-      "skill": "material-dissect",
-      "config": {
-        "layers": "@default:layers",
-        "inversionCount": "@default:inversionCount",
-        "placement": "@default:placement"
-      },
-      "desc": "选题素材解剖技能——申论式四层剥离（现象/利益/权力/结构），把热点事件聚合成关系结构与权力不对称，从关系逆位生成爽点候选，产出材料落位表。素材不解剖=假材料，梗不落位=装饰品。"
-    },
-    "m2.structure-design": {
-      "kind": "agent",
-      "title": "structure-design",
-      "stage": "m2",
-      "module": "m2",
-      "kit": "plot",
-      "op": "structure-design",
-      "output": "02-编剧/structure-design.md",
-      "skill": "structure-design",
-      "minitool": "kb_search",
-      "config": {
-        "fuseCount": "@default:fuseCount",
-        "injectUncertainty": "@default:injectUncertainty",
-        "steps": "@default:steps"
-      },
-      "desc": "第二阶段技能——从结构目录选型并完成深挖/改造/融合三步，产出故事框架案（结构选型理由+骨架具体化+改造点+不确定因素注入提案），确保节奏对齐市场实盘。"
-    },
-    "m2.plot-choreographer": {
-      "kind": "agent",
-      "title": "plot-choreographer",
-      "stage": "m2",
-      "module": "m2",
-      "kit": "plot",
-      "op": "plot-choreographer",
-      "output": "02-编剧/plot-choreographer.md",
-      "skill": "plot-choreographer",
-      "minitool": "check_aesthetic_asserts",
       "asserts": [
-        "AE-CURVE-STALL",
-        "AE-CURVE-TYPE",
-        "AE-CUSHION",
-        "AE-DESERT",
-        "AE-END-MECH",
-        "AE-REV-MIDPOINT",
-        "AE-REV-SETUP"
+        "AE-REPORT-DENSITY"
       ],
       "config": {
-        "actModel": "@default:actModel",
-        "cardDensity": "@default:cardDensity",
-        "dataAnchor": "@default:dataAnchor",
-        "lineCount": "@default:lineCount"
+        "maxChars": "@default:maxChars",
+        "minTropeRows": "@default:minTropeRows"
       },
-      "desc": "剧情编排技能——把八段式策划案升级为可拍的三线骨架×分集功能表×卡点编排表；数据骨架（市场实盘）与美学标准（kb/aesthetic）双驱动。"
+      "desc": "选题模块唯一交付工具：输入灵感 → 选题报告（梗选型+竞品对标+结构解剖+可用话题）。输入职责=灵感；输出职责=选题报告单件；验收职责=AE-REPORT-DENSITY"
     },
-    "m2.subplot-weave": {
+    "m2.script-forge": {
       "kind": "agent",
-      "title": "暗线编织",
+      "title": "剧本师",
       "stage": "m2",
       "module": "m2",
       "kit": "plot",
-      "op": "subplot-weave",
-      "output": "02-编剧/subplot-weave.md",
-      "skill": "subplot-weave",
-      "minitool": "check_aesthetic_asserts",
-      "knowledge": [
-        "kb/structure/episodic-webnovel",
-        "kb/aesthetic/emotion-curve",
-        "kb/aesthetic/reversal",
-        "kb/craft/highlight-loop"
-      ],
-      "config": {
-        "weaveDensity": "@default:weaveDensity",
-        "revealCurve": "@default:revealCurve"
-      },
-      "desc": "暗线编织技能——在主骨架之上叠加第二条叙事线（身份线/复仇线/情感线）：暗线锚点表（每锚点=明线事件+暗线推进量）、双轨咬合检查（暗线停摆=空转）、揭示节奏规划（铺垫→半揭→反转→兑现）；暗线只在编剧层锁定，成文层无权改戏。"
-    },
-    "m2.novel-bible": {
-      "kind": "agent",
-      "title": "novel-bible",
-      "stage": "m2",
-      "module": "m2",
-      "kit": "plot",
-      "op": "novel-bible",
-      "output": "02-编剧/novel-bible.md",
-      "skill": "novel-bible",
-      "minitool": "kb_search",
-      "config": {
-        "quests": "@default:quests",
-        "powerSystem": "@default:powerSystem",
-        "deadlineRounds": "@default:deadlineRounds"
-      },
-      "desc": "长篇网文开书技能——三层问答定书（题材与核心情绪→主角与核心欲望→前十事件链），产出 World Bible 与卷纲前置件；三问答完才许开书。"
-    },
-    "m2.foreshadow-plant": {
-      "kind": "agent",
-      "title": "伏笔悬念插入",
-      "stage": "m2",
-      "module": "m2",
-      "kit": "plot",
-      "op": "foreshadow-plant",
-      "output": "02-编剧/foreshadow-plant.md",
-      "skill": "foreshadow-plant",
-      "minitool": "continuity_commit",
+      "op": "script-forge",
+      "output": "02-编剧/剧本.md",
+      "skill": "script-forge",
       "asserts": [
-        "AE-CONT-FORESHADOW"
+        "AE-SCRIPT-FIELDS"
       ],
       "config": {
-        "plantPerUnit": "@default:plantPerUnit",
-        "disguiseLevel": "@default:disguiseLevel"
+        "minScenes": "@default:minScenes",
+        "maxChars": "@default:maxChars"
       },
-      "desc": "伏笔悬念插入技能——按伏笔台账在指定结构位点埋设伏笔（明面日常化伪装+暗面台账登记：埋设章/预期回收章/知情范围），产出伏笔点位表；埋设必须登记台账、到期必须回收（AE-CONT-FORESHADOW），不埋无回收主的死伏笔。"
-    },
-    "m2.scene-breakdown": {
-      "kind": "agent",
-      "title": "scene-breakdown",
-      "stage": "m2",
-      "module": "m2",
-      "kit": "plot",
-      "op": "scene-breakdown",
-      "output": "02-编剧/scene-breakdown.md",
-      "skill": "scene-breakdown",
-      "minitool": "check_aesthetic_asserts",
-      "config": {
-        "shotsPerScene": "@default:shotsPerScene",
-        "includeRationale": "@default:includeRationale",
-        "dialogLevel": "@default:dialogLevel"
-      },
-      "desc": "小纲阶段技能——把大纲拆成逐分镜的脚本 doc：每个分镜的场景/人物行动/台词，达意即可无需打磨；文末附创作思路页。输出 doc 格式供客户批注修改后回传。"
+      "desc": "编剧模块唯一交付工具：输入选题报告 → 结构化剧本 IR（逐场 5W1H/行动/台词/价值/钩 + 人物卡 + 伏笔登记）。输入职责=选题报告；输出职责=剧本单件；验收职责=AE-SCRIPT-FIELDS"
     },
     "m2.link": {
       "kind": "gate",
@@ -341,76 +260,20 @@
       "stage": "m2",
       "module": "m2"
     },
-    "m3.layer-voices": {
+    "m3.ghostwrite": {
       "kind": "agent",
-      "title": "layer-voices",
+      "title": "文学化师",
       "stage": "m3",
       "module": "m3",
       "kit": "prose",
-      "op": "layer-voices",
-      "output": "03-写作/layer-voices.md",
-      "skill": "layer-voices",
+      "op": "ghostwrite",
+      "output": "03-写作/正文.md",
+      "skill": "ghostwrite",
       "config": {
-        "subtextDepth": "@default:subtextDepth",
-        "maskTest": "@default:maskTest",
-        "perLineTag": "@default:perLineTag"
+        "chapterMin": "@default:chapterMin",
+        "chapterMax": "@default:chapterMax"
       },
-      "desc": "成文流水线专科层一——从分场卡逐拍产出对白层稿：每句台词标注说话人/目的/潜台词，全员过遮名三句测试；只管台词，不写叙述。"
-    },
-    "m3.layer-scenes": {
-      "kind": "agent",
-      "title": "layer-scenes",
-      "stage": "m3",
-      "module": "m3",
-      "kit": "prose",
-      "op": "layer-scenes",
-      "output": "03-写作/layer-scenes.md",
-      "skill": "layer-scenes",
-      "config": {
-        "senseChannels": "@default:senseChannels",
-        "densityProfile": "@default:densityProfile",
-        "propsDepth": "@default:propsDepth"
-      },
-      "desc": "成文流水线专科层二——从分场卡逐拍产出场景层稿：五感计划、身体反应、布景道具、笔墨密度配比；只管让读者站进场景，不写台词不推情节。"
-    },
-    "m3.layer-canon": {
-      "kind": "agent",
-      "title": "layer-canon",
-      "stage": "m3",
-      "module": "m3",
-      "kit": "prose",
-      "op": "layer-canon",
-      "output": "03-写作/layer-canon.md",
-      "skill": "layer-canon",
-      "config": {
-        "sliceUnit": "@default:sliceUnit",
-        "newWordPolicy": "@default:newWordPolicy",
-        "ledgerDiff": "@default:ledgerDiff"
-      },
-      "desc": "成文流水线专科层三——从分场卡逐拍产出设定层稿：知情范围切片、新词首现方案、台账增量、人设矛盾提示；只管世界观一致性与读者认知边界，不碰文笔。"
-    },
-    "m3.prose-assembler": {
-      "kind": "agent",
-      "title": "prose-assembler",
-      "stage": "m3",
-      "module": "m3",
-      "kit": "prose",
-      "op": "prose-assembler",
-      "output": "03-写作/prose-assembler.md",
-      "skill": "prose-assembler",
-      "asserts": [
-        "AE-PROSE-NOTBUT",
-        "AE-PROSE-RHYTHM",
-        "AE-PROSE-SLOP",
-        "AE-PROSE-TRIPLET",
-        "AE-WNF-HOOK"
-      ],
-      "config": {
-        "stampDims": "@default:stampDims",
-        "failFast": "@default:failFast",
-        "beatFidelity": "@default:beatFidelity"
-      },
-      "desc": "成文流水线末环——把台词/场景/设定三层稿按节拍拼装成正文：逐段六维盖章（台词/场景/设定/人设/节奏/机味），全过才下推；产出正文+盖章单。无分场卡不开工。"
+      "desc": "写作模块主交付工具：输入剧本 → 逐场文学化为正文（六维盖章自查/章末钩/纯净度）。输入职责=剧本；输出职责=正文单件；验收职责=既有 prose 断言表（章长/钩/纯度/台账）"
     },
     "m3.novel-deai": {
       "kind": "agent",
@@ -419,9 +282,15 @@
       "module": "m3",
       "kit": "prose",
       "op": "novel-deai",
-      "output": "03-写作/novel-deai.md",
+      "output": "03-写作/终稿.md",
       "skill": "novel-deai",
       "minitool": "check_aesthetic_asserts",
+      "asserts": [
+        "AE-AI-QUOTA",
+        "AE-AI-STRUCT",
+        "AE-PROSE-SLOP",
+        "AE-WNF-HOOK"
+      ],
       "config": {
         "passes": "@default:passes",
         "innerLoops": "@default:innerLoops",
@@ -465,104 +334,34 @@
   },
   "edges": [
     {
-      "id": "e-m1-find-trope-material-dissect",
-      "from": "m1.find-trope",
-      "to": "m1.material-dissect",
-      "role": "flow",
-      "via": "skill.material-dissect"
-    },
-    {
-      "id": "e-m2-structure-design-plot-choreographer",
-      "from": "m2.structure-design",
-      "to": "m2.plot-choreographer",
-      "role": "flow",
-      "via": "skill.plot-choreographer"
-    },
-    {
-      "id": "e-m2-plot-choreographer-scene-breakdown",
-      "from": "m2.plot-choreographer",
-      "to": "m2.scene-breakdown",
-      "role": "flow",
-      "via": "skill.scene-breakdown"
-    },
-    {
-      "id": "e-m2-plot-choreographer-subplot-weave",
-      "from": "m2.plot-choreographer",
-      "to": "m2.subplot-weave",
-      "role": "flow",
-      "via": "skill.subplot-weave"
-    },
-    {
-      "id": "e-m2-subplot-weave-novel-bible",
-      "from": "m2.subplot-weave",
-      "to": "m2.novel-bible",
-      "role": "flow",
-      "via": "skill.novel-bible"
-    },
-    {
-      "id": "e-m2-novel-bible-foreshadow-plant",
-      "from": "m2.novel-bible",
-      "to": "m2.foreshadow-plant",
-      "role": "flow",
-      "via": "skill.foreshadow-plant"
-    },
-    {
-      "id": "e-m2-foreshadow-plant-scene-breakdown",
-      "from": "m2.foreshadow-plant",
-      "to": "m2.scene-breakdown",
-      "role": "flow",
-      "via": "skill.scene-breakdown"
-    },
-    {
       "id": "e-m1-link",
-      "from": "m1.material-dissect",
+      "from": "m1.topic-report",
       "to": "m2.link",
       "role": "flow"
     },
     {
       "id": "e-link-m2",
       "from": "m2.link",
-      "to": "m2.structure-design",
+      "to": "m2.script-forge",
       "role": "flow"
     },
     {
-      "id": "e-m3-layer-voices-layer-scenes",
-      "from": "m3.layer-voices",
-      "to": "m3.layer-scenes",
-      "role": "flow",
-      "via": "skill.layer-scenes"
-    },
-    {
-      "id": "e-m3-layer-scenes-layer-canon",
-      "from": "m3.layer-scenes",
-      "to": "m3.layer-canon",
-      "role": "flow",
-      "via": "skill.layer-canon"
-    },
-    {
-      "id": "e-m3-layer-canon-prose-assembler",
-      "from": "m3.layer-canon",
-      "to": "m3.prose-assembler",
-      "role": "flow",
-      "via": "skill.prose-assembler"
-    },
-    {
-      "id": "e-m3-prose-assembler-novel-deai",
-      "from": "m3.prose-assembler",
+      "id": "e-m3-ghostwrite-novel-deai",
+      "from": "m3.ghostwrite",
       "to": "m3.novel-deai",
       "role": "flow",
       "via": "skill.novel-deai"
     },
     {
       "id": "e-m2-link",
-      "from": "m2.scene-breakdown",
+      "from": "m2.script-forge",
       "to": "m3.link",
       "role": "flow"
     },
     {
       "id": "e-link-m3",
       "from": "m3.link",
-      "to": "m3.layer-voices",
+      "to": "m3.ghostwrite",
       "role": "flow"
     },
     {
@@ -579,91 +378,23 @@
     }
   ],
   "nodeConfig": {
-    "m1.find-trope": {
+    "m1.topic-report": {
       "module": "m1",
-      "output": "01-选题/find-trope.md",
-      "skill": "find-trope",
+      "output": "01-选题/选题报告.md",
+      "skill": "topic-report",
       "minitool": "kb_search",
       "nodeConfig": {
-        "mainTropes": "@default:mainTropes",
-        "subTropes": "@default:subTropes",
-        "saturationCheck": "@default:saturationCheck",
-        "evolutionDepth": "@default:evolutionDepth"
+        "maxChars": "@default:maxChars",
+        "minTropeRows": "@default:minTropeRows"
       }
     },
-    "m1.material-dissect": {
-      "module": "m1",
-      "output": "01-选题/material-dissect.md",
-      "skill": "material-dissect",
-      "nodeConfig": {
-        "layers": "@default:layers",
-        "inversionCount": "@default:inversionCount",
-        "placement": "@default:placement"
-      }
-    },
-    "m2.structure-design": {
+    "m2.script-forge": {
       "module": "m2",
-      "output": "02-编剧/structure-design.md",
-      "skill": "structure-design",
-      "minitool": "kb_search",
+      "output": "02-编剧/剧本.md",
+      "skill": "script-forge",
       "nodeConfig": {
-        "fuseCount": "@default:fuseCount",
-        "injectUncertainty": "@default:injectUncertainty",
-        "steps": "@default:steps"
-      }
-    },
-    "m2.plot-choreographer": {
-      "module": "m2",
-      "output": "02-编剧/plot-choreographer.md",
-      "skill": "plot-choreographer",
-      "minitool": "check_aesthetic_asserts",
-      "nodeConfig": {
-        "actModel": "@default:actModel",
-        "cardDensity": "@default:cardDensity",
-        "dataAnchor": "@default:dataAnchor",
-        "lineCount": "@default:lineCount"
-      }
-    },
-    "m2.subplot-weave": {
-      "module": "m2",
-      "output": "02-编剧/subplot-weave.md",
-      "skill": "subplot-weave",
-      "minitool": "check_aesthetic_asserts",
-      "nodeConfig": {
-        "weaveDensity": "@default:weaveDensity",
-        "revealCurve": "@default:revealCurve"
-      }
-    },
-    "m2.novel-bible": {
-      "module": "m2",
-      "output": "02-编剧/novel-bible.md",
-      "skill": "novel-bible",
-      "minitool": "kb_search",
-      "nodeConfig": {
-        "quests": "@default:quests",
-        "powerSystem": "@default:powerSystem",
-        "deadlineRounds": "@default:deadlineRounds"
-      }
-    },
-    "m2.foreshadow-plant": {
-      "module": "m2",
-      "output": "02-编剧/foreshadow-plant.md",
-      "skill": "foreshadow-plant",
-      "minitool": "continuity_commit",
-      "nodeConfig": {
-        "plantPerUnit": "@default:plantPerUnit",
-        "disguiseLevel": "@default:disguiseLevel"
-      }
-    },
-    "m2.scene-breakdown": {
-      "module": "m2",
-      "output": "02-编剧/scene-breakdown.md",
-      "skill": "scene-breakdown",
-      "minitool": "check_aesthetic_asserts",
-      "nodeConfig": {
-        "shotsPerScene": "@default:shotsPerScene",
-        "includeRationale": "@default:includeRationale",
-        "dialogLevel": "@default:dialogLevel"
+        "minScenes": "@default:minScenes",
+        "maxChars": "@default:maxChars"
       }
     },
     "m2.link": {
@@ -671,49 +402,18 @@
       "gateRole": "link",
       "nodeConfig": {}
     },
-    "m3.layer-voices": {
+    "m3.ghostwrite": {
       "module": "m3",
-      "output": "03-写作/layer-voices.md",
-      "skill": "layer-voices",
+      "output": "03-写作/正文.md",
+      "skill": "ghostwrite",
       "nodeConfig": {
-        "subtextDepth": "@default:subtextDepth",
-        "maskTest": "@default:maskTest",
-        "perLineTag": "@default:perLineTag"
-      }
-    },
-    "m3.layer-scenes": {
-      "module": "m3",
-      "output": "03-写作/layer-scenes.md",
-      "skill": "layer-scenes",
-      "nodeConfig": {
-        "senseChannels": "@default:senseChannels",
-        "densityProfile": "@default:densityProfile",
-        "propsDepth": "@default:propsDepth"
-      }
-    },
-    "m3.layer-canon": {
-      "module": "m3",
-      "output": "03-写作/layer-canon.md",
-      "skill": "layer-canon",
-      "nodeConfig": {
-        "sliceUnit": "@default:sliceUnit",
-        "newWordPolicy": "@default:newWordPolicy",
-        "ledgerDiff": "@default:ledgerDiff"
-      }
-    },
-    "m3.prose-assembler": {
-      "module": "m3",
-      "output": "03-写作/prose-assembler.md",
-      "skill": "prose-assembler",
-      "nodeConfig": {
-        "stampDims": "@default:stampDims",
-        "failFast": "@default:failFast",
-        "beatFidelity": "@default:beatFidelity"
+        "chapterMin": "@default:chapterMin",
+        "chapterMax": "@default:chapterMax"
       }
     },
     "m3.novel-deai": {
       "module": "m3",
-      "output": "03-写作/novel-deai.md",
+      "output": "03-写作/终稿.md",
       "skill": "novel-deai",
       "minitool": "check_aesthetic_asserts",
       "nodeConfig": {

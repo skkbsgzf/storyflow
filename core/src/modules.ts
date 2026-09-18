@@ -56,6 +56,12 @@ export interface ModuleComposition {
   spine: string[];
   plugins: string[];
   nodes: string[];
+  /** W-01 职责三件套（module.json io 原样传播；无声明的模块为 null） */
+  io?: {
+    input: { from: string; shape: string };
+    output: { file: string; audience: string };
+    acceptance: { asserts: string[] };
+  } | null;
 }
 
 export interface ExpandResult {
@@ -270,6 +276,7 @@ export function expandFlow3(
       spine: seq.filter((t) => mod.skeleton.spine.includes(t)).map((t) => `${mid}.${t}`),
       plugins: seq.filter((t) => !mod.skeleton.spine.includes(t)).map((t) => `${mid}.${t}`),
       nodes: [...midNodes],
+      io: mod.io ?? null, // W-01 职责三件套随生效编排传播（机器消费面）
     });
     const linkId = `${mid}.link`;
     if (prev) {

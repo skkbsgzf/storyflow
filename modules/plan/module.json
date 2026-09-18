@@ -238,5 +238,18 @@
     "选题方案",
     "审美终审",
     "交付对账"
-  ]
+  ],
+  "io": {
+    "input": {
+      "from": "flow-input",
+      "shape": "需求简报（甲方原始诉求）"
+    },
+    "output": {
+      "file": "topic-proposal.md",
+      "audience": "需求方（选题方案对账单）"
+    },
+    "acceptance": {
+      "asserts": []
+    }
+  }
 }

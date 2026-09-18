@@ -115,7 +115,6 @@
         "config": {}
       }
     }
-
   },
   "skeleton": {
     "spine": [
@@ -127,5 +126,18 @@
     "docx交付",
     "交付页",
     "批注回流"
-  ]
+  ],
+  "io": {
+    "input": {
+      "from": "prose",
+      "shape": "正文终稿（每模块一份成熟交付）"
+    },
+    "output": {
+      "file": "export-doc.docx",
+      "audience": "编辑/甲方（可批注 docx）"
+    },
+    "acceptance": {
+      "asserts": []
+    }
+  }
 }
