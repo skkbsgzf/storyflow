@@ -43,7 +43,7 @@
             }
           }
         },
-        "toolbox": { "$ref": "miniflow/toolbox", "description": "工具箱抽屉数据（能力 → 工具映射，含启用态）" },
+        "toolbox": { "type": "object", "description": "工具箱抽屉数据（能力 → 工具映射，含启用态）；形状契约见 contracts/toolbox.schema.json（toolbox@1）" },
         "files": {
           "type": "object",
           "description": "产物文件 { 相对路径: 内容 }（按新目录布局扫描：输入/ 世界书/ NN-模块名/ 交付/）",

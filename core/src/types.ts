@@ -45,7 +45,11 @@ export interface FlowNode {
    * R5：门角色。唯一合法值 `kit-boundary`（kit 域切换处的人工验收）。
    * 旧值 stage/final/spot 已废弃 —— 门从图上节点降级为 op 的 asserts/config。
    */
-  gate_role?: "kit-boundary" | string;
+  gate_role?: "kit-boundary" | "link" | string;
+  /** R6：连接件两模式（gate_role="link" 的节点）；模块内部无门无打回 */
+  link_mode?: "auto" | "manual";
+  /** R6：产物归属的模块实例 id（派生节点 <实例id>.<tool> 的前缀） */
+  module?: string;
   iterate?: { unit: string; [k: string]: unknown }; // K6：迭代实例节点——flow_submit 逐实例入账，--seal 收口
   /**
    * R5 内容配置项取值：覆盖 kits/<kit>/kit.json 中该 op 的 `config.<key>.default`。
@@ -107,10 +111,12 @@ export interface FlowDescriptor {
   desc?: string;
   version: string;
   status?: string;
-  /** R5 编排策略：kit 边界验收 / 门语义 / 优化 agent 权力 / 预算（运行时被 overlay 的 set-policy 覆盖） */
+  /** R5 编排策略：kit 边界验收 / 门语义 / 优化 agent 权力 / 预算（运行时被 overlay 的 set-policy 覆盖）。
+   *  R6（flow@3）：kit_boundary/gate_mode 退役，只剩 link_default / adapt / budget。 */
   policy?: {
     kit_boundary?: "always" | "auto" | "off";
     gate_mode?: "auto" | "manual";
+    link_default?: "auto" | "manual";
     adapt?: "off" | "propose" | "apply";
     budget?: { tokens?: number; latencyMs?: number; humanGates?: number };
   };
@@ -121,6 +127,16 @@ export interface FlowDescriptor {
   harness?: Record<string, unknown>;
   stages?: FlowStage[];
   changelog?: unknown[];
+  /** R6 派生元数据（expandFlow3 产出，随派生描述符携带）：模块组合 / 连接件 / 模块节点表 / 产物目录 */
+  r6?: {
+    modules: Array<{
+      id: string; module: string; name: string; order: number; dir: string;
+      link: "auto" | "manual"; caps: string[]; capsEnabled: string[]; spine: string[]; plugins: string[];
+    }>;
+    links: Array<{ id: string; fromModule: string; toModule: string; mode: "auto" | "manual" }>;
+    moduleNodes: Record<string, string[]>;
+    dirs: Record<string, string>;
+  };
   /** @deprecated 已并入 outputs[]（规范 R4 §5.1 交付清单唯一化） */
   deliverables?: unknown[];
 }
@@ -263,7 +279,7 @@ export interface JournalEvent {
 }
 
 // metrics.schema.json · metric@1（R5）：单次 tool 执行的运行指标
-export type MetricPhase = "dispatch" | "submit" | "gate" | "auto-gate" | "boundary" | "core";
+export type MetricPhase = "dispatch" | "submit" | "gate" | "auto-gate" | "boundary" | "link" | "core";
 
 export interface RunMetric {
   ts: string;

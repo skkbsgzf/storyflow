@@ -23,6 +23,8 @@ export type AdaptPolicy = "off" | "propose" | "apply";
 export interface FlowPolicy {
   kit_boundary?: BoundaryPolicy;
   gate_mode?: GateMode;
+  /** R6：模块间连接件缺省模式（flow@3；旧 kit_boundary/gate_mode 对 flow@2 沿用） */
+  link_default?: "auto" | "manual";
   adapt?: AdaptPolicy;
   budget?: { tokens?: number; latencyMs?: number; humanGates?: number };
 }
@@ -95,8 +97,17 @@ export interface EffectiveFlow {
   inputs: Record<string, unknown>;
   /** 生效的 tool 级改写，key = `<kit>.<op>`；由 assembler 装载时叠加 */
   toolOverrides: Record<string, ToolOverride>;
-  /** 本次自动派生的 kit 边界验收节点 id */
+  /** 本次自动派生的 kit 边界验收节点 id（R5；R6 下恒为 []，改由 links 表达） */
   boundaries: string[];
+  /** R6：模块间连接件（取代 boundaries）；展开器派生 */
+  links?: Array<{ id: string; fromModule: string; toModule: string; mode: "auto" | "manual" }>;
+  /** R6：模块组合与模块节点表（expandFlow3 产出，persistEffective 落 effective@2） */
+  r6?: {
+    modules: Array<{ id: string; module: string; name: string; order: number; dir: string; link: "auto" | "manual"; caps: string[]; capsEnabled: string[]; spine: string[]; plugins: string[] }>;
+    links: Array<{ id: string; fromModule: string; toModule: string; mode: "auto" | "manual" }>;
+    moduleNodes: Record<string, string[]>;
+    dirs: Record<string, string>;
+  };
   /** 应用日志（进 journal / 前端编排说明） */
   notes: string[];
   overlayHash: string;

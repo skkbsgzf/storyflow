@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { assertSchema } from "./schema.js";
 
-export type KitDomain = "search" | "plot" | "prose" | "tool";
+export type KitDomain = "search" | "plot" | "prose" | "tool" | "module";
 
 /** R5 内容配置项声明：每个 tool（op）自己的旋钮。 */
 export interface OpConfigDef {
@@ -116,6 +116,64 @@ export class KitRegistry {
         }
       } catch {
         /* 坏 kit 跳过：kit-lint 负责报警，内核不炸 */
+      }
+    }
+    // R6：modules/<id>/module.json（module@1）与 kit 同权装载——模块工种工具箱是 kit 的后继形态，
+    // 派生节点以 <实例id>.<tool> 引用（kit=<模块id>，op=<tool>），标尺/断言/旋钮解析走同一条路。
+    const mdir = path.join(root, "modules");
+    if (!fs.existsSync(mdir)) return;
+    for (const entry of fs.readdirSync(mdir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+      if (!entry.isDirectory()) continue;
+      const file = path.join(mdir, entry.name, "module.json");
+      if (!fs.existsSync(file)) continue;
+      try {
+        const raw = JSON.parse(fs.readFileSync(file, "utf-8"));
+        // 契约校验归 module-lint（module.json 可能携带 WO-03 平移期的 kit@1 遗留键，
+        // 白名单归一化天然剥离）；装载器只取认识的字段，不因遗留键炸掉。
+        const ops: Record<string, KitOp> = {};
+        for (const [opId, op] of Object.entries(raw.ops as Record<string, any>)) {
+          ops[opId] = {
+            ...(op.skill ? { skill: op.skill } : {}),
+            ...(op.minitool ? { minitools: [op.minitool] } : {}),
+            ...(op.title ? { title: op.title } : {}),
+            ...(op.desc ? { desc: op.desc } : {}),
+            ...(op.kind ? { kind: op.kind } : {}),
+            ...(op.model_tier ? { model_tier: op.model_tier } : {}),
+            ...(op.knowledge ? { knowledge: op.knowledge } : {}),
+            ...(op.asserts ? { asserts: op.asserts } : {}),
+            ...(op.config ? { config: op.config } : {}),
+          };
+        }
+        const kit = {
+          id: raw.id,
+          domain: "module",
+          name: raw.name,
+          desc: raw.desc,
+          version: raw.version,
+          ops,
+        } as unknown as KitDef;
+        // 同 id 合并（op 级，kit 为既有权威）：WO-03 把旧 search kit 拆成了「认知工具（kits/search）
+        // + 检索基建（modules/search）」两半，共享遗留 id——按 op 补缺而非整体覆盖。
+        const existing = this.kits.get(kit.id);
+        if (existing) {
+          for (const [opId, op] of Object.entries(kit.ops)) {
+            if (existing.ops[opId]) continue;
+            existing.ops[opId] = op;
+            const r = toResolved(existing, opId, op);
+            if (!r.skill) continue;
+            // 模块副本不进 bySkill 歧义表：派生节点走 kit+op 直查；kit 侧既有注册保持权威
+            if (!this.bySkillIndex.has(r.skill)) this.bySkillIndex.set(r.skill, r);
+          }
+        } else {
+          this.kits.set(kit.id, kit);
+          for (const [opId, op] of Object.entries(kit.ops)) {
+            const r = toResolved(kit, opId, op);
+            if (!r.skill) continue;
+            if (!this.bySkillIndex.has(r.skill)) this.bySkillIndex.set(r.skill, r);
+          }
+        }
+      } catch {
+        /* 坏模块跳过：module-lint 负责报警，内核不炸 */
       }
     }
   }

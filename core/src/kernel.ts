@@ -18,12 +18,13 @@ import { runIntegrityAsserts, runHeaderAsserts, blocked, checkGlossary, runDecla
 import { runAestheticAsserts } from "./aesthetic.js";
 import { runCoreNode, artifactPathOf, nodeOutput, outputPathOf, nodeAsserts } from "./minitools.js";
 import { buildTaskPackage, effectiveUpstreams, resolveNodeOp } from "./assembler.js";
+import { effectiveFlow3 } from "./modules.js";
 import { renderSpawnPrompt } from "./spawn.js";
 import { loadProjectConfig, configToInputs, type ProjectConfig } from "./project-config.js";
 import type { BatchEntry, FlowNode, MetricPhase, RunMetric } from "./types.js";
 import {
-  effectiveFlow, isBoundaryGate, isWorkGate, projectOverlayPath, readOverlay, writeProjectOverlay,
-  type EffectiveFlow, type FlowOverlay, type OverlayPatch,
+  effectiveFlow, isBoundaryGate, isWorkGate, factoryOverlayPath, projectOverlayPath, readOverlay, writeProjectOverlay,
+  type EffectiveFlow, type FlowOverlay, type FlowPolicy, type OverlayPatch,
 } from "./overlay.js";
 import { recordMetric, readMetrics, summarizeMetrics, extractCtxUsage } from "./metrics.js";
 import { proposeFromMetrics, buildReport, overlayFromProposals, readMinerFindings, minerToProposals } from "./optimize.js";
@@ -128,6 +129,27 @@ export class Kernel {
    */
   effectiveOf(projectDir: string, flow: FlowDescriptor): EffectiveFlow {
     try {
+      if (flow.format === "flow@3") {
+        // R6：flow@3 = 模块序列。overlay（set-policy/set-module/insert-tool）作用于模块实例，
+        // 随后 expandFlow3 派生节点与边（派生只算一次，persistEffective 落 effective@2）。
+        const overlays = [
+          readOverlay(factoryOverlayPath(this.repoRoot, flow.id)),
+          readOverlay(projectOverlayPath(projectDir)),
+        ].filter(Boolean);
+        const r = effectiveFlow3(this.repoRoot, flow as never, { projectDir, overlays });
+        return {
+          flow: r.flow,
+          policy: r.policy as FlowPolicy,
+          inputs: {},
+          toolOverrides: {},
+          boundaries: [],
+          links: r.links,
+          r6: { modules: r.modules, links: r.links, moduleNodes: r.moduleNodes, dirs: r.dirs },
+          notes: r.notes,
+          overlayHash: r.overlayHash,
+          appliedCount: r.appliedCount,
+        };
+      }
       return effectiveFlow(this.repoRoot, flow, { projectDir });
     } catch (e) {
       throw new KernelError("BAD_OVERLAY", 409, `overlay 非法（拒绝静默降级为 bootstrap 编排）: ${(e as Error).message}`);
@@ -154,6 +176,41 @@ export class Kernel {
    */
   private persistEffective(projectDir: string, eff: EffectiveFlow, state?: RunState): void {
     try {
+      if ((eff as any).r6 || eff.flow.format === "flow@3-derived") {
+        // R6 生效编排读模型（effective@2）：links 取代 boundaries，composition 按模块实例
+        const nodeConfig: Record<string, unknown> = {};
+        for (const [id, n] of Object.entries(eff.flow.graph.nodes)) {
+          const op = resolveNodeOp(n, this.repoRoot);
+          nodeConfig[id] = {
+            module: n.module,
+            gateRole: n.gate_role,
+            output: artifactPathOf(eff.flow, id),
+            skill: n.skill,
+            minitool: n.minitool,
+            nodeConfig: n.config ?? {},
+          };
+        }
+        const view = {
+          format: "effective@2",
+          flowId: eff.flow.id,
+          flowVersion: eff.flow.version,
+          policy: {
+            link_default: (eff.policy as any).link_default ?? "auto",
+            adapt: (eff.policy as any).adapt ?? "propose",
+          },
+          overlayHash: eff.overlayHash,
+          planHash: state?.planHash,
+          links: (eff as any).links ?? [],
+          composition: (eff as any).r6?.modules ?? [],
+          moduleDirs: (eff as any).r6?.dirs ?? {},
+          nodes: eff.flow.graph.nodes,
+          edges: eff.flow.graph.edges,
+          nodeConfig,
+        };
+        fs.mkdirSync(path.join(projectDir, "registry"), { recursive: true });
+        atomicWriteText(path.join(projectDir, "registry", "effective.json"), JSON.stringify(view, null, 2) + "\n");
+        return;
+      }
       const nodeConfig: Record<string, unknown> = {};
       for (const [id, n] of Object.entries(eff.flow.graph.nodes)) {
         const op = resolveNodeOp(n, this.repoRoot);
@@ -356,8 +413,9 @@ export class Kernel {
     if (!node || !ns) throw new KernelError("NO_NODE", 404, `图中无节点 ${nodeId}`);
     // R5：带产活的门是评审步，走与 agent 步同一条交卷路径（否则它的产物永远没人收，节点却照判 done）
     const workGate = isWorkGate(node) && !isBoundaryGate(node);
+    const isLink = node.gate_role === "link";
     if (node.kind !== "agent" && !workGate) {
-      throw new KernelError("NOT_AGENT_NODE", 409, `节点 ${nodeId} 不是可交卷的步（kind=${node.kind}${isBoundaryGate(node) ? "，kit 边界验收门只接受 flow_gate 裁决" : ""}）`);
+      throw new KernelError("NOT_AGENT_NODE", 409, `节点 ${nodeId} 不是可交卷的步（kind=${node.kind}${isLink ? "，连接件只接受 flow_gate 裁决（pass/reject）" : isBoundaryGate(node) ? "，kit 边界验收门只接受 flow_gate 裁决" : ""}）`);
     }
     if (ns.status !== "awaiting") throw new KernelError("NODE_NOT_AWAITING", 409, `节点 ${nodeId} 不在等待提交（status=${ns.status}）`);
 
@@ -380,7 +438,13 @@ export class Kernel {
       ...runHeaderAsserts(projectDir, rel, {
         node: nodeId,
         round: (ns.round ?? 0) + 1,
-        by: node.kit && node.op ? `kit/${node.kit}.${node.op}` : node.minitool ? `core/${node.minitool}` : undefined,
+        by: node.module
+          ? `module/${node.module}.${node.op ?? node.minitool ?? nodeId}`
+          : node.kit && node.op
+            ? `kit/${node.kit}.${node.op}`
+            : node.minitool
+              ? `core/${node.minitool}`
+              : undefined,
         rootInputs: Object.entries(flow.graph.nodes)
           .filter(([, n]) => n.kind === "novel-txt")
           .map(([, n]) => nodeOutput(n))
@@ -533,13 +597,64 @@ export class Kernel {
     const ns = state.nodes[req.nodeId];
     const gateNode = flow.graph.nodes[req.nodeId];
 
+    // R6：连接件裁决（gate_role=link）。两值：pass 放行进入本模块 / reject 重跑整个上游模块。
+    if (gateNode?.gate_role === "link") {
+      const pass = req.verdict === "pass" || req.verdict === "pass-with-conditions";
+      if (!pass && req.verdict !== "reject" && req.verdict !== "send-back") {
+        throw new KernelError("INVALID_VERDICT", 400, `连接件裁决只接受 pass/reject: ${req.verdict}`);
+      }
+      const r6 = (flow as any).r6 as
+        | { moduleNodes: Record<string, string[]>; links: Array<{ id: string; fromModule: string }> }
+        | undefined;
+      const upstream = r6?.links.find((l) => l.id === req.nodeId)?.fromModule;
+      const scope = pass ? [] : (r6?.moduleNodes[upstream ?? ""] ?? []).filter((id) => id !== req.nodeId);
+      for (const id of scope) {
+        const n = state.nodes[id];
+        if (!n) continue;
+        if (n.status === "done" || n.status === "awaiting") {
+          n.status = "pending";
+          n.stale = true;
+          n.round += 1;
+          n.committed = [];
+          journalAppend(projectDir, state.runId, "stale", { nodeId: id, detail: "模块驳回：重跑上游模块" });
+        }
+      }
+      ns.verdict = pass ? "pass" : "reject";
+      if (pass) {
+        ns.status = "done";
+        ns.round += 1;
+        ns.stale = false;
+        state.gate = { verdict: "pass", node: req.nodeId, at: nowIso(), note: req.comment };
+      } else {
+        ns.status = "pending";
+        state.gate = { verdict: "reject", node: req.nodeId, at: nowIso(), note: req.comment };
+      }
+      state.lastRejectReason = pass ? "" : (req.comment ?? `重跑上游模块 ${upstream ?? ""}`);
+      state.status = "running";
+      this.metric(projectDir, state, req.nodeId, gateNode, "link", {
+        verdict: pass ? "pass" : "reject", note: req.comment,
+      });
+      journalAppend(projectDir, state.runId, "verdict", {
+        nodeId: req.nodeId,
+        detail: `${pass ? "pass" : "reject"}（R6 连接件：${pass ? "放行" : `重跑上游模块 ${upstream ?? ""}`}）${req.comment ? "：" + req.comment : ""}`,
+        refs: scope,
+      });
+      saveState(projectDir, state);
+      if (!pass) {
+        const next = await this.advance(projectId, state, projectDir, flow);
+        return { applied: true, rollbackScope: scope, next };
+      }
+      const next = await this.advance(projectId, state, projectDir, flow);
+      return { applied: true, next };
+    }
+
     if (req.verdict === "pass" || req.verdict === "pass-with-conditions") {
       ns.status = "done";
       ns.verdict = req.verdict;
       ns.round += 1;
       ns.stale = false;
       state.gate = { verdict: req.verdict, node: req.nodeId, at: nowIso(), note: req.comment };
-      this.metric(projectDir, state, req.nodeId, gateNode ?? { kind: "gate" }, isBoundaryGate(gateNode) ? "boundary" : "gate", {
+      this.metric(projectDir, state, req.nodeId, gateNode ?? { kind: "gate" }, gateNode?.gate_role === "link" ? "link" : isBoundaryGate(gateNode) ? "boundary" : "gate", {
         verdict: req.verdict, note: req.comment,
       });
       journalAppend(projectDir, state.runId, "verdict", { nodeId: req.nodeId, detail: `${req.verdict}${req.comment ? "：" + req.comment : ""}` });
@@ -595,7 +710,7 @@ export class Kernel {
     if (req.verdict === "reject") {
       ns.verdict = "reject";
       state.gate = { verdict: "reject", node: req.nodeId, at: nowIso(), note: req.comment };
-      this.metric(projectDir, state, req.nodeId, gateNode ?? { kind: "gate" }, isBoundaryGate(gateNode) ? "boundary" : "gate", {
+      this.metric(projectDir, state, req.nodeId, gateNode ?? { kind: "gate" }, gateNode?.gate_role === "link" ? "link" : isBoundaryGate(gateNode) ? "boundary" : "gate", {
         verdict: "reject", note: req.comment,
       });
       state.status = "failed";
@@ -705,6 +820,36 @@ export class Kernel {
       if (node.kind === "gate" || node.kind === "srd") {
         const gateReady = isReady(id);
         if (!gateReady) continue;
+        // R6：模块间连接件（gate_role=link）只有两种模式——auto 自动放行（journal 留痕）/ manual 挂人。
+        // 模块内部无门无打回；reject = 重跑整个上游模块（doGate 的 link 分支）。
+        if (node.gate_role === "link") {
+          const humanEngaged = state.gate.verdict === "awaiting" && state.gate.node === id;
+          if (humanEngaged) {
+            return {
+              status: "suspended",
+              nodeId: id,
+              gate: { nodeId: id, round: ns.round, token: gateToken(projectId, state.runId, id), title: node.title },
+            };
+          }
+          const mode = node.link_mode ?? "auto";
+          if (mode === "auto") {
+            ns.status = "done";
+            ns.verdict = "pass";
+            ns.round += 1;
+            ns.stale = false;
+            this.metric(projectDir, state, id, node, "link", { verdict: "pass", note: "R6 自动批准" });
+            journalAppend(projectDir, state.runId, "verdict", { nodeId: id, detail: "auto-pass（R6 连接件：自动批准）" });
+            saveState(projectDir, state);
+            continue;
+          }
+          const token = gateToken(projectId, state.runId, id);
+          state.gate = { verdict: "awaiting", node: id, round: ns.round, token, at: nowIso(), note: node.title };
+          ns.status = "awaiting";
+          state.status = "suspended";
+          journalAppend(projectDir, state.runId, "gate-open", { nodeId: id, detail: node.title ?? "" });
+          saveState(projectDir, state);
+          return { status: "suspended", nodeId: id, gate: { nodeId: id, round: ns.round, token, title: node.title } };
+        }
         // R5 门降级（§四）：非 kit 边界的门不再阻塞——域内质量已由该 tool 的 asserts/config 承担。
         // 保留两个例外：policy.gate_mode=manual，或这扇门已被人工接手（awaiting，轮到人裁决）。
         const boundary = isBoundaryGate(node);

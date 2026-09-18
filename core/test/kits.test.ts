@@ -20,12 +20,16 @@ describe("kit@1 · 四域注册表", () => {
     // 故 domain 数组会出现两个 "tool"。原断言写的是长度（["plot","prose","search","tool"]），
     // 在 detect 落地的提交 fb0f49d 起就已经是红的（存量债，与 D1–D5 无关）。此处改为断言
     // 「域轴不超过这 4 类」+「每个 kit 都能解析」，语义等同且不再随新域包漂移。
-    expect([...new Set(reg.all().map((k) => k.domain))].sort()).toEqual(["plot", "prose", "search", "tool"]);
-    for (const id of ["search", "plot", "prose", "tool", "detect"]) {
-      expect(reg.get(id), `kit ${id} 未加载`).toBeTruthy();
+    // R6：modules/*（domain="module"）与 kit 同权装载（WO-01），域轴新增 "module"。
+    expect([...new Set(reg.all().map((k) => k.domain))].sort()).toEqual(["module", "plot", "prose", "search", "tool"]);
+    for (const id of ["search", "plot", "prose", "tool", "detect", "topic", "plan", "delivery", "base"]) {
+      expect(reg.get(id), `kit/module ${id} 未加载`).toBeTruthy();
     }
     expect(reg.ambiguousSkills()).toEqual([]);
     expect(reg.get("prose")!.ops["novel-deai"]).toBeTruthy();
+    // R6：同 id 合并（op 级补缺）——modules/search 的检索基建并入 kits/search 的认知工具
+    expect(reg.get("search")!.ops["find-trope"]).toBeTruthy();
+    expect(reg.get("search")!.ops["kb_load"]).toBeTruthy();
   });
 
   it("显式 kit+op 解析：返回技能与标尺清单", () => {
