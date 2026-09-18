@@ -908,7 +908,9 @@ function drawEdges(){
       d = `M${sx},${sy} C${mx},${sy} ${mx},${ty} ${tx},${ty}`;
       lx = mx; ly = sy-6;
     }
-    s += `<path class="edge-hit" data-e="${e.id}" d="${d}" fill="none" stroke="#a89f90" stroke-width="1.4"${(e.when||role!=="flow")?' stroke-dasharray="5,4"':""} opacity="${active?0.9:0.35}" marker-end="url(#arw)"/>`;
+    // 可见线自身不接事件（1.4px 热区点不中）——上叠一条 14px 透明命中路径（.edge-hit）
+    s += `<path d="${d}" fill="none" stroke="#a89f90" stroke-width="1.4"${(e.when||role!=="flow")?' stroke-dasharray="5,4"':""} opacity="${active?0.9:0.35}" marker-end="url(#arw)" pointer-events="none"/>`;
+    s += `<path class="edge-hit" data-e="${e.id}" d="${d}" fill="none" stroke="transparent" stroke-width="14"/>`;
     if (lab) s += `<text class="edge-label" x="${lx}" y="${ly}" text-anchor="start">${lab}</text>`;
   }
   // 连接件（模块缝）：auto = 灰色虚线；manual = 金色实线 + 徽章；点击看连接件页（linkPaper）
@@ -916,14 +918,16 @@ function drawEdges(){
   moduleLinks.forEach(l => {
     const manual = l.mode === "manual";
     const col = manual ? "#b8a464" : "#a89f90";
-    s += `<path class="edge-hit" data-e="${l.id}" d="M${l.x1},${l.y} L${l.x2},${l.y}" fill="none" stroke="${col}" stroke-width="${manual?2.2:1.4}"${manual?"":' stroke-dasharray="6,5"'} opacity="${manual?0.95:0.6}" ${manual?"":'marker-end="url(#arw)"'}/>`;
+    // 缝线热区同样放宽，且命中直达 linkPaper（openEdgeDoc 查 graph.edges，缝线 id 查不到 = 点了没反应）
+    s += `<path d="M${l.x1},${l.y} L${l.x2},${l.y}" fill="none" stroke="${col}" stroke-width="${manual?2.2:1.4}"${manual?"":' stroke-dasharray="6,5"'} opacity="${manual?0.95:0.6}" ${manual?"":'marker-end="url(#arw)"'} pointer-events="none"/>`;
+    s += `<path class="edge-hit" data-linkid="${l.id}" d="M${l.x1},${l.y} L${l.x2},${l.y}" fill="none" stroke="transparent" stroke-width="16"/>`;
     const label = manual ? (LINK_ZH[l.state]||"待人工") : "自动";
     const wpx = label.length*13+16, mx2 = (l.x1+l.x2)/2;
     s += `<rect data-linkid="${l.id}" x="${mx2-wpx/2}" y="${l.y-12}" width="${wpx}" height="24" rx="12" fill="#fbf7ee" stroke="${col}" stroke-width="1.2" style="cursor:pointer"/>`
        + `<text data-linkid="${l.id}" class="edge-label" x="${mx2}" y="${l.y+4}" text-anchor="middle" fill="${manual?"#8a7434":"#7d7568"}" style="cursor:pointer">${l.mode==="manual"?"⏸ ":""}${label}</text>`;
   });
   svg.innerHTML = s + "</svg>";
-  svg.querySelectorAll(".edge-hit").forEach(p=>{
+  svg.querySelectorAll(".edge-hit[data-e]").forEach(p=>{
     p.addEventListener("click", ev=>{ ev.stopPropagation(); hideTip(); openEdgeDoc(p.dataset.e); });
   });
   svg.querySelectorAll(".stage-name[data-module]").forEach(el=>{
@@ -1525,7 +1529,7 @@ function openShelf(){
   navStack=[]; curNav={type:"shelf"};
   docReset(); dBack.style.display="none";
   dTitle.textContent="项目文档架";
-  const done=Object.values(RS.nodes).filter(x=>x.status==="done").length;
+  const done=Object.entries(RS.nodes).filter(([id,x])=>x.status==="done"&&nodes[id]).length;
   dChips.innerHTML=chip(DATA.project)+chip("流程 v"+flow.version)+chip("节点 "+done+" / "+Object.keys(nodes).length+" 完成");
   const groups={"对外交付":[],"内部":[],"过程文件":[]};
   Object.keys(files).sort().forEach(f=>{
@@ -1540,9 +1544,21 @@ function openShelf(){
   </div>`;
   h+=`<div class="shelf-row" id="open-wb" style="border-color:var(--accent)"><span class="no">书</span><span class="nm">中间件 · 设定真相库（世界书）</span><span class="go">打开 →</span></div>`;
   h+=`<div class="shelf-row" id="open-ledger" style="border-color:var(--accent)"><span class="no">审</span><span class="nm">审核意见簿 · 验收裁决 + 全部批注（可导出回流）</span><span class="go">打开 →</span></div>`;
+  // 交付件：DATA.deliverables（生成器从 交付/ 对外交付/ 章节正文/ R6 <NN>-交付/ 收集；含二进制 docx/pdf）
+  const dlvAll = DATA.deliverables || [];
+  if (dlvAll.length){
+    const dlvLabel = f => f.replace(/^对外交付\//,"").replace(/^\d{2}-交付\//,"");
+    h+=`<div class="shelf-cap">交付件 · ${dlvAll.length}</div>`;
+    h+=dlvAll.map(f=>{
+      const md = /\.md$/.test(f) && typeof files[f] === "string";
+      return md
+        ? `<div class="shelf-row" data-f="${f}"><span class="no">交</span><span class="nm">${dlvLabel(f).replace(/\.md$/,"")}</span><span class="go">打开 →</span></div>`
+        : `<div class="shelf-row" data-link="${f}"><span class="no">交</span><span class="nm">${dlvLabel(f)}</span><span class="go">下载/打开 →</span></div>`;
+    }).join("");
+  }
   const capMap={"对外交付":"对外交付","内部":"内部产物","过程文件":"过程文件"};
   for (const g of ["对外交付","内部","过程文件"]){
-    const lst=groups[g]; if(!lst.length) continue;
+    const lst=groups[g].filter(f=>!dlvAll.includes(f)); if(!lst.length) continue;
     h+=`<div class="shelf-cap">${capMap[g]} · ${lst.length}</div>`;
     h+=lst.map(f=>{
       const nm=g==="对外交付" ? f.slice(5) : f;
@@ -1552,6 +1568,7 @@ function openShelf(){
   }
   dBody.innerHTML=h;
   dBody.querySelectorAll(".shelf-row[data-f]").forEach(r=>r.addEventListener("click",()=>openFileDoc(r.dataset.f)));
+  dBody.querySelectorAll(".shelf-row[data-link]").forEach(r=>r.addEventListener("click",()=>window.open(r.dataset.link,"_blank")));
   const wb=dBody.querySelector("#open-wb");
   if (wb) wb.addEventListener("click", openWorldbook);
   const lg=dBody.querySelector("#open-ledger");
@@ -1609,8 +1626,11 @@ function openDeliverables(){
   dTitle.textContent = "产物管理";
   const itNode = Object.entries(nodes).find(([n,m]) => m.iterate);
   const dlv = DATA.deliverables || [];
+  const dlvLabel = f => f.replace(/^对外交付\//,"").replace(/^\d{2}-交付\//,"");
+  const isTextFile = f => /\.md$/.test(f) && typeof files[f] === "string";
   const delivered = dlv.filter(f => f.startsWith("对外交付/"));
-  const other = dlv.filter(f => !f.startsWith("对外交付/") && !f.endsWith(".md"));
+  const r6dlv = dlv.filter(f => /^\d{2}-交付\//.test(f));
+  const other = dlv.filter(f => !f.startsWith("对外交付/") && !/^\d{2}-交付\//.test(f));
   let h = "";
   // 章节模式（小说）：iterate.first 个槽位
   if (itNode){
@@ -1631,17 +1651,31 @@ function openDeliverables(){
   h += delivered.map(f => f.endsWith(".md")
     ? `<div class="shelf-row" data-f="${f}"><span class="no">${f.slice(5,7)}</span><span class="nm">${f.slice(5)}</span><span class="go">打开 →</span></div>`
     : `<div class="shelf-row" data-link="${f}"><span class="no">${f.slice(5,7)}</span><span class="nm">${f.slice(5)}</span><span class="go">下载/打开 →</span></div>`).join("");
+  // R6 模块交付：<NN>-交付/（flow@3 交付模块产物目录）
+  if (r6dlv.length){
+    h += `<div class="shelf-cap">模块交付 · ${r6dlv.length}</div>`;
+    h += r6dlv.map(f => isTextFile(f)
+      ? `<div class="shelf-row" data-f="${f}"><span class="no">交</span><span class="nm">${dlvLabel(f)}</span><span class="go">打开 →</span></div>`
+      : `<div class="shelf-row" data-link="${f}"><span class="no">交</span><span class="nm">${dlvLabel(f)}</span><span class="go">下载/打开 →</span></div>`).join("");
+  }
   if (other.length){
     h += `<div class="shelf-cap">其他格式</div>`;
     h += other.map(f => `<div class="shelf-row" data-link="${f}"><span class="no">附</span><span class="nm">${f}</span><span class="go">打开 →</span></div>`).join("");
   }
-  if (!delivered.length && !other.length) h += `<p class="msg" style="max-width:720px;margin:20px auto">暂无交付件。</p>`;
-  // 交付清单核对（规范 R4 §5.1）：flow.outputs 是唯一事实源；磁盘上没被任何声明认领的件显式告警，不猜归属
-  const decl = (flow.outputs||[]).map(o=>({node:o.node, path:o.path||((nodes[o.node]||{}).output)||"", title:o.title||""})).filter(x=>x.path);
+  if (!delivered.length && !r6dlv.length && !other.length) h += `<p class="msg" style="max-width:720px;margin:20px auto">暂无交付件。</p>`;
+  // 交付清单核对（规范 R4 §5.1 + R6 模块交付）：outputs 是唯一事实源；flow@3 的 outputs 按
+  // module 键声明——展开为该模块全部带产物节点逐件核对；磁盘上没被任何声明认领的件显式告警
+  const decl = (flow.outputs||[]).flatMap(o=>{
+    if (o.path || o.node) return [{node:o.node, path:o.path||((nodes[o.node]||{}).output)||"", title:o.title||""}];
+    if (o.module) return Object.entries(nodes)
+      .filter(([,n]) => (n.module===o.module || n.stage===o.module) && n.output)
+      .map(([id,n]) => ({node:id, path:n.output, title:(o.title ? o.title+" · " : "")+(zhTitle(n)||id)}));
+    return [];
+  }).filter(x=>x.path);
   h += `<div class="shelf-cap">交付清单核对 · flow 声明 ${decl.length} 件</div>`;
   h += decl.map(x => {
-    const onDisk = dlv.includes(x.path);
-    return `<div class="shelf-row" data-node="${x.node}"><span class="no">${onDisk?"✓":"…"}</span><span class="nm">${zhTitle(nodes[x.node]||{})} <span class="msg">${x.path}</span></span><span class="go">${onDisk?"已产出":"待产出"} · 查看节点 →</span></div>`;
+    const onDisk = dlv.includes(x.path) || files[x.path] !== undefined;
+    return `<div class="shelf-row" data-node="${x.node}"><span class="no">${onDisk?"✓":"…"}</span><span class="nm">${x.title || zhTitle(nodes[x.node]||{})} <span class="msg">${x.path}</span></span><span class="go">${onDisk?"已产出":"待产出"} · 查看节点 →</span></div>`;
   }).join("");
   const unc = DATA.unclaimed || [];
   if (unc.length)
