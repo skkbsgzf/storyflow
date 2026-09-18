@@ -1,0 +1,45 @@
+{
+  "format": "module-report@1",
+  "projectId": "ccwd-fq",
+  "flowId": "caocao-wudalang",
+  "moduleId": "m2",
+  "moduleName": "m2",
+  "title": "剧本师 / 连接 · 编剧（待人工批准）",
+  "closedAt": "2026-09-18T21:46:04.169Z",
+  "io": {
+    "input": [
+      "direction",
+      "chapters",
+      "route",
+      "题材",
+      "需求",
+      "灵感",
+      "严肃性",
+      "市场预估",
+      "AB测试"
+    ],
+    "output": ""
+  },
+  "artifacts": [],
+  "acceptance": [
+    {
+      "node": "m2.script-forge",
+      "assert": "AE-SCRIPT-FIELDS",
+      "status": "unverified"
+    }
+  ],
+  "metrics": {
+    "submits": 1,
+    "retries": 0,
+    "tokensIn": 0,
+    "tokensOut": 0,
+    "latencyMs": 0,
+    "ctxOffered": 0,
+    "ctxUsed": 0,
+    "hitRate": 0
+  },
+  "feedback": {
+    "annotations": 0,
+    "proposals": 0
+  }
+}

@@ -340,6 +340,19 @@
           }
         }
       }
+    ],
+    "m1.topic-report": [
+      {
+        "round": 1,
+        "ts": "2026-09-18T21:51:30.141Z",
+        "note": "submit r1·选题报告.md",
+        "files": {
+          "01-选题/选题报告.md": {
+            "hash": "1bbda0e2d628",
+            "path": "snapshots/m1.topic-report/r1/01-选题/选题报告.md"
+          }
+        }
+      }
     ]
   },
   "inputs": {}

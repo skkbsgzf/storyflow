@@ -752,6 +752,31 @@
       "round": 1,
       "sha1": "0fb25636f3be",
       "ts": "2026-09-18T20:25:26.321Z"
+    },
+    {
+      "path": "01-选题/选题报告.md",
+      "node": "m1.topic-report",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {},
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2505 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "AE-REPORT-DENSITY",
+          "status": "pass",
+          "detail": "梗/话题行 10、对标 16、热度数据 3 处"
+        }
+      ],
+      "sha1": "1bbda0e2d628",
+      "ts": "2026-09-18T21:51:30.138Z"
     }
   ]
 }

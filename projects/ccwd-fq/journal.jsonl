@@ -217,3 +217,21 @@
 {"ts":"2026-09-18T20:25:26.031Z","runId":"run-mu79dix0-k0fxpq","event":"verdict","actor":"kernel","nodeId":"itb-m4.export-doc","detail":"pass：预授权自动审批"}
 {"ts":"2026-09-18T20:25:26.323Z","runId":"run-mu79dix0-k0fxpq","event":"advance","actor":"kernel","nodeId":"m4.export-doc","detail":"04-交付/export-doc.docx","refs":["04-交付/export-doc.docx"]}
 {"ts":"2026-09-18T20:25:26.324Z","runId":"run-mu79dix0-k0fxpq","event":"run-end","actor":"kernel","detail":"全部节点 done"}
+{"ts":"2026-09-18T21:46:04.175Z","runId":"run-mu79dix0-k0fxpq","event":"stale","actor":"kernel","nodeId":"m3.novel-deai","detail":"rerun 级联失效"}
+{"ts":"2026-09-18T21:46:04.176Z","runId":"run-mu79dix0-k0fxpq","event":"stale","actor":"kernel","nodeId":"m4.link","detail":"rerun 级联失效"}
+{"ts":"2026-09-18T21:46:04.176Z","runId":"run-mu79dix0-k0fxpq","event":"stale","actor":"kernel","nodeId":"itb-m4.export-doc","detail":"rerun 级联失效"}
+{"ts":"2026-09-18T21:46:04.176Z","runId":"run-mu79dix0-k0fxpq","event":"stale","actor":"kernel","nodeId":"m4.export-doc","detail":"rerun 级联失效"}
+{"ts":"2026-09-18T21:46:04.176Z","runId":"run-mu79dix0-k0fxpq","event":"rerun","actor":"kernel","nodeId":"m3.novel-deai","detail":"scope 4 节点","refs":["m3.novel-deai","m4.link","itb-m4.export-doc","m4.export-doc"]}
+{"ts":"2026-09-18T21:46:04.181Z","runId":"run-mu79dix0-k0fxpq","event":"note","actor":"kernel:overlay","detail":"编排变更 → 重编译计划：20 → 11 节点；新增 m1.topic-report、m2.script-forge、m3.ghostwrite、itb-m2.script-forge、itb-m3.ghostwrite；裁撤 m1.find-trope、m1.material-dissect、m2.structure-design、m2.plot-choreographer、m2.subplot-weave、m2.novel-bible、m2.foreshadow-plant、m2.scene-breakdown、m3.layer-voices、m3.layer-scenes、m3.layer-canon、m3.prose-assembler、itb-m2.structure-design、itb-m3.layer-voices；失效 m2.link、m3.link","refs":["m1.topic-report","m2.script-forge","m3.ghostwrite","itb-m2.script-forge","itb-m3.ghostwrite","m1.find-trope","m1.material-dissect","m2.structure-design","m2.plot-choreographer","m2.subplot-weave","m2.novel-bible","m2.foreshadow-plant","m2.scene-breakdown","m3.layer-voices","m3.layer-scenes","m3.layer-canon","m3.prose-assembler","itb-m2.structure-design","itb-m3.layer-voices"]}
+{"ts":"2026-09-18T21:46:04.181Z","runId":"run-mu79dix0-k0fxpq","event":"note","actor":"kernel:overlay","detail":"set-tool prose.novel-bible｜世界观圣经步不需要长篇形态标准（格式卡）；重检零消费。3 张选中梗卡保留——世界观必须长在梗上"}
+{"ts":"2026-09-18T21:46:04.181Z","runId":"run-mu79dix0-k0fxpq","event":"note","actor":"kernel:overlay","detail":"set-tool prose.prose-assembler｜拼装盖章步不需要快餐文形态标准；重检零消费"}
+{"ts":"2026-09-18T21:46:04.181Z","runId":"run-mu79dix0-k0fxpq","event":"note","actor":"kernel:overlay","detail":"派生边界验收 itb-m2.script-forge：topic → plot（接管 1 条跨界入边 e-link-m2）"}
+{"ts":"2026-09-18T21:46:04.181Z","runId":"run-mu79dix0-k0fxpq","event":"note","actor":"kernel:overlay","detail":"派生边界验收 itb-m3.ghostwrite：plot → prose（接管 1 条跨界入边 e-link-m3）"}
+{"ts":"2026-09-18T21:46:04.181Z","runId":"run-mu79dix0-k0fxpq","event":"note","actor":"kernel:overlay","detail":"派生边界验收 itb-m4.export-doc：prose → delivery（接管 1 条跨界入边 e-link-m4）"}
+{"ts":"2026-09-18T21:46:04.190Z","runId":"run-mu79dix0-k0fxpq","event":"advance","actor":"kernel","nodeId":"m1.topic-report","detail":"任务包产出（skill=topic-report，上下文 0 件）"}
+{"ts":"2026-09-18T21:46:04.191Z","runId":"run-mu79dix0-k0fxpq","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.topic-report（并行）"}
+{"ts":"2026-09-18T21:46:05.439Z","runId":"run-mu79dix0-k0fxpq","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.topic-report（并行）"}
+{"ts":"2026-09-18T21:49:34.995Z","runId":"run-mu79dix0-k0fxpq","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.topic-report（并行）"}
+{"ts":"2026-09-18T21:51:30.244Z","runId":"run-mu79dix0-k0fxpq","event":"submit","actor":"kernel","nodeId":"m1.topic-report","detail":"01-选题/选题报告.md","refs":["01-选题/选题报告.md"]}
+{"ts":"2026-09-18T21:51:30.244Z","runId":"run-mu79dix0-k0fxpq","event":"snapshot","actor":"kernel","nodeId":"m1.topic-report","detail":"r1·选题报告.md","refs":["01-选题/选题报告.md"]}
+{"ts":"2026-09-18T21:51:30.249Z","runId":"run-mu79dix0-k0fxpq","event":"gate-open","actor":"kernel","nodeId":"m2.link","detail":"连接 · 编剧（待人工批准）"}

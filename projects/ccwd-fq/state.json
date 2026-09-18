@@ -4,25 +4,16 @@
   "flowId": "caocao-wudalang",
   "flowVersion": "1.0.0",
   "flowHash": "25568897",
-  "status": "completed",
+  "status": "suspended",
   "plan": {
     "order": [
-      "m1.find-trope",
-      "m1.material-dissect",
+      "m1.topic-report",
       "m2.link",
-      "itb-m2.structure-design",
-      "m2.structure-design",
-      "m2.plot-choreographer",
-      "m2.subplot-weave",
-      "m2.novel-bible",
-      "m2.foreshadow-plant",
-      "m2.scene-breakdown",
+      "itb-m2.script-forge",
+      "m2.script-forge",
       "m3.link",
-      "itb-m3.layer-voices",
-      "m3.layer-voices",
-      "m3.layer-scenes",
-      "m3.layer-canon",
-      "m3.prose-assembler",
+      "itb-m3.ghostwrite",
+      "m3.ghostwrite",
       "m3.novel-deai",
       "m4.link",
       "itb-m4.export-doc",
@@ -30,147 +21,78 @@
     ]
   },
   "nodes": {
-    "m1.find-trope": {
-      "status": "done",
-      "round": 1,
-      "lastArtifact": "01-选题/find-trope.md",
-      "stale": false
-    },
-    "m1.material-dissect": {
-      "status": "done",
-      "round": 1,
-      "lastArtifact": "01-选题/material-dissect.md",
-      "stale": false
-    },
-    "m2.structure-design": {
-      "status": "done",
-      "round": 3,
-      "lastArtifact": "02-编剧/structure-design.md",
-      "stale": false,
-      "committed": []
-    },
-    "m2.plot-choreographer": {
-      "status": "done",
-      "round": 3,
-      "lastArtifact": "02-编剧/plot-choreographer.md",
-      "stale": false,
-      "committed": []
-    },
-    "m2.subplot-weave": {
-      "status": "done",
-      "round": 3,
-      "lastArtifact": "02-编剧/subplot-weave.md",
-      "stale": false,
-      "committed": []
-    },
-    "m2.novel-bible": {
-      "status": "done",
-      "round": 3,
-      "lastArtifact": "02-编剧/novel-bible.md",
-      "stale": false,
-      "committed": []
-    },
-    "m2.foreshadow-plant": {
-      "status": "done",
-      "round": 3,
-      "lastArtifact": "02-编剧/foreshadow-plant.md",
-      "stale": false,
-      "committed": []
-    },
-    "m2.scene-breakdown": {
-      "status": "done",
-      "round": 3,
-      "lastArtifact": "02-编剧/scene-breakdown.md",
-      "stale": false,
-      "committed": []
-    },
     "m2.link": {
-      "status": "done",
-      "round": 1,
+      "status": "awaiting",
+      "round": 2,
       "verdict": "pass",
-      "stale": false
-    },
-    "m3.layer-voices": {
-      "status": "done",
-      "round": 3,
-      "lastArtifact": "03-写作/layer-voices.md",
-      "stale": false,
-      "committed": []
-    },
-    "m3.layer-scenes": {
-      "status": "done",
-      "round": 3,
-      "lastArtifact": "03-写作/layer-scenes.md",
-      "stale": false,
-      "committed": []
-    },
-    "m3.layer-canon": {
-      "status": "done",
-      "round": 3,
-      "lastArtifact": "03-写作/layer-canon.md",
-      "stale": false,
-      "committed": []
-    },
-    "m3.prose-assembler": {
-      "status": "done",
-      "round": 3,
-      "lastArtifact": "03-写作/prose-assembler.md",
-      "stale": false,
+      "stale": true,
       "committed": []
     },
     "m3.novel-deai": {
-      "status": "done",
-      "round": 7,
+      "status": "pending",
+      "round": 8,
       "lastArtifact": "03-写作/novel-deai.md",
-      "stale": false,
+      "stale": true,
       "committed": []
     },
     "m3.link": {
-      "status": "done",
-      "round": 3,
+      "status": "pending",
+      "round": 4,
       "verdict": "pass",
-      "stale": false,
+      "stale": true,
       "committed": []
     },
     "m4.export-doc": {
-      "status": "done",
-      "round": 7,
-      "stale": false,
+      "status": "pending",
+      "round": 8,
+      "stale": true,
       "lastArtifact": "04-交付/export-doc.docx",
       "committed": []
     },
     "m4.link": {
-      "status": "done",
-      "round": 7,
+      "status": "pending",
+      "round": 8,
       "verdict": "pass",
-      "stale": false,
+      "stale": true,
       "committed": []
-    },
-    "itb-m2.structure-design": {
-      "status": "done",
-      "round": 1,
-      "verdict": "pass",
-      "stale": false
-    },
-    "itb-m3.layer-voices": {
-      "status": "done",
-      "round": 1,
-      "verdict": "pass",
-      "stale": false
     },
     "itb-m4.export-doc": {
-      "status": "done",
-      "round": 5,
+      "status": "pending",
+      "round": 6,
       "verdict": "pass",
-      "stale": false,
+      "stale": true,
       "committed": []
+    },
+    "m1.topic-report": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "01-选题/选题报告.md",
+      "stale": false
+    },
+    "m2.script-forge": {
+      "status": "none",
+      "round": 0
+    },
+    "m3.ghostwrite": {
+      "status": "none",
+      "round": 0
+    },
+    "itb-m2.script-forge": {
+      "status": "none",
+      "round": 0
+    },
+    "itb-m3.ghostwrite": {
+      "status": "none",
+      "round": 0
     }
   },
   "gate": {
-    "verdict": "pass",
-    "node": "itb-m4.export-doc",
-    "at": "2026-09-18T20:25:26.029Z",
-    "note": "预授权自动审批"
+    "verdict": "awaiting",
+    "node": "m2.link",
+    "round": 2,
+    "token": "approval:ccwd-fq:run-mu79dix0-k0fxpq:m2.link",
+    "at": "2026-09-18T21:51:30.249Z",
+    "note": "连接 · 编剧（待人工批准）"
   },
   "inputs": {
     "project": "ccwd-fq",
@@ -185,12 +107,13 @@
     "AB测试": false
   },
   "comments": {},
-  "overlayHash": "ee049bfa",
+  "overlayHash": "c3890b1c",
   "policy": {
     "kit_boundary": "always",
     "gate_mode": "auto",
     "adapt": "propose"
   },
-  "planHash": "89c9a42e",
-  "lastRejectReason": ""
+  "planHash": "fdd0d196",
+  "lastRejectReason": "",
+  "focus": "m2.link"
 }
