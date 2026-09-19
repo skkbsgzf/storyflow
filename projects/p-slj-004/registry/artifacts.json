@@ -1,0 +1,93 @@
+{
+  "artifacts": [
+    {
+      "path": "01-选题/选题报告.md",
+      "node": "m1.topic-report",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {},
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2871 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "AE-REPORT-DENSITY",
+          "status": "pass",
+          "detail": "梗/话题行 10、对标 30、热度数据 4 处"
+        }
+      ],
+      "sha1": "20c938328fad",
+      "ts": "2026-09-19T10:01:44.322Z"
+    },
+    {
+      "path": "02-编剧/剧本.md",
+      "node": "m2.script-forge",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "01-选题/选题报告.md": "20c938328fad"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "3533 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "AE-SCRIPT-FIELDS",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+        }
+      ],
+      "sha1": "f9f14c846209",
+      "ts": "2026-09-19T10:03:08.424Z"
+    },
+    {
+      "path": "03-成剧/分镜剧本.md",
+      "node": "m3.scene-breakdown",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "02-编剧/剧本.md": "f9f14c846209"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "4009 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "AE-BEAT-FORMAT",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+        },
+        {
+          "name": "AE-VIS-EMPTY",
+          "status": "pass",
+          "detail": "画面信息合格（无心理/抒情标注）"
+        },
+        {
+          "name": "AE-HOOK-EVENT",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+        }
+      ],
+      "sha1": "c21764c374f2",
+      "ts": "2026-09-19T10:04:25.423Z"
+    }
+  ]
+}

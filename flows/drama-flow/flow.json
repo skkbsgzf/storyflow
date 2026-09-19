@@ -2,25 +2,57 @@
   "format": "flow@3",
   "id": "drama-flow",
   "title": "短剧流 v1（模块化）",
-  "desc": "短剧剧本流：选题报告 → 剧本 IR → B拍分镜剧本 → 导出可批注 docx。模块职责三件套见各 module.json io。",
-  "version": "1.0.0",
+  "desc": "短剧剧本流 v1.1：选题报告 → 剧本 → 分镜剧本（含旁白/背景快切）。应用户口径：暂不转 docx，把剧本 md 做好。",
+  "version": "1.1.0",
   "status": "official",
   "inputs": {
-    "direction": { "type": "string", "required": true, "desc": "题材方向" },
-    "episodes": { "type": "number", "default": 6, "desc": "试稿集数" }
+    "direction": {
+      "type": "string",
+      "required": true,
+      "desc": "题材方向"
+    },
+    "episodes": {
+      "type": "number",
+      "default": 6,
+      "desc": "试稿集数"
+    }
   },
-  "defaults": { "link": "auto" },
-  "policy": { "link_default": "auto", "adapt": "off" },
+  "defaults": {
+    "link": "auto"
+  },
+  "policy": {
+    "link_default": "auto",
+    "adapt": "off"
+  },
   "modules": [
-    { "id": "m1", "module": "topic" },
-    { "id": "m2", "module": "plot" },
-    { "id": "m3", "module": "drama" },
-    { "id": "m4", "module": "delivery" }
+    {
+      "id": "m1",
+      "module": "topic"
+    },
+    {
+      "id": "m2",
+      "module": "plot"
+    },
+    {
+      "id": "m3",
+      "module": "drama"
+    }
   ],
   "outputs": [
-    { "module": "m1", "title": "选题报告", "audience": "作者（选题决策）" },
-    { "module": "m2", "title": "剧本 IR", "audience": "编剧（结构锁定）" },
-    { "module": "m3", "title": "分镜剧本", "audience": "导演/制片（可拍摄）" },
-    { "module": "m4", "title": "短剧剧本 docx", "audience": "甲方（可批注）" }
+    {
+      "module": "m1",
+      "title": "选题报告",
+      "audience": "作者（选题决策）"
+    },
+    {
+      "module": "m2",
+      "title": "剧本 IR",
+      "audience": "编剧（结构锁定）"
+    },
+    {
+      "module": "m3",
+      "title": "分镜剧本",
+      "audience": "导演/制片（可拍摄）"
+    }
   ]
 }

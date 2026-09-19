@@ -1,0 +1,44 @@
+{
+  "snapshots": {
+    "m1.topic-report": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T10:01:44.326Z",
+        "note": "submit r1·选题报告.md",
+        "files": {
+          "01-选题/选题报告.md": {
+            "hash": "20c938328fad",
+            "path": "snapshots/m1.topic-report/r1/01-选题/选题报告.md"
+          }
+        }
+      }
+    ],
+    "m2.script-forge": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T10:03:08.428Z",
+        "note": "submit r1·剧本.md",
+        "files": {
+          "02-编剧/剧本.md": {
+            "hash": "f9f14c846209",
+            "path": "snapshots/m2.script-forge/r1/02-编剧/剧本.md"
+          }
+        }
+      }
+    ],
+    "m3.scene-breakdown": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T10:04:25.426Z",
+        "note": "submit r1·分镜剧本.md",
+        "files": {
+          "03-成剧/分镜剧本.md": {
+            "hash": "c21764c374f2",
+            "path": "snapshots/m3.scene-breakdown/r1/03-成剧/分镜剧本.md"
+          }
+        }
+      }
+    ]
+  },
+  "inputs": {}
+}

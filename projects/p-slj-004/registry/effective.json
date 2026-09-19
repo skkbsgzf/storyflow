@@ -1,0 +1,299 @@
+{
+  "format": "effective@2",
+  "flowId": "drama-flow",
+  "flowVersion": "1.1.0",
+  "policy": {
+    "link_default": "auto",
+    "adapt": "propose"
+  },
+  "overlayHash": "r6-ee0fbf85",
+  "planHash": "30afe5f1",
+  "links": [
+    {
+      "id": "m2.link",
+      "fromModule": "m1",
+      "toModule": "m2",
+      "mode": "auto"
+    },
+    {
+      "id": "m3.link",
+      "fromModule": "m2",
+      "toModule": "m3",
+      "mode": "auto"
+    }
+  ],
+  "composition": [
+    {
+      "id": "m1",
+      "module": "topic",
+      "name": "选题",
+      "order": 1,
+      "dir": "01-选题",
+      "link": "auto",
+      "caps": [
+        "找梗",
+        "素材解剖",
+        "时代情绪锚",
+        "网感文案",
+        "拆书入库",
+        "选题报告"
+      ],
+      "capsEnabled": [
+        "选题报告"
+      ],
+      "spine": [
+        "m1.topic-report"
+      ],
+      "plugins": [],
+      "nodes": [
+        "m1.topic-report"
+      ],
+      "io": {
+        "input": {
+          "from": "flow-input",
+          "shape": "一个灵感（点子/命题/素材，任一形态）"
+        },
+        "output": {
+          "file": "选题报告.md",
+          "audience": "作者（选题决策文档，兼作编剧模块唯一输入）"
+        },
+        "acceptance": {
+          "asserts": [
+            "AE-REPORT-DENSITY"
+          ]
+        }
+      }
+    },
+    {
+      "id": "m2",
+      "module": "plot",
+      "name": "编剧",
+      "order": 2,
+      "dir": "02-编剧",
+      "link": "auto",
+      "caps": [
+        "结构",
+        "主线",
+        "人设",
+        "分场",
+        "世界观",
+        "单元剧大纲",
+        "短剧节拍",
+        "暗线",
+        "伏笔",
+        "悬念",
+        "红队评审",
+        "编剧"
+      ],
+      "capsEnabled": [
+        "编剧"
+      ],
+      "spine": [
+        "m2.script-forge"
+      ],
+      "plugins": [],
+      "nodes": [
+        "m2.script-forge"
+      ],
+      "io": {
+        "input": {
+          "from": "topic",
+          "shape": "选题报告（梗选型+竞品对标+结构手法+可用话题）"
+        },
+        "output": {
+          "file": "剧本.md",
+          "audience": "写手（正文模块唯一输入；5W1H 结构化剧本 IR）"
+        },
+        "acceptance": {
+          "asserts": [
+            "AE-SCRIPT-FIELDS"
+          ]
+        }
+      }
+    },
+    {
+      "id": "m3",
+      "module": "drama",
+      "name": "成剧",
+      "order": 3,
+      "dir": "03-成剧",
+      "link": "auto",
+      "caps": [
+        "分集分镜"
+      ],
+      "capsEnabled": [
+        "分集分镜"
+      ],
+      "spine": [
+        "m3.scene-breakdown"
+      ],
+      "plugins": [],
+      "nodes": [
+        "m3.scene-breakdown"
+      ],
+      "io": {
+        "input": {
+          "from": "plot",
+          "shape": "剧本 IR（逐场 5W/行动/台词/价值/钩 + 伏笔登记）"
+        },
+        "output": {
+          "file": "分镜剧本.md",
+          "audience": "导演/制片（可拍摄分镜，导出可批注 docx）"
+        },
+        "acceptance": {
+          "asserts": [
+            "AE-BEAT-FORMAT",
+            "AE-VIS-EMPTY",
+            "AE-HOOK-EVENT"
+          ]
+        }
+      }
+    }
+  ],
+  "moduleDirs": {
+    "m1": "01-选题",
+    "m2": "02-编剧",
+    "m3": "03-成剧"
+  },
+  "nodes": {
+    "m1.topic-report": {
+      "kind": "agent",
+      "title": "选题报告师",
+      "stage": "m1",
+      "module": "m1",
+      "kit": "topic",
+      "op": "topic-report",
+      "output": "01-选题/选题报告.md",
+      "skill": "topic-report",
+      "minitool": "kb_search",
+      "asserts": [
+        "AE-REPORT-DENSITY"
+      ],
+      "config": {
+        "maxChars": "@default:maxChars",
+        "minTropeRows": "@default:minTropeRows"
+      },
+      "desc": "选题模块唯一交付工具：输入灵感 → 选题报告（梗选型+竞品对标+结构解剖+可用话题）。输入职责=灵感；输出职责=选题报告单件；验收职责=AE-REPORT-DENSITY"
+    },
+    "m2.script-forge": {
+      "kind": "agent",
+      "title": "剧本师",
+      "stage": "m2",
+      "module": "m2",
+      "kit": "plot",
+      "op": "script-forge",
+      "output": "02-编剧/剧本.md",
+      "skill": "script-forge",
+      "asserts": [
+        "AE-SCRIPT-FIELDS"
+      ],
+      "config": {
+        "minScenes": "@default:minScenes",
+        "maxChars": "@default:maxChars"
+      },
+      "desc": "编剧模块唯一交付工具：输入选题报告 → 结构化剧本 IR（逐场 5W1H/行动/台词/价值/钩 + 人物卡 + 伏笔登记）。输入职责=选题报告；输出职责=剧本单件；验收职责=AE-SCRIPT-FIELDS"
+    },
+    "m2.link": {
+      "kind": "gate",
+      "gate_role": "link",
+      "link_mode": "auto",
+      "title": "连接 · 编剧（自动批准）",
+      "stage": "m2",
+      "module": "m2"
+    },
+    "m3.scene-breakdown": {
+      "kind": "agent",
+      "title": "小纲师·分镜脚本",
+      "stage": "m3",
+      "module": "m3",
+      "kit": "drama",
+      "op": "scene-breakdown",
+      "output": "03-成剧/分镜剧本.md",
+      "skill": "scene-breakdown",
+      "asserts": [
+        "AE-BEAT-FORMAT",
+        "AE-VIS-EMPTY",
+        "AE-HOOK-EVENT"
+      ],
+      "config": {
+        "shotsPerScene": "@default:shotsPerScene",
+        "dialogLevel": "@default:dialogLevel"
+      },
+      "desc": "剧本 IR → 逐集 B拍分镜剧本（第X集/拍号｜钩型｜秒/分镜/台词/表演/尾钩），短剧模块唯一交付件"
+    },
+    "m3.link": {
+      "kind": "gate",
+      "gate_role": "link",
+      "link_mode": "auto",
+      "title": "连接 · 成剧（自动批准）",
+      "stage": "m3",
+      "module": "m3"
+    }
+  },
+  "edges": [
+    {
+      "id": "e-m1-link",
+      "from": "m1.topic-report",
+      "to": "m2.link",
+      "role": "flow"
+    },
+    {
+      "id": "e-link-m2",
+      "from": "m2.link",
+      "to": "m2.script-forge",
+      "role": "flow"
+    },
+    {
+      "id": "e-m2-link",
+      "from": "m2.script-forge",
+      "to": "m3.link",
+      "role": "flow"
+    },
+    {
+      "id": "e-link-m3",
+      "from": "m3.link",
+      "to": "m3.scene-breakdown",
+      "role": "flow"
+    }
+  ],
+  "nodeConfig": {
+    "m1.topic-report": {
+      "module": "m1",
+      "output": "01-选题/选题报告.md",
+      "skill": "topic-report",
+      "minitool": "kb_search",
+      "nodeConfig": {
+        "maxChars": "@default:maxChars",
+        "minTropeRows": "@default:minTropeRows"
+      }
+    },
+    "m2.script-forge": {
+      "module": "m2",
+      "output": "02-编剧/剧本.md",
+      "skill": "script-forge",
+      "nodeConfig": {
+        "minScenes": "@default:minScenes",
+        "maxChars": "@default:maxChars"
+      }
+    },
+    "m2.link": {
+      "module": "m2",
+      "gateRole": "link",
+      "nodeConfig": {}
+    },
+    "m3.scene-breakdown": {
+      "module": "m3",
+      "output": "03-成剧/分镜剧本.md",
+      "skill": "scene-breakdown",
+      "nodeConfig": {
+        "shotsPerScene": "@default:shotsPerScene",
+        "dialogLevel": "@default:dialogLevel"
+      }
+    },
+    "m3.link": {
+      "module": "m3",
+      "gateRole": "link",
+      "nodeConfig": {}
+    }
+  }
+}

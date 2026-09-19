@@ -1,0 +1,32 @@
+{"ts":"2026-09-19T09:59:22.988Z","runId":"run-mu87tx7v-syckja","event":"run-start","actor":"kernel","detail":"drama-flow@1.1.0 计划 5 节点"}
+{"ts":"2026-09-19T09:59:22.989Z","runId":"run-mu87tx7v-syckja","event":"note","actor":"kernel:config","detail":"初始化配置装载：风格=爽 AB=off"}
+{"ts":"2026-09-19T09:59:32.299Z","runId":"run-mu87u4ei-oa94f8","event":"run-start","actor":"kernel","detail":"drama-flow@1.1.0 计划 5 节点"}
+{"ts":"2026-09-19T09:59:32.300Z","runId":"run-mu87u4ei-oa94f8","event":"note","actor":"kernel:config","detail":"初始化配置装载：风格=爽 AB=off"}
+{"ts":"2026-09-19T10:00:25.557Z","runId":"run-mu87v9hw-bdy1pj","event":"run-start","actor":"kernel","detail":"drama-flow@1.1.0 计划 5 节点"}
+{"ts":"2026-09-19T10:01:43.976Z","runId":"run-mu87wy07-tqen25","event":"run-start","actor":"kernel","detail":"drama-flow@1.1.0 计划 5 节点"}
+{"ts":"2026-09-19T10:01:43.999Z","runId":"run-mu87wy07-tqen25","event":"advance","actor":"kernel","nodeId":"m1.topic-report","detail":"任务包产出（skill=topic-report，上下文 0 件）"}
+{"ts":"2026-09-19T10:01:44.000Z","runId":"run-mu87wy07-tqen25","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.topic-report（并行）"}
+{"ts":"2026-09-19T10:01:44.452Z","runId":"run-mu87wy07-tqen25","event":"submit","actor":"kernel","nodeId":"m1.topic-report","detail":"01-选题/选题报告.md","refs":["01-选题/选题报告.md"]}
+{"ts":"2026-09-19T10:01:44.452Z","runId":"run-mu87wy07-tqen25","event":"snapshot","actor":"kernel","nodeId":"m1.topic-report","detail":"r1·选题报告.md","refs":["01-选题/选题报告.md"]}
+{"ts":"2026-09-19T10:01:44.456Z","runId":"run-mu87wy07-tqen25","event":"note","actor":"kernel:overlay","detail":"编排变更 → 重编译计划：5 → 7 节点；新增 itb-m2.script-forge、itb-m3.scene-breakdown；裁撤 无；失效 无","refs":["itb-m2.script-forge","itb-m3.scene-breakdown"]}
+{"ts":"2026-09-19T10:01:44.456Z","runId":"run-mu87wy07-tqen25","event":"note","actor":"kernel:overlay","detail":"派生边界验收 itb-m2.script-forge：topic → plot（接管 1 条跨界入边 e-link-m2）"}
+{"ts":"2026-09-19T10:01:44.456Z","runId":"run-mu87wy07-tqen25","event":"note","actor":"kernel:overlay","detail":"派生边界验收 itb-m3.scene-breakdown：plot → drama（接管 1 条跨界入边 e-link-m3）"}
+{"ts":"2026-09-19T10:01:44.459Z","runId":"run-mu87wy07-tqen25","event":"verdict","actor":"kernel","nodeId":"m2.link","detail":"auto-pass（R6 连接件：自动批准）"}
+{"ts":"2026-09-19T10:01:44.460Z","runId":"run-mu87wy07-tqen25","event":"gate-open","actor":"kernel","nodeId":"itb-m2.script-forge","detail":"跨域交接验收：topic → plot"}
+{"ts":"2026-09-19T10:03:08.041Z","runId":"run-mu87wy07-tqen25","event":"verdict","actor":"kernel","nodeId":"itb-m2.script-forge","detail":"pass：B组代裁：选题报告过密度验收"}
+{"ts":"2026-09-19T10:03:08.051Z","runId":"run-mu87wy07-tqen25","event":"advance","actor":"kernel","nodeId":"m2.script-forge","detail":"任务包产出（skill=script-forge，上下文 1 件）"}
+{"ts":"2026-09-19T10:03:08.051Z","runId":"run-mu87wy07-tqen25","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.script-forge（并行）"}
+{"ts":"2026-09-19T10:03:08.422Z","runId":"run-mu87wy07-tqen25","event":"warn","actor":"kernel","nodeId":"m2.script-forge","detail":"声明断言无机器校验器（未执行，归评审/红方剖面）：AE-SCRIPT-FIELDS","refs":["02-编剧/剧本.md"]}
+{"ts":"2026-09-19T10:03:08.545Z","runId":"run-mu87wy07-tqen25","event":"submit","actor":"kernel","nodeId":"m2.script-forge","detail":"02-编剧/剧本.md","refs":["02-编剧/剧本.md"]}
+{"ts":"2026-09-19T10:03:08.545Z","runId":"run-mu87wy07-tqen25","event":"snapshot","actor":"kernel","nodeId":"m2.script-forge","detail":"r1·剧本.md","refs":["02-编剧/剧本.md"]}
+{"ts":"2026-09-19T10:03:08.551Z","runId":"run-mu87wy07-tqen25","event":"verdict","actor":"kernel","nodeId":"m3.link","detail":"auto-pass（R6 连接件：自动批准）"}
+{"ts":"2026-09-19T10:03:08.552Z","runId":"run-mu87wy07-tqen25","event":"gate-open","actor":"kernel","nodeId":"itb-m3.scene-breakdown","detail":"跨域交接验收：plot → drama"}
+{"ts":"2026-09-19T10:03:23.990Z","runId":"run-mu87wy07-tqen25","event":"verdict","actor":"kernel","nodeId":"itb-m3.scene-breakdown","detail":"pass：B组代裁：剧本过新口径验收，卡点行带代价与钩"}
+{"ts":"2026-09-19T10:03:23.999Z","runId":"run-mu87wy07-tqen25","event":"advance","actor":"kernel","nodeId":"m3.scene-breakdown","detail":"任务包产出（skill=scene-breakdown，上下文 1 件）"}
+{"ts":"2026-09-19T10:03:23.999Z","runId":"run-mu87wy07-tqen25","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m3.scene-breakdown（并行）"}
+{"ts":"2026-09-19T10:03:24.324Z","runId":"run-mu87wy07-tqen25","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m3.scene-breakdown（并行）"}
+{"ts":"2026-09-19T10:04:25.421Z","runId":"run-mu87wy07-tqen25","event":"warn","actor":"kernel","nodeId":"m3.scene-breakdown","detail":"声明断言无机器校验器（未执行，归评审/红方剖面）：AE-BEAT-FORMAT、AE-HOOK-EVENT","refs":["03-成剧/分镜剧本.md"]}
+{"ts":"2026-09-19T10:04:25.550Z","runId":"run-mu87wy07-tqen25","event":"submit","actor":"kernel","nodeId":"m3.scene-breakdown","detail":"03-成剧/分镜剧本.md","refs":["03-成剧/分镜剧本.md"]}
+{"ts":"2026-09-19T10:04:25.550Z","runId":"run-mu87wy07-tqen25","event":"snapshot","actor":"kernel","nodeId":"m3.scene-breakdown","detail":"r1·分镜剧本.md","refs":["03-成剧/分镜剧本.md"]}
+{"ts":"2026-09-19T10:04:25.555Z","runId":"run-mu87wy07-tqen25","event":"run-end","actor":"kernel","detail":"全部节点 done"}
+{"ts":"2026-09-19T10:04:25.562Z","runId":"run-mu87wy07-tqen25","event":"note","actor":"kernel:mine","detail":"编排挖掘包已组装（journal 31 事件 / 证据文件 2 件 / 打回记录 0 条）","refs":["registry/mine-package.json"]}

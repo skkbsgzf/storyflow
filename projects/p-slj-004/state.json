@@ -1,0 +1,82 @@
+{
+  "runId": "run-mu87wy07-tqen25",
+  "projectId": "p-slj-004",
+  "flowId": "drama-flow",
+  "flowVersion": "1.1.0",
+  "flowHash": "8cdf4380",
+  "status": "completed",
+  "plan": {
+    "order": [
+      "m1.topic-report",
+      "m2.link",
+      "itb-m2.script-forge",
+      "m2.script-forge",
+      "m3.link",
+      "itb-m3.scene-breakdown",
+      "m3.scene-breakdown"
+    ]
+  },
+  "nodes": {
+    "m1.topic-report": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "01-选题/选题报告.md",
+      "stale": false
+    },
+    "m2.script-forge": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/剧本.md",
+      "stale": false
+    },
+    "m2.link": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "m3.scene-breakdown": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "03-成剧/分镜剧本.md",
+      "stale": false
+    },
+    "m3.link": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "itb-m2.script-forge": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "itb-m3.scene-breakdown": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    }
+  },
+  "gate": {
+    "verdict": "pass",
+    "node": "itb-m3.scene-breakdown",
+    "at": "2026-09-19T10:03:23.989Z",
+    "note": "B组代裁：剧本过新口径验收，卡点行带代价与钩"
+  },
+  "inputs": {
+    "project": "p-slj-004",
+    "direction": "水利局梗×短剧公式：守闸人立体版",
+    "episodes": 6
+  },
+  "comments": {},
+  "overlayHash": "fd02bf26",
+  "policy": {
+    "kit_boundary": "always",
+    "gate_mode": "auto",
+    "adapt": "propose"
+  },
+  "planHash": "30afe5f1"
+}
