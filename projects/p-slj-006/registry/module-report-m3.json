@@ -1,0 +1,58 @@
+{
+  "format": "module-report@1",
+  "projectId": "p-slj-006",
+  "flowId": "drama-flow",
+  "moduleId": "m3",
+  "moduleName": "m3",
+  "title": "小纲师·分镜脚本 / 连接 · 成剧（自动批准）",
+  "closedAt": "2026-09-19T15:39:59.719Z",
+  "io": {
+    "input": [
+      "direction",
+      "episodes"
+    ],
+    "output": "03-成剧/分镜剧本.md"
+  },
+  "artifacts": [
+    {
+      "node": "m3.scene-breakdown",
+      "op": "scene-breakdown",
+      "path": "03-成剧/分镜剧本.md",
+      "role": "deliverable"
+    }
+  ],
+  "acceptance": [
+    {
+      "node": "m3.scene-breakdown",
+      "assert": "AE-BEAT-FORMAT",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+    },
+    {
+      "node": "m3.scene-breakdown",
+      "assert": "AE-VIS-EMPTY",
+      "status": "pass",
+      "detail": "画面信息合格（无心理/抒情标注）"
+    },
+    {
+      "node": "m3.scene-breakdown",
+      "assert": "AE-HOOK-EVENT",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+    }
+  ],
+  "metrics": {
+    "submits": 2,
+    "retries": 0,
+    "tokensIn": 0,
+    "tokensOut": 0,
+    "latencyMs": 0,
+    "ctxOffered": 7,
+    "ctxUsed": 2,
+    "hitRate": 0.2857142857142857
+  },
+  "feedback": {
+    "annotations": 0,
+    "proposals": 0
+  }
+}

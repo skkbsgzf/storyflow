@@ -70,7 +70,7 @@
         "knowledge": [],
         "config": {}
       },
-      "slot": "end"
+      "slot": "before:ghostwrite"
     },
     "layer-scenes": {
       "skill": "layer-scenes",
@@ -137,7 +137,7 @@
         "knowledge": [],
         "config": {}
       },
-      "slot": "end"
+      "slot": "before:ghostwrite"
     },
     "layer-canon": {
       "skill": "layer-canon",
@@ -201,7 +201,7 @@
         "knowledge": [],
         "config": {}
       },
-      "slot": "end"
+      "slot": "before:ghostwrite"
     },
     "prose-assembler": {
       "skill": "prose-assembler",
@@ -265,14 +265,16 @@
       "capability": [
         "拼装盖章"
       ],
-      "also_fits": [],
+      "also_fits": [
+        "before:ghostwrite"
+      ],
       "requires": [],
       "adds": {
         "asserts": [],
         "knowledge": [],
         "config": {}
       },
-      "slot": "end"
+      "slot": "after:layer-canon"
     },
     "novel-deai": {
       "skill": "novel-deai",

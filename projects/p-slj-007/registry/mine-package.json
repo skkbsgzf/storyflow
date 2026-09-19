@@ -1,0 +1,908 @@
+{
+  "format": "mine-package@1",
+  "projectId": "p-slj-007",
+  "flowId": "caocao-wudalang",
+  "flowTitle": "曹操穿越武大郎",
+  "version": "1.2.0",
+  "runId": "run-mu8k0tbq-35gtmy",
+  "policy": {
+    "link_default": "auto",
+    "adapt": "propose"
+  },
+  "boundaries": [],
+  "nodes": {
+    "m1.topic-report": {
+      "kind": "agent",
+      "kit": "topic",
+      "op": "topic-report",
+      "title": "选题报告师",
+      "output": "01-选题/选题报告.md",
+      "config": {
+        "maxChars": "@default:maxChars",
+        "minTropeRows": "@default:minTropeRows"
+      }
+    },
+    "m1.find-trope": {
+      "kind": "agent",
+      "kit": "topic",
+      "op": "find-trope",
+      "title": "find-trope",
+      "output": "01-选题/find-trope.md",
+      "config": {
+        "mainTropes": "@default:mainTropes",
+        "subTropes": "@default:subTropes",
+        "saturationCheck": "@default:saturationCheck",
+        "evolutionDepth": "@default:evolutionDepth"
+      }
+    },
+    "m1.material-dissect": {
+      "kind": "agent",
+      "kit": "topic",
+      "op": "material-dissect",
+      "title": "material-dissect",
+      "output": "01-选题/material-dissect.md",
+      "config": {
+        "layers": "@default:layers",
+        "inversionCount": "@default:inversionCount",
+        "placement": "@default:placement"
+      }
+    },
+    "m1.topic-zeitgeist": {
+      "kind": "agent",
+      "kit": "topic",
+      "op": "topic-zeitgeist",
+      "title": "时代情绪锚",
+      "output": "01-选题/topic-zeitgeist.md",
+      "config": {
+        "windowDays": "@default:windowDays",
+        "evidenceCount": "@default:evidenceCount",
+        "emotionAnchors": "@default:emotionAnchors"
+      }
+    },
+    "m1.internet-feel": {
+      "kind": "agent",
+      "kit": "topic",
+      "op": "internet-feel",
+      "title": "internet-feel",
+      "output": "01-选题/internet-feel.md",
+      "config": {
+        "titleCount": "@default:titleCount",
+        "formulaDeck": "@default:formulaDeck",
+        "templateCheck": "@default:templateCheck"
+      }
+    },
+    "m2.world-forge": {
+      "kind": "agent",
+      "kit": "plot",
+      "op": "world-forge",
+      "title": "world-forge",
+      "output": "02-编剧/world-forge.md",
+      "config": {
+        "factionCount": "@default:factionCount",
+        "powerCost": "@default:powerCost",
+        "wikiEntries": "@default:wikiEntries"
+      }
+    },
+    "m2.structure-design": {
+      "kind": "agent",
+      "kit": "plot",
+      "op": "structure-design",
+      "title": "structure-design",
+      "output": "02-编剧/structure-design.md",
+      "config": {
+        "fuseCount": "@default:fuseCount",
+        "injectUncertainty": "@default:injectUncertainty",
+        "steps": "@default:steps"
+      }
+    },
+    "m2.plot-choreographer": {
+      "kind": "agent",
+      "kit": "plot",
+      "op": "plot-choreographer",
+      "title": "plot-choreographer",
+      "output": "02-编剧/plot-choreographer.md",
+      "config": {
+        "actModel": "@default:actModel",
+        "cardDensity": "@default:cardDensity",
+        "dataAnchor": "@default:dataAnchor",
+        "lineCount": "@default:lineCount"
+      }
+    },
+    "m2.subplot-weave": {
+      "kind": "agent",
+      "kit": "plot",
+      "op": "subplot-weave",
+      "title": "暗线编织",
+      "output": "02-编剧/subplot-weave.md",
+      "config": {
+        "weaveDensity": "@default:weaveDensity",
+        "revealCurve": "@default:revealCurve"
+      }
+    },
+    "m2.foreshadow-plant": {
+      "kind": "agent",
+      "kit": "plot",
+      "op": "foreshadow-plant",
+      "title": "伏笔悬念插入",
+      "output": "02-编剧/foreshadow-plant.md",
+      "config": {
+        "plantPerUnit": "@default:plantPerUnit",
+        "disguiseLevel": "@default:disguiseLevel"
+      }
+    },
+    "m2.scene-breakdown": {
+      "kind": "agent",
+      "kit": "plot",
+      "op": "scene-breakdown",
+      "title": "scene-breakdown",
+      "output": "02-编剧/scene-breakdown.md",
+      "config": {
+        "shotsPerScene": "@default:shotsPerScene",
+        "includeRationale": "@default:includeRationale",
+        "dialogLevel": "@default:dialogLevel"
+      }
+    },
+    "m2.plot-redline": {
+      "kind": "agent",
+      "kit": "plot",
+      "op": "plot-redline",
+      "title": "剧情红队·多方视角评审",
+      "output": "02-编剧/plot-redline.md",
+      "config": {
+        "angles": "@default:angles",
+        "harshness": "@default:harshness",
+        "allowInject": "@default:allowInject",
+        "voice": "@default:voice"
+      }
+    },
+    "m2.script-forge": {
+      "kind": "agent",
+      "kit": "plot",
+      "op": "script-forge",
+      "title": "剧本师",
+      "output": "02-编剧/剧本.md",
+      "config": {
+        "minScenes": "@default:minScenes",
+        "maxChars": "@default:maxChars"
+      }
+    },
+    "m2.novel-bible": {
+      "kind": "agent",
+      "kit": "plot",
+      "op": "novel-bible",
+      "title": "novel-bible",
+      "output": "02-编剧/novel-bible.md",
+      "config": {
+        "quests": "@default:quests",
+        "powerSystem": "@default:powerSystem",
+        "deadlineRounds": "@default:deadlineRounds"
+      }
+    },
+    "m2.episodic-outline": {
+      "kind": "agent",
+      "kit": "plot",
+      "op": "episodic-outline",
+      "title": "episodic-outline",
+      "output": "02-编剧/episodic-outline.md",
+      "config": {
+        "units": "@default:units",
+        "hookPerUnit": "@default:hookPerUnit",
+        "darklineDepth": "@default:darklineDepth",
+        "outlineDensity": "@default:outlineDensity"
+      }
+    },
+    "m2.link": {
+      "kind": "gate",
+      "title": "连接 · 编剧（待人工批准）"
+    },
+    "m3.layer-voices": {
+      "kind": "agent",
+      "kit": "prose",
+      "op": "layer-voices",
+      "title": "layer-voices",
+      "output": "03-写作/layer-voices.md",
+      "config": {
+        "subtextDepth": "@default:subtextDepth",
+        "maskTest": "@default:maskTest",
+        "perLineTag": "@default:perLineTag"
+      }
+    },
+    "m3.layer-scenes": {
+      "kind": "agent",
+      "kit": "prose",
+      "op": "layer-scenes",
+      "title": "layer-scenes",
+      "output": "03-写作/layer-scenes.md",
+      "config": {
+        "senseChannels": "@default:senseChannels",
+        "densityProfile": "@default:densityProfile",
+        "propsDepth": "@default:propsDepth"
+      }
+    },
+    "m3.layer-canon": {
+      "kind": "agent",
+      "kit": "prose",
+      "op": "layer-canon",
+      "title": "layer-canon",
+      "output": "03-写作/layer-canon.md",
+      "config": {
+        "sliceUnit": "@default:sliceUnit",
+        "newWordPolicy": "@default:newWordPolicy",
+        "ledgerDiff": "@default:ledgerDiff"
+      }
+    },
+    "m3.prose-assembler": {
+      "kind": "agent",
+      "kit": "prose",
+      "op": "prose-assembler",
+      "title": "prose-assembler",
+      "output": "03-写作/prose-assembler.md",
+      "config": {
+        "stampDims": "@default:stampDims",
+        "failFast": "@default:failFast",
+        "beatFidelity": "@default:beatFidelity"
+      }
+    },
+    "m3.ghostwrite": {
+      "kind": "agent",
+      "kit": "prose",
+      "op": "ghostwrite",
+      "title": "文学化师",
+      "output": "03-写作/正文.md",
+      "config": {
+        "chapterMin": "@default:chapterMin",
+        "chapterMax": "@default:chapterMax"
+      }
+    },
+    "m3.novel-deai": {
+      "kind": "agent",
+      "kit": "prose",
+      "op": "novel-deai",
+      "title": "novel-deai",
+      "output": "03-写作/终稿.md",
+      "config": {
+        "passes": "@default:passes",
+        "innerLoops": "@default:innerLoops",
+        "coverageLaw": "@default:coverageLaw",
+        "metaphorBudget": "@default:metaphorBudget"
+      }
+    },
+    "m3.dialogue-polish": {
+      "kind": "agent",
+      "kit": "prose",
+      "op": "dialogue-polish",
+      "title": "dialogue-polish",
+      "output": "03-写作/dialogue-polish.md",
+      "config": {
+        "passes": "@default:passes",
+        "maskTest": "@default:maskTest",
+        "aiTraceDeck": "@default:aiTraceDeck",
+        "preserveVoice": "@default:preserveVoice"
+      }
+    },
+    "m3.novel-judge": {
+      "kind": "agent",
+      "kit": "prose",
+      "op": "novel-judge",
+      "title": "novel-judge",
+      "output": "03-写作/novel-judge.md",
+      "config": {
+        "scale": "@default:scale",
+        "dims": "@default:dims",
+        "worstThree": "@default:worstThree",
+        "userVeto": "@default:userVeto"
+      }
+    },
+    "m3.link": {
+      "kind": "gate",
+      "title": "连接 · 写作（自动批准）"
+    },
+    "m4.export-doc": {
+      "kind": "core",
+      "kit": "delivery",
+      "op": "export-doc",
+      "title": "export-doc.py",
+      "output": "04-交付/export-doc.docx",
+      "config": {
+        "style": "@default:style",
+        "verify": "@default:verify",
+        "outDir": "@default:outDir"
+      }
+    },
+    "m4.render_html": {
+      "kind": "core",
+      "kit": "delivery",
+      "op": "render_html",
+      "title": "交付页渲染",
+      "output": "04-交付/render_html.md",
+      "config": {
+        "theme": "@default:theme",
+        "maxSections": "@default:maxSections",
+        "inlineCss": "@default:inlineCss"
+      }
+    },
+    "m4.link": {
+      "kind": "gate",
+      "title": "连接 · 交付（自动批准）"
+    }
+  },
+  "sources": {
+    "journal": {
+      "path": "journal.jsonl",
+      "events": 138,
+      "tail": [
+        {
+          "ts": "2026-09-19T15:41:36.884Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "detail": "就绪批派发 1 项：m2.novel-bible（并行）"
+        },
+        {
+          "ts": "2026-09-19T15:41:37.237Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "detail": "就绪批派发 1 项：m2.novel-bible（并行）"
+        },
+        {
+          "ts": "2026-09-19T15:41:37.644Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "submit",
+          "actor": "kernel",
+          "nodeId": "m2.novel-bible",
+          "detail": "02-编剧/novel-bible.md",
+          "refs": [
+            "02-编剧/novel-bible.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:41:37.644Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "snapshot",
+          "actor": "kernel",
+          "nodeId": "m2.novel-bible",
+          "detail": "r1·novel-bible.md",
+          "refs": [
+            "02-编剧/novel-bible.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:41:37.652Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "nodeId": "m2.episodic-outline",
+          "detail": "任务包产出（skill=episodic-outline，上下文 1 件）"
+        },
+        {
+          "ts": "2026-09-19T15:41:37.652Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "detail": "就绪批派发 1 项：m2.episodic-outline（并行）"
+        },
+        {
+          "ts": "2026-09-19T15:41:37.993Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "detail": "就绪批派发 1 项：m2.episodic-outline（并行）"
+        },
+        {
+          "ts": "2026-09-19T15:41:38.395Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "submit",
+          "actor": "kernel",
+          "nodeId": "m2.episodic-outline",
+          "detail": "02-编剧/episodic-outline.md",
+          "refs": [
+            "02-编剧/episodic-outline.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:41:38.395Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "snapshot",
+          "actor": "kernel",
+          "nodeId": "m2.episodic-outline",
+          "detail": "r1·episodic-outline.md",
+          "refs": [
+            "02-编剧/episodic-outline.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:41:38.402Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "verdict",
+          "actor": "kernel",
+          "nodeId": "m3.link",
+          "detail": "auto-pass（R6 连接件：自动批准）"
+        },
+        {
+          "ts": "2026-09-19T15:41:38.404Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "gate-open",
+          "actor": "kernel",
+          "nodeId": "itb-m3.layer-voices",
+          "detail": "跨域交接验收：plot → prose"
+        },
+        {
+          "ts": "2026-09-19T15:41:38.980Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "verdict",
+          "actor": "kernel",
+          "nodeId": "itb-m3.layer-voices",
+          "detail": "pass：B组代裁（全编排）"
+        },
+        {
+          "ts": "2026-09-19T15:41:38.994Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "nodeId": "m3.layer-voices",
+          "detail": "任务包产出（skill=layer-voices，上下文 1 件）"
+        },
+        {
+          "ts": "2026-09-19T15:41:38.995Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "detail": "就绪批派发 1 项：m3.layer-voices（并行）"
+        },
+        {
+          "ts": "2026-09-19T15:41:39.333Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "detail": "就绪批派发 1 项：m3.layer-voices（并行）"
+        },
+        {
+          "ts": "2026-09-19T15:44:24.822Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "submit",
+          "actor": "kernel",
+          "nodeId": "m3.layer-voices",
+          "detail": "03-写作/layer-voices.md",
+          "refs": [
+            "03-写作/layer-voices.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:44:24.822Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "snapshot",
+          "actor": "kernel",
+          "nodeId": "m3.layer-voices",
+          "detail": "r1·layer-voices.md",
+          "refs": [
+            "03-写作/layer-voices.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:44:24.830Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "nodeId": "m3.layer-scenes",
+          "detail": "任务包产出（skill=layer-scenes，上下文 1 件）"
+        },
+        {
+          "ts": "2026-09-19T15:44:24.830Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "detail": "就绪批派发 1 项：m3.layer-scenes（并行）"
+        },
+        {
+          "ts": "2026-09-19T15:44:25.250Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "submit",
+          "actor": "kernel",
+          "nodeId": "m3.layer-scenes",
+          "detail": "03-写作/layer-scenes.md",
+          "refs": [
+            "03-写作/layer-scenes.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:44:25.250Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "snapshot",
+          "actor": "kernel",
+          "nodeId": "m3.layer-scenes",
+          "detail": "r1·layer-scenes.md",
+          "refs": [
+            "03-写作/layer-scenes.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:44:25.257Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "nodeId": "m3.layer-canon",
+          "detail": "任务包产出（skill=layer-canon，上下文 1 件）"
+        },
+        {
+          "ts": "2026-09-19T15:44:25.258Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "detail": "就绪批派发 1 项：m3.layer-canon（并行）"
+        },
+        {
+          "ts": "2026-09-19T15:44:25.723Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "submit",
+          "actor": "kernel",
+          "nodeId": "m3.layer-canon",
+          "detail": "03-写作/layer-canon.md",
+          "refs": [
+            "03-写作/layer-canon.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:44:25.724Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "snapshot",
+          "actor": "kernel",
+          "nodeId": "m3.layer-canon",
+          "detail": "r1·layer-canon.md",
+          "refs": [
+            "03-写作/layer-canon.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:44:25.731Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "nodeId": "m3.prose-assembler",
+          "detail": "任务包产出（skill=prose-assembler，上下文 1 件）"
+        },
+        {
+          "ts": "2026-09-19T15:44:25.731Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "detail": "就绪批派发 1 项：m3.prose-assembler（并行）"
+        },
+        {
+          "ts": "2026-09-19T15:44:26.095Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "warn",
+          "actor": "kernel",
+          "nodeId": "m3.prose-assembler",
+          "detail": "声明断言无机器校验器（未执行，归评审/红方剖面）：AE-PROSE-NOTBUT、AE-PROSE-RHYTHM、AE-PROSE-SLOP、AE-PROSE-TRIPLET、AE-WNF-HOOK",
+          "refs": [
+            "03-写作/prose-assembler.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:44:26.215Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "submit",
+          "actor": "kernel",
+          "nodeId": "m3.prose-assembler",
+          "detail": "03-写作/prose-assembler.md",
+          "refs": [
+            "03-写作/prose-assembler.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:44:26.215Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "snapshot",
+          "actor": "kernel",
+          "nodeId": "m3.prose-assembler",
+          "detail": "r1·prose-assembler.md",
+          "refs": [
+            "03-写作/prose-assembler.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:44:26.223Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "nodeId": "m3.ghostwrite",
+          "detail": "任务包产出（skill=ghostwrite，上下文 1 件）"
+        },
+        {
+          "ts": "2026-09-19T15:44:26.223Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "detail": "就绪批派发 1 项：m3.ghostwrite（并行）"
+        },
+        {
+          "ts": "2026-09-19T15:44:26.531Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "reject",
+          "actor": "kernel",
+          "nodeId": "m3.ghostwrite",
+          "detail": "AE-WNF-HOOK: 章末无钩（末三段无悬念？/转折词/情绪信号）——每章结尾必须留钩",
+          "refs": [
+            "03-写作/正文.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:46:09.212Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "warn",
+          "actor": "kernel",
+          "nodeId": "m3.ghostwrite",
+          "detail": "声明断言无机器校验器（未执行，归评审/红方剖面）：AE-CH-LEN",
+          "refs": [
+            "03-写作/正文.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:46:09.327Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "submit",
+          "actor": "kernel",
+          "nodeId": "m3.ghostwrite",
+          "detail": "03-写作/正文.md",
+          "refs": [
+            "03-写作/正文.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:46:09.327Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "snapshot",
+          "actor": "kernel",
+          "nodeId": "m3.ghostwrite",
+          "detail": "r1·正文.md",
+          "refs": [
+            "03-写作/正文.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:46:09.335Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "nodeId": "m3.novel-deai",
+          "detail": "任务包产出（skill=novel-deai，上下文 1 件）"
+        },
+        {
+          "ts": "2026-09-19T15:46:09.335Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "detail": "就绪批派发 1 项：m3.novel-deai（并行）"
+        },
+        {
+          "ts": "2026-09-19T15:46:39.669Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "warn",
+          "actor": "kernel",
+          "nodeId": "m3.novel-deai",
+          "detail": "声明断言无机器校验器（未执行，归评审/红方剖面）：AE-AI-QUOTA、AE-AI-STRUCT",
+          "refs": [
+            "03-写作/终稿.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:46:39.782Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "submit",
+          "actor": "kernel",
+          "nodeId": "m3.novel-deai",
+          "detail": "03-写作/终稿.md",
+          "refs": [
+            "03-写作/终稿.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:46:39.783Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "snapshot",
+          "actor": "kernel",
+          "nodeId": "m3.novel-deai",
+          "detail": "r1·终稿.md",
+          "refs": [
+            "03-写作/终稿.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:46:39.791Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "nodeId": "m3.dialogue-polish",
+          "detail": "任务包产出（skill=dialogue-polish，上下文 1 件）"
+        },
+        {
+          "ts": "2026-09-19T15:46:39.791Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "detail": "就绪批派发 1 项：m3.dialogue-polish（并行）"
+        },
+        {
+          "ts": "2026-09-19T15:47:06.612Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "submit",
+          "actor": "kernel",
+          "nodeId": "m3.dialogue-polish",
+          "detail": "03-写作/dialogue-polish.md",
+          "refs": [
+            "03-写作/dialogue-polish.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:47:06.612Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "snapshot",
+          "actor": "kernel",
+          "nodeId": "m3.dialogue-polish",
+          "detail": "r1·dialogue-polish.md",
+          "refs": [
+            "03-写作/dialogue-polish.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:47:06.620Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "nodeId": "m3.novel-judge",
+          "detail": "任务包产出（skill=novel-judge，上下文 1 件）"
+        },
+        {
+          "ts": "2026-09-19T15:47:06.620Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "detail": "就绪批派发 1 项：m3.novel-judge（并行）"
+        },
+        {
+          "ts": "2026-09-19T15:47:22.075Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "submit",
+          "actor": "kernel",
+          "nodeId": "m3.novel-judge",
+          "detail": "03-写作/novel-judge.md",
+          "refs": [
+            "03-写作/novel-judge.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:47:22.075Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "snapshot",
+          "actor": "kernel",
+          "nodeId": "m3.novel-judge",
+          "detail": "r1·novel-judge.md",
+          "refs": [
+            "03-写作/novel-judge.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:47:22.082Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "verdict",
+          "actor": "kernel",
+          "nodeId": "m4.link",
+          "detail": "auto-pass（R6 连接件：自动批准）"
+        },
+        {
+          "ts": "2026-09-19T15:47:22.083Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "gate-open",
+          "actor": "kernel",
+          "nodeId": "itb-m4.export-doc",
+          "detail": "跨域交接验收：prose → delivery"
+        },
+        {
+          "ts": "2026-09-19T15:47:51.104Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "verdict",
+          "actor": "kernel",
+          "nodeId": "itb-m4.export-doc",
+          "detail": "pass：B组代裁：终稿过四断言，交接齐备（应用户口径：docx 仅存档不评审）"
+        },
+        {
+          "ts": "2026-09-19T15:47:51.501Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "nodeId": "m4.export-doc",
+          "detail": "04-交付/export-doc.docx",
+          "refs": [
+            "04-交付/export-doc.docx"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:47:51.506Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "nodeId": "m4.render_html",
+          "detail": "任务包产出（skill=-，上下文 1 件）"
+        },
+        {
+          "ts": "2026-09-19T15:47:51.506Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "detail": "就绪批派发 1 项：m4.render_html（并行）"
+        },
+        {
+          "ts": "2026-09-19T15:48:12.356Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "detail": "就绪批派发 1 项：m4.render_html（并行）"
+        },
+        {
+          "ts": "2026-09-19T15:49:17.080Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "stale",
+          "actor": "kernel",
+          "nodeId": "m4.render_html",
+          "detail": "rerun 级联失效"
+        },
+        {
+          "ts": "2026-09-19T15:49:17.081Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "rerun",
+          "actor": "kernel",
+          "nodeId": "m4.render_html",
+          "detail": "scope 1 节点",
+          "refs": [
+            "m4.render_html"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:49:17.096Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "advance",
+          "actor": "kernel",
+          "nodeId": "m4.render_html",
+          "detail": "04-交付/render_html.md",
+          "refs": [
+            "04-交付/render_html.md"
+          ]
+        },
+        {
+          "ts": "2026-09-19T15:49:17.097Z",
+          "runId": "run-mu8k0tbq-35gtmy",
+          "event": "run-end",
+          "actor": "kernel",
+          "detail": "全部节点 done"
+        }
+      ]
+    },
+    "sendBacks": [],
+    "metrics": {
+      "path": "registry/metrics.jsonl",
+      "events": 53,
+      "eventsAtLastMine": 0,
+      "summary": "registry/metrics-summary.json"
+    },
+    "evidenceFiles": [
+      "registry/effective.json",
+      "registry/metrics-summary.json"
+    ],
+    "assertReports": [],
+    "comments": 0
+  },
+  "goals": [
+    "上下文命中率（标尺被产物真正引用）",
+    "规则覆盖率（注册表断言有 op 覆盖、机器可验）",
+    "编排结构（并行化/冷 tool/重复劳动）",
+    "产物质量（反复重写/批注聚集/纯净度）",
+    "成本（档位/深度/耗时）"
+  ],
+  "rules": [
+    "每条 finding 必须带 evidence（journal 行/文件路径 + ≤120 字引文），无证据不立案",
+    "patch 只允许非结构类（set-tool/set-node config/knowledge/asserts/policy）；结构类写 structural 字段进拍板清单",
+    "语义层断言不许被『补』成机器校验器（不引 LLM 当机器校验器）；规则覆盖建议指向真实可文本查的维度",
+    "不自动落地：落地权在 flow_overlay 的人批"
+  ]
+}

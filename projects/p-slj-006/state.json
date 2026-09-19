@@ -1,0 +1,187 @@
+{
+  "runId": "run-mu8jmkkq-41wu2o",
+  "projectId": "p-slj-006",
+  "flowId": "drama-flow",
+  "flowVersion": "1.1.0",
+  "flowHash": "3ab5655f",
+  "status": "completed",
+  "plan": {
+    "order": [
+      "m1.topic-report",
+      "m1.find-trope",
+      "m1.material-dissect",
+      "m1.deconstruct-book",
+      "m1.topic-zeitgeist",
+      "m1.internet-feel",
+      "m2.link",
+      "itb-m2.world-forge",
+      "m2.world-forge",
+      "m2.structure-design",
+      "m2.plot-choreographer",
+      "m2.subplot-weave",
+      "m2.foreshadow-plant",
+      "m2.scene-breakdown",
+      "m2.script-drama-beat",
+      "m2.plot-redline",
+      "m2.script-forge",
+      "m2.novel-bible",
+      "m2.episodic-outline",
+      "m3.link",
+      "itb-m3.scene-breakdown",
+      "m3.scene-breakdown"
+    ]
+  },
+  "nodes": {
+    "m1.topic-report": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "01-选题/选题报告.md",
+      "stale": false
+    },
+    "m1.find-trope": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "01-选题/find-trope.md",
+      "stale": false
+    },
+    "m1.material-dissect": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "01-选题/material-dissect.md",
+      "stale": false
+    },
+    "m1.deconstruct-book": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "01-选题/deconstruct-book.md",
+      "stale": false
+    },
+    "m1.topic-zeitgeist": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "01-选题/topic-zeitgeist.md",
+      "stale": false
+    },
+    "m1.internet-feel": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "01-选题/internet-feel.md",
+      "stale": false
+    },
+    "m2.world-forge": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/world-forge.md",
+      "stale": false
+    },
+    "m2.structure-design": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/structure-design.md",
+      "stale": false
+    },
+    "m2.plot-choreographer": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/plot-choreographer.md",
+      "stale": false
+    },
+    "m2.subplot-weave": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/subplot-weave.md",
+      "stale": false
+    },
+    "m2.foreshadow-plant": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/foreshadow-plant.md",
+      "stale": false
+    },
+    "m2.scene-breakdown": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/scene-breakdown.md",
+      "stale": false
+    },
+    "m2.script-drama-beat": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/script-drama-beat.md",
+      "stale": false
+    },
+    "m2.plot-redline": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/plot-redline.md",
+      "stale": false
+    },
+    "m2.script-forge": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/剧本.md",
+      "stale": false
+    },
+    "m2.novel-bible": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/novel-bible.md",
+      "stale": false
+    },
+    "m2.episodic-outline": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/episodic-outline.md",
+      "stale": false
+    },
+    "m2.link": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "m3.scene-breakdown": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "03-成剧/分镜剧本.md",
+      "stale": false
+    },
+    "m3.link": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "itb-m2.world-forge": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "itb-m3.scene-breakdown": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    }
+  },
+  "gate": {
+    "verdict": "pass",
+    "node": "itb-m3.scene-breakdown",
+    "at": "2026-09-19T15:39:58.996Z",
+    "note": "B组代裁（全编排复跑）"
+  },
+  "inputs": {
+    "project": "p-slj-006",
+    "direction": "水利局梗×短剧公式：守闸人（全编排版）",
+    "episodes": 6
+  },
+  "comments": {},
+  "overlayHash": "2872cd2f",
+  "policy": {
+    "kit_boundary": "always",
+    "gate_mode": "auto",
+    "adapt": "propose"
+  },
+  "planHash": "6e5d707d"
+}

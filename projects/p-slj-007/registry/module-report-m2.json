@@ -1,0 +1,148 @@
+{
+  "format": "module-report@1",
+  "projectId": "p-slj-007",
+  "flowId": "caocao-wudalang",
+  "moduleId": "m2",
+  "moduleName": "m2",
+  "title": "world-forge / structure-design / plot-choreographer",
+  "closedAt": "2026-09-19T15:41:38.394Z",
+  "io": {
+    "input": [
+      "direction",
+      "chapters"
+    ],
+    "output": "02-编剧/episodic-outline.md"
+  },
+  "artifacts": [
+    {
+      "node": "m2.world-forge",
+      "op": "world-forge",
+      "path": "02-编剧/world-forge.md",
+      "role": "process"
+    },
+    {
+      "node": "m2.structure-design",
+      "op": "structure-design",
+      "path": "02-编剧/structure-design.md",
+      "role": "process"
+    },
+    {
+      "node": "m2.plot-choreographer",
+      "op": "plot-choreographer",
+      "path": "02-编剧/plot-choreographer.md",
+      "role": "process"
+    },
+    {
+      "node": "m2.subplot-weave",
+      "op": "subplot-weave",
+      "path": "02-编剧/subplot-weave.md",
+      "role": "process"
+    },
+    {
+      "node": "m2.foreshadow-plant",
+      "op": "foreshadow-plant",
+      "path": "02-编剧/foreshadow-plant.md",
+      "role": "process"
+    },
+    {
+      "node": "m2.scene-breakdown",
+      "op": "scene-breakdown",
+      "path": "02-编剧/scene-breakdown.md",
+      "role": "process"
+    },
+    {
+      "node": "m2.plot-redline",
+      "op": "plot-redline",
+      "path": "02-编剧/plot-redline.md",
+      "role": "process"
+    },
+    {
+      "node": "m2.script-forge",
+      "op": "script-forge",
+      "path": "02-编剧/剧本.md",
+      "role": "process"
+    },
+    {
+      "node": "m2.novel-bible",
+      "op": "novel-bible",
+      "path": "02-编剧/novel-bible.md",
+      "role": "process"
+    },
+    {
+      "node": "m2.episodic-outline",
+      "op": "episodic-outline",
+      "path": "02-编剧/episodic-outline.md",
+      "role": "deliverable"
+    }
+  ],
+  "acceptance": [
+    {
+      "node": "m2.plot-choreographer",
+      "assert": "AE-CURVE-STALL",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+    },
+    {
+      "node": "m2.plot-choreographer",
+      "assert": "AE-CURVE-TYPE",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+    },
+    {
+      "node": "m2.plot-choreographer",
+      "assert": "AE-CUSHION",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+    },
+    {
+      "node": "m2.plot-choreographer",
+      "assert": "AE-DESERT",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+    },
+    {
+      "node": "m2.plot-choreographer",
+      "assert": "AE-END-MECH",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+    },
+    {
+      "node": "m2.plot-choreographer",
+      "assert": "AE-REV-MIDPOINT",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+    },
+    {
+      "node": "m2.plot-choreographer",
+      "assert": "AE-REV-SETUP",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+    },
+    {
+      "node": "m2.foreshadow-plant",
+      "assert": "AE-CONT-FORESHADOW",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+    },
+    {
+      "node": "m2.script-forge",
+      "assert": "AE-SCRIPT-FIELDS",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+    }
+  ],
+  "metrics": {
+    "submits": 11,
+    "retries": 0,
+    "tokensIn": 0,
+    "tokensOut": 0,
+    "latencyMs": 0,
+    "ctxOffered": 65,
+    "ctxUsed": 19,
+    "hitRate": 0.2923076923076923
+  },
+  "feedback": {
+    "annotations": 0,
+    "proposals": 0
+  }
+}

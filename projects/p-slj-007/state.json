@@ -1,0 +1,253 @@
+{
+  "runId": "run-mu8k0tbq-35gtmy",
+  "projectId": "p-slj-007",
+  "flowId": "caocao-wudalang",
+  "flowVersion": "1.2.0",
+  "flowHash": "f7cf98fb",
+  "status": "completed",
+  "plan": {
+    "order": [
+      "m1.topic-report",
+      "m1.find-trope",
+      "m1.material-dissect",
+      "m1.topic-zeitgeist",
+      "m1.internet-feel",
+      "m2.link",
+      "itb-m2.world-forge",
+      "m2.world-forge",
+      "m2.structure-design",
+      "m2.plot-choreographer",
+      "m2.subplot-weave",
+      "m2.foreshadow-plant",
+      "m2.scene-breakdown",
+      "m2.plot-redline",
+      "m2.script-forge",
+      "m2.novel-bible",
+      "m2.episodic-outline",
+      "m3.link",
+      "itb-m3.layer-voices",
+      "m3.layer-voices",
+      "m3.layer-scenes",
+      "m3.layer-canon",
+      "m3.prose-assembler",
+      "m3.ghostwrite",
+      "m3.novel-deai",
+      "m3.dialogue-polish",
+      "m3.novel-judge",
+      "m4.link",
+      "itb-m4.export-doc",
+      "m4.export-doc",
+      "m4.render_html"
+    ]
+  },
+  "nodes": {
+    "m1.topic-report": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "01-选题/选题报告.md",
+      "stale": false
+    },
+    "m1.find-trope": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "01-选题/find-trope.md",
+      "stale": false
+    },
+    "m1.material-dissect": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "01-选题/material-dissect.md",
+      "stale": false
+    },
+    "m1.topic-zeitgeist": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "01-选题/topic-zeitgeist.md",
+      "stale": false
+    },
+    "m1.internet-feel": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "01-选题/internet-feel.md",
+      "stale": false
+    },
+    "m2.world-forge": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/world-forge.md",
+      "stale": false
+    },
+    "m2.structure-design": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/structure-design.md",
+      "stale": false
+    },
+    "m2.plot-choreographer": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/plot-choreographer.md",
+      "stale": false
+    },
+    "m2.subplot-weave": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/subplot-weave.md",
+      "stale": false
+    },
+    "m2.foreshadow-plant": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/foreshadow-plant.md",
+      "stale": false
+    },
+    "m2.scene-breakdown": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/scene-breakdown.md",
+      "stale": false
+    },
+    "m2.plot-redline": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/plot-redline.md",
+      "stale": false
+    },
+    "m2.script-forge": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/剧本.md",
+      "stale": false
+    },
+    "m2.novel-bible": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/novel-bible.md",
+      "stale": false
+    },
+    "m2.episodic-outline": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/episodic-outline.md",
+      "stale": false
+    },
+    "m2.link": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "m3.layer-voices": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "03-写作/layer-voices.md",
+      "stale": false
+    },
+    "m3.layer-scenes": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "03-写作/layer-scenes.md",
+      "stale": false
+    },
+    "m3.layer-canon": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "03-写作/layer-canon.md",
+      "stale": false
+    },
+    "m3.prose-assembler": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "03-写作/prose-assembler.md",
+      "stale": false
+    },
+    "m3.ghostwrite": {
+      "status": "done",
+      "round": 1,
+      "failCount": 1,
+      "lastArtifact": "03-写作/正文.md",
+      "stale": false
+    },
+    "m3.novel-deai": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "03-写作/终稿.md",
+      "stale": false
+    },
+    "m3.dialogue-polish": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "03-写作/dialogue-polish.md",
+      "stale": false
+    },
+    "m3.novel-judge": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "03-写作/novel-judge.md",
+      "stale": false
+    },
+    "m3.link": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "m4.export-doc": {
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "04-交付/export-doc.docx"
+    },
+    "m4.render_html": {
+      "status": "done",
+      "round": 2,
+      "stale": false,
+      "committed": [],
+      "lastArtifact": "04-交付/render_html.md"
+    },
+    "m4.link": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "itb-m2.world-forge": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "itb-m3.layer-voices": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "itb-m4.export-doc": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    }
+  },
+  "gate": {
+    "verdict": "pass",
+    "node": "itb-m4.export-doc",
+    "at": "2026-09-19T15:47:51.103Z",
+    "note": "B组代裁：终稿过四断言，交接齐备（应用户口径：docx 仅存档不评审）"
+  },
+  "inputs": {
+    "project": "p-slj-007",
+    "direction": "水利局梗×网文长篇：守闸人（全编排版）",
+    "chapters": 3
+  },
+  "comments": {},
+  "overlayHash": "f6da5252",
+  "policy": {
+    "kit_boundary": "always",
+    "gate_mode": "auto",
+    "adapt": "propose"
+  },
+  "planHash": "4b089243",
+  "lastRejectReason": ""
+}

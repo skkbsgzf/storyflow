@@ -1,0 +1,148 @@
+{
+  "format": "module-report@1",
+  "projectId": "p-slj-007",
+  "flowId": "caocao-wudalang",
+  "moduleId": "m3",
+  "moduleName": "m3",
+  "title": "layer-voices / layer-scenes / layer-canon",
+  "closedAt": "2026-09-19T15:47:22.074Z",
+  "io": {
+    "input": [
+      "direction",
+      "chapters"
+    ],
+    "output": "03-写作/novel-judge.md"
+  },
+  "artifacts": [
+    {
+      "node": "m3.layer-voices",
+      "op": "layer-voices",
+      "path": "03-写作/layer-voices.md",
+      "role": "process"
+    },
+    {
+      "node": "m3.layer-scenes",
+      "op": "layer-scenes",
+      "path": "03-写作/layer-scenes.md",
+      "role": "process"
+    },
+    {
+      "node": "m3.layer-canon",
+      "op": "layer-canon",
+      "path": "03-写作/layer-canon.md",
+      "role": "process"
+    },
+    {
+      "node": "m3.prose-assembler",
+      "op": "prose-assembler",
+      "path": "03-写作/prose-assembler.md",
+      "role": "process"
+    },
+    {
+      "node": "m3.ghostwrite",
+      "op": "ghostwrite",
+      "path": "03-写作/正文.md",
+      "role": "process"
+    },
+    {
+      "node": "m3.novel-deai",
+      "op": "novel-deai",
+      "path": "03-写作/终稿.md",
+      "role": "process"
+    },
+    {
+      "node": "m3.dialogue-polish",
+      "op": "dialogue-polish",
+      "path": "03-写作/dialogue-polish.md",
+      "role": "process"
+    },
+    {
+      "node": "m3.novel-judge",
+      "op": "novel-judge",
+      "path": "03-写作/novel-judge.md",
+      "role": "deliverable"
+    }
+  ],
+  "acceptance": [
+    {
+      "node": "m3.prose-assembler",
+      "assert": "AE-PROSE-NOTBUT",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+    },
+    {
+      "node": "m3.prose-assembler",
+      "assert": "AE-PROSE-RHYTHM",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+    },
+    {
+      "node": "m3.prose-assembler",
+      "assert": "AE-PROSE-SLOP",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+    },
+    {
+      "node": "m3.prose-assembler",
+      "assert": "AE-PROSE-TRIPLET",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+    },
+    {
+      "node": "m3.prose-assembler",
+      "assert": "AE-WNF-HOOK",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+    },
+    {
+      "node": "m3.ghostwrite",
+      "assert": "AE-CH-LEN",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+    },
+    {
+      "node": "m3.ghostwrite",
+      "assert": "AE-WNF-HOOK",
+      "status": "pass",
+      "detail": "章末钩型：转折"
+    },
+    {
+      "node": "m3.novel-deai",
+      "assert": "AE-AI-QUOTA",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+    },
+    {
+      "node": "m3.novel-deai",
+      "assert": "AE-AI-STRUCT",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+    },
+    {
+      "node": "m3.novel-deai",
+      "assert": "AE-PROSE-SLOP",
+      "status": "pass",
+      "detail": "无 AI 高频词"
+    },
+    {
+      "node": "m3.novel-deai",
+      "assert": "AE-WNF-HOOK",
+      "status": "pass",
+      "detail": "章末钩型：转折"
+    }
+  ],
+  "metrics": {
+    "submits": 9,
+    "retries": 1,
+    "tokensIn": 0,
+    "tokensOut": 0,
+    "latencyMs": 0,
+    "ctxOffered": 51,
+    "ctxUsed": 15,
+    "hitRate": 0.29411764705882354
+  },
+  "feedback": {
+    "annotations": 0,
+    "proposals": 0
+  }
+}

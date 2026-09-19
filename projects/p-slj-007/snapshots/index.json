@@ -1,0 +1,335 @@
+{
+  "snapshots": {
+    "m1.topic-report": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:41:26.566Z",
+        "note": "submit r1·选题报告.md",
+        "files": {
+          "01-选题/选题报告.md": {
+            "hash": "20c938328fad",
+            "path": "snapshots/m1.topic-report/r1/01-选题/选题报告.md"
+          }
+        }
+      }
+    ],
+    "m1.find-trope": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:41:27.450Z",
+        "note": "submit r1·find-trope.md",
+        "files": {
+          "01-选题/find-trope.md": {
+            "hash": "c18af90b9753",
+            "path": "snapshots/m1.find-trope/r1/01-选题/find-trope.md"
+          }
+        }
+      }
+    ],
+    "m1.material-dissect": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:41:28.180Z",
+        "note": "submit r1·material-dissect.md",
+        "files": {
+          "01-选题/material-dissect.md": {
+            "hash": "d9d45d73b786",
+            "path": "snapshots/m1.material-dissect/r1/01-选题/material-dissect.md"
+          }
+        }
+      }
+    ],
+    "m1.topic-zeitgeist": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:41:28.966Z",
+        "note": "submit r1·topic-zeitgeist.md",
+        "files": {
+          "01-选题/topic-zeitgeist.md": {
+            "hash": "f9758de10a10",
+            "path": "snapshots/m1.topic-zeitgeist/r1/01-选题/topic-zeitgeist.md"
+          }
+        }
+      }
+    ],
+    "m1.internet-feel": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:41:29.698Z",
+        "note": "submit r1·internet-feel.md",
+        "files": {
+          "01-选题/internet-feel.md": {
+            "hash": "747ee75a4bc2",
+            "path": "snapshots/m1.internet-feel/r1/01-选题/internet-feel.md"
+          }
+        }
+      }
+    ],
+    "m2.world-forge": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:41:31.600Z",
+        "note": "submit r1·world-forge.md",
+        "files": {
+          "02-编剧/world-forge.md": {
+            "hash": "34a0411c3c67",
+            "path": "snapshots/m2.world-forge/r1/02-编剧/world-forge.md"
+          }
+        }
+      }
+    ],
+    "m2.structure-design": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:41:32.333Z",
+        "note": "submit r1·structure-design.md",
+        "files": {
+          "02-编剧/structure-design.md": {
+            "hash": "c3e23823439a",
+            "path": "snapshots/m2.structure-design/r1/02-编剧/structure-design.md"
+          }
+        }
+      }
+    ],
+    "m2.plot-choreographer": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:41:33.085Z",
+        "note": "submit r1·plot-choreographer.md",
+        "files": {
+          "02-编剧/plot-choreographer.md": {
+            "hash": "bf8a55e6a797",
+            "path": "snapshots/m2.plot-choreographer/r1/02-编剧/plot-choreographer.md"
+          }
+        }
+      }
+    ],
+    "m2.subplot-weave": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:41:33.843Z",
+        "note": "submit r1·subplot-weave.md",
+        "files": {
+          "02-编剧/subplot-weave.md": {
+            "hash": "80601b04f53a",
+            "path": "snapshots/m2.subplot-weave/r1/02-编剧/subplot-weave.md"
+          }
+        }
+      }
+    ],
+    "m2.foreshadow-plant": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:41:34.557Z",
+        "note": "submit r1·foreshadow-plant.md",
+        "files": {
+          "02-编剧/foreshadow-plant.md": {
+            "hash": "34fdf5f5745b",
+            "path": "snapshots/m2.foreshadow-plant/r1/02-编剧/foreshadow-plant.md"
+          }
+        }
+      }
+    ],
+    "m2.scene-breakdown": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:41:35.289Z",
+        "note": "submit r1·scene-breakdown.md",
+        "files": {
+          "02-编剧/scene-breakdown.md": {
+            "hash": "4059bd0aba30",
+            "path": "snapshots/m2.scene-breakdown/r1/02-编剧/scene-breakdown.md"
+          }
+        }
+      }
+    ],
+    "m2.plot-redline": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:41:36.010Z",
+        "note": "submit r1·plot-redline.md",
+        "files": {
+          "02-编剧/plot-redline.md": {
+            "hash": "721204be4dbc",
+            "path": "snapshots/m2.plot-redline/r1/02-编剧/plot-redline.md"
+          }
+        }
+      }
+    ],
+    "m2.script-forge": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:41:36.745Z",
+        "note": "submit r1·剧本.md",
+        "files": {
+          "02-编剧/剧本.md": {
+            "hash": "923e30ba028a",
+            "path": "snapshots/m2.script-forge/r1/02-编剧/剧本.md"
+          }
+        }
+      }
+    ],
+    "m2.novel-bible": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:41:37.527Z",
+        "note": "submit r1·novel-bible.md",
+        "files": {
+          "02-编剧/novel-bible.md": {
+            "hash": "c0c18f157bfa",
+            "path": "snapshots/m2.novel-bible/r1/02-编剧/novel-bible.md"
+          }
+        }
+      }
+    ],
+    "m2.episodic-outline": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:41:38.285Z",
+        "note": "submit r1·episodic-outline.md",
+        "files": {
+          "02-编剧/episodic-outline.md": {
+            "hash": "369a3abc6a18",
+            "path": "snapshots/m2.episodic-outline/r1/02-编剧/episodic-outline.md"
+          }
+        }
+      }
+    ],
+    "m3.layer-voices": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:44:24.709Z",
+        "note": "submit r1·layer-voices.md",
+        "files": {
+          "03-写作/layer-voices.md": {
+            "hash": "2825aea56f62",
+            "path": "snapshots/m3.layer-voices/r1/03-写作/layer-voices.md"
+          }
+        }
+      }
+    ],
+    "m3.layer-scenes": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:44:25.137Z",
+        "note": "submit r1·layer-scenes.md",
+        "files": {
+          "03-写作/layer-scenes.md": {
+            "hash": "e5844e541f9c",
+            "path": "snapshots/m3.layer-scenes/r1/03-写作/layer-scenes.md"
+          }
+        }
+      }
+    ],
+    "m3.layer-canon": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:44:25.606Z",
+        "note": "submit r1·layer-canon.md",
+        "files": {
+          "03-写作/layer-canon.md": {
+            "hash": "63a2c07e42cf",
+            "path": "snapshots/m3.layer-canon/r1/03-写作/layer-canon.md"
+          }
+        }
+      }
+    ],
+    "m3.prose-assembler": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:44:26.100Z",
+        "note": "submit r1·prose-assembler.md",
+        "files": {
+          "03-写作/prose-assembler.md": {
+            "hash": "f1619165e607",
+            "path": "snapshots/m3.prose-assembler/r1/03-写作/prose-assembler.md"
+          }
+        }
+      }
+    ],
+    "m3.ghostwrite": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:46:09.216Z",
+        "note": "submit r1·正文.md",
+        "files": {
+          "03-写作/正文.md": {
+            "hash": "eaad7e23b5fc",
+            "path": "snapshots/m3.ghostwrite/r1/03-写作/正文.md"
+          }
+        }
+      }
+    ],
+    "m3.novel-deai": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:46:39.674Z",
+        "note": "submit r1·终稿.md",
+        "files": {
+          "03-写作/终稿.md": {
+            "hash": "804c36c49d83",
+            "path": "snapshots/m3.novel-deai/r1/03-写作/终稿.md"
+          }
+        }
+      }
+    ],
+    "m3.dialogue-polish": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:47:06.491Z",
+        "note": "submit r1·dialogue-polish.md",
+        "files": {
+          "03-写作/dialogue-polish.md": {
+            "hash": "135257ed28a7",
+            "path": "snapshots/m3.dialogue-polish/r1/03-写作/dialogue-polish.md"
+          }
+        }
+      }
+    ],
+    "m3.novel-judge": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:47:21.962Z",
+        "note": "submit r1·novel-judge.md",
+        "files": {
+          "03-写作/novel-judge.md": {
+            "hash": "1d81540148d6",
+            "path": "snapshots/m3.novel-judge/r1/03-写作/novel-judge.md"
+          }
+        }
+      }
+    ],
+    "m4.export-doc": [
+      {
+        "round": 1,
+        "ts": "2026-09-19 23:47",
+        "note": "export-doc 自动快照（plain）→ export-doc.docx",
+        "files": {
+          "03-写作/novel-judge.md": {
+            "hash": "aa933fd730ee",
+            "path": "snapshots/m4.export-doc/r1/03-写作/novel-judge.md"
+          },
+          "04-交付/export-doc.docx": {
+            "hash": "66d9fdb6ff4c",
+            "path": "snapshots/m4.export-doc/r1/04-交付/export-doc.docx",
+            "binary": true
+          }
+        }
+      }
+    ],
+    "m4.render_html": [
+      {
+        "round": 1,
+        "ts": "2026-09-19 23:50",
+        "note": "补拍交付页快照",
+        "files": {
+          "04-交付/render_html.md": {
+            "hash": "fb31328a4306",
+            "path": "snapshots/m4.render_html/r1/04-交付/render_html.md"
+          }
+        }
+      }
+    ]
+  },
+  "inputs": {}
+}

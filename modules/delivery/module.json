@@ -64,7 +64,7 @@
         "render_html"
       ],
       "desc": "静态单文件交付页生成",
-      "kind": "produce",
+      "kind": "check",
       "config": {
         "theme": {
           "type": "enum",

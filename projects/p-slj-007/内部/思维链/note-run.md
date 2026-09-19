@@ -1,0 +1,1 @@
+全编排复跑（caocao-wudalang v1.2，caps 全开含 prose 三层稿/拼装/评审/打磨）。kb 40 张 / 新口径 63%。正文三章 1304/1039/1092 CJK——AE-CH-LEN 三条 warn 如实报警（低于 1500 标准），内容加厚属下一轮内容工作。m4 双交付：export-doc docx + render_html 交付页（修 delivery 模块 render_html kind=produce→check 才被内核自动执行）。代裁留痕，补拍快照后无红档。

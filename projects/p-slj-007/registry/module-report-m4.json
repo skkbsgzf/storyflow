@@ -1,0 +1,45 @@
+{
+  "format": "module-report@1",
+  "projectId": "p-slj-007",
+  "flowId": "caocao-wudalang",
+  "moduleId": "m4",
+  "moduleName": "m4",
+  "title": "export-doc.py / 交付页渲染 / 连接 · 交付（自动批准）",
+  "closedAt": "2026-09-19T15:49:17.095Z",
+  "io": {
+    "input": [
+      "direction",
+      "chapters"
+    ],
+    "output": "04-交付/render_html.md"
+  },
+  "artifacts": [
+    {
+      "node": "m4.export-doc",
+      "op": "export-doc",
+      "path": "04-交付/export-doc.docx",
+      "role": "process"
+    },
+    {
+      "node": "m4.render_html",
+      "op": "render_html",
+      "path": "04-交付/render_html.md",
+      "role": "deliverable"
+    }
+  ],
+  "acceptance": [],
+  "metrics": {
+    "submits": 3,
+    "retries": 0,
+    "tokensIn": 0,
+    "tokensOut": 0,
+    "latencyMs": 0,
+    "ctxOffered": 1,
+    "ctxUsed": 0,
+    "hitRate": 0
+  },
+  "feedback": {
+    "annotations": 0,
+    "proposals": 0
+  }
+}

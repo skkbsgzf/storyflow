@@ -1,0 +1,188 @@
+{"ts":"2026-09-19T15:29:35.404Z","runId":"run-mu8jmkkq-41wu2o","event":"run-start","actor":"kernel","detail":"drama-flow@1.1.0 计划 20 节点"}
+{"ts":"2026-09-19T15:29:35.433Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","nodeId":"m1.topic-report","detail":"任务包产出（skill=topic-report，上下文 0 件）"}
+{"ts":"2026-09-19T15:29:35.433Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.topic-report（并行）"}
+{"ts":"2026-09-19T15:29:35.911Z","runId":"run-mu8jmkkq-41wu2o","event":"submit","actor":"kernel","nodeId":"m1.topic-report","detail":"01-选题/选题报告.md","refs":["01-选题/选题报告.md"]}
+{"ts":"2026-09-19T15:29:35.912Z","runId":"run-mu8jmkkq-41wu2o","event":"snapshot","actor":"kernel","nodeId":"m1.topic-report","detail":"r1·选题报告.md","refs":["01-选题/选题报告.md"]}
+{"ts":"2026-09-19T15:29:35.916Z","runId":"run-mu8jmkkq-41wu2o","event":"note","actor":"kernel:overlay","detail":"编排变更 → 重编译计划：20 → 22 节点；新增 itb-m2.world-forge、itb-m3.scene-breakdown；裁撤 无；失效 无","refs":["itb-m2.world-forge","itb-m3.scene-breakdown"]}
+{"ts":"2026-09-19T15:29:35.916Z","runId":"run-mu8jmkkq-41wu2o","event":"note","actor":"kernel:overlay","detail":"派生边界验收 itb-m2.world-forge：topic → plot（接管 1 条跨界入边 e-link-m2）"}
+{"ts":"2026-09-19T15:29:35.916Z","runId":"run-mu8jmkkq-41wu2o","event":"note","actor":"kernel:overlay","detail":"派生边界验收 itb-m3.scene-breakdown：plot → drama（接管 1 条跨界入边 e-link-m3）"}
+{"ts":"2026-09-19T15:29:35.920Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","nodeId":"m1.find-trope","detail":"任务包产出（skill=find-trope，上下文 1 件）"}
+{"ts":"2026-09-19T15:29:35.920Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.find-trope（并行）"}
+{"ts":"2026-09-19T15:31:36.774Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.find-trope（并行）"}
+{"ts":"2026-09-19T15:31:37.132Z","runId":"run-mu8jmkkq-41wu2o","event":"submit","actor":"kernel","nodeId":"m1.find-trope","detail":"01-选题/find-trope.md","refs":["01-选题/find-trope.md"]}
+{"ts":"2026-09-19T15:31:37.132Z","runId":"run-mu8jmkkq-41wu2o","event":"snapshot","actor":"kernel","nodeId":"m1.find-trope","detail":"r1·find-trope.md","refs":["01-选题/find-trope.md"]}
+{"ts":"2026-09-19T15:31:37.138Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","nodeId":"m1.material-dissect","detail":"任务包产出（skill=material-dissect，上下文 1 件）"}
+{"ts":"2026-09-19T15:31:37.138Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.material-dissect（并行）"}
+{"ts":"2026-09-19T15:31:37.401Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.material-dissect（并行）"}
+{"ts":"2026-09-19T15:31:37.759Z","runId":"run-mu8jmkkq-41wu2o","event":"submit","actor":"kernel","nodeId":"m1.material-dissect","detail":"01-选题/material-dissect.md","refs":["01-选题/material-dissect.md"]}
+{"ts":"2026-09-19T15:31:37.759Z","runId":"run-mu8jmkkq-41wu2o","event":"snapshot","actor":"kernel","nodeId":"m1.material-dissect","detail":"r1·material-dissect.md","refs":["01-选题/material-dissect.md"]}
+{"ts":"2026-09-19T15:31:37.766Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","nodeId":"m1.deconstruct-book","detail":"任务包产出（skill=deconstruct-book，上下文 1 件）"}
+{"ts":"2026-09-19T15:31:37.766Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:31:38.029Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:31:59.012Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:32:26.475Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:32:31.180Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:32:35.719Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:32:40.269Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:32:44.852Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:32:49.437Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:32:53.993Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:32:58.772Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:33:03.378Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:33:08.048Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:33:12.662Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:33:17.239Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:33:21.808Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:33:26.656Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:33:31.448Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:33:36.262Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:33:40.991Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:33:45.714Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:33:50.877Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:33:55.582Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:34:00.301Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:34:04.995Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:34:09.712Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:34:14.422Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:34:19.112Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:34:23.865Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:34:28.559Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:34:33.314Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:34:38.063Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:34:42.777Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:34:47.485Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:34:52.178Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:34:56.872Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:35:01.644Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:35:06.364Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:35:11.157Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:35:15.834Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:35:20.516Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:35:25.221Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:35:29.956Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:35:34.658Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:35:39.331Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:35:44.079Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:35:48.773Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:35:53.526Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:35:58.183Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:36:02.968Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:36:07.614Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:36:12.259Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:36:16.950Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:36:21.664Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:36:26.327Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:36:31.039Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:36:35.749Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:36:40.420Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:36:45.073Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:36:49.795Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:36:54.472Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:36:59.157Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:37:03.925Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:37:08.624Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:37:13.353Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:37:18.025Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:37:22.736Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:37:27.444Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:37:32.143Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:37:36.820Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:37:41.533Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:37:46.203Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:37:50.880Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:37:55.573Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:38:00.250Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:38:04.900Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:38:09.606Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:38:14.283Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:38:18.929Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:38:23.562Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:38:28.204Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:38:32.848Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:38:37.503Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:39:48.034Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-19T15:39:48.419Z","runId":"run-mu8jmkkq-41wu2o","event":"submit","actor":"kernel","nodeId":"m1.deconstruct-book","detail":"01-选题/deconstruct-book.md","refs":["01-选题/deconstruct-book.md"]}
+{"ts":"2026-09-19T15:39:48.419Z","runId":"run-mu8jmkkq-41wu2o","event":"snapshot","actor":"kernel","nodeId":"m1.deconstruct-book","detail":"r1·deconstruct-book.md","refs":["01-选题/deconstruct-book.md"]}
+{"ts":"2026-09-19T15:39:48.425Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","nodeId":"m1.topic-zeitgeist","detail":"任务包产出（skill=topic-zeitgeist，上下文 1 件）"}
+{"ts":"2026-09-19T15:39:48.425Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.topic-zeitgeist（并行）"}
+{"ts":"2026-09-19T15:39:48.725Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.topic-zeitgeist（并行）"}
+{"ts":"2026-09-19T15:39:49.105Z","runId":"run-mu8jmkkq-41wu2o","event":"submit","actor":"kernel","nodeId":"m1.topic-zeitgeist","detail":"01-选题/topic-zeitgeist.md","refs":["01-选题/topic-zeitgeist.md"]}
+{"ts":"2026-09-19T15:39:49.105Z","runId":"run-mu8jmkkq-41wu2o","event":"snapshot","actor":"kernel","nodeId":"m1.topic-zeitgeist","detail":"r1·topic-zeitgeist.md","refs":["01-选题/topic-zeitgeist.md"]}
+{"ts":"2026-09-19T15:39:49.112Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","nodeId":"m1.internet-feel","detail":"任务包产出（skill=internet-feel，上下文 1 件）"}
+{"ts":"2026-09-19T15:39:49.112Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.internet-feel（并行）"}
+{"ts":"2026-09-19T15:39:49.415Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.internet-feel（并行）"}
+{"ts":"2026-09-19T15:39:49.792Z","runId":"run-mu8jmkkq-41wu2o","event":"submit","actor":"kernel","nodeId":"m1.internet-feel","detail":"01-选题/internet-feel.md","refs":["01-选题/internet-feel.md"]}
+{"ts":"2026-09-19T15:39:49.793Z","runId":"run-mu8jmkkq-41wu2o","event":"snapshot","actor":"kernel","nodeId":"m1.internet-feel","detail":"r1·internet-feel.md","refs":["01-选题/internet-feel.md"]}
+{"ts":"2026-09-19T15:39:49.799Z","runId":"run-mu8jmkkq-41wu2o","event":"verdict","actor":"kernel","nodeId":"m2.link","detail":"auto-pass（R6 连接件：自动批准）"}
+{"ts":"2026-09-19T15:39:49.799Z","runId":"run-mu8jmkkq-41wu2o","event":"gate-open","actor":"kernel","nodeId":"itb-m2.world-forge","detail":"跨域交接验收：topic → plot"}
+{"ts":"2026-09-19T15:39:50.385Z","runId":"run-mu8jmkkq-41wu2o","event":"verdict","actor":"kernel","nodeId":"itb-m2.world-forge","detail":"pass：B组代裁（全编排复跑）"}
+{"ts":"2026-09-19T15:39:50.395Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","nodeId":"m2.world-forge","detail":"任务包产出（skill=world-forge，上下文 1 件）"}
+{"ts":"2026-09-19T15:39:50.396Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.world-forge（并行）"}
+{"ts":"2026-09-19T15:39:50.724Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.world-forge（并行）"}
+{"ts":"2026-09-19T15:39:51.122Z","runId":"run-mu8jmkkq-41wu2o","event":"submit","actor":"kernel","nodeId":"m2.world-forge","detail":"02-编剧/world-forge.md","refs":["02-编剧/world-forge.md"]}
+{"ts":"2026-09-19T15:39:51.122Z","runId":"run-mu8jmkkq-41wu2o","event":"snapshot","actor":"kernel","nodeId":"m2.world-forge","detail":"r1·world-forge.md","refs":["02-编剧/world-forge.md"]}
+{"ts":"2026-09-19T15:39:51.130Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","nodeId":"m2.structure-design","detail":"任务包产出（skill=structure-design，上下文 1 件）"}
+{"ts":"2026-09-19T15:39:51.130Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.structure-design（并行）"}
+{"ts":"2026-09-19T15:39:51.449Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.structure-design（并行）"}
+{"ts":"2026-09-19T15:39:51.838Z","runId":"run-mu8jmkkq-41wu2o","event":"submit","actor":"kernel","nodeId":"m2.structure-design","detail":"02-编剧/structure-design.md","refs":["02-编剧/structure-design.md"]}
+{"ts":"2026-09-19T15:39:51.838Z","runId":"run-mu8jmkkq-41wu2o","event":"snapshot","actor":"kernel","nodeId":"m2.structure-design","detail":"r1·structure-design.md","refs":["02-编剧/structure-design.md"]}
+{"ts":"2026-09-19T15:39:51.846Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","nodeId":"m2.plot-choreographer","detail":"任务包产出（skill=plot-choreographer，上下文 1 件）"}
+{"ts":"2026-09-19T15:39:51.846Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.plot-choreographer（并行）"}
+{"ts":"2026-09-19T15:39:52.162Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.plot-choreographer（并行）"}
+{"ts":"2026-09-19T15:39:52.440Z","runId":"run-mu8jmkkq-41wu2o","event":"warn","actor":"kernel","nodeId":"m2.plot-choreographer","detail":"声明断言无机器校验器（未执行，归评审/红方剖面）：AE-CURVE-STALL、AE-CURVE-TYPE、AE-CUSHION、AE-DESERT、AE-END-MECH、AE-REV-MIDPOINT、AE-REV-SETUP","refs":["02-编剧/plot-choreographer.md"]}
+{"ts":"2026-09-19T15:39:52.561Z","runId":"run-mu8jmkkq-41wu2o","event":"submit","actor":"kernel","nodeId":"m2.plot-choreographer","detail":"02-编剧/plot-choreographer.md","refs":["02-编剧/plot-choreographer.md"]}
+{"ts":"2026-09-19T15:39:52.561Z","runId":"run-mu8jmkkq-41wu2o","event":"snapshot","actor":"kernel","nodeId":"m2.plot-choreographer","detail":"r1·plot-choreographer.md","refs":["02-编剧/plot-choreographer.md"]}
+{"ts":"2026-09-19T15:39:52.569Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","nodeId":"m2.subplot-weave","detail":"任务包产出（skill=subplot-weave，上下文 1 件）"}
+{"ts":"2026-09-19T15:39:52.570Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.subplot-weave（并行）"}
+{"ts":"2026-09-19T15:39:52.889Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.subplot-weave（并行）"}
+{"ts":"2026-09-19T15:39:53.278Z","runId":"run-mu8jmkkq-41wu2o","event":"submit","actor":"kernel","nodeId":"m2.subplot-weave","detail":"02-编剧/subplot-weave.md","refs":["02-编剧/subplot-weave.md"]}
+{"ts":"2026-09-19T15:39:53.278Z","runId":"run-mu8jmkkq-41wu2o","event":"snapshot","actor":"kernel","nodeId":"m2.subplot-weave","detail":"r1·subplot-weave.md","refs":["02-编剧/subplot-weave.md"]}
+{"ts":"2026-09-19T15:39:53.286Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","nodeId":"m2.foreshadow-plant","detail":"任务包产出（skill=foreshadow-plant，上下文 1 件）"}
+{"ts":"2026-09-19T15:39:53.286Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.foreshadow-plant（并行）"}
+{"ts":"2026-09-19T15:39:53.617Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.foreshadow-plant（并行）"}
+{"ts":"2026-09-19T15:39:53.894Z","runId":"run-mu8jmkkq-41wu2o","event":"warn","actor":"kernel","nodeId":"m2.foreshadow-plant","detail":"声明断言无机器校验器（未执行，归评审/红方剖面）：AE-CONT-FORESHADOW","refs":["02-编剧/foreshadow-plant.md"]}
+{"ts":"2026-09-19T15:39:54.016Z","runId":"run-mu8jmkkq-41wu2o","event":"submit","actor":"kernel","nodeId":"m2.foreshadow-plant","detail":"02-编剧/foreshadow-plant.md","refs":["02-编剧/foreshadow-plant.md"]}
+{"ts":"2026-09-19T15:39:54.016Z","runId":"run-mu8jmkkq-41wu2o","event":"snapshot","actor":"kernel","nodeId":"m2.foreshadow-plant","detail":"r1·foreshadow-plant.md","refs":["02-编剧/foreshadow-plant.md"]}
+{"ts":"2026-09-19T15:39:54.024Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","nodeId":"m2.scene-breakdown","detail":"任务包产出（skill=scene-breakdown，上下文 2 件）"}
+{"ts":"2026-09-19T15:39:54.024Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.scene-breakdown（并行）"}
+{"ts":"2026-09-19T15:39:54.343Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.scene-breakdown（并行）"}
+{"ts":"2026-09-19T15:39:54.755Z","runId":"run-mu8jmkkq-41wu2o","event":"submit","actor":"kernel","nodeId":"m2.scene-breakdown","detail":"02-编剧/scene-breakdown.md","refs":["02-编剧/scene-breakdown.md"]}
+{"ts":"2026-09-19T15:39:54.755Z","runId":"run-mu8jmkkq-41wu2o","event":"snapshot","actor":"kernel","nodeId":"m2.scene-breakdown","detail":"r1·scene-breakdown.md","refs":["02-编剧/scene-breakdown.md"]}
+{"ts":"2026-09-19T15:39:54.764Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","nodeId":"m2.script-drama-beat","detail":"任务包产出（skill=script-drama-beat，上下文 1 件）"}
+{"ts":"2026-09-19T15:39:54.764Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.script-drama-beat（并行）"}
+{"ts":"2026-09-19T15:39:55.109Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.script-drama-beat（并行）"}
+{"ts":"2026-09-19T15:39:55.388Z","runId":"run-mu8jmkkq-41wu2o","event":"warn","actor":"kernel","nodeId":"m2.script-drama-beat","detail":"声明断言无机器校验器（未执行，归评审/红方剖面）：AE-CONT-FORESHADOW、AE-CONT-ITEM、AE-CONT-KNOW","refs":["02-编剧/script-drama-beat.md"]}
+{"ts":"2026-09-19T15:39:55.504Z","runId":"run-mu8jmkkq-41wu2o","event":"submit","actor":"kernel","nodeId":"m2.script-drama-beat","detail":"02-编剧/script-drama-beat.md","refs":["02-编剧/script-drama-beat.md"]}
+{"ts":"2026-09-19T15:39:55.504Z","runId":"run-mu8jmkkq-41wu2o","event":"snapshot","actor":"kernel","nodeId":"m2.script-drama-beat","detail":"r1·script-drama-beat.md","refs":["02-编剧/script-drama-beat.md"]}
+{"ts":"2026-09-19T15:39:55.512Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","nodeId":"m2.plot-redline","detail":"任务包产出（skill=plot-redline，上下文 1 件）"}
+{"ts":"2026-09-19T15:39:55.512Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.plot-redline（并行）"}
+{"ts":"2026-09-19T15:39:55.831Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.plot-redline（并行）"}
+{"ts":"2026-09-19T15:39:56.215Z","runId":"run-mu8jmkkq-41wu2o","event":"submit","actor":"kernel","nodeId":"m2.plot-redline","detail":"02-编剧/plot-redline.md","refs":["02-编剧/plot-redline.md"]}
+{"ts":"2026-09-19T15:39:56.216Z","runId":"run-mu8jmkkq-41wu2o","event":"snapshot","actor":"kernel","nodeId":"m2.plot-redline","detail":"r1·plot-redline.md","refs":["02-编剧/plot-redline.md"]}
+{"ts":"2026-09-19T15:39:56.224Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","nodeId":"m2.script-forge","detail":"任务包产出（skill=script-forge，上下文 2 件）"}
+{"ts":"2026-09-19T15:39:56.224Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.script-forge（并行）"}
+{"ts":"2026-09-19T15:39:56.541Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.script-forge（并行）"}
+{"ts":"2026-09-19T15:39:56.818Z","runId":"run-mu8jmkkq-41wu2o","event":"warn","actor":"kernel","nodeId":"m2.script-forge","detail":"声明断言无机器校验器（未执行，归评审/红方剖面）：AE-SCRIPT-FIELDS","refs":["02-编剧/剧本.md"]}
+{"ts":"2026-09-19T15:39:56.938Z","runId":"run-mu8jmkkq-41wu2o","event":"submit","actor":"kernel","nodeId":"m2.script-forge","detail":"02-编剧/剧本.md","refs":["02-编剧/剧本.md"]}
+{"ts":"2026-09-19T15:39:56.938Z","runId":"run-mu8jmkkq-41wu2o","event":"snapshot","actor":"kernel","nodeId":"m2.script-forge","detail":"r1·剧本.md","refs":["02-编剧/剧本.md"]}
+{"ts":"2026-09-19T15:39:56.946Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","nodeId":"m2.novel-bible","detail":"任务包产出（skill=novel-bible，上下文 1 件）"}
+{"ts":"2026-09-19T15:39:56.946Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.novel-bible（并行）"}
+{"ts":"2026-09-19T15:39:57.263Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.novel-bible（并行）"}
+{"ts":"2026-09-19T15:39:57.652Z","runId":"run-mu8jmkkq-41wu2o","event":"submit","actor":"kernel","nodeId":"m2.novel-bible","detail":"02-编剧/novel-bible.md","refs":["02-编剧/novel-bible.md"]}
+{"ts":"2026-09-19T15:39:57.654Z","runId":"run-mu8jmkkq-41wu2o","event":"snapshot","actor":"kernel","nodeId":"m2.novel-bible","detail":"r1·novel-bible.md","refs":["02-编剧/novel-bible.md"]}
+{"ts":"2026-09-19T15:39:57.660Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","nodeId":"m2.episodic-outline","detail":"任务包产出（skill=episodic-outline，上下文 1 件）"}
+{"ts":"2026-09-19T15:39:57.661Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.episodic-outline（并行）"}
+{"ts":"2026-09-19T15:39:57.991Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.episodic-outline（并行）"}
+{"ts":"2026-09-19T15:39:58.389Z","runId":"run-mu8jmkkq-41wu2o","event":"submit","actor":"kernel","nodeId":"m2.episodic-outline","detail":"02-编剧/episodic-outline.md","refs":["02-编剧/episodic-outline.md"]}
+{"ts":"2026-09-19T15:39:58.389Z","runId":"run-mu8jmkkq-41wu2o","event":"snapshot","actor":"kernel","nodeId":"m2.episodic-outline","detail":"r1·episodic-outline.md","refs":["02-编剧/episodic-outline.md"]}
+{"ts":"2026-09-19T15:39:58.396Z","runId":"run-mu8jmkkq-41wu2o","event":"verdict","actor":"kernel","nodeId":"m3.link","detail":"auto-pass（R6 连接件：自动批准）"}
+{"ts":"2026-09-19T15:39:58.397Z","runId":"run-mu8jmkkq-41wu2o","event":"gate-open","actor":"kernel","nodeId":"itb-m3.scene-breakdown","detail":"跨域交接验收：plot → drama"}
+{"ts":"2026-09-19T15:39:58.997Z","runId":"run-mu8jmkkq-41wu2o","event":"verdict","actor":"kernel","nodeId":"itb-m3.scene-breakdown","detail":"pass：B组代裁（全编排复跑）"}
+{"ts":"2026-09-19T15:39:59.008Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","nodeId":"m3.scene-breakdown","detail":"任务包产出（skill=scene-breakdown，上下文 1 件）"}
+{"ts":"2026-09-19T15:39:59.008Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m3.scene-breakdown（并行）"}
+{"ts":"2026-09-19T15:39:59.331Z","runId":"run-mu8jmkkq-41wu2o","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m3.scene-breakdown（并行）"}
+{"ts":"2026-09-19T15:39:59.601Z","runId":"run-mu8jmkkq-41wu2o","event":"warn","actor":"kernel","nodeId":"m3.scene-breakdown","detail":"声明断言无机器校验器（未执行，归评审/红方剖面）：AE-BEAT-FORMAT、AE-HOOK-EVENT","refs":["03-成剧/分镜剧本.md"]}
+{"ts":"2026-09-19T15:39:59.720Z","runId":"run-mu8jmkkq-41wu2o","event":"submit","actor":"kernel","nodeId":"m3.scene-breakdown","detail":"03-成剧/分镜剧本.md","refs":["03-成剧/分镜剧本.md"]}
+{"ts":"2026-09-19T15:39:59.720Z","runId":"run-mu8jmkkq-41wu2o","event":"snapshot","actor":"kernel","nodeId":"m3.scene-breakdown","detail":"r1·分镜剧本.md","refs":["03-成剧/分镜剧本.md"]}
+{"ts":"2026-09-19T15:39:59.725Z","runId":"run-mu8jmkkq-41wu2o","event":"run-end","actor":"kernel","detail":"全部节点 done"}
+{"ts":"2026-09-19T15:39:59.735Z","runId":"run-mu8jmkkq-41wu2o","event":"note","actor":"kernel:mine","detail":"编排挖掘包已组装（journal 187 事件 / 证据文件 2 件 / 打回记录 0 条）","refs":["registry/mine-package.json"]}

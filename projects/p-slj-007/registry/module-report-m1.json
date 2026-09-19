@@ -1,0 +1,70 @@
+{
+  "format": "module-report@1",
+  "projectId": "p-slj-007",
+  "flowId": "caocao-wudalang",
+  "moduleId": "m1",
+  "moduleName": "m1",
+  "title": "选题报告师 / find-trope / material-dissect",
+  "closedAt": "2026-09-19T15:41:29.816Z",
+  "io": {
+    "input": [
+      "direction",
+      "chapters"
+    ],
+    "output": "01-选题/internet-feel.md"
+  },
+  "artifacts": [
+    {
+      "node": "m1.topic-report",
+      "op": "topic-report",
+      "path": "01-选题/选题报告.md",
+      "role": "process"
+    },
+    {
+      "node": "m1.find-trope",
+      "op": "find-trope",
+      "path": "01-选题/find-trope.md",
+      "role": "process"
+    },
+    {
+      "node": "m1.material-dissect",
+      "op": "material-dissect",
+      "path": "01-选题/material-dissect.md",
+      "role": "process"
+    },
+    {
+      "node": "m1.topic-zeitgeist",
+      "op": "topic-zeitgeist",
+      "path": "01-选题/topic-zeitgeist.md",
+      "role": "process"
+    },
+    {
+      "node": "m1.internet-feel",
+      "op": "internet-feel",
+      "path": "01-选题/internet-feel.md",
+      "role": "deliverable"
+    }
+  ],
+  "acceptance": [
+    {
+      "node": "m1.topic-report",
+      "assert": "AE-REPORT-DENSITY",
+      "status": "pass",
+      "detail": "梗/话题行 10、对标 30、热度数据 4 处"
+    }
+  ],
+  "metrics": {
+    "submits": 5,
+    "retries": 0,
+    "tokensIn": 0,
+    "tokensOut": 0,
+    "latencyMs": 0,
+    "ctxOffered": 19,
+    "ctxUsed": 13,
+    "hitRate": 0.6842105263157895
+  },
+  "feedback": {
+    "annotations": 0,
+    "proposals": 0
+  }
+}

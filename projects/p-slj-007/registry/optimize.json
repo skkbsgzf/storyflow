@@ -1,0 +1,419 @@
+{
+  "format": "optimize@1",
+  "flowId": "caocao-wudalang",
+  "at": "2026-09-19T15:49:17.113Z",
+  "policy": {
+    "link_default": "auto",
+    "adapt": "propose"
+  },
+  "metrics": {
+    "events": 53,
+    "window": {
+      "from": "2026-09-19T15:40:39.951Z",
+      "to": "2026-09-19T15:49:17.095Z"
+    }
+  },
+  "sources": [
+    "metrics"
+  ],
+  "mineStructural": [],
+  "proposals": [
+    {
+      "id": "R1@plot.episodic-outline:kb/formats/webnovel-fastfood",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.episodic-outline 的 kb/formats/webnovel-fastfood",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "episodic-outline",
+        "remove_knowledge": [
+          "kb/formats/webnovel-fastfood"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@plot.world-forge:kb/formats/webnovel-fastfood",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.world-forge 的 kb/formats/webnovel-fastfood",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "world-forge",
+        "remove_knowledge": [
+          "kb/formats/webnovel-fastfood"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@prose.ghostwrite:kb/aesthetic/metaphor-zh",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.ghostwrite 的 kb/aesthetic/metaphor-zh",
+      "reason": "该条款装载 4 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 4
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "ghostwrite",
+        "remove_knowledge": [
+          "kb/aesthetic/metaphor-zh"
+        ],
+        "reason": "装载 4 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 4
+        }
+      }
+    },
+    {
+      "id": "R1@prose.ghostwrite:kb/aesthetic/slop-list",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.ghostwrite 的 kb/aesthetic/slop-list",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "ghostwrite",
+        "remove_knowledge": [
+          "kb/aesthetic/slop-list"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@prose.layer-scenes:kb/aesthetic/metaphor-zh",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.layer-scenes 的 kb/aesthetic/metaphor-zh",
+      "reason": "该条款装载 4 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 4
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "layer-scenes",
+        "remove_knowledge": [
+          "kb/aesthetic/metaphor-zh"
+        ],
+        "reason": "装载 4 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 4
+        }
+      }
+    },
+    {
+      "id": "R1@prose.novel-deai:kb/aesthetic/metaphor-zh",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.novel-deai 的 kb/aesthetic/metaphor-zh",
+      "reason": "该条款装载 4 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 4
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "novel-deai",
+        "remove_knowledge": [
+          "kb/aesthetic/metaphor-zh"
+        ],
+        "reason": "装载 4 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 4
+        }
+      }
+    },
+    {
+      "id": "R1@prose.novel-deai:kb/aesthetic/slop-list",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.novel-deai 的 kb/aesthetic/slop-list",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "novel-deai",
+        "remove_knowledge": [
+          "kb/aesthetic/slop-list"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@prose.novel-deai:kb/formats/webnovel-fastfood",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.novel-deai 的 kb/formats/webnovel-fastfood",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "novel-deai",
+        "remove_knowledge": [
+          "kb/formats/webnovel-fastfood"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@prose.novel-judge:kb/aesthetic/metaphor-zh",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.novel-judge 的 kb/aesthetic/metaphor-zh",
+      "reason": "该条款装载 4 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 4
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "novel-judge",
+        "remove_knowledge": [
+          "kb/aesthetic/metaphor-zh"
+        ],
+        "reason": "装载 4 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 4
+        }
+      }
+    },
+    {
+      "id": "R1@prose.prose-assembler:kb/aesthetic/slop-list",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.prose-assembler 的 kb/aesthetic/slop-list",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "prose-assembler",
+        "remove_knowledge": [
+          "kb/aesthetic/slop-list"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@prose.prose-assembler:kb/formats/webnovel-fastfood",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.prose-assembler 的 kb/formats/webnovel-fastfood",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "prose-assembler",
+        "remove_knowledge": [
+          "kb/formats/webnovel-fastfood"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R6@m2.link",
+      "rule": "R6-autogate-cleanup",
+      "severity": "low",
+      "risk": "low",
+      "title": "清掉旧评审节点：m2.link",
+      "reason": "R5 起域内质量由各 tool 的 asserts/config 承担，图上不再需要固定评审节点。纯汇合点，无产活、无裁决价值（R5 起域内质量由各 tool 的 asserts/config 承担）。裁掉后编排更短、更少串行屏障。",
+      "evidence": {
+        "rule": "R6-autogate-cleanup",
+        "metric": "gate.node",
+        "value": "连接 · 编剧（待人工批准）",
+        "samples": 0
+      },
+      "patch": {
+        "kind": "remove-node",
+        "id": "m2.link",
+        "rewire": "bridge",
+        "reason": "R5 门降级：纯汇合点不再需要常驻图上",
+        "evidence": {
+          "rule": "R6-autogate-cleanup",
+          "metric": "gate.node",
+          "value": "连接 · 编剧（待人工批准）",
+          "samples": 0
+        }
+      }
+    },
+    {
+      "id": "R6@m3.link",
+      "rule": "R6-autogate-cleanup",
+      "severity": "low",
+      "risk": "low",
+      "title": "清掉旧评审节点：m3.link",
+      "reason": "R5 起域内质量由各 tool 的 asserts/config 承担，图上不再需要固定评审节点。纯汇合点，无产活、无裁决价值（R5 起域内质量由各 tool 的 asserts/config 承担）。裁掉后编排更短、更少串行屏障。",
+      "evidence": {
+        "rule": "R6-autogate-cleanup",
+        "metric": "gate.node",
+        "value": "连接 · 写作（自动批准）",
+        "samples": 0
+      },
+      "patch": {
+        "kind": "remove-node",
+        "id": "m3.link",
+        "rewire": "bridge",
+        "reason": "R5 门降级：纯汇合点不再需要常驻图上",
+        "evidence": {
+          "rule": "R6-autogate-cleanup",
+          "metric": "gate.node",
+          "value": "连接 · 写作（自动批准）",
+          "samples": 0
+        }
+      }
+    },
+    {
+      "id": "R6@m4.link",
+      "rule": "R6-autogate-cleanup",
+      "severity": "low",
+      "risk": "low",
+      "title": "清掉旧评审节点：m4.link",
+      "reason": "R5 起域内质量由各 tool 的 asserts/config 承担，图上不再需要固定评审节点。纯汇合点，无产活、无裁决价值（R5 起域内质量由各 tool 的 asserts/config 承担）。裁掉后编排更短、更少串行屏障。",
+      "evidence": {
+        "rule": "R6-autogate-cleanup",
+        "metric": "gate.node",
+        "value": "连接 · 交付（自动批准）",
+        "samples": 0
+      },
+      "patch": {
+        "kind": "remove-node",
+        "id": "m4.link",
+        "rewire": "bridge",
+        "reason": "R5 门降级：纯汇合点不再需要常驻图上",
+        "evidence": {
+          "rule": "R6-autogate-cleanup",
+          "metric": "gate.node",
+          "value": "连接 · 交付（自动批准）",
+          "samples": 0
+        }
+      }
+    }
+  ]
+}

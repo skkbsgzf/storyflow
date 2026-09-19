@@ -1,0 +1,1169 @@
+{
+  "format": "metrics-summary@1",
+  "runId": "run-mu8jmkkq-41wu2o",
+  "events": 38,
+  "byNode": {
+    "m1.topic-report": {
+      "nodeId": "m1.topic-report",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 3,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 5,
+      "ctxUsed": 5,
+      "hitRate": 1,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "topic",
+      "op": "topic-report"
+    },
+    "m1.find-trope": {
+      "nodeId": "m1.find-trope",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 7,
+      "ctxUsed": 6,
+      "hitRate": 0.8571428571428571,
+      "consumedBy": 1,
+      "cost": 0.000001,
+      "efficiency": 1000000,
+      "verdicts": [],
+      "kit": "topic",
+      "op": "find-trope"
+    },
+    "m1.material-dissect": {
+      "nodeId": "m1.material-dissect",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 3,
+      "ctxUsed": 2,
+      "hitRate": 0.6666666666666666,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "topic",
+      "op": "material-dissect"
+    },
+    "m1.deconstruct-book": {
+      "nodeId": "m1.deconstruct-book",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 5,
+      "ctxUsed": 1,
+      "hitRate": 0.2,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "topic",
+      "op": "deconstruct-book"
+    },
+    "m1.topic-zeitgeist": {
+      "nodeId": "m1.topic-zeitgeist",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 1,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "topic",
+      "op": "topic-zeitgeist"
+    },
+    "m1.internet-feel": {
+      "nodeId": "m1.internet-feel",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 3,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "topic",
+      "op": "internet-feel"
+    },
+    "itb-m2.world-forge": {
+      "nodeId": "itb-m2.world-forge",
+      "runs": 0,
+      "submits": 0,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 0,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 0,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [
+        "pass"
+      ]
+    },
+    "m2.world-forge": {
+      "nodeId": "m2.world-forge",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 7,
+      "ctxUsed": 1,
+      "hitRate": 0.14285714285714285,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "plot",
+      "op": "world-forge"
+    },
+    "m2.structure-design": {
+      "nodeId": "m2.structure-design",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 6,
+      "ctxUsed": 4,
+      "hitRate": 0.6666666666666666,
+      "consumedBy": 1,
+      "cost": 0.000001,
+      "efficiency": 1000000,
+      "verdicts": [],
+      "kit": "plot",
+      "op": "structure-design"
+    },
+    "m2.plot-choreographer": {
+      "nodeId": "m2.plot-choreographer",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 8,
+      "ctxUsed": 3,
+      "hitRate": 0.375,
+      "consumedBy": 2,
+      "cost": 0.000001,
+      "efficiency": 2000000,
+      "verdicts": [],
+      "kit": "plot",
+      "op": "plot-choreographer"
+    },
+    "m2.subplot-weave": {
+      "nodeId": "m2.subplot-weave",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 5,
+      "ctxUsed": 2,
+      "hitRate": 0.4,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "plot",
+      "op": "subplot-weave"
+    },
+    "m2.foreshadow-plant": {
+      "nodeId": "m2.foreshadow-plant",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 4,
+      "ctxUsed": 2,
+      "hitRate": 0.5,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "plot",
+      "op": "foreshadow-plant"
+    },
+    "m2.scene-breakdown": {
+      "nodeId": "m2.scene-breakdown",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 8,
+      "ctxUsed": 2,
+      "hitRate": 0.25,
+      "consumedBy": 1,
+      "cost": 0.000001,
+      "efficiency": 1000000,
+      "verdicts": [],
+      "kit": "plot",
+      "op": "scene-breakdown"
+    },
+    "m2.script-drama-beat": {
+      "nodeId": "m2.script-drama-beat",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 7,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 6,
+      "ctxUsed": 4,
+      "hitRate": 0.6666666666666666,
+      "consumedBy": 1,
+      "cost": 0.000001,
+      "efficiency": 1000000,
+      "verdicts": [],
+      "kit": "plot",
+      "op": "script-drama-beat"
+    },
+    "m2.plot-redline": {
+      "nodeId": "m2.plot-redline",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 7,
+      "ctxUsed": 2,
+      "hitRate": 0.2857142857142857,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "plot",
+      "op": "plot-redline"
+    },
+    "m2.script-forge": {
+      "nodeId": "m2.script-forge",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 8,
+      "ctxUsed": 3,
+      "hitRate": 0.375,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "plot",
+      "op": "script-forge"
+    },
+    "m2.novel-bible": {
+      "nodeId": "m2.novel-bible",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 7,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "plot",
+      "op": "novel-bible"
+    },
+    "m2.episodic-outline": {
+      "nodeId": "m2.episodic-outline",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 5,
+      "ctxUsed": 1,
+      "hitRate": 0.2,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "plot",
+      "op": "episodic-outline"
+    },
+    "itb-m3.scene-breakdown": {
+      "nodeId": "itb-m3.scene-breakdown",
+      "runs": 0,
+      "submits": 0,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 0,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 0,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [
+        "pass"
+      ]
+    },
+    "m3.scene-breakdown": {
+      "nodeId": "m3.scene-breakdown",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 3,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 7,
+      "ctxUsed": 2,
+      "hitRate": 0.2857142857142857,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "drama",
+      "op": "scene-breakdown"
+    }
+  },
+  "byTool": {
+    "topic.topic-report": {
+      "nodeId": "topic.topic-report",
+      "kit": "topic",
+      "op": "topic-report",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 3,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 5,
+      "ctxUsed": 5,
+      "hitRate": 1,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m1.topic-report"
+      ]
+    },
+    "topic.find-trope": {
+      "nodeId": "topic.find-trope",
+      "kit": "topic",
+      "op": "find-trope",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 7,
+      "ctxUsed": 6,
+      "hitRate": 0.8571428571428571,
+      "consumedBy": 1,
+      "cost": 0.000001,
+      "efficiency": 1000000,
+      "verdicts": [],
+      "nodes": [
+        "m1.find-trope"
+      ]
+    },
+    "topic.material-dissect": {
+      "nodeId": "topic.material-dissect",
+      "kit": "topic",
+      "op": "material-dissect",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 3,
+      "ctxUsed": 2,
+      "hitRate": 0.6666666666666666,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m1.material-dissect"
+      ]
+    },
+    "topic.deconstruct-book": {
+      "nodeId": "topic.deconstruct-book",
+      "kit": "topic",
+      "op": "deconstruct-book",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 5,
+      "ctxUsed": 1,
+      "hitRate": 0.2,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m1.deconstruct-book"
+      ]
+    },
+    "topic.topic-zeitgeist": {
+      "nodeId": "topic.topic-zeitgeist",
+      "kit": "topic",
+      "op": "topic-zeitgeist",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 1,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m1.topic-zeitgeist"
+      ]
+    },
+    "topic.internet-feel": {
+      "nodeId": "topic.internet-feel",
+      "kit": "topic",
+      "op": "internet-feel",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 3,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m1.internet-feel"
+      ]
+    },
+    "plot.world-forge": {
+      "nodeId": "plot.world-forge",
+      "kit": "plot",
+      "op": "world-forge",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 7,
+      "ctxUsed": 1,
+      "hitRate": 0.14285714285714285,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m2.world-forge"
+      ]
+    },
+    "plot.structure-design": {
+      "nodeId": "plot.structure-design",
+      "kit": "plot",
+      "op": "structure-design",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 6,
+      "ctxUsed": 4,
+      "hitRate": 0.6666666666666666,
+      "consumedBy": 1,
+      "cost": 0.000001,
+      "efficiency": 1000000,
+      "verdicts": [],
+      "nodes": [
+        "m2.structure-design"
+      ]
+    },
+    "plot.plot-choreographer": {
+      "nodeId": "plot.plot-choreographer",
+      "kit": "plot",
+      "op": "plot-choreographer",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 8,
+      "ctxUsed": 3,
+      "hitRate": 0.375,
+      "consumedBy": 2,
+      "cost": 0.000001,
+      "efficiency": 2000000,
+      "verdicts": [],
+      "nodes": [
+        "m2.plot-choreographer"
+      ]
+    },
+    "plot.subplot-weave": {
+      "nodeId": "plot.subplot-weave",
+      "kit": "plot",
+      "op": "subplot-weave",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 5,
+      "ctxUsed": 2,
+      "hitRate": 0.4,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m2.subplot-weave"
+      ]
+    },
+    "plot.foreshadow-plant": {
+      "nodeId": "plot.foreshadow-plant",
+      "kit": "plot",
+      "op": "foreshadow-plant",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 4,
+      "ctxUsed": 2,
+      "hitRate": 0.5,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m2.foreshadow-plant"
+      ]
+    },
+    "plot.scene-breakdown": {
+      "nodeId": "plot.scene-breakdown",
+      "kit": "plot",
+      "op": "scene-breakdown",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 8,
+      "ctxUsed": 2,
+      "hitRate": 0.25,
+      "consumedBy": 1,
+      "cost": 0.000001,
+      "efficiency": 1000000,
+      "verdicts": [],
+      "nodes": [
+        "m2.scene-breakdown"
+      ]
+    },
+    "plot.script-drama-beat": {
+      "nodeId": "plot.script-drama-beat",
+      "kit": "plot",
+      "op": "script-drama-beat",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 7,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 6,
+      "ctxUsed": 4,
+      "hitRate": 0.6666666666666666,
+      "consumedBy": 1,
+      "cost": 0.000001,
+      "efficiency": 1000000,
+      "verdicts": [],
+      "nodes": [
+        "m2.script-drama-beat"
+      ]
+    },
+    "plot.plot-redline": {
+      "nodeId": "plot.plot-redline",
+      "kit": "plot",
+      "op": "plot-redline",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 7,
+      "ctxUsed": 2,
+      "hitRate": 0.2857142857142857,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m2.plot-redline"
+      ]
+    },
+    "plot.script-forge": {
+      "nodeId": "plot.script-forge",
+      "kit": "plot",
+      "op": "script-forge",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 8,
+      "ctxUsed": 3,
+      "hitRate": 0.375,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m2.script-forge"
+      ]
+    },
+    "plot.novel-bible": {
+      "nodeId": "plot.novel-bible",
+      "kit": "plot",
+      "op": "novel-bible",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 7,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m2.novel-bible"
+      ]
+    },
+    "plot.episodic-outline": {
+      "nodeId": "plot.episodic-outline",
+      "kit": "plot",
+      "op": "episodic-outline",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 5,
+      "ctxUsed": 1,
+      "hitRate": 0.2,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m2.episodic-outline"
+      ]
+    },
+    "drama.scene-breakdown": {
+      "nodeId": "drama.scene-breakdown",
+      "kit": "drama",
+      "op": "scene-breakdown",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 3,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 7,
+      "ctxUsed": 2,
+      "hitRate": 0.2857142857142857,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m3.scene-breakdown"
+      ]
+    }
+  },
+  "knowledge": [
+    {
+      "id": "01-选题/选题报告.md",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/deconstruct/style-learning",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "01-选题/material-dissect.md",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "01-选题/deconstruct-book.md",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/naturalness-zh",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "01-选题/topic-zeitgeist.md",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/formats/webnovel-fastfood",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/formats/webnovel-longform",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "01-选题/internet-feel.md",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/market/setting-rules",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "02-编剧/world-forge.md",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/emotion-curve",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/ending",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/market/constraints",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "02-编剧/subplot-weave.md",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/dialogue",
+      "offered": 3,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/method/longform-engineering",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "02-编剧/foreshadow-plant.md",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/ai-trace",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/constitution",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/perspective-review",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/redline-scoring",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/unreasonable-highlight",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "02-编剧/plot-redline.md",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "02-编剧/剧本.md",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "02-编剧/novel-bible.md",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "02-编剧/episodic-outline.md",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/reversal",
+      "offered": 4,
+      "used": 1,
+      "hitRate": 0.25
+    },
+    {
+      "id": "kb/aesthetic/scene-value",
+      "offered": 4,
+      "used": 1,
+      "hitRate": 0.25
+    },
+    {
+      "id": "kb/craft/highlight-loop",
+      "offered": 4,
+      "used": 1,
+      "hitRate": 0.25
+    },
+    {
+      "id": "kb/aesthetic/character",
+      "offered": 6,
+      "used": 2,
+      "hitRate": 0.3333333333333333
+    },
+    {
+      "id": "kb/market/meme-rules",
+      "offered": 2,
+      "used": 1,
+      "hitRate": 0.5
+    },
+    {
+      "id": "kb/trope/liufang-zhongtian",
+      "offered": 2,
+      "used": 1,
+      "hitRate": 0.5
+    },
+    {
+      "id": "kb/aesthetic/hook-3s",
+      "offered": 4,
+      "used": 2,
+      "hitRate": 0.5
+    },
+    {
+      "id": "kb/continuity/worldbook",
+      "offered": 2,
+      "used": 1,
+      "hitRate": 0.5
+    },
+    {
+      "id": "kb/aesthetic/platform-compliance",
+      "offered": 2,
+      "used": 1,
+      "hitRate": 0.5
+    },
+    {
+      "id": "02-编剧/scene-breakdown.md",
+      "offered": 2,
+      "used": 1,
+      "hitRate": 0.5
+    },
+    {
+      "id": "kb/aesthetic/pacing-density",
+      "offered": 9,
+      "used": 5,
+      "hitRate": 0.5555555555555556
+    },
+    {
+      "id": "kb/aesthetic/conflict-escalation",
+      "offered": 5,
+      "used": 3,
+      "hitRate": 0.6
+    },
+    {
+      "id": "kb/trope/chongsheng-fuchou",
+      "offered": 3,
+      "used": 2,
+      "hitRate": 0.6666666666666666
+    },
+    {
+      "id": "kb/trope/dalian-nuezha",
+      "offered": 3,
+      "used": 2,
+      "hitRate": 0.6666666666666666
+    },
+    {
+      "id": "kb/structure/episodic-webnovel",
+      "offered": 3,
+      "used": 2,
+      "hitRate": 0.6666666666666666
+    },
+    {
+      "id": "kb/market/topic-anatomy",
+      "offered": 2,
+      "used": 2,
+      "hitRate": 1
+    },
+    {
+      "id": "kb/trope/majia-diaoma",
+      "offered": 1,
+      "used": 1,
+      "hitRate": 1
+    },
+    {
+      "id": "kb/trope/na-billionaire",
+      "offered": 1,
+      "used": 1,
+      "hitRate": 1
+    },
+    {
+      "id": "kb/trope/na-fantasy",
+      "offered": 1,
+      "used": 1,
+      "hitRate": 1
+    },
+    {
+      "id": "01-选题/find-trope.md",
+      "offered": 1,
+      "used": 1,
+      "hitRate": 1
+    },
+    {
+      "id": "kb/deconstruct/protocol",
+      "offered": 1,
+      "used": 1,
+      "hitRate": 1
+    },
+    {
+      "id": "kb/structure/catalog",
+      "offered": 1,
+      "used": 1,
+      "hitRate": 1
+    },
+    {
+      "id": "02-编剧/structure-design.md",
+      "offered": 1,
+      "used": 1,
+      "hitRate": 1
+    },
+    {
+      "id": "02-编剧/plot-choreographer.md",
+      "offered": 2,
+      "used": 2,
+      "hitRate": 1
+    },
+    {
+      "id": "kb/continuity/state-ledger",
+      "offered": 1,
+      "used": 1,
+      "hitRate": 1
+    },
+    {
+      "id": "kb/aesthetic/visual-poster",
+      "offered": 1,
+      "used": 1,
+      "hitRate": 1
+    },
+    {
+      "id": "02-编剧/script-drama-beat.md",
+      "offered": 1,
+      "used": 1,
+      "hitRate": 1
+    }
+  ],
+  "gates": [
+    {
+      "nodeId": "itb-m2.world-forge",
+      "phase": "gate",
+      "passes": 1,
+      "sendBacks": 0,
+      "samples": 1
+    },
+    {
+      "nodeId": "itb-m3.scene-breakdown",
+      "phase": "gate",
+      "passes": 1,
+      "sendBacks": 0,
+      "samples": 1
+    }
+  ],
+  "window": {
+    "from": "2026-09-19T15:29:35.432Z",
+    "to": "2026-09-19T15:39:59.719Z"
+  }
+}

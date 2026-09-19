@@ -1,0 +1,239 @@
+{
+  "snapshots": {
+    "m1.topic-report": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:29:35.797Z",
+        "note": "submit r1·选题报告.md",
+        "files": {
+          "01-选题/选题报告.md": {
+            "hash": "20c938328fad",
+            "path": "snapshots/m1.topic-report/r1/01-选题/选题报告.md"
+          }
+        }
+      }
+    ],
+    "m1.find-trope": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:31:37.036Z",
+        "note": "submit r1·find-trope.md",
+        "files": {
+          "01-选题/find-trope.md": {
+            "hash": "c18af90b9753",
+            "path": "snapshots/m1.find-trope/r1/01-选题/find-trope.md"
+          }
+        }
+      }
+    ],
+    "m1.material-dissect": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:31:37.644Z",
+        "note": "submit r1·material-dissect.md",
+        "files": {
+          "01-选题/material-dissect.md": {
+            "hash": "d9d45d73b786",
+            "path": "snapshots/m1.material-dissect/r1/01-选题/material-dissect.md"
+          }
+        }
+      }
+    ],
+    "m1.deconstruct-book": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:39:48.292Z",
+        "note": "submit r1·deconstruct-book.md",
+        "files": {
+          "01-选题/deconstruct-book.md": {
+            "hash": "4189dc8a07c1",
+            "path": "snapshots/m1.deconstruct-book/r1/01-选题/deconstruct-book.md"
+          }
+        }
+      }
+    ],
+    "m1.topic-zeitgeist": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:39:48.996Z",
+        "note": "submit r1·topic-zeitgeist.md",
+        "files": {
+          "01-选题/topic-zeitgeist.md": {
+            "hash": "f9758de10a10",
+            "path": "snapshots/m1.topic-zeitgeist/r1/01-选题/topic-zeitgeist.md"
+          }
+        }
+      }
+    ],
+    "m1.internet-feel": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:39:49.682Z",
+        "note": "submit r1·internet-feel.md",
+        "files": {
+          "01-选题/internet-feel.md": {
+            "hash": "747ee75a4bc2",
+            "path": "snapshots/m1.internet-feel/r1/01-选题/internet-feel.md"
+          }
+        }
+      }
+    ],
+    "m2.world-forge": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:39:51.002Z",
+        "note": "submit r1·world-forge.md",
+        "files": {
+          "02-编剧/world-forge.md": {
+            "hash": "34a0411c3c67",
+            "path": "snapshots/m2.world-forge/r1/02-编剧/world-forge.md"
+          }
+        }
+      }
+    ],
+    "m2.structure-design": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:39:51.724Z",
+        "note": "submit r1·structure-design.md",
+        "files": {
+          "02-编剧/structure-design.md": {
+            "hash": "c3e23823439a",
+            "path": "snapshots/m2.structure-design/r1/02-编剧/structure-design.md"
+          }
+        }
+      }
+    ],
+    "m2.plot-choreographer": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:39:52.443Z",
+        "note": "submit r1·plot-choreographer.md",
+        "files": {
+          "02-编剧/plot-choreographer.md": {
+            "hash": "bf8a55e6a797",
+            "path": "snapshots/m2.plot-choreographer/r1/02-编剧/plot-choreographer.md"
+          }
+        }
+      }
+    ],
+    "m2.subplot-weave": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:39:53.169Z",
+        "note": "submit r1·subplot-weave.md",
+        "files": {
+          "02-编剧/subplot-weave.md": {
+            "hash": "80601b04f53a",
+            "path": "snapshots/m2.subplot-weave/r1/02-编剧/subplot-weave.md"
+          }
+        }
+      }
+    ],
+    "m2.foreshadow-plant": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:39:53.898Z",
+        "note": "submit r1·foreshadow-plant.md",
+        "files": {
+          "02-编剧/foreshadow-plant.md": {
+            "hash": "34fdf5f5745b",
+            "path": "snapshots/m2.foreshadow-plant/r1/02-编剧/foreshadow-plant.md"
+          }
+        }
+      }
+    ],
+    "m2.scene-breakdown": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:39:54.637Z",
+        "note": "submit r1·scene-breakdown.md",
+        "files": {
+          "02-编剧/scene-breakdown.md": {
+            "hash": "4059bd0aba30",
+            "path": "snapshots/m2.scene-breakdown/r1/02-编剧/scene-breakdown.md"
+          }
+        }
+      }
+    ],
+    "m2.script-drama-beat": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:39:55.392Z",
+        "note": "submit r1·script-drama-beat.md",
+        "files": {
+          "02-编剧/script-drama-beat.md": {
+            "hash": "d76c6064e14a",
+            "path": "snapshots/m2.script-drama-beat/r1/02-编剧/script-drama-beat.md"
+          }
+        }
+      }
+    ],
+    "m2.plot-redline": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:39:56.103Z",
+        "note": "submit r1·plot-redline.md",
+        "files": {
+          "02-编剧/plot-redline.md": {
+            "hash": "721204be4dbc",
+            "path": "snapshots/m2.plot-redline/r1/02-编剧/plot-redline.md"
+          }
+        }
+      }
+    ],
+    "m2.script-forge": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:39:56.822Z",
+        "note": "submit r1·剧本.md",
+        "files": {
+          "02-编剧/剧本.md": {
+            "hash": "923e30ba028a",
+            "path": "snapshots/m2.script-forge/r1/02-编剧/剧本.md"
+          }
+        }
+      }
+    ],
+    "m2.novel-bible": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:39:57.537Z",
+        "note": "submit r1·novel-bible.md",
+        "files": {
+          "02-编剧/novel-bible.md": {
+            "hash": "c0c18f157bfa",
+            "path": "snapshots/m2.novel-bible/r1/02-编剧/novel-bible.md"
+          }
+        }
+      }
+    ],
+    "m2.episodic-outline": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:39:58.275Z",
+        "note": "submit r1·episodic-outline.md",
+        "files": {
+          "02-编剧/episodic-outline.md": {
+            "hash": "369a3abc6a18",
+            "path": "snapshots/m2.episodic-outline/r1/02-编剧/episodic-outline.md"
+          }
+        }
+      }
+    ],
+    "m3.scene-breakdown": [
+      {
+        "round": 1,
+        "ts": "2026-09-19T15:39:59.605Z",
+        "note": "submit r1·分镜剧本.md",
+        "files": {
+          "03-成剧/分镜剧本.md": {
+            "hash": "c21764c374f2",
+            "path": "snapshots/m3.scene-breakdown/r1/03-成剧/分镜剧本.md"
+          }
+        }
+      }
+    ]
+  },
+  "inputs": {}
+}
