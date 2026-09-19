@@ -2,7 +2,7 @@ import { describe, expect, it, beforeAll } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { runAestheticAsserts, cnEpisodeToInt } from "../src/aesthetic.js";
+import { runAestheticAsserts, cnEpisodeToInt, reportDensityAssert } from "../src/aesthetic.js";
 
 function beat(no: number, hook: string, sec: number, opts: { trio?: boolean; tail?: boolean; dlgLen?: number } = {}): string {
   const trio = opts.trio ?? true;
@@ -107,5 +107,44 @@ describe("aesthetic · check_aesthetic_asserts 内核实现", () => {
     const r = runAestheticAsserts(dir2, "x.md");
     expect(r.some((x) => x.name === "AE-CHOREO-BOUNDS")).toBe(false);
     expect(r.some((x) => x.name === "AE-CHOREO-GAP")).toBe(true); // 连续性检查仍生效
+  });
+});
+
+describe("AE-REPORT-DENSITY · 热度数据口径（表头带单位的规范表格不得误判）", () => {
+  it("表头（万）+ 单元格裸数字：应计入热度，不因数字未紧跟万而 block", () => {
+    const md = [
+      "# 选题报告",
+      "## 一、梗选型",
+      "| 候选族 | n | 均热度（万） |",
+      "| 打脸虐渣梗 | 1510 | 18558 |",
+      "| 重生复仇梗 | 702 | 11978 |",
+      "| 对标《离婚后PPT》借鉴 | 3 | 11800 |",
+      "## 二、竞品对标",
+      "《离婚后，我送前夫一份PPT》借鉴当众清算",
+      "《好感结算中》借鉴数值仪表盘",
+      "## 四、可用话题清单",
+      "| 素材 | 传播度 | 消费去向 |",
+      "| 思维链浮窗梗 | 高 | 第1章 |",
+      "| 当众对账梗 | 高 | 第2章 |",
+      "| 开闸金句梗 | 高 | 第3章 |",
+      "| 十年伏笔梗 | 中 | 章末钩 |",
+      "| 口碑兵器梗 | 中 | 世界观位 |",
+      "| 直播弹幕梗 | 高 | 第2集 |",
+      "| 演练撕报告梗 | 高 | 第1集 |",
+    ].join("\n");
+    const v = reportDensityAssert(md);
+    expect(v.status).toBe("pass");
+    expect(v.detail).toContain("热度数据 5 处");
+  });
+
+  it("数字紧跟万：照旧按出现次数计数", () => {
+    const md = "对标《A》（热度 118000 万）；对标《B》（热度 118000 万）；均热 18558 万。\n话题清单在场。";
+    const v = reportDensityAssert(md);
+    expect(v.detail).not.toContain("热度数据");
+  });
+
+  it("无任何热度数据：仍 block", () => {
+    const v = reportDensityAssert("# 报告\n没有任何数据。\n| 梗 | 去向 |\n| x | y |");
+    expect(v.status).toBe("block");
   });
 });

@@ -373,7 +373,19 @@ export function reportDensityAssert(text: string): Validation {
   });
   const tropeRows = rows.filter((l) => /梗|话题|对标|素材|借鉴/.test(l)).length;
   const bench = (text.match(/[《「][^》」]{2,30}[》」]/g) ?? []).length;
-  const heat = (text.match(/\d{2,6}(\.\d+)?\s*万/g) ?? []).length;
+  // 热度数据：数字紧跟「万」，或表格行内裸数字且上方 3 行内的表头声明了（万）——
+  // 口径过窄会把「表头带单位、单元格裸数字」的规范表格误判为无数据（p-slj-001 实证）
+  const textLines = text.split("\n");
+  let heat = 0;
+  for (let i = 0; i < textLines.length; i++) {
+    const l = textLines[i];
+    const direct = l.match(/\d{2,6}(\.\d+)?\s*万/g) ?? [];
+    heat += direct.length;
+    if (!direct.length && l.includes("|") && /\d{2,6}(\.\d+)?/.test(l)) {
+      const headerCtx = textLines.slice(Math.max(0, i - 3), i).join("");
+      if (/（?万）?|均热/.test(headerCtx)) heat += (l.match(/\d{2,6}(\.\d+)?/g) ?? []).length;
+    }
+  }
   if (tropeRows < 8) problems.push(`梗/话题/对标行 ${tropeRows} < 8（梗密度不足）`);
   if (bench < 2) problems.push(`竞品对标引用 ${bench} < 2（缺可借鉴件）`);
   if (!/话题/.test(text)) problems.push("缺「可用话题」清单节");

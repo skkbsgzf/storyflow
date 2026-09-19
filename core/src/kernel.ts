@@ -418,7 +418,15 @@ export class Kernel {
     if (node.kind !== "agent" && !workGate) {
       throw new KernelError("NOT_AGENT_NODE", 409, `节点 ${nodeId} 不是可交卷的步（kind=${node.kind}${isLink ? "，连接件只接受 flow_gate 裁决（pass/reject）" : isBoundaryGate(node) ? "，kit 边界验收门只接受 flow_gate 裁决" : ""}）`);
     }
-    if (ns.status !== "awaiting") throw new KernelError("NODE_NOT_AWAITING", 409, `节点 ${nodeId} 不在等待提交（status=${ns.status}）`);
+    if (ns.status !== "awaiting") {
+      // 门未放行时提交下游节点，必须说清「谁挡的、怎么解」——
+      // 否则调用方拿到 NODE_NOT_AWAITING（status=none）无法区分「没派发」和「被门挡住」
+      const gateAwaiting = state.gate?.verdict === "awaiting" ? state.gate.node : undefined;
+      if (gateAwaiting && gateAwaiting !== nodeId) {
+        throw new KernelError("GATE_NOT_OPEN", 409, `验收门 ${gateAwaiting} 待裁决，节点 ${nodeId} 未派发——先 flow_gate 放行该门（token 见 state.gate.token）`);
+      }
+      throw new KernelError("NODE_NOT_AWAITING", 409, `节点 ${nodeId} 不在等待提交（status=${ns.status}）`);
+    }
 
     const contractFile = artifactPathOf(flow, nodeId);
     const rel = output.file ?? contractFile;
