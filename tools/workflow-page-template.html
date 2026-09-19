@@ -401,7 +401,7 @@ const projSel = document.getElementById("proj-switch");
   const bits = [];
   if (p.id !== nm) bits.push(p.id);
   if (p.status === "completed") bits.push("已完成");
-  else if (p.status) bits.push(ST_ZH[p.status] || p.status);
+  else if (p.status) bits.push(({awaiting:"待决", pending:"待重跑", running:"进行中", suspended:"挂起"})[p.status] || p.status);
   if (p.mtime) bits.push(p.mtime);
   if (p.renderable === false) bits.push("旧版页");
   o.value = p.id;
