@@ -1,0 +1,67 @@
+{
+  "format": "module-report@1",
+  "projectId": "ccwd-fq",
+  "flowId": "caocao-wudalang",
+  "moduleId": "m3",
+  "moduleName": "m3",
+  "title": "文学化师 / novel-deai / 连接 · 写作（自动批准）",
+  "closedAt": "2026-09-18T20:25:17.108Z",
+  "io": {
+    "input": [
+      "direction",
+      "chapters",
+      "route",
+      "题材",
+      "需求",
+      "灵感",
+      "严肃性",
+      "市场预估",
+      "AB测试"
+    ],
+    "output": "03-写作/终稿.md"
+  },
+  "artifacts": [
+    {
+      "node": "m3.novel-deai",
+      "op": "novel-deai",
+      "path": "03-写作/终稿.md",
+      "role": "deliverable"
+    }
+  ],
+  "acceptance": [
+    {
+      "node": "m3.novel-deai",
+      "assert": "AE-AI-QUOTA",
+      "status": "unverified"
+    },
+    {
+      "node": "m3.novel-deai",
+      "assert": "AE-AI-STRUCT",
+      "status": "unverified"
+    },
+    {
+      "node": "m3.novel-deai",
+      "assert": "AE-PROSE-SLOP",
+      "status": "unverified"
+    },
+    {
+      "node": "m3.novel-deai",
+      "assert": "AE-WNF-HOOK",
+      "status": "unverified"
+    }
+  ],
+  "metrics": {
+    "submits": 2,
+    "retries": 0,
+    "tokensIn": 0,
+    "tokensOut": 0,
+    "latencyMs": 0,
+    "ctxOffered": 28,
+    "ctxUsed": 15,
+    "hitRate": 0.5357142857142857
+  },
+  "feedback": {
+    "annotations": 0,
+    "proposals": 0
+  }
+}

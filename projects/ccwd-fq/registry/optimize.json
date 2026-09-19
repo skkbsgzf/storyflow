@@ -1,0 +1,1713 @@
+{
+  "format": "optimize@1",
+  "flowId": "caocao-wudalang",
+  "at": "2026-09-18T19:42:18.087Z",
+  "policy": {
+    "link_default": "auto",
+    "adapt": "propose"
+  },
+  "metrics": {
+    "events": 30,
+    "window": {
+      "from": "2026-09-18T17:54:51.032Z",
+      "to": "2026-09-18T19:37:11.004Z"
+    }
+  },
+  "sources": [
+    "metrics",
+    "miner"
+  ],
+  "mineStructural": [
+    {
+      "id": "M@Ncoverage@export-doc:无执行体",
+      "title": "交付终点 spine op 无内核执行体——m4.export-doc minitool「(未声明)」未实现，flow 永不能 completed",
+      "structural": "① module-lint 增 E 级：spine op 必须有内核执行体（minitools.ts 实现或 minitools.json 注册），声明层存在不算数；② 补 export-doc minitool（docx 导出复用 tools/export-doc.py 的断言逻辑）。拍板清单，tool 域开发项。",
+      "evidence": [
+        {
+          "source": "journal:74",
+          "quote": "warn m4.export-doc minitool「(未声明)」未实现（M1 边界）——节点 m4.export-doc 保持未执行，不静默放行"
+        },
+        {
+          "source": "journal:76",
+          "quote": "同 warn @19:28（前端推进按钮第三次触发，仍拦在同一处）"
+        },
+        {
+          "source": "whereami@2026-09-19",
+          "quote": "ccwd-fq（剩余 1 节点：m4.export-doc…）"
+        }
+      ]
+    },
+    {
+      "id": "M@Ncoverage@semantic:auto评审零消费",
+      "title": "语义断言「归评审/红方」在 auto 评审步下落空——7 条 CURVE 系断言零消费，连接件与交接门全部即时 pass",
+      "structural": "内核评审步任务包注入本步 unverified 清单（评审步 LLM 照单真读真裁，裁决落 journal），auto 模式下语义断言才有消费方；或明确降权记账「auto 模式语义断言只登记不裁决」。拍板清单，内核增强。",
+      "evidence": [
+        {
+          "source": "journal:26",
+          "quote": "warn 声明断言无机器校验器：AE-CURVE-STALL、AE-CURVE-TYPE、AE-CUSHION、AE-DESERT、AE-END-MECH、AE-REV-M…"
+        },
+        {
+          "source": "journal:16-18/46-48/71-73",
+          "quote": "m2.link pass / itb-m2 pass / m3.link auto-pass / itb-m3 pass / m4.link auto-pass / itb-m4 pass（全部即时）"
+        }
+      ]
+    }
+  ],
+  "proposals": [
+    {
+      "id": "R1@plot.episodic-outline:kb/aesthetic/pacing-density",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.episodic-outline 的 kb/aesthetic/pacing-density",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "episodic-outline",
+        "remove_knowledge": [
+          "kb/aesthetic/pacing-density"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@plot.episodic-outline:kb/craft/highlight-loop",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.episodic-outline 的 kb/craft/highlight-loop",
+      "reason": "该条款装载 4 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 4
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "episodic-outline",
+        "remove_knowledge": [
+          "kb/craft/highlight-loop"
+        ],
+        "reason": "装载 4 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 4
+        }
+      }
+    },
+    {
+      "id": "R1@plot.foreshadow-plant:kb/craft/highlight-loop",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.foreshadow-plant 的 kb/craft/highlight-loop",
+      "reason": "该条款装载 4 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 4
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "foreshadow-plant",
+        "remove_knowledge": [
+          "kb/craft/highlight-loop"
+        ],
+        "reason": "装载 4 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 4
+        }
+      }
+    },
+    {
+      "id": "R1@plot.novel-bible:kb/aesthetic/character",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.novel-bible 的 kb/aesthetic/character",
+      "reason": "该条款装载 5 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 5
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "novel-bible",
+        "remove_knowledge": [
+          "kb/aesthetic/character"
+        ],
+        "reason": "装载 5 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 5
+        }
+      }
+    },
+    {
+      "id": "R1@plot.novel-bible:kb/aesthetic/conflict-escalation",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.novel-bible 的 kb/aesthetic/conflict-escalation",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "novel-bible",
+        "remove_knowledge": [
+          "kb/aesthetic/conflict-escalation"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@plot.plot-choreographer:kb/aesthetic/conflict-escalation",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.plot-choreographer 的 kb/aesthetic/conflict-escalation",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "plot-choreographer",
+        "remove_knowledge": [
+          "kb/aesthetic/conflict-escalation"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@plot.plot-choreographer:kb/aesthetic/pacing-density",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.plot-choreographer 的 kb/aesthetic/pacing-density",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "plot-choreographer",
+        "remove_knowledge": [
+          "kb/aesthetic/pacing-density"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@plot.plot-choreographer:kb/aesthetic/reversal",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.plot-choreographer 的 kb/aesthetic/reversal",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "plot-choreographer",
+        "remove_knowledge": [
+          "kb/aesthetic/reversal"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@plot.plot-choreographer:kb/aesthetic/scene-value",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.plot-choreographer 的 kb/aesthetic/scene-value",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "plot-choreographer",
+        "remove_knowledge": [
+          "kb/aesthetic/scene-value"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@plot.scene-breakdown:kb/aesthetic/character",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.scene-breakdown 的 kb/aesthetic/character",
+      "reason": "该条款装载 5 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 5
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "scene-breakdown",
+        "remove_knowledge": [
+          "kb/aesthetic/character"
+        ],
+        "reason": "装载 5 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 5
+        }
+      }
+    },
+    {
+      "id": "R1@plot.scene-breakdown:kb/aesthetic/pacing-density",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.scene-breakdown 的 kb/aesthetic/pacing-density",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "scene-breakdown",
+        "remove_knowledge": [
+          "kb/aesthetic/pacing-density"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@plot.scene-breakdown:kb/aesthetic/scene-value",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.scene-breakdown 的 kb/aesthetic/scene-value",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "scene-breakdown",
+        "remove_knowledge": [
+          "kb/aesthetic/scene-value"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@plot.script-drama-beat:kb/aesthetic/pacing-density",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.script-drama-beat 的 kb/aesthetic/pacing-density",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "script-drama-beat",
+        "remove_knowledge": [
+          "kb/aesthetic/pacing-density"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@plot.structure-design:kb/aesthetic/conflict-escalation",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.structure-design 的 kb/aesthetic/conflict-escalation",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "structure-design",
+        "remove_knowledge": [
+          "kb/aesthetic/conflict-escalation"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@plot.structure-design:kb/aesthetic/pacing-density",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.structure-design 的 kb/aesthetic/pacing-density",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "structure-design",
+        "remove_knowledge": [
+          "kb/aesthetic/pacing-density"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@plot.structure-design:kb/aesthetic/reversal",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.structure-design 的 kb/aesthetic/reversal",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "structure-design",
+        "remove_knowledge": [
+          "kb/aesthetic/reversal"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@plot.subplot-weave:kb/aesthetic/reversal",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.subplot-weave 的 kb/aesthetic/reversal",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "subplot-weave",
+        "remove_knowledge": [
+          "kb/aesthetic/reversal"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@plot.subplot-weave:kb/craft/highlight-loop",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.subplot-weave 的 kb/craft/highlight-loop",
+      "reason": "该条款装载 4 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 4
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "subplot-weave",
+        "remove_knowledge": [
+          "kb/craft/highlight-loop"
+        ],
+        "reason": "装载 4 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 4
+        }
+      }
+    },
+    {
+      "id": "R1@plot.world-forge:kb/aesthetic/character",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.world-forge 的 kb/aesthetic/character",
+      "reason": "该条款装载 5 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 5
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "world-forge",
+        "remove_knowledge": [
+          "kb/aesthetic/character"
+        ],
+        "reason": "装载 5 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 5
+        }
+      }
+    },
+    {
+      "id": "R1@plot.world-forge:kb/aesthetic/conflict-escalation",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.world-forge 的 kb/aesthetic/conflict-escalation",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "world-forge",
+        "remove_knowledge": [
+          "kb/aesthetic/conflict-escalation"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@plot.world-forge:kb/craft/highlight-loop",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.world-forge 的 kb/craft/highlight-loop",
+      "reason": "该条款装载 4 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 4
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "world-forge",
+        "remove_knowledge": [
+          "kb/craft/highlight-loop"
+        ],
+        "reason": "装载 4 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 4
+        }
+      }
+    },
+    {
+      "id": "R1@prose.dialogue-polish:kb/aesthetic/character",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.dialogue-polish 的 kb/aesthetic/character",
+      "reason": "该条款装载 5 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 5
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "dialogue-polish",
+        "remove_knowledge": [
+          "kb/aesthetic/character"
+        ],
+        "reason": "装载 5 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 5
+        }
+      }
+    },
+    {
+      "id": "R1@prose.layer-canon:kb/aesthetic/character",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.layer-canon 的 kb/aesthetic/character",
+      "reason": "该条款装载 5 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 5
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "layer-canon",
+        "remove_knowledge": [
+          "kb/aesthetic/character"
+        ],
+        "reason": "装载 5 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 5
+        }
+      }
+    },
+    {
+      "id": "R1@prose.layer-canon:kb/craft/prose-constraints",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.layer-canon 的 kb/craft/prose-constraints",
+      "reason": "该条款装载 4 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 4
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "layer-canon",
+        "remove_knowledge": [
+          "kb/craft/prose-constraints"
+        ],
+        "reason": "装载 4 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 4
+        }
+      }
+    },
+    {
+      "id": "R1@prose.layer-canon:kb/craft/user-style-rules",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.layer-canon 的 kb/craft/user-style-rules",
+      "reason": "该条款装载 4 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 4
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "layer-canon",
+        "remove_knowledge": [
+          "kb/craft/user-style-rules"
+        ],
+        "reason": "装载 4 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 4
+        }
+      }
+    },
+    {
+      "id": "R1@prose.layer-scenes:kb/aesthetic/scene-value",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.layer-scenes 的 kb/aesthetic/scene-value",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "layer-scenes",
+        "remove_knowledge": [
+          "kb/aesthetic/scene-value"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@prose.layer-scenes:kb/craft/prose-constraints",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.layer-scenes 的 kb/craft/prose-constraints",
+      "reason": "该条款装载 4 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 4
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "layer-scenes",
+        "remove_knowledge": [
+          "kb/craft/prose-constraints"
+        ],
+        "reason": "装载 4 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 4
+        }
+      }
+    },
+    {
+      "id": "R1@prose.layer-scenes:kb/craft/user-style-rules",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.layer-scenes 的 kb/craft/user-style-rules",
+      "reason": "该条款装载 4 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 4
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "layer-scenes",
+        "remove_knowledge": [
+          "kb/craft/user-style-rules"
+        ],
+        "reason": "装载 4 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 4
+        }
+      }
+    },
+    {
+      "id": "R1@prose.layer-scenes:kb/deconstruct/style-learning",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.layer-scenes 的 kb/deconstruct/style-learning",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "layer-scenes",
+        "remove_knowledge": [
+          "kb/deconstruct/style-learning"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@prose.layer-voices:kb/aesthetic/character",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.layer-voices 的 kb/aesthetic/character",
+      "reason": "该条款装载 5 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 5
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "layer-voices",
+        "remove_knowledge": [
+          "kb/aesthetic/character"
+        ],
+        "reason": "装载 5 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 5
+        }
+      }
+    },
+    {
+      "id": "R1@prose.layer-voices:kb/craft/highlight-loop",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.layer-voices 的 kb/craft/highlight-loop",
+      "reason": "该条款装载 4 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 4
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "layer-voices",
+        "remove_knowledge": [
+          "kb/craft/highlight-loop"
+        ],
+        "reason": "装载 4 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 4
+        }
+      }
+    },
+    {
+      "id": "R1@prose.layer-voices:kb/craft/prose-constraints",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.layer-voices 的 kb/craft/prose-constraints",
+      "reason": "该条款装载 4 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 4
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "layer-voices",
+        "remove_knowledge": [
+          "kb/craft/prose-constraints"
+        ],
+        "reason": "装载 4 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 4
+        }
+      }
+    },
+    {
+      "id": "R1@prose.layer-voices:kb/craft/user-style-rules",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.layer-voices 的 kb/craft/user-style-rules",
+      "reason": "该条款装载 4 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 4
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "layer-voices",
+        "remove_knowledge": [
+          "kb/craft/user-style-rules"
+        ],
+        "reason": "装载 4 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 4
+        }
+      }
+    },
+    {
+      "id": "R1@prose.novel-chapter:kb/aesthetic/scene-value",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.novel-chapter 的 kb/aesthetic/scene-value",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "novel-chapter",
+        "remove_knowledge": [
+          "kb/aesthetic/scene-value"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@prose.novel-chapter:kb/deconstruct/style-learning",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.novel-chapter 的 kb/deconstruct/style-learning",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "novel-chapter",
+        "remove_knowledge": [
+          "kb/deconstruct/style-learning"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@prose.novel-deai:kb/aesthetic/character",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.novel-deai 的 kb/aesthetic/character",
+      "reason": "该条款装载 5 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 5
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "novel-deai",
+        "remove_knowledge": [
+          "kb/aesthetic/character"
+        ],
+        "reason": "装载 5 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 5
+        }
+      }
+    },
+    {
+      "id": "R1@prose.novel-deai:kb/deconstruct/style-learning",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.novel-deai 的 kb/deconstruct/style-learning",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "novel-deai",
+        "remove_knowledge": [
+          "kb/deconstruct/style-learning"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@prose.novel-judge:kb/aesthetic/character",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.novel-judge 的 kb/aesthetic/character",
+      "reason": "该条款装载 5 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 5
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "novel-judge",
+        "remove_knowledge": [
+          "kb/aesthetic/character"
+        ],
+        "reason": "装载 5 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 5
+        }
+      }
+    },
+    {
+      "id": "R1@prose.novel-judge:kb/aesthetic/scene-value",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.novel-judge 的 kb/aesthetic/scene-value",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "novel-judge",
+        "remove_knowledge": [
+          "kb/aesthetic/scene-value"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@prose.prose-assembler:kb/craft/highlight-loop",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.prose-assembler 的 kb/craft/highlight-loop",
+      "reason": "该条款装载 4 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 4
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "prose-assembler",
+        "remove_knowledge": [
+          "kb/craft/highlight-loop"
+        ],
+        "reason": "装载 4 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 4
+        }
+      }
+    },
+    {
+      "id": "R1@prose.prose-assembler:kb/craft/prose-constraints",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.prose-assembler 的 kb/craft/prose-constraints",
+      "reason": "该条款装载 4 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 4
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "prose-assembler",
+        "remove_knowledge": [
+          "kb/craft/prose-constraints"
+        ],
+        "reason": "装载 4 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 4
+        }
+      }
+    },
+    {
+      "id": "R1@prose.prose-assembler:kb/craft/user-style-rules",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.prose-assembler 的 kb/craft/user-style-rules",
+      "reason": "该条款装载 4 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 4
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "prose-assembler",
+        "remove_knowledge": [
+          "kb/craft/user-style-rules"
+        ],
+        "reason": "装载 4 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 4
+        }
+      }
+    },
+    {
+      "id": "R1@prose.prose-assembler:kb/deconstruct/style-learning",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.prose-assembler 的 kb/deconstruct/style-learning",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "prose-assembler",
+        "remove_knowledge": [
+          "kb/deconstruct/style-learning"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@prose.render-prompt-seedance:kb/deconstruct/style-learning",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.render-prompt-seedance 的 kb/deconstruct/style-learning",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "render-prompt-seedance",
+        "remove_knowledge": [
+          "kb/deconstruct/style-learning"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@prose.script-final:kb/aesthetic/character",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.script-final 的 kb/aesthetic/character",
+      "reason": "该条款装载 5 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 5
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "script-final",
+        "remove_knowledge": [
+          "kb/aesthetic/character"
+        ],
+        "reason": "装载 5 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 5
+        }
+      }
+    },
+    {
+      "id": "R1@prose.script-final:kb/aesthetic/pacing-density",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.script-final 的 kb/aesthetic/pacing-density",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "script-final",
+        "remove_knowledge": [
+          "kb/aesthetic/pacing-density"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@prose.script-final:kb/aesthetic/scene-value",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.script-final 的 kb/aesthetic/scene-value",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "script-final",
+        "remove_knowledge": [
+          "kb/aesthetic/scene-value"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@search.deconstruct-book:kb/aesthetic/character",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：search.deconstruct-book 的 kb/aesthetic/character",
+      "reason": "该条款装载 5 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 5
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "search",
+        "op": "deconstruct-book",
+        "remove_knowledge": [
+          "kb/aesthetic/character"
+        ],
+        "reason": "装载 5 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 5
+        }
+      }
+    },
+    {
+      "id": "R1@search.deconstruct-book:kb/aesthetic/pacing-density",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：search.deconstruct-book 的 kb/aesthetic/pacing-density",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "search",
+        "op": "deconstruct-book",
+        "remove_knowledge": [
+          "kb/aesthetic/pacing-density"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@search.deconstruct-book:kb/deconstruct/style-learning",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：search.deconstruct-book 的 kb/deconstruct/style-learning",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "search",
+        "op": "deconstruct-book",
+        "remove_knowledge": [
+          "kb/deconstruct/style-learning"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@topic.deconstruct-book:kb/aesthetic/character",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：topic.deconstruct-book 的 kb/aesthetic/character",
+      "reason": "该条款装载 5 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 5
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "topic",
+        "op": "deconstruct-book",
+        "remove_knowledge": [
+          "kb/aesthetic/character"
+        ],
+        "reason": "装载 5 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 5
+        }
+      }
+    },
+    {
+      "id": "R1@topic.deconstruct-book:kb/aesthetic/pacing-density",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：topic.deconstruct-book 的 kb/aesthetic/pacing-density",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "topic",
+        "op": "deconstruct-book",
+        "remove_knowledge": [
+          "kb/aesthetic/pacing-density"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@topic.deconstruct-book:kb/deconstruct/style-learning",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：topic.deconstruct-book 的 kb/deconstruct/style-learning",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "topic",
+        "op": "deconstruct-book",
+        "remove_knowledge": [
+          "kb/deconstruct/style-learning"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R6@m2.link",
+      "rule": "R6-autogate-cleanup",
+      "severity": "low",
+      "risk": "low",
+      "title": "清掉旧评审节点：m2.link",
+      "reason": "R5 起域内质量由各 tool 的 asserts/config 承担，图上不再需要固定评审节点。纯汇合点，无产活、无裁决价值（R5 起域内质量由各 tool 的 asserts/config 承担）。裁掉后编排更短、更少串行屏障。",
+      "evidence": {
+        "rule": "R6-autogate-cleanup",
+        "metric": "gate.node",
+        "value": "连接 · 编剧（待人工批准）",
+        "samples": 0
+      },
+      "patch": {
+        "kind": "remove-node",
+        "id": "m2.link",
+        "rewire": "bridge",
+        "reason": "R5 门降级：纯汇合点不再需要常驻图上",
+        "evidence": {
+          "rule": "R6-autogate-cleanup",
+          "metric": "gate.node",
+          "value": "连接 · 编剧（待人工批准）",
+          "samples": 0
+        }
+      }
+    },
+    {
+      "id": "R6@m3.link",
+      "rule": "R6-autogate-cleanup",
+      "severity": "low",
+      "risk": "low",
+      "title": "清掉旧评审节点：m3.link",
+      "reason": "R5 起域内质量由各 tool 的 asserts/config 承担，图上不再需要固定评审节点。纯汇合点，无产活、无裁决价值（R5 起域内质量由各 tool 的 asserts/config 承担）。裁掉后编排更短、更少串行屏障。",
+      "evidence": {
+        "rule": "R6-autogate-cleanup",
+        "metric": "gate.node",
+        "value": "连接 · 写作（自动批准）",
+        "samples": 0
+      },
+      "patch": {
+        "kind": "remove-node",
+        "id": "m3.link",
+        "rewire": "bridge",
+        "reason": "R5 门降级：纯汇合点不再需要常驻图上",
+        "evidence": {
+          "rule": "R6-autogate-cleanup",
+          "metric": "gate.node",
+          "value": "连接 · 写作（自动批准）",
+          "samples": 0
+        }
+      }
+    },
+    {
+      "id": "R6@m4.link",
+      "rule": "R6-autogate-cleanup",
+      "severity": "low",
+      "risk": "low",
+      "title": "清掉旧评审节点：m4.link",
+      "reason": "R5 起域内质量由各 tool 的 asserts/config 承担，图上不再需要固定评审节点。纯汇合点，无产活、无裁决价值（R5 起域内质量由各 tool 的 asserts/config 承担）。裁掉后编排更短、更少串行屏障。",
+      "evidence": {
+        "rule": "R6-autogate-cleanup",
+        "metric": "gate.node",
+        "value": "连接 · 交付（自动批准）",
+        "samples": 0
+      },
+      "patch": {
+        "kind": "remove-node",
+        "id": "m4.link",
+        "rewire": "bridge",
+        "reason": "R5 门降级：纯汇合点不再需要常驻图上",
+        "evidence": {
+          "rule": "R6-autogate-cleanup",
+          "metric": "gate.node",
+          "value": "连接 · 交付（自动批准）",
+          "samples": 0
+        }
+      }
+    },
+    {
+      "id": "M@Nctx@inject:注入过宽",
+      "rule": "M-ctx",
+      "severity": "high",
+      "risk": "medium",
+      "title": "[挖掘·上下文命中] 61 卡次 34 张零命中（字面口径）；概念层重检 19/33 后仍有 14 张真实零消费——注入收窄候选明确",
+      "reason": "最宽装填者与产出弱相关：novel-deai 装 10 张 0 命中、novel-bible 装 7 张中未选中的梗族卡（脸虐渣/流放种田）仍占上下文。概念词重检（tools/hitrate-recheck.mjs）把字面 9% 修到 58% 后，剩余零命中是真实改写型漏计下限——其中一批（未选梗卡、与正文无关的格式卡）是确定性可裁的。（证据：registry/metrics-summary.json：kb 卡事件摊开 13/80 = 16%，零命中卡 34 张；tools/hitrate-recheck.mjs@ccwd-fq：新口径（字面+概念）: 19/33 = 58%；仍为 0 的卡含 kb/trope/majia-diaoma、kb/aesthetic/metaphor-zh 等 14 张；cot-analyze@ccwd-fq：低命中节点：m3.novel-deai 0/7 = 0%）",
+      "evidence": {
+        "rule": "M-ctx",
+        "metric": "miner.evidence",
+        "value": 3,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "novel-deai",
+        "set_knowledge": "≤5 张（剔除与成文无关的格式/对标卡）；novel-bible 剔除未选梗族卡，改为 find-trope 产物落选梗清单作为排除输入"
+      }
+    },
+    {
+      "id": "M@Ncoverage@cont:声明挂错层",
+      "rule": "M-coverage",
+      "severity": "medium",
+      "risk": "medium",
+      "title": "[挖掘·规则覆盖] AE-CONT-* 声明挂在中间件产物上必空转——校验器按设计只对成文产物生效，而章节正文反而零 submit 覆盖",
+      "reason": "ledgerSliceAsserts 的路径门（章节正文/对外交付才切片）是对的——小纲/伏笔卡合法承载流程词汇。但 AE-CONT-FORESHADOW 被声明在 foreshadow-plant（02-编剧/）与 prose-assembler（03-写作/）上，每次提交必产 unverified warn 噪声；真正的成文路径（章节正文/三份章档）在 journal 里没有任何 submit 事件，声明从未落在能真跑它的节点上。（证据：journal:39：warn m2.foreshadow-plant 声明断言无机器校验器：AE-CONT-FORESHADOW；core/src/aesthetic.ts:208：只在成文产物路径上生效（小纲/大纲是过程件…切片不适用 → 返回空）；journal:grep：章节正文 在 ccwd-fq journal 中出现 0 次（无 submit 事件））",
+      "evidence": {
+        "rule": "M-coverage",
+        "metric": "miner.evidence",
+        "value": 3,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "prose-assembler",
+        "move_asserts": "AE-CONT-KNOW/ITEM/FORESHADOW 从中间件 op 挪至产出章节正文的节点 op（module.json 与 kit.json 同步改，kit-lint 把关）"
+      }
+    }
+  ]
+}

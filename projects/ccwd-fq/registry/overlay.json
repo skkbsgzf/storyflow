@@ -1,0 +1,50 @@
+{
+  "format": "flow-overlay@1",
+  "flowId": "caocao-wudalang",
+  "origin": "user",
+  "reason": "用户拍板（本轮对话）：N2 注入收窄两条 applied",
+  "patches": [
+    {
+      "kind": "set-tool",
+      "kit": "prose",
+      "op": "novel-bible",
+      "remove_knowledge": [
+        "kb/formats/webnovel-longform"
+      ],
+      "reason": "世界观圣经步不需要长篇形态标准（格式卡）；重检零消费。3 张选中梗卡保留——世界观必须长在梗上",
+      "status": "applied",
+      "proposal": "P-nctx-1"
+    },
+    {
+      "kind": "set-tool",
+      "kit": "prose",
+      "op": "prose-assembler",
+      "remove_knowledge": [
+        "kb/formats/webnovel-fastfood"
+      ],
+      "reason": "拼装盖章步不需要快餐文形态标准；重检零消费",
+      "status": "applied",
+      "proposal": "P-nctx-2"
+    }
+  ],
+  "history": [
+    {
+      "at": "2026-09-18T20:05:54.848Z",
+      "actor": "user",
+      "flowHashBefore": "539534b4",
+      "note": "人工/agent 编排改写"
+    },
+    {
+      "at": "2026-09-18T20:06:02.171Z",
+      "actor": "user",
+      "flowHashBefore": "539534b4",
+      "note": "用户拍板：拍板项全部落地（本轮对话确认）"
+    },
+    {
+      "at": "2026-09-18T20:06:25.555Z",
+      "actor": "user",
+      "flowHashBefore": "539534b4",
+      "note": "用户拍板（本轮对话）：N2 注入收窄两条 applied"
+    }
+  ]
+}

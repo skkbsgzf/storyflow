@@ -1,0 +1,46 @@
+{
+  "format": "module-report@1",
+  "projectId": "ccwd-fq",
+  "flowId": "caocao-wudalang",
+  "moduleId": "m4",
+  "moduleName": "m4",
+  "title": "export-doc.py / 连接 · 交付（自动批准）",
+  "closedAt": "2026-09-18T20:25:26.323Z",
+  "io": {
+    "input": [
+      "direction",
+      "chapters",
+      "route",
+      "题材",
+      "需求",
+      "灵感",
+      "严肃性",
+      "市场预估",
+      "AB测试"
+    ],
+    "output": "04-交付/export-doc.docx"
+  },
+  "artifacts": [
+    {
+      "node": "m4.export-doc",
+      "op": "export-doc",
+      "path": "04-交付/export-doc.docx",
+      "role": "deliverable"
+    }
+  ],
+  "acceptance": [],
+  "metrics": {
+    "submits": 2,
+    "retries": 0,
+    "tokensIn": 0,
+    "tokensOut": 0,
+    "latencyMs": 0,
+    "ctxOffered": 0,
+    "ctxUsed": 0,
+    "hitRate": 0
+  },
+  "feedback": {
+    "annotations": 0,
+    "proposals": 0
+  }
+}

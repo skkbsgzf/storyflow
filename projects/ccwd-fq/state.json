@@ -1,0 +1,119 @@
+{
+  "runId": "run-mu79dix0-k0fxpq",
+  "projectId": "ccwd-fq",
+  "flowId": "caocao-wudalang",
+  "flowVersion": "1.0.0",
+  "flowHash": "25568897",
+  "status": "suspended",
+  "plan": {
+    "order": [
+      "m1.topic-report",
+      "m2.link",
+      "itb-m2.script-forge",
+      "m2.script-forge",
+      "m3.link",
+      "itb-m3.ghostwrite",
+      "m3.ghostwrite",
+      "m3.novel-deai",
+      "m4.link",
+      "itb-m4.export-doc",
+      "m4.export-doc"
+    ]
+  },
+  "nodes": {
+    "m2.link": {
+      "status": "awaiting",
+      "round": 2,
+      "verdict": "pass",
+      "stale": true,
+      "committed": []
+    },
+    "m3.novel-deai": {
+      "status": "pending",
+      "round": 8,
+      "lastArtifact": "03-写作/novel-deai.md",
+      "stale": true,
+      "committed": []
+    },
+    "m3.link": {
+      "status": "pending",
+      "round": 4,
+      "verdict": "pass",
+      "stale": true,
+      "committed": []
+    },
+    "m4.export-doc": {
+      "status": "pending",
+      "round": 8,
+      "stale": true,
+      "lastArtifact": "04-交付/export-doc.docx",
+      "committed": []
+    },
+    "m4.link": {
+      "status": "pending",
+      "round": 8,
+      "verdict": "pass",
+      "stale": true,
+      "committed": []
+    },
+    "itb-m4.export-doc": {
+      "status": "pending",
+      "round": 6,
+      "verdict": "pass",
+      "stale": true,
+      "committed": []
+    },
+    "m1.topic-report": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "01-选题/选题报告.md",
+      "stale": false
+    },
+    "m2.script-forge": {
+      "status": "none",
+      "round": 0
+    },
+    "m3.ghostwrite": {
+      "status": "none",
+      "round": 0
+    },
+    "itb-m2.script-forge": {
+      "status": "none",
+      "round": 0
+    },
+    "itb-m3.ghostwrite": {
+      "status": "none",
+      "round": 0
+    }
+  },
+  "gate": {
+    "verdict": "awaiting",
+    "node": "m2.link",
+    "round": 2,
+    "token": "approval:ccwd-fq:run-mu79dix0-k0fxpq:m2.link",
+    "at": "2026-09-18T21:51:30.249Z",
+    "note": "连接 · 编剧（待人工批准）"
+  },
+  "inputs": {
+    "project": "ccwd-fq",
+    "direction": "曹操魂穿武大郎：用兵法做炊饼、以权谋治小店；当武松推门而入时，发现弟弟已非吴下阿蒙",
+    "chapters": 3,
+    "route": "hot",
+    "题材": "历史穿越 + 美食（快餐抽象向）",
+    "需求": "曹操穿越成武大郎，从被鄙视的炊饼郎到权谋厨房之王的快餐爽文；前三章试稿",
+    "灵感": "三国最强枭雄的灵魂困在北宋最卑微的躯壳里；用兵法做炊饼、以权谋待客官；当武松回家时，发现哥哥不再是那个武大郎",
+    "严肃性": "探索",
+    "市场预估": "历史人物穿越是验证赛道；曹操IP自带认知度与反差感（枭雄→炊饼郎）",
+    "AB测试": false
+  },
+  "comments": {},
+  "overlayHash": "c3890b1c",
+  "policy": {
+    "kit_boundary": "always",
+    "gate_mode": "auto",
+    "adapt": "propose"
+  },
+  "planHash": "fdd0d196",
+  "lastRejectReason": "",
+  "focus": "m2.link"
+}

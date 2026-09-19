@@ -1,0 +1,59 @@
+{
+  "format": "miner-findings@1",
+  "flowId": "caocao-wudalang",
+  "runId": "run-mu79dix0-k0fxpq",
+  "at": "2026-09-19T03:45:00+08:00",
+  "findings": [
+    {
+      "id": "Ncoverage@export-doc:无执行体",
+      "dimension": "coverage",
+      "severity": "high",
+      "title": "交付终点 spine op 无内核执行体——m4.export-doc minitool「(未声明)」未实现，flow 永不能 completed",
+      "reason": "delivery 模块的 spine 工具 export-doc 在展开后既无内核 minitool 执行体、也未注册 minitools.json，节点三次推进全部 warn 保持未执行。能力四环的第②环（内核执行）断链——且 module-lint 未拦截（spine 工具在模块 ops 里存在，lint 只查到声明层）。project 因此停格在 1 个剩余节点，无法走完 flow@3 全自动闭环。",
+      "evidence": [
+        { "source": "journal:74", "quote": "warn m4.export-doc minitool「(未声明)」未实现（M1 边界）——节点 m4.export-doc 保持未执行，不静默放行" },
+        { "source": "journal:76", "quote": "同 warn @19:28（前端推进按钮第三次触发，仍拦在同一处）" },
+        { "source": "whereami@2026-09-19", "quote": "ccwd-fq（剩余 1 节点：m4.export-doc…）" }
+      ],
+      "structural": "① module-lint 增 E 级：spine op 必须有内核执行体（minitools.ts 实现或 minitools.json 注册），声明层存在不算数；② 补 export-doc minitool（docx 导出复用 tools/export-doc.py 的断言逻辑）。拍板清单，tool 域开发项。"
+    },
+    {
+      "id": "Nctx@inject:注入过宽",
+      "dimension": "ctx",
+      "severity": "high",
+      "title": "61 卡次 34 张零命中（字面口径）；概念层重检 19/33 后仍有 14 张真实零消费——注入收窄候选明确",
+      "reason": "最宽装填者与产出弱相关：novel-deai 装 10 张 0 命中、novel-bible 装 7 张中未选中的梗族卡（脸虐渣/流放种田）仍占上下文。概念词重检（tools/hitrate-recheck.mjs）把字面 9% 修到 58% 后，剩余零命中是真实改写型漏计下限——其中一批（未选梗卡、与正文无关的格式卡）是确定性可裁的。",
+      "evidence": [
+        { "source": "registry/metrics-summary.json", "quote": "kb 卡事件摊开 13/80 = 16%，零命中卡 34 张" },
+        { "source": "tools/hitrate-recheck.mjs@ccwd-fq", "quote": "新口径（字面+概念）: 19/33 = 58%；仍为 0 的卡含 kb/trope/majia-diaoma、kb/aesthetic/metaphor-zh 等 14 张" },
+        { "source": "cot-analyze@ccwd-fq", "quote": "低命中节点：m3.novel-deai 0/7 = 0%" }
+      ],
+      "patch": { "kind": "set-tool", "kit": "prose", "op": "novel-deai", "set_knowledge": "≤5 张（剔除与成文无关的格式/对标卡）；novel-bible 剔除未选梗族卡，改为 find-trope 产物落选梗清单作为排除输入" }
+    },
+    {
+      "id": "Ncoverage@cont:声明挂错层",
+      "dimension": "coverage",
+      "severity": "medium",
+      "title": "AE-CONT-* 声明挂在中间件产物上必空转——校验器按设计只对成文产物生效，而章节正文反而零 submit 覆盖",
+      "reason": "ledgerSliceAsserts 的路径门（章节正文/对外交付才切片）是对的——小纲/伏笔卡合法承载流程词汇。但 AE-CONT-FORESHADOW 被声明在 foreshadow-plant（02-编剧/）与 prose-assembler（03-写作/）上，每次提交必产 unverified warn 噪声；真正的成文路径（章节正文/三份章档）在 journal 里没有任何 submit 事件，声明从未落在能真跑它的节点上。",
+      "evidence": [
+        { "source": "journal:39", "quote": "warn m2.foreshadow-plant 声明断言无机器校验器：AE-CONT-FORESHADOW" },
+        { "source": "core/src/aesthetic.ts:208", "quote": "只在成文产物路径上生效（小纲/大纲是过程件…切片不适用 → 返回空）" },
+        { "source": "journal:grep", "quote": "章节正文 在 ccwd-fq journal 中出现 0 次（无 submit 事件）" }
+      ],
+      "patch": { "kind": "set-tool", "kit": "prose", "op": "prose-assembler", "move_asserts": "AE-CONT-KNOW/ITEM/FORESHADOW 从中间件 op 挪至产出章节正文的节点 op（module.json 与 kit.json 同步改，kit-lint 把关）" }
+    },
+    {
+      "id": "Ncoverage@semantic:auto评审零消费",
+      "dimension": "coverage",
+      "severity": "medium",
+      "title": "语义断言「归评审/红方」在 auto 评审步下落空——7 条 CURVE 系断言零消费，连接件与交接门全部即时 pass",
+      "reason": "m2.plot-choreographer 的 AE-CURVE-STALL 等 7 条语义断言被登记 unverified 后「归评审剖面」，但本轮 gate_mode=auto：评审步交卷即自动 pass，红方是顾问不否决，三类门（m2.link/itb-*/边界验收）全部与 gate-open 同秒 pass——语义断言实际无人认领。R5 的分工设计（机器不装懂）是对的，缺的是「语义断言真的被谁读」的闭环。",
+      "evidence": [
+        { "source": "journal:26", "quote": "warn 声明断言无机器校验器：AE-CURVE-STALL、AE-CURVE-TYPE、AE-CUSHION、AE-DESERT、AE-END-MECH、AE-REV-M…" },
+        { "source": "journal:16-18/46-48/71-73", "quote": "m2.link pass / itb-m2 pass / m3.link auto-pass / itb-m3 pass / m4.link auto-pass / itb-m4 pass（全部即时）" }
+      ],
+      "structural": "内核评审步任务包注入本步 unverified 清单（评审步 LLM 照单真读真裁，裁决落 journal），auto 模式下语义断言才有消费方；或明确降权记账「auto 模式语义断言只登记不裁决」。拍板清单，内核增强。"
+    }
+  ]
+}

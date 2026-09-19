@@ -1,0 +1,359 @@
+{
+  "snapshots": {
+    "m1.find-trope": [
+      {
+        "round": 1,
+        "ts": "2026-09-18T17:55:32.150Z",
+        "note": "submit r1·find-trope.md",
+        "files": {
+          "01-选题/find-trope.md": {
+            "hash": "c18af90b9753",
+            "path": "snapshots/m1.find-trope/r1/01-选题/find-trope.md"
+          }
+        }
+      }
+    ],
+    "m1.material-dissect": [
+      {
+        "round": 1,
+        "ts": "2026-09-18T17:55:54.411Z",
+        "note": "submit r1·material-dissect.md",
+        "files": {
+          "01-选题/material-dissect.md": {
+            "hash": "d9d45d73b786",
+            "path": "snapshots/m1.material-dissect/r1/01-选题/material-dissect.md"
+          }
+        }
+      }
+    ],
+    "m2.structure-design": [
+      {
+        "round": 1,
+        "ts": "2026-09-18T17:57:32.994Z",
+        "note": "submit r1·structure-design.md",
+        "files": {
+          "02-编剧/structure-design.md": {
+            "hash": "6099051f45ec",
+            "path": "snapshots/m2.structure-design/r1/02-编剧/structure-design.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-18T20:14:31.603Z",
+        "note": "submit r3·structure-design.md",
+        "files": {
+          "02-编剧/structure-design.md": {
+            "hash": "6099051f45ec",
+            "path": "snapshots/m2.structure-design/r2/02-编剧/structure-design.md"
+          }
+        }
+      }
+    ],
+    "m2.plot-choreographer": [
+      {
+        "round": 1,
+        "ts": "2026-09-18T17:58:02.966Z",
+        "note": "submit r1·plot-choreographer.md",
+        "files": {
+          "02-编剧/plot-choreographer.md": {
+            "hash": "97b7f25d3577",
+            "path": "snapshots/m2.plot-choreographer/r1/02-编剧/plot-choreographer.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-18T20:14:35.118Z",
+        "note": "submit r3·plot-choreographer.md",
+        "files": {
+          "02-编剧/plot-choreographer.md": {
+            "hash": "97b7f25d3577",
+            "path": "snapshots/m2.plot-choreographer/r2/02-编剧/plot-choreographer.md"
+          }
+        }
+      }
+    ],
+    "m2.subplot-weave": [
+      {
+        "round": 1,
+        "ts": "2026-09-18T17:58:29.162Z",
+        "note": "submit r1·subplot-weave.md",
+        "files": {
+          "02-编剧/subplot-weave.md": {
+            "hash": "1d914f1f7b4f",
+            "path": "snapshots/m2.subplot-weave/r1/02-编剧/subplot-weave.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-18T20:14:38.626Z",
+        "note": "submit r3·subplot-weave.md",
+        "files": {
+          "02-编剧/subplot-weave.md": {
+            "hash": "1d914f1f7b4f",
+            "path": "snapshots/m2.subplot-weave/r2/02-编剧/subplot-weave.md"
+          }
+        }
+      }
+    ],
+    "m2.novel-bible": [
+      {
+        "round": 1,
+        "ts": "2026-09-18T17:58:51.349Z",
+        "note": "submit r1·novel-bible.md",
+        "files": {
+          "02-编剧/novel-bible.md": {
+            "hash": "24a3dc0b644a",
+            "path": "snapshots/m2.novel-bible/r1/02-编剧/novel-bible.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-18T20:14:41.621Z",
+        "note": "submit r3·novel-bible.md",
+        "files": {
+          "02-编剧/novel-bible.md": {
+            "hash": "24a3dc0b644a",
+            "path": "snapshots/m2.novel-bible/r2/02-编剧/novel-bible.md"
+          }
+        }
+      }
+    ],
+    "m2.foreshadow-plant": [
+      {
+        "round": 1,
+        "ts": "2026-09-18T17:59:11.706Z",
+        "note": "submit r1·foreshadow-plant.md",
+        "files": {
+          "02-编剧/foreshadow-plant.md": {
+            "hash": "539b4d219663",
+            "path": "snapshots/m2.foreshadow-plant/r1/02-编剧/foreshadow-plant.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-18T20:14:44.195Z",
+        "note": "submit r3·foreshadow-plant.md",
+        "files": {
+          "02-编剧/foreshadow-plant.md": {
+            "hash": "539b4d219663",
+            "path": "snapshots/m2.foreshadow-plant/r2/02-编剧/foreshadow-plant.md"
+          }
+        }
+      }
+    ],
+    "m2.scene-breakdown": [
+      {
+        "round": 1,
+        "ts": "2026-09-18T17:59:32.977Z",
+        "note": "submit r1·scene-breakdown.md",
+        "files": {
+          "02-编剧/scene-breakdown.md": {
+            "hash": "8109b4a55581",
+            "path": "snapshots/m2.scene-breakdown/r1/02-编剧/scene-breakdown.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-18T20:14:46.827Z",
+        "note": "submit r3·scene-breakdown.md",
+        "files": {
+          "02-编剧/scene-breakdown.md": {
+            "hash": "8109b4a55581",
+            "path": "snapshots/m2.scene-breakdown/r2/02-编剧/scene-breakdown.md"
+          }
+        }
+      }
+    ],
+    "m3.layer-voices": [
+      {
+        "round": 1,
+        "ts": "2026-09-18T18:00:41.365Z",
+        "note": "submit r1·layer-voices.md",
+        "files": {
+          "03-写作/layer-voices.md": {
+            "hash": "26bf722bb2a7",
+            "path": "snapshots/m3.layer-voices/r1/03-写作/layer-voices.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-18T20:14:51.738Z",
+        "note": "submit r3·layer-voices.md",
+        "files": {
+          "03-写作/layer-voices.md": {
+            "hash": "26bf722bb2a7",
+            "path": "snapshots/m3.layer-voices/r2/03-写作/layer-voices.md"
+          }
+        }
+      }
+    ],
+    "m3.layer-scenes": [
+      {
+        "round": 1,
+        "ts": "2026-09-18T18:00:42.301Z",
+        "note": "submit r1·layer-scenes.md",
+        "files": {
+          "03-写作/layer-scenes.md": {
+            "hash": "360725c3c320",
+            "path": "snapshots/m3.layer-scenes/r1/03-写作/layer-scenes.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-18T20:14:54.271Z",
+        "note": "submit r3·layer-scenes.md",
+        "files": {
+          "03-写作/layer-scenes.md": {
+            "hash": "360725c3c320",
+            "path": "snapshots/m3.layer-scenes/r2/03-写作/layer-scenes.md"
+          }
+        }
+      }
+    ],
+    "m3.layer-canon": [
+      {
+        "round": 1,
+        "ts": "2026-09-18T18:00:43.262Z",
+        "note": "submit r1·layer-canon.md",
+        "files": {
+          "03-写作/layer-canon.md": {
+            "hash": "3cd1e091c666",
+            "path": "snapshots/m3.layer-canon/r1/03-写作/layer-canon.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-18T20:14:56.852Z",
+        "note": "submit r3·layer-canon.md",
+        "files": {
+          "03-写作/layer-canon.md": {
+            "hash": "3cd1e091c666",
+            "path": "snapshots/m3.layer-canon/r2/03-写作/layer-canon.md"
+          }
+        }
+      }
+    ],
+    "m3.prose-assembler": [
+      {
+        "round": 1,
+        "ts": "2026-09-18T18:01:34.841Z",
+        "note": "submit r1·prose-assembler.md",
+        "files": {
+          "03-写作/prose-assembler.md": {
+            "hash": "6d97c4ce5188",
+            "path": "snapshots/m3.prose-assembler/r1/03-写作/prose-assembler.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-18T20:14:59.776Z",
+        "note": "submit r3·prose-assembler.md",
+        "files": {
+          "03-写作/prose-assembler.md": {
+            "hash": "699eaf8fc17f",
+            "path": "snapshots/m3.prose-assembler/r2/03-写作/prose-assembler.md"
+          }
+        }
+      }
+    ],
+    "m3.novel-deai": [
+      {
+        "round": 1,
+        "ts": "2026-09-18T18:01:35.812Z",
+        "note": "submit r1·prose-assembler.md",
+        "files": {
+          "03-写作/prose-assembler.md": {
+            "hash": "6d97c4ce5188",
+            "path": "snapshots/m3.novel-deai/r1/03-写作/prose-assembler.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-18T20:17:06.076Z",
+        "note": "submit r3·novel-deai.md",
+        "files": {
+          "03-写作/novel-deai.md": {
+            "hash": "15c10210916f",
+            "path": "snapshots/m3.novel-deai/r2/03-写作/novel-deai.md"
+          }
+        }
+      },
+      {
+        "round": 3,
+        "ts": "2026-09-18T20:19:54.655Z",
+        "note": "submit r5·novel-deai.md",
+        "files": {
+          "03-写作/novel-deai.md": {
+            "hash": "15c10210916f",
+            "path": "snapshots/m3.novel-deai/r3/03-写作/novel-deai.md"
+          }
+        }
+      },
+      {
+        "round": 4,
+        "ts": "2026-09-18T20:25:16.978Z",
+        "note": "submit r7·novel-deai.md",
+        "files": {
+          "03-写作/novel-deai.md": {
+            "hash": "15c10210916f",
+            "path": "snapshots/m3.novel-deai/r4/03-写作/novel-deai.md"
+          }
+        }
+      }
+    ],
+    "m4.export-doc": [
+      {
+        "round": 1,
+        "ts": "2026-09-19 03:37",
+        "note": "export-doc 自动快照：0 beats / 0 eps → prose-assembler.docx",
+        "files": {
+          "03-写作/prose-assembler.md": {
+            "hash": "47560a0539b4",
+            "path": "snapshots/m4.export-doc/r1/03-写作/prose-assembler.md"
+          }
+        }
+      },
+      {
+        "round": 2,
+        "ts": "2026-09-19 04:25",
+        "note": "export-doc 自动快照（plain）→ export-doc.docx",
+        "files": {
+          "03-写作/novel-deai.md": {
+            "hash": "cc08820283c7",
+            "path": "snapshots/m4.export-doc/r2/03-写作/novel-deai.md"
+          },
+          "04-交付/export-doc.docx": {
+            "hash": "1131031ac53c",
+            "path": "snapshots/m4.export-doc/r2/04-交付/export-doc.docx",
+            "binary": true
+          }
+        }
+      }
+    ],
+    "m1.topic-report": [
+      {
+        "round": 1,
+        "ts": "2026-09-18T21:51:30.141Z",
+        "note": "submit r1·选题报告.md",
+        "files": {
+          "01-选题/选题报告.md": {
+            "hash": "1bbda0e2d628",
+            "path": "snapshots/m1.topic-report/r1/01-选题/选题报告.md"
+          }
+        }
+      }
+    ]
+  },
+  "inputs": {}
+}

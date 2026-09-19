@@ -1,0 +1,1029 @@
+{
+  "format": "metrics-summary@1",
+  "runId": "run-mu79dix0-k0fxpq",
+  "events": 66,
+  "byNode": {
+    "m1.find-trope": {
+      "nodeId": "m1.find-trope",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 6,
+      "ctxUsed": 2,
+      "hitRate": 0.3333333333333333,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "topic",
+      "op": "find-trope"
+    },
+    "m1.material-dissect": {
+      "nodeId": "m1.material-dissect",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 3,
+      "ctxUsed": 2,
+      "hitRate": 0.6666666666666666,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "topic",
+      "op": "material-dissect"
+    },
+    "itb-m2.structure-design": {
+      "nodeId": "itb-m2.structure-design",
+      "runs": 0,
+      "submits": 0,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 0,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 0,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [
+        "pass",
+        "pass"
+      ]
+    },
+    "m2.structure-design": {
+      "nodeId": "m2.structure-design",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 12,
+      "ctxUsed": 2,
+      "hitRate": 0.16666666666666666,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "plot",
+      "op": "structure-design"
+    },
+    "m2.plot-choreographer": {
+      "nodeId": "m2.plot-choreographer",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 16,
+      "ctxUsed": 3,
+      "hitRate": 0.1875,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "plot",
+      "op": "plot-choreographer"
+    },
+    "m2.subplot-weave": {
+      "nodeId": "m2.subplot-weave",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 10,
+      "ctxUsed": 3,
+      "hitRate": 0.3,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "plot",
+      "op": "subplot-weave"
+    },
+    "m2.novel-bible": {
+      "nodeId": "m2.novel-bible",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 14,
+      "ctxUsed": 2,
+      "hitRate": 0.14285714285714285,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "plot",
+      "op": "novel-bible"
+    },
+    "m2.foreshadow-plant": {
+      "nodeId": "m2.foreshadow-plant",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 8,
+      "ctxUsed": 2,
+      "hitRate": 0.25,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "plot",
+      "op": "foreshadow-plant"
+    },
+    "m2.scene-breakdown": {
+      "nodeId": "m2.scene-breakdown",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 16,
+      "ctxUsed": 4,
+      "hitRate": 0.25,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "plot",
+      "op": "scene-breakdown"
+    },
+    "itb-m3.layer-voices": {
+      "nodeId": "itb-m3.layer-voices",
+      "runs": 0,
+      "submits": 0,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 0,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 0,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [
+        "pass",
+        "pass"
+      ]
+    },
+    "m3.layer-voices": {
+      "nodeId": "m3.layer-voices",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 12,
+      "ctxUsed": 5,
+      "hitRate": 0.4166666666666667,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "prose",
+      "op": "layer-voices"
+    },
+    "m3.layer-scenes": {
+      "nodeId": "m3.layer-scenes",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 12,
+      "ctxUsed": 3,
+      "hitRate": 0.25,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "prose",
+      "op": "layer-scenes"
+    },
+    "m3.layer-canon": {
+      "nodeId": "m3.layer-canon",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 12,
+      "ctxUsed": 5,
+      "hitRate": 0.4166666666666667,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "prose",
+      "op": "layer-canon"
+    },
+    "m3.prose-assembler": {
+      "nodeId": "m3.prose-assembler",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 15,
+      "ctxUsed": 5,
+      "hitRate": 0.3333333333333333,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "prose",
+      "op": "prose-assembler"
+    },
+    "m3.novel-deai": {
+      "nodeId": "m3.novel-deai",
+      "runs": 4,
+      "submits": 4,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 8,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 28,
+      "ctxUsed": 15,
+      "hitRate": 0.5357142857142857,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "prose",
+      "op": "novel-deai"
+    },
+    "itb-m4.export-doc": {
+      "nodeId": "itb-m4.export-doc",
+      "runs": 0,
+      "submits": 0,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 0,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 0,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [
+        "pass",
+        "pass",
+        "pass",
+        "pass"
+      ]
+    },
+    "m4.export-doc": {
+      "nodeId": "m4.export-doc",
+      "runs": 0,
+      "submits": 4,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 0,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 0,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [
+        "pass",
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "kit": "delivery",
+      "op": "export-doc"
+    },
+    "m1.topic-report": {
+      "nodeId": "m1.topic-report",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 3,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 5,
+      "ctxUsed": 5,
+      "hitRate": 1,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "kit": "topic",
+      "op": "topic-report"
+    }
+  },
+  "byTool": {
+    "topic.find-trope": {
+      "nodeId": "topic.find-trope",
+      "kit": "topic",
+      "op": "find-trope",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 6,
+      "ctxUsed": 2,
+      "hitRate": 0.3333333333333333,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m1.find-trope"
+      ]
+    },
+    "topic.material-dissect": {
+      "nodeId": "topic.material-dissect",
+      "kit": "topic",
+      "op": "material-dissect",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 2,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 3,
+      "ctxUsed": 2,
+      "hitRate": 0.6666666666666666,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m1.material-dissect"
+      ]
+    },
+    "plot.structure-design": {
+      "nodeId": "plot.structure-design",
+      "kit": "plot",
+      "op": "structure-design",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 12,
+      "ctxUsed": 2,
+      "hitRate": 0.16666666666666666,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m2.structure-design"
+      ]
+    },
+    "plot.plot-choreographer": {
+      "nodeId": "plot.plot-choreographer",
+      "kit": "plot",
+      "op": "plot-choreographer",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 16,
+      "ctxUsed": 3,
+      "hitRate": 0.1875,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m2.plot-choreographer"
+      ]
+    },
+    "plot.subplot-weave": {
+      "nodeId": "plot.subplot-weave",
+      "kit": "plot",
+      "op": "subplot-weave",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 10,
+      "ctxUsed": 3,
+      "hitRate": 0.3,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m2.subplot-weave"
+      ]
+    },
+    "plot.novel-bible": {
+      "nodeId": "plot.novel-bible",
+      "kit": "plot",
+      "op": "novel-bible",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 14,
+      "ctxUsed": 2,
+      "hitRate": 0.14285714285714285,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m2.novel-bible"
+      ]
+    },
+    "plot.foreshadow-plant": {
+      "nodeId": "plot.foreshadow-plant",
+      "kit": "plot",
+      "op": "foreshadow-plant",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 8,
+      "ctxUsed": 2,
+      "hitRate": 0.25,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m2.foreshadow-plant"
+      ]
+    },
+    "plot.scene-breakdown": {
+      "nodeId": "plot.scene-breakdown",
+      "kit": "plot",
+      "op": "scene-breakdown",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 16,
+      "ctxUsed": 4,
+      "hitRate": 0.25,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m2.scene-breakdown"
+      ]
+    },
+    "prose.layer-voices": {
+      "nodeId": "prose.layer-voices",
+      "kit": "prose",
+      "op": "layer-voices",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 12,
+      "ctxUsed": 5,
+      "hitRate": 0.4166666666666667,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m3.layer-voices"
+      ]
+    },
+    "prose.layer-scenes": {
+      "nodeId": "prose.layer-scenes",
+      "kit": "prose",
+      "op": "layer-scenes",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 12,
+      "ctxUsed": 3,
+      "hitRate": 0.25,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m3.layer-scenes"
+      ]
+    },
+    "prose.layer-canon": {
+      "nodeId": "prose.layer-canon",
+      "kit": "prose",
+      "op": "layer-canon",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 12,
+      "ctxUsed": 5,
+      "hitRate": 0.4166666666666667,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m3.layer-canon"
+      ]
+    },
+    "prose.prose-assembler": {
+      "nodeId": "prose.prose-assembler",
+      "kit": "prose",
+      "op": "prose-assembler",
+      "runs": 2,
+      "submits": 2,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 4,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 15,
+      "ctxUsed": 5,
+      "hitRate": 0.3333333333333333,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m3.prose-assembler"
+      ]
+    },
+    "prose.novel-deai": {
+      "nodeId": "prose.novel-deai",
+      "kit": "prose",
+      "op": "novel-deai",
+      "runs": 4,
+      "submits": 4,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 8,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 28,
+      "ctxUsed": 15,
+      "hitRate": 0.5357142857142857,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m3.novel-deai"
+      ]
+    },
+    "delivery.export-doc": {
+      "nodeId": "delivery.export-doc",
+      "kit": "delivery",
+      "op": "export-doc",
+      "runs": 0,
+      "submits": 4,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 0,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 0,
+      "ctxUsed": 0,
+      "hitRate": 0,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m4.export-doc"
+      ]
+    },
+    "topic.topic-report": {
+      "nodeId": "topic.topic-report",
+      "kit": "topic",
+      "op": "topic-report",
+      "runs": 1,
+      "submits": 1,
+      "tokensIn": 0,
+      "tokensOut": 0,
+      "latencyMs": 0,
+      "assertPass": 3,
+      "assertBlock": 0,
+      "retries": 0,
+      "ctxOffered": 5,
+      "ctxUsed": 5,
+      "hitRate": 1,
+      "consumedBy": 0,
+      "cost": 0.000001,
+      "efficiency": 0,
+      "verdicts": [],
+      "nodes": [
+        "m1.topic-report"
+      ]
+    }
+  },
+  "knowledge": [
+    {
+      "id": "kb/trope/liufang-zhongtian",
+      "offered": 3,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/trope/majia-diaoma",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/trope/na-billionaire",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/trope/na-fantasy",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/reversal",
+      "offered": 6,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/market/setting-rules",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "01-选题/material-dissect.md",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/emotion-curve",
+      "offered": 4,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/ending",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/market/constraints",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/formats/webnovel-longform",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "02-编剧/subplot-weave.md",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/continuity/state-ledger",
+      "offered": 4,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/hook-3s",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/method/longform-engineering",
+      "offered": 2,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/deconstruct/style-learning",
+      "offered": 8,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/aesthetic/slop-list",
+      "offered": 6,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/formats/webnovel-fastfood",
+      "offered": 1,
+      "used": 0,
+      "hitRate": 0
+    },
+    {
+      "id": "kb/craft/prose-constraints",
+      "offered": 8,
+      "used": 1,
+      "hitRate": 0.125
+    },
+    {
+      "id": "kb/craft/user-style-rules",
+      "offered": 8,
+      "used": 1,
+      "hitRate": 0.125
+    },
+    {
+      "id": "kb/aesthetic/pacing-density",
+      "offered": 7,
+      "used": 1,
+      "hitRate": 0.14285714285714285
+    },
+    {
+      "id": "kb/aesthetic/scene-value",
+      "offered": 6,
+      "used": 1,
+      "hitRate": 0.16666666666666666
+    },
+    {
+      "id": "kb/craft/highlight-loop",
+      "offered": 8,
+      "used": 2,
+      "hitRate": 0.25
+    },
+    {
+      "id": "kb/continuity/worldbook",
+      "offered": 4,
+      "used": 1,
+      "hitRate": 0.25
+    },
+    {
+      "id": "kb/aesthetic/dialogue",
+      "offered": 4,
+      "used": 1,
+      "hitRate": 0.25
+    },
+    {
+      "id": "kb/trope/chongsheng-fuchou",
+      "offered": 4,
+      "used": 2,
+      "hitRate": 0.5
+    },
+    {
+      "id": "kb/trope/dalian-nuezha",
+      "offered": 4,
+      "used": 2,
+      "hitRate": 0.5
+    },
+    {
+      "id": "kb/market/meme-rules",
+      "offered": 2,
+      "used": 1,
+      "hitRate": 0.5
+    },
+    {
+      "id": "kb/aesthetic/conflict-escalation",
+      "offered": 6,
+      "used": 3,
+      "hitRate": 0.5
+    },
+    {
+      "id": "kb/structure/catalog",
+      "offered": 2,
+      "used": 1,
+      "hitRate": 0.5
+    },
+    {
+      "id": "kb/structure/episodic-webnovel",
+      "offered": 2,
+      "used": 1,
+      "hitRate": 0.5
+    },
+    {
+      "id": "kb/aesthetic/character",
+      "offered": 12,
+      "used": 6,
+      "hitRate": 0.5
+    },
+    {
+      "id": "kb/aesthetic/metaphor-zh",
+      "offered": 6,
+      "used": 3,
+      "hitRate": 0.5
+    },
+    {
+      "id": "kb/aesthetic/ai-trace",
+      "offered": 6,
+      "used": 4,
+      "hitRate": 0.6666666666666666
+    },
+    {
+      "id": "kb/aesthetic/naturalness-zh",
+      "offered": 4,
+      "used": 3,
+      "hitRate": 0.75
+    },
+    {
+      "id": "03-写作/prose-assembler.md",
+      "offered": 4,
+      "used": 3,
+      "hitRate": 0.75
+    },
+    {
+      "id": "kb/market/topic-anatomy",
+      "offered": 2,
+      "used": 2,
+      "hitRate": 1
+    },
+    {
+      "id": "01-选题/find-trope.md",
+      "offered": 1,
+      "used": 1,
+      "hitRate": 1
+    },
+    {
+      "id": "02-编剧/structure-design.md",
+      "offered": 2,
+      "used": 2,
+      "hitRate": 1
+    },
+    {
+      "id": "02-编剧/plot-choreographer.md",
+      "offered": 4,
+      "used": 4,
+      "hitRate": 1
+    },
+    {
+      "id": "02-编剧/novel-bible.md",
+      "offered": 2,
+      "used": 2,
+      "hitRate": 1
+    },
+    {
+      "id": "02-编剧/foreshadow-plant.md",
+      "offered": 2,
+      "used": 2,
+      "hitRate": 1
+    },
+    {
+      "id": "02-编剧/scene-breakdown.md",
+      "offered": 2,
+      "used": 2,
+      "hitRate": 1
+    },
+    {
+      "id": "03-写作/layer-voices.md",
+      "offered": 2,
+      "used": 2,
+      "hitRate": 1
+    },
+    {
+      "id": "03-写作/layer-scenes.md",
+      "offered": 2,
+      "used": 2,
+      "hitRate": 1
+    },
+    {
+      "id": "03-写作/layer-canon.md",
+      "offered": 2,
+      "used": 2,
+      "hitRate": 1
+    }
+  ],
+  "gates": [
+    {
+      "nodeId": "itb-m2.structure-design",
+      "phase": "gate",
+      "passes": 2,
+      "sendBacks": 0,
+      "samples": 2
+    },
+    {
+      "nodeId": "itb-m3.layer-voices",
+      "phase": "gate",
+      "passes": 2,
+      "sendBacks": 0,
+      "samples": 2
+    },
+    {
+      "nodeId": "itb-m4.export-doc",
+      "phase": "gate",
+      "passes": 4,
+      "sendBacks": 0,
+      "samples": 4
+    }
+  ],
+  "window": {
+    "from": "2026-09-18T17:54:51.032Z",
+    "to": "2026-09-18T21:51:30.243Z"
+  }
+}
