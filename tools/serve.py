@@ -118,6 +118,24 @@ class NoCacheHandler(http.server.SimpleHTTPRequestHandler):
         p.write_text(str(content), encoding="utf-8")
         self._json({"ok": True, "saved": rel})
 
+    def _kit_save(self, body):
+        """页面 saveFile 的直写盘端点（批注/意见/编辑内容）——此前只有路由没有实现，
+        POST 必 400，前端落到浏览器「另存为」兜底打扰用户（用户实测）。
+        契约同 _api_save：{name|path, content}，限工作区内 .md/.json，原子写。"""
+        rel = str(body.get("name") or body.get("path") or "").strip()
+        content = body.get("content")
+        if not rel or content is None:
+            self._json({"ok": False, "error": "name/content 必填"}, 400); return
+        ws = self._ws()
+        p = (ws / rel).resolve()
+        if p.suffix.lower() not in (".md", ".json") or not str(p).startswith(str(ws.resolve())):
+            self._json({"ok": False, "error": "path 不合法（限工作区内 .md/.json）"}, 400); return
+        p.parent.mkdir(parents=True, exist_ok=True)
+        tmp = p.with_suffix(p.suffix + ".tmp")
+        tmp.write_text(str(content), encoding="utf-8")
+        tmp.replace(p)
+        self._json({"ok": True, "path": rel})
+
     def _api_import_flow(self, body):
         """项目换绑流程：更新绑定 flowId/flowVersion（state.json 优先，旧布局兜底），运行状态保留。"""
         project, flow_id = str(body.get("project", "")), str(body.get("flowId", ""))
