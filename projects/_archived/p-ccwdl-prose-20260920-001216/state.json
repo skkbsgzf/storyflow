@@ -4,7 +4,7 @@
   "flowId": "novel-prose",
   "flowVersion": "0.1.0",
   "flowHash": "b7e47d7e",
-  "status": "running",
+  "status": "awaiting_input",
   "plan": {
     "order": [
       "src",
@@ -27,11 +27,13 @@
       "lastArtifact": "分场卡.md"
     },
     "ledger": {
-      "status": "none",
-      "round": 0
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "registry/receipts/continuity-slice-ledger.json"
     },
     "beats": {
-      "status": "none",
+      "status": "awaiting",
       "round": 0
     },
     "voices": {
@@ -80,5 +82,5 @@
     "adapt": "propose"
   },
   "planHash": "e086161b",
-  "focus": "ledger"
+  "focus": "beats"
 }

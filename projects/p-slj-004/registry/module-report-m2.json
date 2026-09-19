@@ -4,7 +4,7 @@
   "flowId": "drama-flow",
   "moduleId": "m2",
   "moduleName": "m2",
-  "title": "剧本师 / 连接 · 编剧（自动批准）",
+  "title": "structure-design / plot-choreographer / 伏笔悬念插入",
   "closedAt": "2026-09-19T10:03:08.544Z",
   "io": {
     "input": [
@@ -22,6 +22,91 @@
     }
   ],
   "acceptance": [
+    {
+      "node": "m2.plot-choreographer",
+      "assert": "AE-CURVE-STALL",
+      "status": "unverified"
+    },
+    {
+      "node": "m2.plot-choreographer",
+      "assert": "AE-CURVE-TYPE",
+      "status": "unverified"
+    },
+    {
+      "node": "m2.plot-choreographer",
+      "assert": "AE-CUSHION",
+      "status": "unverified"
+    },
+    {
+      "node": "m2.plot-choreographer",
+      "assert": "AE-DESERT",
+      "status": "unverified"
+    },
+    {
+      "node": "m2.plot-choreographer",
+      "assert": "AE-END-MECH",
+      "status": "unverified"
+    },
+    {
+      "node": "m2.plot-choreographer",
+      "assert": "AE-REV-MIDPOINT",
+      "status": "unverified"
+    },
+    {
+      "node": "m2.plot-choreographer",
+      "assert": "AE-REV-SETUP",
+      "status": "unverified"
+    },
+    {
+      "node": "m2.foreshadow-plant",
+      "assert": "AE-CONT-FORESHADOW",
+      "status": "unverified"
+    },
+    {
+      "node": "m2.script-drama-beat",
+      "assert": "AE-BEAT-FORMAT",
+      "status": "unverified"
+    },
+    {
+      "node": "m2.script-drama-beat",
+      "assert": "AE-CARD-END",
+      "status": "unverified"
+    },
+    {
+      "node": "m2.script-drama-beat",
+      "assert": "AE-CONT-FORESHADOW",
+      "status": "unverified"
+    },
+    {
+      "node": "m2.script-drama-beat",
+      "assert": "AE-CONT-ITEM",
+      "status": "unverified"
+    },
+    {
+      "node": "m2.script-drama-beat",
+      "assert": "AE-CONT-KNOW",
+      "status": "unverified"
+    },
+    {
+      "node": "m2.script-drama-beat",
+      "assert": "AE-DENSITY-CALM",
+      "status": "unverified"
+    },
+    {
+      "node": "m2.script-drama-beat",
+      "assert": "AE-DENSITY-HOT",
+      "status": "unverified"
+    },
+    {
+      "node": "m2.script-drama-beat",
+      "assert": "AE-HOOK-EVENT",
+      "status": "unverified"
+    },
+    {
+      "node": "m2.script-drama-beat",
+      "assert": "AE-VIS-EMPTY",
+      "status": "unverified"
+    },
     {
       "node": "m2.script-forge",
       "assert": "AE-SCRIPT-FIELDS",

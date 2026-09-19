@@ -1,7 +1,7 @@
 {
   "format": "metrics-summary@1",
   "runId": "run-mu5qmazv-q5oqvp",
-  "events": 9,
+  "events": 10,
   "byNode": {
     "pre": {
       "nodeId": "pre",
@@ -88,11 +88,11 @@
     "style": {
       "nodeId": "style",
       "runs": 1,
-      "submits": 0,
+      "submits": 1,
       "tokensIn": 0,
       "tokensOut": 0,
       "latencyMs": 0,
-      "assertPass": 0,
+      "assertPass": 3,
       "assertBlock": 0,
       "retries": 0,
       "ctxOffered": 5,
@@ -112,11 +112,11 @@
       "kit": "search",
       "op": "deconstruct-book",
       "runs": 4,
-      "submits": 4,
+      "submits": 5,
       "tokensIn": 0,
       "tokensOut": 0,
       "latencyMs": 0,
-      "assertPass": 11,
+      "assertPass": 14,
       "assertBlock": 1,
       "retries": 1,
       "ctxOffered": 20,
@@ -137,25 +137,25 @@
   "knowledge": [
     {
       "id": "kb/aesthetic/character",
-      "offered": 7,
+      "offered": 4,
       "used": 0,
       "hitRate": 0
     },
     {
       "id": "kb/aesthetic/pacing-density",
-      "offered": 7,
+      "offered": 4,
       "used": 0,
       "hitRate": 0
     },
     {
       "id": "kb/deconstruct/protocol",
-      "offered": 7,
+      "offered": 4,
       "used": 0,
       "hitRate": 0
     },
     {
       "id": "kb/deconstruct/style-learning",
-      "offered": 7,
+      "offered": 4,
       "used": 0,
       "hitRate": 0
     },
@@ -167,20 +167,20 @@
     },
     {
       "id": "内部/稿本/拆解件-细化.md",
-      "offered": 3,
+      "offered": 2,
       "used": 0,
       "hitRate": 0
     },
     {
       "id": "内部/稿本/拆解件-剧情设计.md",
-      "offered": 2,
+      "offered": 1,
       "used": 1,
-      "hitRate": 0.5
+      "hitRate": 1
     }
   ],
   "gates": [],
   "window": {
     "from": "2026-09-17T16:22:01.797Z",
-    "to": "2026-09-17T16:28:27.880Z"
+    "to": "2026-09-17T16:29:12.382Z"
   }
 }

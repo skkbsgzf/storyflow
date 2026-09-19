@@ -143,6 +143,15 @@
       ],
       "sha1": "c81a3ea73e15",
       "ts": "2026-09-17T17:07:20.216Z"
+    },
+    {
+      "path": "registry/receipts/continuity-slice-ledger.json",
+      "node": "ledger",
+      "producer": "minitool:continuity_slice",
+      "inputs": {},
+      "round": 1,
+      "sha1": "3bbcbe86d294",
+      "ts": "2026-09-18T17:45:25.126Z"
     }
   ]
 }

@@ -20,3 +20,6 @@
 {"ts":"2026-09-17T16:29:12.383Z","runId":"run-mu5qmazv-q5oqvp","event":"submit","actor":"kernel","nodeId":"style","detail":"内部/稿本/拆解件-文风.md","refs":["内部/稿本/拆解件-文风.md"]}
 {"ts":"2026-09-17T16:29:12.383Z","runId":"run-mu5qmazv-q5oqvp","event":"snapshot","actor":"kernel","nodeId":"style","detail":"r1·拆解件-文风.md","refs":["内部/稿本/拆解件-文风.md"]}
 {"ts":"2026-09-17T16:29:12.388Z","runId":"run-mu5qmazv-q5oqvp","event":"warn","actor":"kernel","nodeId":"dedup","detail":"minitool「kb_search」未实现（M1 边界）——节点 dedup 保持未执行，不静默放行"}
+{"ts":"2026-09-18T17:45:22.452Z","runId":"run-mu5qmazv-q5oqvp","event":"advance","actor":"kernel","nodeId":"dedup","detail":"registry/receipts/kb-search-dedup.json","refs":["registry/receipts/kb-search-dedup.json"]}
+{"ts":"2026-09-18T17:45:22.455Z","runId":"run-mu5qmazv-q5oqvp","event":"advance","actor":"kernel","nodeId":"promote","detail":"内部/断言报告-promote.json","refs":["内部/断言报告-promote.json"]}
+{"ts":"2026-09-18T17:45:22.456Z","runId":"run-mu5qmazv-q5oqvp","event":"gate-open","actor":"kernel","nodeId":"fin","detail":"人工确认入库"}

@@ -1,0 +1,2 @@
+{"ts":"2026-09-18T17:45:23.780Z","runId":"run-mu5s1jj9-jjw2wd","nodeId":"ledger","phase":"core","round":1,"verdict":"pass"}
+{"ts":"2026-09-18T17:45:23.788Z","runId":"run-mu5s1jj9-jjw2wd","nodeId":"write","kit":"plot","op":"script-drama-beat","phase":"dispatch","round":0,"ctx":{"offered":5,"ids":["kb/aesthetic/dialogue","kb/aesthetic/hook-3s","kb/aesthetic/pacing-density","kb/aesthetic/platform-compliance","kb/aesthetic/visual-poster"]},"config":{"depth":"标准","strictness":"标准","maxChars":4000,"model_tier":"high","hookWindowSec":3,"paywallCard":true,"shotNotation":"△动作"}}

@@ -3,3 +3,6 @@
 {"ts":"2026-09-17T17:01:52.312Z","runId":"run-mu5s1jj9-jjw2wd","event":"advance","actor":"kernel","nodeId":"src","detail":"源步 分集大纲.md"}
 {"ts":"2026-09-17T17:01:52.313Z","runId":"run-mu5s1jj9-jjw2wd","event":"warn","actor":"kernel","nodeId":"ledger","detail":"minitool「continuity_slice」未实现（M1 边界）——节点 ledger 保持未执行，不静默放行"}
 {"ts":"2026-09-17T17:02:01.022Z","runId":"run-mu5s1jj9-jjw2wd","event":"warn","actor":"kernel","nodeId":"ledger","detail":"minitool「continuity_slice」未实现（M1 边界）——节点 ledger 保持未执行，不静默放行"}
+{"ts":"2026-09-18T17:45:23.781Z","runId":"run-mu5s1jj9-jjw2wd","event":"advance","actor":"kernel","nodeId":"ledger","detail":"registry/receipts/continuity-slice-ledger.json","refs":["registry/receipts/continuity-slice-ledger.json"]}
+{"ts":"2026-09-18T17:45:23.788Z","runId":"run-mu5s1jj9-jjw2wd","event":"advance","actor":"kernel","nodeId":"write","detail":"任务包产出（skill=script-drama-beat，上下文 0 件）"}
+{"ts":"2026-09-18T17:45:23.788Z","runId":"run-mu5s1jj9-jjw2wd","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：write（并行）"}

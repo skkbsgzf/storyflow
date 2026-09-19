@@ -1,7 +1,7 @@
 {
   "format": "metrics-summary@1",
   "runId": "run-mu5s4aaw-vkptxn",
-  "events": 6,
+  "events": 7,
   "byNode": {
     "market": {
       "nodeId": "market",
@@ -56,9 +56,9 @@
       "ctxOffered": 7,
       "ctxUsed": 1,
       "hitRate": 0.14285714285714285,
-      "consumedBy": 0,
+      "consumedBy": 1,
       "cost": 0.000001,
-      "efficiency": 0,
+      "efficiency": 1000000,
       "verdicts": [],
       "kit": "plot",
       "op": "novel-bible"
@@ -66,16 +66,16 @@
     "volume": {
       "nodeId": "volume",
       "runs": 1,
-      "submits": 0,
+      "submits": 1,
       "tokensIn": 0,
       "tokensOut": 0,
       "latencyMs": 0,
-      "assertPass": 0,
+      "assertPass": 4,
       "assertBlock": 0,
       "retries": 0,
       "ctxOffered": 8,
-      "ctxUsed": 0,
-      "hitRate": 0,
+      "ctxUsed": 1,
+      "hitRate": 0.125,
       "consumedBy": 0,
       "cost": 0.000001,
       "efficiency": 0,
@@ -123,9 +123,9 @@
       "ctxOffered": 7,
       "ctxUsed": 1,
       "hitRate": 0.14285714285714285,
-      "consumedBy": 0,
+      "consumedBy": 1,
       "cost": 0.000001,
-      "efficiency": 0,
+      "efficiency": 1000000,
       "verdicts": [],
       "nodes": [
         "bible"
@@ -136,16 +136,16 @@
       "kit": "plot",
       "op": "plot-choreographer",
       "runs": 1,
-      "submits": 0,
+      "submits": 1,
       "tokensIn": 0,
       "tokensOut": 0,
       "latencyMs": 0,
-      "assertPass": 0,
+      "assertPass": 4,
       "assertBlock": 0,
       "retries": 0,
       "ctxOffered": 8,
-      "ctxUsed": 0,
-      "hitRate": 0,
+      "ctxUsed": 1,
+      "hitRate": 0.125,
       "consumedBy": 0,
       "cost": 0.000001,
       "efficiency": 0,
@@ -199,38 +199,20 @@
       "hitRate": 0
     },
     {
-      "id": "kb/market/snapshot",
-      "offered": 1,
-      "used": 0,
-      "hitRate": 0
-    },
-    {
-      "id": "kb/market/structure",
-      "offered": 1,
-      "used": 0,
-      "hitRate": 0
-    },
-    {
-      "id": "kb/trope/*",
-      "offered": 2,
-      "used": 0,
-      "hitRate": 0
-    },
-    {
       "id": "kb/aesthetic/character",
-      "offered": 2,
+      "offered": 1,
       "used": 0,
       "hitRate": 0
     },
     {
       "id": "kb/aesthetic/conflict-escalation",
-      "offered": 3,
+      "offered": 2,
       "used": 0,
       "hitRate": 0
     },
     {
       "id": "kb/formats/webnovel-longform",
-      "offered": 2,
+      "offered": 1,
       "used": 0,
       "hitRate": 0
     },
@@ -271,21 +253,21 @@
       "hitRate": 0
     },
     {
-      "id": "世界书/世界观圣经.md",
+      "id": "内部/稿本/梗卡.md",
       "offered": 1,
-      "used": 0,
-      "hitRate": 0
+      "used": 1,
+      "hitRate": 1
     },
     {
-      "id": "内部/稿本/梗卡.md",
-      "offered": 2,
+      "id": "世界书/世界观圣经.md",
+      "offered": 1,
       "used": 1,
-      "hitRate": 0.5
+      "hitRate": 1
     }
   ],
   "gates": [],
   "window": {
     "from": "2026-09-17T17:04:00.317Z",
-    "to": "2026-09-17T17:06:35.192Z"
+    "to": "2026-09-17T17:07:20.219Z"
   }
 }

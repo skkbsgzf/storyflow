@@ -119,6 +119,24 @@
       ],
       "sha1": "d2195c2f943a",
       "ts": "2026-09-17T16:29:12.378Z"
+    },
+    {
+      "path": "registry/receipts/kb-search-dedup.json",
+      "node": "dedup",
+      "producer": "minitool:kb_search",
+      "inputs": {},
+      "round": 1,
+      "sha1": "dfb7e3ecf784",
+      "ts": "2026-09-18T17:45:22.449Z"
+    },
+    {
+      "path": "内部/断言报告-promote.json",
+      "node": "promote",
+      "producer": "minitool:check_aesthetic_asserts",
+      "inputs": {},
+      "round": 1,
+      "sha1": "f9e06acec3ec",
+      "ts": "2026-09-18T17:45:22.453Z"
     }
   ]
 }

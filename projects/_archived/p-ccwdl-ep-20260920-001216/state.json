@@ -4,7 +4,7 @@
   "flowId": "episode-script",
   "flowVersion": "0.1.0-draft",
   "flowHash": "713e7aa9",
-  "status": "running",
+  "status": "awaiting_input",
   "plan": {
     "order": [
       "src",
@@ -24,11 +24,13 @@
       "lastArtifact": "分集大纲.md"
     },
     "ledger": {
-      "status": "none",
-      "round": 0
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "registry/receipts/continuity-slice-ledger.json"
     },
     "write": {
-      "status": "none",
+      "status": "awaiting",
       "round": 0
     },
     "audit": {
@@ -65,5 +67,5 @@
     "adapt": "propose"
   },
   "planHash": "47bb85d3",
-  "focus": "ledger"
+  "focus": "write"
 }

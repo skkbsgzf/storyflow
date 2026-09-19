@@ -2,3 +2,6 @@
 {"ts":"2026-09-17T17:32:51.534Z","runId":"run-mu5t5e4s-otz10u","event":"note","actor":"kernel:overlay","detail":"生效编排合成：set-policy kit_boundary=off｜实验批：跨域门自动放行 ｜ kit_boundary=off：不派生边界验收（全自动）"}
 {"ts":"2026-09-17T17:32:51.554Z","runId":"run-mu5t5e4s-otz10u","event":"advance","actor":"kernel","nodeId":"src","detail":"源步 分场卡.md"}
 {"ts":"2026-09-17T17:32:51.555Z","runId":"run-mu5t5e4s-otz10u","event":"warn","actor":"kernel","nodeId":"ledger","detail":"minitool「continuity_slice」未实现（M1 边界）——节点 ledger 保持未执行，不静默放行"}
+{"ts":"2026-09-18T17:45:26.488Z","runId":"run-mu5t5e4s-otz10u","event":"advance","actor":"kernel","nodeId":"ledger","detail":"registry/receipts/continuity-slice-ledger.json","refs":["registry/receipts/continuity-slice-ledger.json"]}
+{"ts":"2026-09-18T17:45:26.495Z","runId":"run-mu5t5e4s-otz10u","event":"advance","actor":"kernel","nodeId":"beats","detail":"任务包产出（skill=scene-breakdown，上下文 1 件）"}
+{"ts":"2026-09-18T17:45:26.496Z","runId":"run-mu5t5e4s-otz10u","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：beats（并行）"}

@@ -6,7 +6,7 @@
     "link_default": "auto",
     "adapt": "propose"
   },
-  "overlayHash": "r6-ee0fbf85",
+  "overlayHash": "r6-62f52598",
   "planHash": "30afe5f1",
   "links": [
     {
@@ -86,13 +86,33 @@
         "编剧"
       ],
       "capsEnabled": [
+        "结构",
+        "主线",
+        "伏笔",
+        "悬念",
+        "分场",
+        "短剧节拍",
+        "红队评审",
         "编剧"
       ],
       "spine": [
+        "m2.structure-design",
+        "m2.plot-choreographer",
+        "m2.scene-breakdown",
         "m2.script-forge"
       ],
-      "plugins": [],
+      "plugins": [
+        "m2.foreshadow-plant",
+        "m2.script-drama-beat",
+        "m2.plot-redline"
+      ],
       "nodes": [
+        "m2.structure-design",
+        "m2.plot-choreographer",
+        "m2.foreshadow-plant",
+        "m2.scene-breakdown",
+        "m2.script-drama-beat",
+        "m2.plot-redline",
         "m2.script-forge"
       ],
       "io": {
@@ -175,6 +195,132 @@
       },
       "desc": "选题模块唯一交付工具：输入灵感 → 选题报告（梗选型+竞品对标+结构解剖+可用话题）。输入职责=灵感；输出职责=选题报告单件；验收职责=AE-REPORT-DENSITY"
     },
+    "m2.structure-design": {
+      "kind": "agent",
+      "title": "structure-design",
+      "stage": "m2",
+      "module": "m2",
+      "kit": "plot",
+      "op": "structure-design",
+      "output": "02-编剧/structure-design.md",
+      "skill": "structure-design",
+      "minitool": "kb_search",
+      "config": {
+        "fuseCount": "@default:fuseCount",
+        "injectUncertainty": "@default:injectUncertainty",
+        "steps": "@default:steps"
+      },
+      "desc": "第二阶段技能——从结构目录选型并完成深挖/改造/融合三步，产出故事框架案（结构选型理由+骨架具体化+改造点+不确定因素注入提案），确保节奏对齐市场实盘。"
+    },
+    "m2.plot-choreographer": {
+      "kind": "agent",
+      "title": "plot-choreographer",
+      "stage": "m2",
+      "module": "m2",
+      "kit": "plot",
+      "op": "plot-choreographer",
+      "output": "02-编剧/plot-choreographer.md",
+      "skill": "plot-choreographer",
+      "minitool": "check_aesthetic_asserts",
+      "asserts": [
+        "AE-CURVE-STALL",
+        "AE-CURVE-TYPE",
+        "AE-CUSHION",
+        "AE-DESERT",
+        "AE-END-MECH",
+        "AE-REV-MIDPOINT",
+        "AE-REV-SETUP"
+      ],
+      "config": {
+        "actModel": "@default:actModel",
+        "cardDensity": "@default:cardDensity",
+        "dataAnchor": "@default:dataAnchor",
+        "lineCount": "@default:lineCount"
+      },
+      "desc": "剧情编排技能——把八段式策划案升级为可拍的三线骨架×分集功能表×卡点编排表；数据骨架（市场实盘）与美学标准（kb/aesthetic）双驱动。"
+    },
+    "m2.foreshadow-plant": {
+      "kind": "agent",
+      "title": "伏笔悬念插入",
+      "stage": "m2",
+      "module": "m2",
+      "kit": "plot",
+      "op": "foreshadow-plant",
+      "output": "02-编剧/foreshadow-plant.md",
+      "skill": "foreshadow-plant",
+      "minitool": "continuity_commit",
+      "asserts": [
+        "AE-CONT-FORESHADOW"
+      ],
+      "config": {
+        "plantPerUnit": "@default:plantPerUnit",
+        "disguiseLevel": "@default:disguiseLevel"
+      },
+      "desc": "伏笔悬念插入技能——按伏笔台账在指定结构位点埋设伏笔（明面日常化伪装+暗面台账登记：埋设章/预期回收章/知情范围），产出伏笔点位表；埋设必须登记台账、到期必须回收（AE-CONT-FORESHADOW），不埋无回收主的死伏笔。"
+    },
+    "m2.scene-breakdown": {
+      "kind": "agent",
+      "title": "scene-breakdown",
+      "stage": "m2",
+      "module": "m2",
+      "kit": "plot",
+      "op": "scene-breakdown",
+      "output": "02-编剧/scene-breakdown.md",
+      "skill": "scene-breakdown",
+      "minitool": "check_aesthetic_asserts",
+      "config": {
+        "shotsPerScene": "@default:shotsPerScene",
+        "includeRationale": "@default:includeRationale",
+        "dialogLevel": "@default:dialogLevel"
+      },
+      "desc": "小纲阶段技能——把大纲拆成逐分镜的脚本 doc：每个分镜的场景/人物行动/台词，达意即可无需打磨；文末附创作思路页。输出 doc 格式供客户批注修改后回传。"
+    },
+    "m2.script-drama-beat": {
+      "kind": "agent",
+      "title": "短剧节拍表",
+      "stage": "m2",
+      "module": "m2",
+      "kit": "plot",
+      "op": "script-drama-beat",
+      "output": "02-编剧/script-drama-beat.md",
+      "skill": "script-drama-beat",
+      "minitool": "check_aesthetic_asserts",
+      "asserts": [
+        "AE-BEAT-FORMAT",
+        "AE-CARD-END",
+        "AE-CONT-FORESHADOW",
+        "AE-CONT-ITEM",
+        "AE-CONT-KNOW",
+        "AE-DENSITY-CALM",
+        "AE-DENSITY-HOT",
+        "AE-HOOK-EVENT",
+        "AE-VIS-EMPTY"
+      ],
+      "config": {
+        "hookWindowSec": "@default:hookWindowSec",
+        "paywallCard": "@default:paywallCard",
+        "shotNotation": "@default:shotNotation"
+      },
+      "desc": "竖屏短剧一集的硬格式：场次编号/△动作/台词内联情绪/前3秒钩子/结尾付费卡点体检；剧本是生产工具，不可拍摄内容是禁手。"
+    },
+    "m2.plot-redline": {
+      "kind": "agent",
+      "title": "剧情红队·多方视角评审",
+      "stage": "m2",
+      "module": "m2",
+      "kit": "plot",
+      "op": "plot-redline",
+      "output": "02-编剧/plot-redline.md",
+      "skill": "plot-redline",
+      "minitool": "kb_read",
+      "config": {
+        "angles": "@default:angles",
+        "harshness": "@default:harshness",
+        "allowInject": "@default:allowInject",
+        "voice": "@default:voice"
+      },
+      "desc": "红方评审技能 v2（视角代入制）——代入目标读者/一般读者/资深编剧/甲方四类人分别给意见，说人话不念指标；打回时指认根因阶段；框架可行但单薄时提案不确定因素注入。每个阶段验收门强制注入。"
+    },
     "m2.script-forge": {
       "kind": "agent",
       "title": "剧本师",
@@ -232,6 +378,62 @@
   },
   "edges": [
     {
+      "id": "e-m2-structure-design-plot-choreographer",
+      "from": "m2.structure-design",
+      "to": "m2.plot-choreographer",
+      "role": "flow",
+      "via": "skill.plot-choreographer"
+    },
+    {
+      "id": "e-m2-plot-choreographer-foreshadow-plant",
+      "from": "m2.plot-choreographer",
+      "to": "m2.foreshadow-plant",
+      "role": "flow",
+      "via": "skill.foreshadow-plant"
+    },
+    {
+      "id": "e-m2-foreshadow-plant-scene-breakdown",
+      "from": "m2.foreshadow-plant",
+      "to": "m2.scene-breakdown",
+      "role": "flow",
+      "via": "skill.scene-breakdown"
+    },
+    {
+      "id": "e-m2-scene-breakdown-script-drama-beat",
+      "from": "m2.scene-breakdown",
+      "to": "m2.script-drama-beat",
+      "role": "flow",
+      "via": "skill.script-drama-beat"
+    },
+    {
+      "id": "e-m2-script-drama-beat-plot-redline",
+      "from": "m2.script-drama-beat",
+      "to": "m2.plot-redline",
+      "role": "flow",
+      "via": "skill.plot-redline"
+    },
+    {
+      "id": "e-m2-plot-redline-script-forge",
+      "from": "m2.plot-redline",
+      "to": "m2.script-forge",
+      "role": "flow",
+      "via": "skill.script-forge"
+    },
+    {
+      "id": "e-m2-plot-choreographer-scene-breakdown",
+      "from": "m2.plot-choreographer",
+      "to": "m2.scene-breakdown",
+      "role": "flow",
+      "via": "skill.scene-breakdown"
+    },
+    {
+      "id": "e-m2-scene-breakdown-script-forge",
+      "from": "m2.scene-breakdown",
+      "to": "m2.script-forge",
+      "role": "flow",
+      "via": "skill.script-forge"
+    },
+    {
       "id": "e-m1-link",
       "from": "m1.topic-report",
       "to": "m2.link",
@@ -240,7 +442,7 @@
     {
       "id": "e-link-m2",
       "from": "m2.link",
-      "to": "m2.script-forge",
+      "to": "m2.structure-design",
       "role": "flow"
     },
     {
@@ -265,6 +467,73 @@
       "nodeConfig": {
         "maxChars": "@default:maxChars",
         "minTropeRows": "@default:minTropeRows"
+      }
+    },
+    "m2.structure-design": {
+      "module": "m2",
+      "output": "02-编剧/structure-design.md",
+      "skill": "structure-design",
+      "minitool": "kb_search",
+      "nodeConfig": {
+        "fuseCount": "@default:fuseCount",
+        "injectUncertainty": "@default:injectUncertainty",
+        "steps": "@default:steps"
+      }
+    },
+    "m2.plot-choreographer": {
+      "module": "m2",
+      "output": "02-编剧/plot-choreographer.md",
+      "skill": "plot-choreographer",
+      "minitool": "check_aesthetic_asserts",
+      "nodeConfig": {
+        "actModel": "@default:actModel",
+        "cardDensity": "@default:cardDensity",
+        "dataAnchor": "@default:dataAnchor",
+        "lineCount": "@default:lineCount"
+      }
+    },
+    "m2.foreshadow-plant": {
+      "module": "m2",
+      "output": "02-编剧/foreshadow-plant.md",
+      "skill": "foreshadow-plant",
+      "minitool": "continuity_commit",
+      "nodeConfig": {
+        "plantPerUnit": "@default:plantPerUnit",
+        "disguiseLevel": "@default:disguiseLevel"
+      }
+    },
+    "m2.scene-breakdown": {
+      "module": "m2",
+      "output": "02-编剧/scene-breakdown.md",
+      "skill": "scene-breakdown",
+      "minitool": "check_aesthetic_asserts",
+      "nodeConfig": {
+        "shotsPerScene": "@default:shotsPerScene",
+        "includeRationale": "@default:includeRationale",
+        "dialogLevel": "@default:dialogLevel"
+      }
+    },
+    "m2.script-drama-beat": {
+      "module": "m2",
+      "output": "02-编剧/script-drama-beat.md",
+      "skill": "script-drama-beat",
+      "minitool": "check_aesthetic_asserts",
+      "nodeConfig": {
+        "hookWindowSec": "@default:hookWindowSec",
+        "paywallCard": "@default:paywallCard",
+        "shotNotation": "@default:shotNotation"
+      }
+    },
+    "m2.plot-redline": {
+      "module": "m2",
+      "output": "02-编剧/plot-redline.md",
+      "skill": "plot-redline",
+      "minitool": "kb_read",
+      "nodeConfig": {
+        "angles": "@default:angles",
+        "harshness": "@default:harshness",
+        "allowInject": "@default:allowInject",
+        "voice": "@default:voice"
       }
     },
     "m2.script-forge": {

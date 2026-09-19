@@ -16,3 +16,6 @@
 {"ts":"2026-09-17T17:07:20.220Z","runId":"run-mu5s4aaw-vkptxn","event":"submit","actor":"kernel","nodeId":"volume","detail":"内部/稿本/卷纲与章功能序列.md","refs":["内部/稿本/卷纲与章功能序列.md"]}
 {"ts":"2026-09-17T17:07:20.220Z","runId":"run-mu5s4aaw-vkptxn","event":"snapshot","actor":"kernel","nodeId":"volume","detail":"r1·卷纲与章功能序列.md","refs":["内部/稿本/卷纲与章功能序列.md"]}
 {"ts":"2026-09-17T17:07:20.224Z","runId":"run-mu5s4aaw-vkptxn","event":"warn","actor":"kernel","nodeId":"ledger","detail":"minitool「continuity_slice」未实现（M1 边界）——节点 ledger 保持未执行，不静默放行"}
+{"ts":"2026-09-18T17:45:25.128Z","runId":"run-mu5s4aaw-vkptxn","event":"advance","actor":"kernel","nodeId":"ledger","detail":"registry/receipts/continuity-slice-ledger.json","refs":["registry/receipts/continuity-slice-ledger.json"]}
+{"ts":"2026-09-18T17:45:25.137Z","runId":"run-mu5s4aaw-vkptxn","event":"advance","actor":"kernel","nodeId":"chapter","detail":"任务包产出（skill=novel-chapter，上下文 0 件）"}
+{"ts":"2026-09-18T17:45:25.137Z","runId":"run-mu5s4aaw-vkptxn","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：chapter（并行）"}

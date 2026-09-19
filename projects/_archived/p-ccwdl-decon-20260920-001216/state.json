@@ -4,7 +4,7 @@
   "flowId": "book-deconstruct",
   "flowVersion": "0.1.0-draft",
   "flowHash": "2c305abd",
-  "status": "running",
+  "status": "suspended",
   "plan": {
     "order": [
       "src",
@@ -57,20 +57,29 @@
       "stale": false
     },
     "dedup": {
-      "status": "none",
-      "round": 0
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "registry/receipts/kb-search-dedup.json"
     },
     "promote": {
-      "status": "none",
-      "round": 0
+      "status": "done",
+      "round": 1,
+      "stale": false,
+      "lastArtifact": "内部/断言报告-promote.json"
     },
     "fin": {
-      "status": "none",
+      "status": "awaiting",
       "round": 0
     }
   },
   "gate": {
-    "verdict": "none"
+    "verdict": "awaiting",
+    "node": "fin",
+    "round": 0,
+    "token": "approval:p-ccwdl-decon:run-mu5qmazv-q5oqvp:fin",
+    "at": "2026-09-18T17:45:22.456Z",
+    "note": "人工确认入库"
   },
   "inputs": {
     "project": "p-ccwdl-decon",
@@ -85,5 +94,5 @@
     "adapt": "propose"
   },
   "planHash": "d43aa60b",
-  "focus": "dedup"
+  "focus": "fin"
 }

@@ -1,0 +1,16 @@
+{
+  "mode": "aesthetic",
+  "node": "promote",
+  "minitool": "check_aesthetic_asserts",
+  "checked": [],
+  "results": [],
+  "declared": [],
+  "contract": [],
+  "summary": {
+    "declared": 0,
+    "machineChecked": 0,
+    "unverified": 0,
+    "block": 0
+  },
+  "note": "check_aesthetic_asserts：引擎机器可查维度全量 + 节点声明断言逐条裁（0 条声明，0 条无机器校验器→归评审/红方剖面，未执行且不冒充通过）"
+}

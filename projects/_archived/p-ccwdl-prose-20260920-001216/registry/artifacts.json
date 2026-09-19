@@ -1,0 +1,22 @@
+{
+  "artifacts": [
+    {
+      "path": "分场卡.md",
+      "node": "src",
+      "producer": "kernel:novel-txt",
+      "inputs": {},
+      "round": 1,
+      "sha1": "473f6f3df5ae",
+      "ts": "2026-09-17T17:32:51.551Z"
+    },
+    {
+      "path": "registry/receipts/continuity-slice-ledger.json",
+      "node": "ledger",
+      "producer": "minitool:continuity_slice",
+      "inputs": {},
+      "round": 1,
+      "sha1": "3bbcbe86d294",
+      "ts": "2026-09-18T17:45:26.485Z"
+    }
+  ]
+}

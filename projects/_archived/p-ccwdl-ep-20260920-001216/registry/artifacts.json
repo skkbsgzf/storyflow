@@ -1,0 +1,22 @@
+{
+  "artifacts": [
+    {
+      "path": "分集大纲.md",
+      "node": "src",
+      "producer": "kernel:novel-txt",
+      "inputs": {},
+      "round": 1,
+      "sha1": "2ff31a635c3c",
+      "ts": "2026-09-17T17:01:52.310Z"
+    },
+    {
+      "path": "registry/receipts/continuity-slice-ledger.json",
+      "node": "ledger",
+      "producer": "minitool:continuity_slice",
+      "inputs": {},
+      "round": 1,
+      "sha1": "3bbcbe86d294",
+      "ts": "2026-09-18T17:45:23.777Z"
+    }
+  ]
+}
