@@ -175,11 +175,26 @@ describe("R6 · 模块展开器（expandFlow3）", () => {
     expect(b).toBe(a);
   });
 
-  it("真仓模块：plot 模块对齐钦定形态（v2 精细化：工具箱 11 / 骨架 1 = script-forge）", () => {
+  it("真仓模块：plot 模块对齐钦定形态（v2.1 骨架扩容：四段水线，锚点全可达）", () => {
     const mod = JSON.parse(fs.readFileSync(path.join(ROOT, "modules", "plot", "module.json"), "utf-8"));
-    expect(Object.keys(mod.ops).length).toBe(11);
-    expect(mod.skeleton.spine).toEqual(["script-forge"]);
+    expect(mod.skeleton.spine).toEqual(["structure-design", "plot-choreographer", "scene-breakdown", "script-forge"]);
+    expect(mod.skeleton.edges).toEqual([
+      ["structure-design", "plot-choreographer"],
+      ["plot-choreographer", "scene-breakdown"],
+      ["scene-breakdown", "script-forge"],
+    ]);
     expect(mod.ops["script-forge"].asserts).toContain("AE-SCRIPT-FIELDS");
+    // 落位可达性（诊断 2026-09-19）：插件锚点不在骨架时，also_fits 必须有可用兜底
+    const spine = new Set(mod.skeleton.spine);
+    for (const [oid2, op2] of Object.entries(mod.ops) as [string, any][]) {
+      if (spine.has(oid2)) continue;
+      const slot: string = op2.slot ?? "";
+      if (!slot || slot === "end") continue;
+      const anchor = slot.split(":")[1];
+      if (spine.has(anchor)) continue;
+      const fits: string[] = op2.also_fits ?? [];
+      expect(fits.some((a) => a === "end" || spine.has(a.split(":")[1])), oid2).toBe(true);
+    }
   });
   it("真仓模块：topic/prose v2 精细化（单件交付 spine + 输出职责落盘名）", () => {
     const topic = JSON.parse(fs.readFileSync(path.join(ROOT, "modules", "topic", "module.json"), "utf-8"));

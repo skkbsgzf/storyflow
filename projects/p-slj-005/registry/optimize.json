@@ -1,0 +1,248 @@
+{
+  "format": "optimize@1",
+  "flowId": "drama-flow",
+  "at": "2026-09-19T15:13:47.877Z",
+  "policy": {
+    "link_default": "auto",
+    "adapt": "propose"
+  },
+  "metrics": {
+    "events": 20,
+    "window": {
+      "from": "2026-09-19T15:09:31.876Z",
+      "to": "2026-09-19T15:13:47.861Z"
+    }
+  },
+  "sources": [
+    "metrics"
+  ],
+  "mineStructural": [],
+  "proposals": [
+    {
+      "id": "R1@drama.scene-breakdown:kb/aesthetic/dialogue",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：drama.scene-breakdown 的 kb/aesthetic/dialogue",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "drama",
+        "op": "scene-breakdown",
+        "remove_knowledge": [
+          "kb/aesthetic/dialogue"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@plot.scene-breakdown:kb/aesthetic/dialogue",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.scene-breakdown 的 kb/aesthetic/dialogue",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "scene-breakdown",
+        "remove_knowledge": [
+          "kb/aesthetic/dialogue"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@plot.script-drama-beat:kb/aesthetic/dialogue",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：plot.script-drama-beat 的 kb/aesthetic/dialogue",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "plot",
+        "op": "script-drama-beat",
+        "remove_knowledge": [
+          "kb/aesthetic/dialogue"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@prose.dialogue-polish:kb/aesthetic/dialogue",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.dialogue-polish 的 kb/aesthetic/dialogue",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "dialogue-polish",
+        "remove_knowledge": [
+          "kb/aesthetic/dialogue"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@prose.layer-voices:kb/aesthetic/dialogue",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.layer-voices 的 kb/aesthetic/dialogue",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "layer-voices",
+        "remove_knowledge": [
+          "kb/aesthetic/dialogue"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R1@prose.script-final:kb/aesthetic/dialogue",
+      "rule": "R1-ctx-dead",
+      "severity": "low",
+      "risk": "low",
+      "title": "移除死条款：prose.script-final 的 kb/aesthetic/dialogue",
+      "reason": "该条款装载 3 次、被产物引用 0 次——占上下文预算却不参与判断。要么删，要么改写成能被引用的形式（如并入更相关的卡）。",
+      "evidence": {
+        "rule": "R1-ctx-dead",
+        "metric": "ctx.hitRate",
+        "value": 0,
+        "samples": 3
+      },
+      "patch": {
+        "kind": "set-tool",
+        "kit": "prose",
+        "op": "script-final",
+        "remove_knowledge": [
+          "kb/aesthetic/dialogue"
+        ],
+        "reason": "装载 3 次零命中，移出标尺节省上下文预算",
+        "evidence": {
+          "rule": "R1-ctx-dead",
+          "metric": "ctx.hitRate",
+          "value": 0,
+          "samples": 3
+        }
+      }
+    },
+    {
+      "id": "R6@m2.link",
+      "rule": "R6-autogate-cleanup",
+      "severity": "low",
+      "risk": "low",
+      "title": "清掉旧评审节点：m2.link",
+      "reason": "R5 起域内质量由各 tool 的 asserts/config 承担，图上不再需要固定评审节点。纯汇合点，无产活、无裁决价值（R5 起域内质量由各 tool 的 asserts/config 承担）。裁掉后编排更短、更少串行屏障。",
+      "evidence": {
+        "rule": "R6-autogate-cleanup",
+        "metric": "gate.node",
+        "value": "连接 · 编剧（自动批准）",
+        "samples": 0
+      },
+      "patch": {
+        "kind": "remove-node",
+        "id": "m2.link",
+        "rewire": "bridge",
+        "reason": "R5 门降级：纯汇合点不再需要常驻图上",
+        "evidence": {
+          "rule": "R6-autogate-cleanup",
+          "metric": "gate.node",
+          "value": "连接 · 编剧（自动批准）",
+          "samples": 0
+        }
+      }
+    },
+    {
+      "id": "R6@m3.link",
+      "rule": "R6-autogate-cleanup",
+      "severity": "low",
+      "risk": "low",
+      "title": "清掉旧评审节点：m3.link",
+      "reason": "R5 起域内质量由各 tool 的 asserts/config 承担，图上不再需要固定评审节点。纯汇合点，无产活、无裁决价值（R5 起域内质量由各 tool 的 asserts/config 承担）。裁掉后编排更短、更少串行屏障。",
+      "evidence": {
+        "rule": "R6-autogate-cleanup",
+        "metric": "gate.node",
+        "value": "连接 · 成剧（自动批准）",
+        "samples": 0
+      },
+      "patch": {
+        "kind": "remove-node",
+        "id": "m3.link",
+        "rewire": "bridge",
+        "reason": "R5 门降级：纯汇合点不再需要常驻图上",
+        "evidence": {
+          "rule": "R6-autogate-cleanup",
+          "metric": "gate.node",
+          "value": "连接 · 成剧（自动批准）",
+          "samples": 0
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "runId": "run-mu8iwrwt-1nu6lt",
+  "projectId": "p-slj-005",
+  "flowId": "drama-flow",
+  "flowVersion": "1.1.0",
+  "flowHash": "dedec907",
+  "status": "completed",
+  "plan": {
+    "order": [
+      "m1.topic-report",
+      "m2.link",
+      "itb-m2.structure-design",
+      "m2.structure-design",
+      "m2.plot-choreographer",
+      "m2.foreshadow-plant",
+      "m2.scene-breakdown",
+      "m2.script-drama-beat",
+      "m2.plot-redline",
+      "m2.script-forge",
+      "m3.link",
+      "itb-m3.scene-breakdown",
+      "m3.scene-breakdown"
+    ]
+  },
+  "nodes": {
+    "m1.topic-report": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "01-选题/选题报告.md",
+      "stale": false
+    },
+    "m2.structure-design": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/structure-design.md",
+      "stale": false
+    },
+    "m2.plot-choreographer": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/plot-choreographer.md",
+      "stale": false
+    },
+    "m2.foreshadow-plant": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/foreshadow-plant.md",
+      "stale": false
+    },
+    "m2.scene-breakdown": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/scene-breakdown.md",
+      "stale": false
+    },
+    "m2.script-drama-beat": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/script-drama-beat.md",
+      "stale": false
+    },
+    "m2.plot-redline": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/plot-redline.md",
+      "stale": false
+    },
+    "m2.script-forge": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "02-编剧/剧本.md",
+      "stale": false
+    },
+    "m2.link": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "m3.scene-breakdown": {
+      "status": "done",
+      "round": 1,
+      "lastArtifact": "03-成剧/分镜剧本.md",
+      "stale": false
+    },
+    "m3.link": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "itb-m2.structure-design": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    },
+    "itb-m3.scene-breakdown": {
+      "status": "done",
+      "round": 1,
+      "verdict": "pass",
+      "stale": false
+    }
+  },
+  "gate": {
+    "verdict": "pass",
+    "node": "itb-m3.scene-breakdown",
+    "at": "2026-09-19T15:13:46.968Z",
+    "note": "B组代裁：m2 七节点全过验收（红队意见已吸收进成品剧本）"
+  },
+  "inputs": {
+    "project": "p-slj-005",
+    "direction": "水利局梗×短剧公式：守闸人（装配修复复跑）",
+    "episodes": 6,
+    "route": "hot",
+    "题材": "现实题材竖屏短剧",
+    "AB测试": false
+  },
+  "comments": {},
+  "overlayHash": "1285136d",
+  "policy": {
+    "kit_boundary": "always",
+    "gate_mode": "auto",
+    "adapt": "propose"
+  },
+  "planHash": "8deccec9"
+}

@@ -1,0 +1,185 @@
+{
+  "format": "module-report@1",
+  "projectId": "p-slj-005",
+  "flowId": "drama-flow",
+  "moduleId": "m2",
+  "moduleName": "m2",
+  "title": "structure-design / plot-choreographer / 伏笔悬念插入",
+  "closedAt": "2026-09-19T15:13:16.011Z",
+  "io": {
+    "input": [
+      "direction",
+      "episodes",
+      "route",
+      "题材",
+      "AB测试"
+    ],
+    "output": "02-编剧/剧本.md"
+  },
+  "artifacts": [
+    {
+      "node": "m2.structure-design",
+      "op": "structure-design",
+      "path": "02-编剧/structure-design.md",
+      "role": "process"
+    },
+    {
+      "node": "m2.plot-choreographer",
+      "op": "plot-choreographer",
+      "path": "02-编剧/plot-choreographer.md",
+      "role": "process"
+    },
+    {
+      "node": "m2.foreshadow-plant",
+      "op": "foreshadow-plant",
+      "path": "02-编剧/foreshadow-plant.md",
+      "role": "process"
+    },
+    {
+      "node": "m2.scene-breakdown",
+      "op": "scene-breakdown",
+      "path": "02-编剧/scene-breakdown.md",
+      "role": "process"
+    },
+    {
+      "node": "m2.script-drama-beat",
+      "op": "script-drama-beat",
+      "path": "02-编剧/script-drama-beat.md",
+      "role": "process"
+    },
+    {
+      "node": "m2.plot-redline",
+      "op": "plot-redline",
+      "path": "02-编剧/plot-redline.md",
+      "role": "process"
+    },
+    {
+      "node": "m2.script-forge",
+      "op": "script-forge",
+      "path": "02-编剧/剧本.md",
+      "role": "deliverable"
+    }
+  ],
+  "acceptance": [
+    {
+      "node": "m2.plot-choreographer",
+      "assert": "AE-CURVE-STALL",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+    },
+    {
+      "node": "m2.plot-choreographer",
+      "assert": "AE-CURVE-TYPE",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+    },
+    {
+      "node": "m2.plot-choreographer",
+      "assert": "AE-CUSHION",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+    },
+    {
+      "node": "m2.plot-choreographer",
+      "assert": "AE-DESERT",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+    },
+    {
+      "node": "m2.plot-choreographer",
+      "assert": "AE-END-MECH",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+    },
+    {
+      "node": "m2.plot-choreographer",
+      "assert": "AE-REV-MIDPOINT",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+    },
+    {
+      "node": "m2.plot-choreographer",
+      "assert": "AE-REV-SETUP",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+    },
+    {
+      "node": "m2.foreshadow-plant",
+      "assert": "AE-CONT-FORESHADOW",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+    },
+    {
+      "node": "m2.script-drama-beat",
+      "assert": "AE-BEAT-FORMAT",
+      "status": "pass",
+      "detail": "0 拍三件套（分镜/台词/表演）完整"
+    },
+    {
+      "node": "m2.script-drama-beat",
+      "assert": "AE-CARD-END",
+      "status": "warn",
+      "detail": "集末卡点体检位在场"
+    },
+    {
+      "node": "m2.script-drama-beat",
+      "assert": "AE-CONT-FORESHADOW",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+    },
+    {
+      "node": "m2.script-drama-beat",
+      "assert": "AE-CONT-ITEM",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+    },
+    {
+      "node": "m2.script-drama-beat",
+      "assert": "AE-CONT-KNOW",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+    },
+    {
+      "node": "m2.script-drama-beat",
+      "assert": "AE-DENSITY-CALM",
+      "status": "unverified"
+    },
+    {
+      "node": "m2.script-drama-beat",
+      "assert": "AE-DENSITY-HOT",
+      "status": "unverified"
+    },
+    {
+      "node": "m2.script-drama-beat",
+      "assert": "AE-HOOK-EVENT",
+      "status": "pass",
+      "detail": "0 集首拍钩型全部四型之一"
+    },
+    {
+      "node": "m2.script-drama-beat",
+      "assert": "AE-VIS-EMPTY",
+      "status": "pass",
+      "detail": "分拍可拍摄性合格（无心理/抒情标注）"
+    },
+    {
+      "node": "m2.script-forge",
+      "assert": "AE-SCRIPT-FIELDS",
+      "status": "warn",
+      "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+    }
+  ],
+  "metrics": {
+    "submits": 8,
+    "retries": 0,
+    "tokensIn": 0,
+    "tokensOut": 0,
+    "latencyMs": 0,
+    "ctxOffered": 47,
+    "ctxUsed": 22,
+    "hitRate": 0.46808510638297873
+  },
+  "feedback": {
+    "annotations": 0,
+    "proposals": 0
+  }
+}

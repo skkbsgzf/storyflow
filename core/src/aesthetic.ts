@@ -422,6 +422,38 @@ export function scriptFieldsAssert(text: string): Validation {
 }
 
 /**
+ * AE-CH-LEN（major/block）· 多章正文每章 CJK 字数下限（诊断 2026-09-19）：
+ * ghostwrite.chapterMin 声明了 1500/章 却无断言兜底——p-slj-001 三章 2187 字（729/章）无人报警。
+ * 自门控：正文含 ≥2 个「## 第N章」小节才生效；单章文件不适用。
+ * 阈值：每章 <800 CJK 判 block，<1500 判 warn（对齐 chapterMin 默认值）。
+ */
+export function chapterLengthAssert(text: string): Validation {
+  const chapters = text.split(/^##\s*第[一二三四五六七八九十百0-9]+章/gm).slice(1);
+  if (chapters.length < 2) {
+    return { name: "AE-CH-LEN", status: "warn", detail: "非多章正文（章节数 <2），章长检查不适用" };
+  }
+  const cjk = (s: string) => (s.match(/[一-鿿]/g) ?? []).length;
+  const lens = chapters.map(cjk);
+  const blocks = lens.filter((n) => n < 800);
+  const warns = lens.filter((n) => n < 1500);
+  if (blocks.length) {
+    return {
+      name: "AE-CH-LEN",
+      status: "block",
+      detail: `${chapters.length} 章中有 ${blocks.length} 章 CJK 字数 <800（各章：${lens.join("/")}）——概览代叙不是正文`,
+    };
+  }
+  if (warns.length) {
+    return {
+      name: "AE-CH-LEN",
+      status: "warn",
+      detail: `${warns.length} 章低于 1500 字下限（各章：${lens.join("/")}）——信息密度待加厚`,
+    };
+  }
+  return { name: "AE-CH-LEN", status: "pass", detail: `${chapters.length} 章字数达标（${lens.join("/")}）` };
+}
+
+/**
  * check_aesthetic_asserts 的内核实现（M2 正式版）。
  * 机器可查维度：钩型四型/拍三件套/时长区间/尾钩在场/台词密度/梗点/卡点位/合规禁词/自造专名限额/编排表忠实性。
  * 视角类维度（代入感/节奏体感…）机器查不了——不在此表，归红方剖面。
@@ -566,6 +598,8 @@ export function runAestheticAsserts(projectDir: string, relPath: string): Valida
 
   // 连续性切片（成文产物路径生效；小纲/大纲过程件自动跳过）
   results.push(...ledgerSliceAsserts(projectDir, relPath, text));
+  // 章长下限（AE-CH-LEN）：自门控——文本含 ≥2 章节头才生效
+  results.push(chapterLengthAssert(text));
 
   return results;
 }

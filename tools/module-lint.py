@@ -235,6 +235,30 @@ def lint_module(path, kb_index, minitools_reg):
         if s not in ops:
             E("E-SPINE-UNKNOWN", f"spine 引用未声明的 tool：{s}")
 
+    # ── 落位可达性（诊断 2026-09-19）：锚点不在骨架的启用工具，必须有可用的 also_fits 兜底──
+    # 内核解析序 = slot → also_fits[]（首个可达）→ 声明 end；全不可达 = 内核响亮失败。
+    # lint 静态侧提前拦：capability 声明在 caps 里（用户可勾选启用）却落不了位的 op 判 E。
+    for oid2, op2 in ops.items():
+        if oid2 in spine_set:
+            continue
+        slot_v = op2.get("slot")
+        if not slot_v or slot_v == "end":
+            continue
+        m2 = re.match(r"^(before|after):([a-z][a-z0-9-]*)$", slot_v)
+        if m2 and m2.group(2) in spine_set:
+            continue
+        reachable = False
+        for af in op2.get("also_fits") or []:
+            if af == "end":
+                reachable = True
+                break
+            m3 = re.match(r"^(before|after):([a-z][a-z0-9-]*)$", af)
+            if m3 and m3.group(2) in spine_set:
+                reachable = True
+                break
+        if not reachable:
+            E("E-SLOT-UNREACHABLE", f"slot {slot_v!r} 锚点不在骨架，also_fits 亦无可用兜底——启用即内核响亮失败", oid2)
+
     # ── W-01 模块职责三件套（io）：spine 模块必填，输出/验收必须真挂载 ──
     io = d.get("io")
     if spine:

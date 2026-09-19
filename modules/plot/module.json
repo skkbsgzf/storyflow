@@ -772,9 +772,25 @@
   },
   "skeleton": {
     "spine": [
+      "structure-design",
+      "plot-choreographer",
+      "scene-breakdown",
       "script-forge"
     ],
-    "edges": []
+    "edges": [
+      [
+        "structure-design",
+        "plot-choreographer"
+      ],
+      [
+        "plot-choreographer",
+        "scene-breakdown"
+      ],
+      [
+        "scene-breakdown",
+        "script-forge"
+      ]
+    ]
   },
   "caps": [
     "结构",

@@ -795,7 +795,11 @@
           ]
         }
       },
-      "output": "正文.md"
+      "output": "正文.md",
+      "asserts": [
+        "AE-CH-LEN",
+        "AE-WNF-HOOK"
+      ]
     }
   },
   "skeleton": {

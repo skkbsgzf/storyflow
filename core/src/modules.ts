@@ -171,6 +171,32 @@ export function expandFlow3(
     for (const t of [...enabled]) {
       if (!seq.includes(t) && mod.ops[t]?.slot === "end") seq.push(t);
     }
+    // 规则 2 补充（诊断 2026-09-19）：锚点失效的启用工具按 also_fits 逐个兜底落位；
+    // 全部声明锚点均不可达 = 响亮失败——静默丢弃就是能力四环 ② 断链（p-slj 诊断实证）
+    const unplaced = [...enabled].filter((t) => !seq.includes(t));
+    for (const t of unplaced) {
+      const fits = [...(mod.ops[t]?.also_fits ?? [])];
+      let placed = false;
+      for (const anchor of fits) {
+        if (anchor === "end") {
+          seq.push(t);
+          placed = true;
+          break;
+        }
+        const m = anchor.match(/^(before|after):(.+)$/);
+        if (!m) continue;
+        const idx = seq.indexOf(m[2]);
+        if (idx < 0) continue;
+        seq.splice(m[1] === "before" ? idx : idx + 1, 0, t);
+        placed = true;
+        break;
+      }
+      if (!placed) {
+        throw new Error(
+          `模块 ${inst.module}（实例 ${mid}）：启用的工具 ${t} 无法落位（slot=${mod.ops[t]?.slot ?? "无"}，also_fits=${JSON.stringify(fits)} 均不可达）——请扩骨架、调整锚点或关闭该能力`,
+        );
+      }
+    }
 
     // ── 规则 3/7：派生节点（id <mid>.<tool>；产物路径 <NN>-<模块名>/）。
     const midNodes: string[] = [];
@@ -219,35 +245,21 @@ export function expandFlow3(
     }
     moduleNodes[mid] = [...midNodes];
 
-    // ── 规则 5：边 = 骨架边（两端启用才保留）+ 插件桥接（锚点→插件→锚点原后继，替换直连）。
-    const enabledEdges: [string, string][] = [];
+    // ── 规则 5：边 = 启用节点的 seq 线性主干（插件即桥接）+ 非相邻骨架前向边（分支保留）。
+    // 旧实现逐插件 splice 桥接：两个插件共享同一 after 锚点时互相穿透，后插件丢失入边成为源点
+    // （p-slj-005 实证：script-drama-beat 零入边、plot-redline 重复边）。seq 本身已是最终顺序，
+    // 线性主干天然给出「锚点→插件→原后继」语义，无需逐个替换。
+    const enabledEdges = new Set<string>();
+    const ekey = (f: string, t: string) => `${f}→${t}`;
+    for (let i = 0; i + 1 < seq.length; i++) enabledEdges.add(ekey(seq[i], seq[i + 1]));
     for (const [from, to] of mod.skeleton.edges) {
-      if (enabled.has(from) && enabled.has(to)) enabledEdges.push([from, to]);
+      if (!enabled.has(from) || !enabled.has(to)) continue;
+      if (!seq.includes(from) || !seq.includes(to)) continue;
+      // 非相邻前向骨架边 = 真分支，保留；相邻对主干已含
+      if (seq.indexOf(to) - seq.indexOf(from) !== 1) enabledEdges.add(ekey(from, to));
     }
-    const pluginsInSeq = seq.filter((t) => !mod.skeleton.spine.includes(t));
-    for (const p of pluginsInSeq) {
-      const anchor = String(mod.ops[p]?.slot ?? "end").startsWith("after:")
-        ? mod.ops[p].slot.slice("after:".length)
-        : null;
-      const idxP = seq.indexOf(p);
-      const pred = idxP > 0 ? seq[idxP - 1] : null;
-      const succ = idxP < seq.length - 1 ? seq[idxP + 1] : null;
-      if (anchor && enabled.has(anchor)) {
-        // 替换 anchor → 原后继 的直连为 anchor → p → 后继（chain 语义）
-        const si = seq.indexOf(anchor);
-        const chainSucc = si < seq.length - 1 ? seq[si + 1] : null;
-        const direct = enabledEdges.findIndex(([f, t]) => f === anchor && t === chainSucc && chainSucc);
-        if (direct >= 0) enabledEdges.splice(direct, 1);
-        if (pred) enabledEdges.push([pred, p]);
-        if (succ) enabledEdges.push([p, succ]);
-      } else {
-        if (pred) enabledEdges.push([pred, p]);
-        if (succ) enabledEdges.push([p, succ]);
-      }
-    }
-    for (const [f, t] of enabledEdges) {
-      // 骨架边按 seq 序过滤反向边（否则插件桥接 + 分支依赖会成环）
-      if (seq.indexOf(f) >= seq.indexOf(t) && f !== t) continue;
+    for (const key of enabledEdges) {
+      const [f, t] = key.split("→");
       const viaSkill = mod.ops[t]?.skill;
       edges.push({ id: `e-${mid}-${f}-${t}`, from: `${mid}.${f}`, to: `${mid}.${t}`, role: "flow", ...(viaSkill ? { via: `skill.${viaSkill}` } : {}) });
     }

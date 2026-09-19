@@ -184,7 +184,7 @@
       ],
       "slot": "after:find-trope",
       "also_fits": [
-        "before:material-dissect"
+        "end"
       ],
       "requires": [],
       "adds": {
