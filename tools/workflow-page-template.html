@@ -308,6 +308,7 @@ textarea{width:100%;min-height:340px;background:var(--bg-ctl);color:var(--ink);b
   <button class="tb" onclick="openDeliverables()" title="产物管理：模块交付件 / 过程件内幕 / 旧目录交付">📦 产物管理</button>
   <button class="tb" id="mw-btn" onclick="openWorldbook()" title="世界书：设定/人物/势力/地理/编年/伏笔/底牌（文件即真相）——大纲与成稿之间的设定中间件">▦ 中间件</button>
   <button class="tb" onclick="openShelf()" title="打开右侧文档架">▤ 文档架</button>
+  <button class="tb" onclick="openProjects()" title="项目管理：全部项目按最近变更排序，可归档删除旧项目">🗂 项目</button>
   <a class="tb" id="dl-link" href="#" style="display:none">交付产物页 →</a>
 </header>
   <div id="eff-banner" style="display:none"></div>
@@ -396,7 +397,15 @@ document.getElementById("v").textContent = "";  // 流程名移入「工作流�
 const projSel = document.getElementById("proj-switch");
 (DATA.projects || []).forEach(p => {
   const o = document.createElement("option");
-  o.value = p.id; o.textContent = p.id + (p.status === "completed" ? "（已完成）" : "");
+  const nm = p.title || p.id;
+  const bits = [];
+  if (p.id !== nm) bits.push(p.id);
+  if (p.status === "completed") bits.push("已完成");
+  else if (p.status) bits.push(ST_ZH[p.status] || p.status);
+  if (p.mtime) bits.push(p.mtime);
+  if (p.renderable === false) bits.push("旧版页");
+  o.value = p.id;
+  o.textContent = nm + (bits.length ? "（" + bits.filter(Boolean).join(" · ") + "）" : "");
   if (p.id === DATA.project) o.selected = true;
   projSel.appendChild(o);
 });
@@ -1664,6 +1673,43 @@ function openShelf(){
   const lg=dBody.querySelector("#open-ledger");
   if (lg) lg.addEventListener("click", openLedger);
   dBody.scrollTop=0;
+}
+/* ---------- 项目管理（W-项目管理）：全项目清单（最近变更倒序）+ 归档删除 ---------- */
+function openProjects(){
+  navPush({type:"projects"}); sel=null; selEdge=null; render();
+  docReset(); dBack.style.display = navStack.length ? "" : "none";
+  dTitle.textContent = "项目管理";
+  dChips.innerHTML = chip(((DATA.projects||[]).length) + " 个项目 · 按最近变更排序");
+  const rows = (DATA.projects||[]).map(p => {
+    const cur = p.id === DATA.project;
+    const nm = p.title || p.id;
+    const meta = [];
+    if (p.id !== nm) meta.push(p.id);
+    if (p.status) meta.push(p.status === "completed" ? "已完成" : (ST_ZH[p.status] || p.status));
+    if (p.mtime) meta.push("变更 " + p.mtime);
+    if (p.renderable === false) meta.push("旧版流程页");
+    const arch = cur
+      ? `<span class="msg">当前项目</span>`
+      : `<button class="bt" data-arch="${p.id}" style="border-color:#a5433a;color:#8c352c">归档删除</button>`;
+    return `<div class="shelf-row"${cur ? ' style="border-color:var(--accent)"' : ""}><span class="no">${p.renderable === false ? "旧" : "新"}</span><span class="nm">${nm}</span><span class="go">${meta.join(" · ")}</span><span style="margin-left:10px">${arch}</span></div>`;
+  }).join("");
+  dBody.innerHTML = `<div class="paper"><div class="doc-h"><span>项目管理</span><span>归档 ≠ 真删</span></div><div class="md">
+    <p class="msg">归档 = 项目目录整体移入 <code>projects/_archived/</code>（数据可找回），清单与切换器不再显示。当前项目不可归档；归档后重新生成本页，清单即更新。</p>
+    ${rows || `<p class="msg">暂无项目。</p>`}
+  </div></div>`;
+  dBody.querySelectorAll("button[data-arch]").forEach(b => b.onclick = async () => {
+    const pid = b.dataset.arch;
+    if (!confirm(`归档删除「${pid}」？
+目录将移入 projects/_archived/（不真正删除，可随时找回）。`)) return;
+    b.disabled = true; b.textContent = "归档中…";
+    try {
+      const r = await fetch("/api/archive-project", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({project: pid})});
+      const j = await r.json();
+      if (j.ok){ b.textContent = "已归档 ✓"; b.closest(".shelf-row").style.opacity = .4; }
+      else { b.disabled = false; b.textContent = "归档删除"; alert("归档失败：" + (j.error || r.status)); }
+    } catch(e){ b.disabled = false; b.textContent = "归档删除"; alert("归档失败：" + e); }
+  });
+  flashDoc(); dBody.scrollTop = 0;
 }
 /* ---------- 审核意见簿：裁决汇总 + 全部批注 + 评审产物 + 导出回流 ---------- */
 function openLedger(){

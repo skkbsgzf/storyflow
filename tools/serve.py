@@ -50,6 +50,8 @@ class NoCacheHandler(http.server.SimpleHTTPRequestHandler):
                 return
             if self.path == "/_kit/save":
                 self._kit_save(body)
+            elif self.path == "/api/archive-project":
+                self._api_archive_project(body)
             elif self.path == "/api/save":
                 self._api_save(body)
             elif self.path == "/api/import-flow":
@@ -135,6 +137,24 @@ class NoCacheHandler(http.server.SimpleHTTPRequestHandler):
         tmp.write_text(str(content), encoding="utf-8")
         tmp.replace(p)
         self._json({"ok": True, "path": rel})
+
+    def _api_archive_project(self, body):
+        """W-项目管理 · 归档式删除：projects/<id> 整目录移入 projects/_archived/<id>-<时间戳>/
+        ——从清单消失（生成器跳过 _ 前缀），数据可随时找回；_ 前缀目录与当前工作区白名单目录拒动。"""
+        import shutil
+        from datetime import datetime
+        pid = str(body.get("project", "")).strip()
+        if not pid or pid.startswith("_") or re.search(r'[\\/:*?"<>|]', pid):
+            self._json({"ok": False, "error": f"项目 id 非法: {pid!r}"}, 400); return
+        ws = self._ws()
+        src = (ws / "projects" / pid).resolve()
+        if not src.is_dir():
+            self._json({"ok": False, "error": f"项目不存在: {pid}"}, 404); return
+        arch_root = (ws / "projects" / "_archived").resolve()
+        arch_root.mkdir(parents=True, exist_ok=True)
+        dst = arch_root / f"{pid}-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+        shutil.move(str(src), str(dst))
+        self._json({"ok": True, "archived": pid, "to": str(dst.relative_to(ws.resolve()))})
 
     def _api_import_flow(self, body):
         """项目换绑流程：更新绑定 flowId/flowVersion（state.json 优先，旧布局兜底），运行状态保留。"""

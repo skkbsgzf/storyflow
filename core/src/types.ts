@@ -193,6 +193,8 @@ export interface GateBlock {
 export interface RunState {
   runId: string;
   projectId?: string;
+  /** 项目可读名：默认由灵感提炼（W-项目管理），切换器/管理面板展示用；缺省回落项目 id */
+  title?: string;
   flowId: string;
   flowVersion: string;
   flowHash?: string;

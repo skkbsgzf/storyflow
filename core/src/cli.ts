@@ -6,6 +6,7 @@ import process from "node:process";
 import { Kernel, KernelError } from "./kernel.js";
 import { ROOT } from "./schema.js";
 import { skillPatch } from "./skills.js";
+import { deriveProjectName } from "./kernel.js";
 
 type Args = Record<string, string | boolean>;
 
@@ -84,13 +85,22 @@ async function main(): Promise<number> {
         for (const [k, v] of Object.entries(flags)) {
           if (!["flow", "project", "config"].includes(k) && typeof v === "string") inputs[k] = v;
         }
-        const projectDir = kernel.projectDir(String(flags.project));
+        // W-项目管理：--project 缺省 → 按灵感提炼自动命名（重名加 -2/-3 序号），不再产出代号
+        let projectName = flags.project ? String(flags.project) : "";
+        if (!projectName) {
+          projectName = deriveProjectName(inputs) || `project-${new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "")}`;
+          let n = 2;
+          const taken = (id: string) => fs.existsSync(path.join(ROOT, "projects", id));
+          while (taken(projectName)) projectName = `${deriveProjectName(inputs) || projectName}-${n++}`;
+          console.error(`[flow_run] 未指定 --project，按灵感自动命名: ${projectName}`);
+        }
+        const projectDir = kernel.projectDir(projectName);
         if (flags.config) {
           // 显式指定的初始化配置 → 落位为 项目配置.json（内核 flow_run 自动装载）
           fs.mkdirSync(projectDir, { recursive: true });
           fs.copyFileSync(String(flags.config), path.join(projectDir, "项目配置.json"));
         }
-        return out(await kernel.flow_run(String(flags.flow), String(flags.project), inputs));
+        return out(await kernel.flow_run(String(flags.flow), projectName, inputs));
       }
       case "flow_init": {
         // 初始化配置模板：用户填 题材/需求/灵感/严肃性/风格/AB测试/市场预估 后再 flow_run

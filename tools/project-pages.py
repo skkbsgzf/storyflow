@@ -210,12 +210,34 @@ def scan_files(proj: Path):
 
 
 def projects_switcher():
+    """项目清单（W-项目管理）：id + 可读名(title=state.title>项目配置>id) + 状态 +
+    最近变更(mtime，state.json 落盘时刻) + renderable（effective@2 可渲染，否则旧版页）。
+    按最近变更倒序——最新的项目排最上。"""
+    from datetime import datetime
+
+    def mtime_pair(p: Path):
+        try:
+            return int(p.stat().st_mtime), datetime.fromtimestamp(p.stat().st_mtime).strftime("%m-%d %H:%M")
+        except OSError:
+            return 0, ""
+
+    def eff_renderable(proj: Path):
+        eff = load_json(proj / "registry" / "effective.json", None)
+        return bool(eff and eff.get("format") == "effective@2")
+
     out, seen = [], set()
     for sp in sorted(glob.glob(str(ROOT / "projects" / "*" / "state.json"))):
-        st = load_json(Path(sp), {})
-        pid = Path(sp).parent.name
-        out.append({"id": pid, "flow": st.get("flowId"), "status": st.get("status", "")})
+        proj = Path(sp).parent
+        pid = proj.name
+        st = load_json(sp, {})
         seen.add(pid)
+        cfg = load_json(proj / "项目配置.json", {}) or {}
+        msort, mtxt = mtime_pair(Path(sp))
+        out.append({
+            "id": pid, "title": st.get("title") or cfg.get("name") or cfg.get("title") or "",
+            "flow": st.get("flowId"), "status": st.get("status", ""),
+            "mtime": mtxt, "mtimeSort": msort, "renderable": eff_renderable(proj),
+        })
     for extra in sorted(glob.glob(str(ROOT / "projects" / "*"))):
         pdir = Path(extra)
         if not pdir.is_dir() or pdir.name.startswith("_") or pdir.name in seen:
@@ -223,7 +245,14 @@ def projects_switcher():
         cfg = pdir / "项目配置.json"
         if cfg.exists():
             c = load_json(cfg, {})
-            out.append({"id": pdir.name, "flow": c.get("flowId"), "status": c.get("status", "") or "未开跑"})
+            out.append({
+                "id": pdir.name, "title": c.get("name") or c.get("title") or "",
+                "flow": c.get("flowId"), "status": c.get("status", "") or "未开跑",
+                "mtime": "", "mtimeSort": 0, "renderable": False,
+            })
+    out.sort(key=lambda x: x.get("mtimeSort") or 0, reverse=True)
+    for item in out:
+        item.pop("mtimeSort", None)
     return out
 
 

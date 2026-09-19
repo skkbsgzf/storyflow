@@ -16,9 +16,9 @@
       "ctxOffered": 6,
       "ctxUsed": 6,
       "hitRate": 1,
-      "consumedBy": 1,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 1000000,
+      "efficiency": 0,
       "verdicts": [],
       "kit": "topic",
       "op": "find-trope"
@@ -36,9 +36,9 @@
       "ctxOffered": 3,
       "ctxUsed": 3,
       "hitRate": 1,
-      "consumedBy": 1,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 1000000,
+      "efficiency": 0,
       "verdicts": [],
       "kit": "topic",
       "op": "material-dissect"
@@ -76,9 +76,9 @@
       "ctxOffered": 6,
       "ctxUsed": 6,
       "hitRate": 1,
-      "consumedBy": 1,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 1000000,
+      "efficiency": 0,
       "verdicts": [],
       "kit": "plot",
       "op": "structure-design"
@@ -96,9 +96,9 @@
       "ctxOffered": 8,
       "ctxUsed": 8,
       "hitRate": 1,
-      "consumedBy": 2,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 2000000,
+      "efficiency": 0,
       "verdicts": [],
       "kit": "plot",
       "op": "plot-choreographer"
@@ -116,9 +116,9 @@
       "ctxOffered": 5,
       "ctxUsed": 5,
       "hitRate": 1,
-      "consumedBy": 1,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 1000000,
+      "efficiency": 0,
       "verdicts": [],
       "kit": "plot",
       "op": "subplot-weave"
@@ -136,9 +136,9 @@
       "ctxOffered": 7,
       "ctxUsed": 6,
       "hitRate": 0.8571428571428571,
-      "consumedBy": 1,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 1000000,
+      "efficiency": 0,
       "verdicts": [],
       "kit": "plot",
       "op": "novel-bible"
@@ -156,9 +156,9 @@
       "ctxOffered": 4,
       "ctxUsed": 4,
       "hitRate": 1,
-      "consumedBy": 1,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 1000000,
+      "efficiency": 0,
       "verdicts": [],
       "kit": "plot",
       "op": "foreshadow-plant"
@@ -176,9 +176,9 @@
       "ctxOffered": 8,
       "ctxUsed": 5,
       "hitRate": 0.625,
-      "consumedBy": 1,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 1000000,
+      "efficiency": 0,
       "verdicts": [],
       "kit": "plot",
       "op": "scene-breakdown"
@@ -216,9 +216,9 @@
       "ctxOffered": 6,
       "ctxUsed": 6,
       "hitRate": 1,
-      "consumedBy": 1,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 1000000,
+      "efficiency": 0,
       "verdicts": [],
       "kit": "prose",
       "op": "layer-voices"
@@ -236,9 +236,9 @@
       "ctxOffered": 6,
       "ctxUsed": 6,
       "hitRate": 1,
-      "consumedBy": 1,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 1000000,
+      "efficiency": 0,
       "verdicts": [],
       "kit": "prose",
       "op": "layer-scenes"
@@ -256,9 +256,9 @@
       "ctxOffered": 6,
       "ctxUsed": 6,
       "hitRate": 1,
-      "consumedBy": 2,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 2000000,
+      "efficiency": 0,
       "verdicts": [],
       "kit": "prose",
       "op": "layer-canon"
@@ -276,9 +276,9 @@
       "ctxOffered": 16,
       "ctxUsed": 12,
       "hitRate": 0.75,
-      "consumedBy": 3,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 3000000,
+      "efficiency": 0,
       "verdicts": [],
       "kit": "prose",
       "op": "prose-assembler"
@@ -367,9 +367,9 @@
       "ctxOffered": 6,
       "ctxUsed": 6,
       "hitRate": 1,
-      "consumedBy": 1,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 1000000,
+      "efficiency": 0,
       "verdicts": [],
       "nodes": [
         "m1.find-trope"
@@ -390,9 +390,9 @@
       "ctxOffered": 3,
       "ctxUsed": 3,
       "hitRate": 1,
-      "consumedBy": 1,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 1000000,
+      "efficiency": 0,
       "verdicts": [],
       "nodes": [
         "m1.material-dissect"
@@ -413,9 +413,9 @@
       "ctxOffered": 6,
       "ctxUsed": 6,
       "hitRate": 1,
-      "consumedBy": 1,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 1000000,
+      "efficiency": 0,
       "verdicts": [],
       "nodes": [
         "m2.structure-design"
@@ -436,9 +436,9 @@
       "ctxOffered": 8,
       "ctxUsed": 8,
       "hitRate": 1,
-      "consumedBy": 2,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 2000000,
+      "efficiency": 0,
       "verdicts": [],
       "nodes": [
         "m2.plot-choreographer"
@@ -459,9 +459,9 @@
       "ctxOffered": 5,
       "ctxUsed": 5,
       "hitRate": 1,
-      "consumedBy": 1,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 1000000,
+      "efficiency": 0,
       "verdicts": [],
       "nodes": [
         "m2.subplot-weave"
@@ -482,9 +482,9 @@
       "ctxOffered": 7,
       "ctxUsed": 6,
       "hitRate": 0.8571428571428571,
-      "consumedBy": 1,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 1000000,
+      "efficiency": 0,
       "verdicts": [],
       "nodes": [
         "m2.novel-bible"
@@ -505,9 +505,9 @@
       "ctxOffered": 4,
       "ctxUsed": 4,
       "hitRate": 1,
-      "consumedBy": 1,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 1000000,
+      "efficiency": 0,
       "verdicts": [],
       "nodes": [
         "m2.foreshadow-plant"
@@ -528,9 +528,9 @@
       "ctxOffered": 8,
       "ctxUsed": 5,
       "hitRate": 0.625,
-      "consumedBy": 1,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 1000000,
+      "efficiency": 0,
       "verdicts": [],
       "nodes": [
         "m2.scene-breakdown"
@@ -551,9 +551,9 @@
       "ctxOffered": 6,
       "ctxUsed": 6,
       "hitRate": 1,
-      "consumedBy": 1,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 1000000,
+      "efficiency": 0,
       "verdicts": [],
       "nodes": [
         "m3.layer-voices"
@@ -574,9 +574,9 @@
       "ctxOffered": 6,
       "ctxUsed": 6,
       "hitRate": 1,
-      "consumedBy": 1,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 1000000,
+      "efficiency": 0,
       "verdicts": [],
       "nodes": [
         "m3.layer-scenes"
@@ -597,9 +597,9 @@
       "ctxOffered": 6,
       "ctxUsed": 6,
       "hitRate": 1,
-      "consumedBy": 2,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 2000000,
+      "efficiency": 0,
       "verdicts": [],
       "nodes": [
         "m3.layer-canon"
@@ -620,9 +620,9 @@
       "ctxOffered": 16,
       "ctxUsed": 12,
       "hitRate": 0.75,
-      "consumedBy": 3,
+      "consumedBy": 0,
       "cost": 0.000001,
-      "efficiency": 3000000,
+      "efficiency": 0,
       "verdicts": [],
       "nodes": [
         "m3.prose-assembler"

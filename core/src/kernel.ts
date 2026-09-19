@@ -31,6 +31,23 @@ import { proposeFromMetrics, buildReport, overlayFromProposals, readMinerFinding
 import { resolveToolConfig } from "./kits.js";
 import { fnv1a, stableStringify } from "./ids.js";
 
+/**
+ * W-项目管理 · 灵感提炼命名：从流程输入里提炼可读项目名。
+ * 优先级 direction > 灵感 > 需求 > 点子 > title > 题材；取首个标点前的首段，
+ * 清理文件系统非法字符，限 16 字。提炼不出返回 ""（调用方回落时间戳 id）。
+ */
+export function deriveProjectName(inputs: Record<string, unknown>): string {
+  for (const k of ["direction", "灵感", "需求", "点子", "title", "题材"]) {
+    const v = inputs[k];
+    if (typeof v === "string" && v.trim().length >= 4) {
+      const first = v.trim().split(/[，。；：,.;:\n！？!?]/)[0].trim() || v.trim();
+      const clean = first.replace(/[/\\:*?"<>|｜「」『』（）()\s]/g, "").slice(0, 16);
+      if (clean.length >= 4) return clean;
+    }
+  }
+  return "";
+}
+
 export class KernelError extends Error {
   constructor(public code: string, public http: number, message: string) {
     super(message);
