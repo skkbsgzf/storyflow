@@ -9,3 +9,4 @@ dist/
 .history/
 .zhuque-key
 .zhuque-usage.json
+.external/

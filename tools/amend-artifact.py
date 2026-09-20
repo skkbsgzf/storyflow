@@ -26,6 +26,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
+# 控制台代码页可能是 GBK：flow-verify/check-purity 输出含 ✓ 等非 GBK 字符时
+# print 会 UnicodeEncodeError 假失败（五步实际已过、退出码却非 0）。
+# 自身 stdout/stderr 强制 UTF-8（已兼容 UTF-8 的环境里是 no-op）。
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+
 
 def run(cmd, **kw):
     return subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", **kw)
