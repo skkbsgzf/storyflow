@@ -325,6 +325,7 @@ def main():
     else:
         eff = {"format": "effective@2", "policy": {}, "links": [], "composition": {},
                "nodes": {}, "edges": [], "artifacts": []}
+        module_views = []   # 冷项目（无 effective.json）走 static_module_views 兜底——此前漏初始化必 UnboundLocalError
         if eff_raw:
             notes.append("registry/effective.json 为旧 effective@1：页面按空编排渲染，"
                          "待 flow@3 转换 + 内核 flow_effect 刷新（盘上旧文件未动）")
