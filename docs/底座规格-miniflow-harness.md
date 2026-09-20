@@ -28,7 +28,7 @@ miniflow = 可被任意宿主 Agent 安装调用的**创作任务 harness**：�
 D:\storymasterv4
 ├── AGENTS.md            行为协议（宿主引导，每轮注入，≤60 行）
 ├── contracts/           标准本体：六份 JSON Schema（L1/L2 插件与内核数据模型）
-├── flows/               L2：flow@1 声明式图（已有 5 条）
+├── flows/               L2：flow@3 声明式图（v4.0 注：现 9 条，7 条 flow@2 只读待迁移）
 ├── skills/              L2：角色方法论 md（已有 18 个）
 ├── knowledge/           L2：原子知识库（断言表/梗库/美学条目）
 ├── templates/           L2：产物模板

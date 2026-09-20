@@ -1,6 +1,6 @@
 # flows/ · 工作流目录
 
-> 形态：flow@1 描述符（format + inputs + graph，用户可读硬约束）。执行 = harness 任务包循环（`flow_run / flow_next / flow_submit / flow_resume`），宿主 Agent 用自己的 token 执行认知步，core/minitool 步在 toolkit 进程内零 token 执行。
+> 形态：flow@3 模块序列（modules + policy；v4.0.0 基线）。graph/stages 手画形态即 flow@1/@2，已废弃只读。执行 = harness 任务包循环（`flow_run / flow_next / flow_submit / flow_resume`），宿主 Agent 用自己的 token 执行认知步，core/minitool 步在 toolkit 进程内零 token 执行。
 
 ## 图示
 
@@ -17,6 +17,8 @@
 - **id 一经发布即冻结**（项目 state 绑定 + 测试 fixture 引用），语义变化只改显示名（title/displayName）并在 changelog 记录；换 id = 新 flow，不是改名。
 
 ## 流水线地图
+
+> v4.0 注：下表为 M0 时代快照，版本与状态以各 `flows/<id>/flow.json` 的 `version` 为准（现为：flow@3 两条、flow@2 七条只读待迁移）。
 
 ```text
                        ┌────────────────────────────┐

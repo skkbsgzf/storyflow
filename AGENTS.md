@@ -2,6 +2,8 @@
 
 本仓库是 **miniflow 创作任务 harness** 的工作区：`flows/ skills/ knowledge/ templates/ tools/` 是 toolkit，`projects/<id>/` 是创作项目运行数据。权威规格见 `docs/底座规格-miniflow-harness.md`。
 
+**版本治理（v4.0.0 起，2026-09-21 宣告）**：全局版本唯一事实源 = 仓库根 `VERSION` + `CHANGELOG.md`，宣告与老格式处决清单见 `docs/版本宣告-v4.0.0.md`。基线：**flow@3 是唯一 flow 格式**（flow@1/@2 只读遗产，改动先迁移）；**module@1 已接替 kit@1**（`kits/` 存量只读）；decision@1 / catalog-entry@1（R8）为核心面。
+
 ## 铁律（违反任何一条 = 无效工作）
 
 1. **先查表再动手**：任何创作动作（包括「继续」「重试」这类裸指令）开工前先跑 `python tools/whereami.py`；多项目歧义时它会返回 `AMBIGUOUS`，此时向用户澄清，禁止静默猜测。
@@ -14,7 +16,7 @@
 8. **流程身份绑定**：项目工具链（页面生成/快照/导出）的 flowId 一律取自项目 `state.json` 的 `flowId` 绑定，传参不一致即中止；禁止凭记忆假设项目属于哪个流程（事故：p-fq-001 被挂上 topic-selection 串图）。
 9. **正文纯净**：过程元数据（节点/skill/轮次/输入清单/隔离声明/数据快照口径）只进宿主思维链与 journal，绝不进产物正文（AE-OUTPUT-PURITY，block；机械校验 `tools/check-purity.py`）。
 10. **改 done 节点产物必须走 flow**：已完成节点的产物要修改，走 `flow_rerun`；内核暂不支持时（如 iterate 实例重派发）走五步降级路径，**单命令载体 `python tools/amend-artifact.py --project <id> --node <id> --file <rel> --reason "<理由>"`**（①声明绕流意图入 journal → ②实跑校验落收据 → ③修订对照表登记 → ④重快照 → ⑤flow-verify 复检，任一步失败即中止；理由为空直接拒绝）。一切「已扫描/已校验」声明必须引用收据文件，无收据=删声明（事故复盘：docs/绕流改稿事故分析-R2.md——v5 虚报扫描+补拍快照洗白，被甲方人眼揪出）。
-11. **能力必须有家（kit@1）**：技能必须归入 `kits/<域>/kit.json` 四域之一（search 检索取数 / plot 剧情 / prose 文学 / tool 确定性底座；检测评估能力打包于 kits/detect，domain=tool）；flow 节点用 `kit`+`op` 引用，**禁止再手写 `kb` 清单**——两套真相=漂移（R1 报告：47 个 agent 节点中 40 个 node.kb 与技能自称不匹配，且 node.kb 内核从不读取，声明全空转）。守门人 `python tools/kit-lint.py`，0 error 方可提交。
+11. **能力必须有家（module@1；v4.0.0 起，kit@1 已废弃只读）**：技能必须归入 `kits/<域>/kit.json` 四域之一（search 检索取数 / plot 剧情 / prose 文学 / tool 确定性底座；检测评估能力打包于 kits/detect，domain=tool）；flow 节点用 `kit`+`op` 引用，**禁止再手写 `kb` 清单**——两套真相=漂移（R1 报告：47 个 agent 节点中 40 个 node.kb 与技能自称不匹配，且 node.kb 内核从不读取，声明全空转）。守门人 `python tools/kit-lint.py`，0 error 方可提交。（v4.0.0：新能力一律入 `modules/<域>/module.json`；`kits/` 四域为只读存量，kit-lint 对 kits/ 仅提示迁移，清场见 docs/版本宣告-v4.0.0.md 工单批D。）
 12. **选择必须有事实（R8）**：判据「有限且互斥的枚举 = 选择，其余 = 值」。①`flow.inputs[type=enum]` 禁止带 `default`（flow-lint E-ENUM-DEFAULT），开跑前必须显式表态，未选即 `flow_run` 抛错，不静默兜底；②catalog/知识候选无默认生效权——未被 decision 命中 = 不装载 + 任务包「未装载的候选」显式回显，禁止回落全装（`onMissingDecision` 只有全项目明知风险后才可设 `load-all-with-warning`）；③决策（`projects/<id>/decisions/<key>.json`）必须带 `by` + `evidence`，缺则进 issues 不进 values；④`excluded` 必须带理由，「为什么没装 X」不许哑；⑤catalog 出厂在 repoRoot、用户补充在 dataRoot，两个根不许合成一处；⑥决策是运行中事实、输入是开跑前事实——禁止把决策写回 `flow.inputs`；⑦选择结果在页面必须能回答三问：选了哪个 / 凭什么 / 排除了哪些及理由。守门人 `python tools/flow-lint.py` + `core/test/r8-selection.test.ts`。
 
 ## 项目开工口径（每个创作轮次）
@@ -34,7 +36,7 @@ python tools/whereami.py            # 我在哪：项目/当前节点/必读输�
 - 工作台页面：`projects/<id>/workflow.html`（静态快照）；registry/journal 才是实时真相（M3 前以盘上文件为准）。
 - **kit 标尺装载（K1 复位）**：agent 节点的判定条款由内核在 `buildTaskPackage` 单点装载（`kit.op.knowledge` → 指令「判定标尺」段 + 派发头清单 ｜ 单卡 1600 字 / 总量 9000 字封顶，超限与缺失均显式回显）。要改「某步该对照哪些条款」，只改 `kits/<域>/kit.json` 一处——改技能 frontmatter 或节点字段都不再影响装载。
 - **kit 工具链**：`tools/kit-lint.py`（底座体检：引用有效性/漂移/孤儿/断言覆盖）、`tools/kit-migrate.py`（从技能与 flow 反推 kit，合并式不丢数据）、`tools/flow-kit-apply.py`（节点文本级迁移，格式零损伤）。
-- **规范 R4 工具链**（`docs/规范-项目文件与流程配置-R4.md`，配套 `contracts/flow.schema.json` + `contracts/artifact-header.schema.json`）：`tools/flow-lint.py`（flow@2 字段唯一化/边 role·when·params 可求值/产物路径准入）、`tools/artifact-lint.py`（过程件头部九项 + 目录准入 + 污染扫描）、`tools/flow-normalize.py`（flow@1→flow@2 迁移，文本级保格式，`--check` 幂等）、**`tools/page-lint.mjs`（前端面板契约：把生成页载入无头 DOM，断言无旧字段名、边面板渲染结构化条件、节点面板显示 kit.op/依据/审核、脚本无硬编码节点 id；改 `tools/workflow-page-template.html` 后必跑）**。
+- **规范 R4 工具链**（`docs/规范-项目文件与流程配置-R4.md`，配套 `contracts/flow.schema.json` + `contracts/artifact-header.schema.json`）：`tools/flow-lint.py`（flow@3 基线校验/边 role·when·params 可求值/产物路径准入；v4.0.0 下 flow@1/@2 只读待迁移，硬拒时间表见 docs/版本宣告-v4.0.0.md 规则2）、`tools/artifact-lint.py`（过程件头部九项 + 目录准入 + 污染扫描）、`tools/flow-normalize.py`（flow@1→flow@2 迁移，文本级保格式，`--check` 幂等）、**`tools/page-lint.mjs`（前端面板契约：把生成页载入无头 DOM，断言无旧字段名、边面板渲染结构化条件、节点面板显示 kit.op/依据/审核、脚本无硬编码节点 id；改 `tools/workflow-page-template.html` 后必跑）**。
 - **前端消费纪律（R4 §5.3）**：面板只读唯一字段名（节点 `output`、知识 `kit`+`op`、校验 `asserts`、边 `role/when/params/via`），**禁止双名兜底与字符串嗅探**（事故：`nodeInfoPaper` 读已删的 `m.kb` → 面板静默空白；`isEdgeActive()` 硬编码 `"rejected"`/`RS.nodes["gate-r2"]`）。字段不在 `flow.schema.json` 白名单内时，面板显式标「未规范化」，不得静默丢弃。
 - **规范 R5 工具链**（`docs/规范-生成式flow与运行时编排-R5.md`，配套 `contracts/flow-overlay.schema.json` + `contracts/metrics.schema.json`）：`tools/kit-config-init.py`（为 55 个 op 注入 config 旋钮表，`--force`/`--check`/`--allow-generic`，幂等）、`tools/r5-migrate.py`（删 legacy `gate_role:"验收门"`，`--check` 幂等）。内核新增三动词：`flow_effect`（生效编排 + 指标汇总）、`flow_optimize`（由指标产出提案）、`flow_overlay`（改写编排，`--approve`/`--replan`）。
 - **生成式编排纪律（R5）**：
@@ -47,6 +49,6 @@ python tools/whereami.py            # 我在哪：项目/当前节点/必读输�
     `flow_optimize` 并入提案（非结构类 risk=medium 待批；结构类只进拍板清单，永不自动落地）。
   - **两条主指标**：上下文命中率（注入的标尺被产物真正引用的比例，信号取自 `artifact@1` 头部 `upstream` 与正文）＋ tool 效率（`consumedBy / 成本`）。同 `<kit>.<op>` **跨节点归口**——换位置不换 tool。口径只在内核定义一次，汇总落 `registry/metrics-summary.json`。
   - **改写即重编译**：`state.overlayHash` 与生效编排不符即 `replan`（受影响下游置 `pending`+`stale`）；旧 run 首次接触 R5 只认领指纹不重编译。
-- **R5 存量残留（记账，逐步清场）**：断言台账两套命名未对齐（注册表 74 条，引擎发出的 17 个 id 只有 4 个同名）；40 条被声明的断言中 28 条无机器校验器（`AE-CONT-*`、`AE-VIS-EMPTY`、`AE-WNF-HOOK` 三类文本层可查，应补）；7 处残留评审步（`gate-r1`/`gate-final` 等）待优化器 R6 提案 + 人批裁掉。详见 `docs/规范-生成式flow与运行时编排-R5.md` §十。
+- **R5 存量残留（记账，逐步清场）**：断言台账两套命名未对齐（注册表 74 条，引擎发出的 17 个 id 只有 4 个同名）；40 条被声明的断言中 28 条无机器校验器（`AE-CONT-*`、`AE-VIS-EMPTY`、`AE-WNF-HOOK` 三类文本层可查，应补）；7 处残留评审步（`gate-r1`/`gate-final` 等）待优化器 R6 提案 + 人批裁掉。详见 `docs/规范-生成式flow与运行时编排-R5.md` §十。（v4.0 复核 2026-09-21：引擎 id 实为 14 个、11 个同名、**3 个未登记**（AE-CH-LEN/AE-EXISTS/AE-SKIP-NON-BEAT）；AE-CONT-* / AE-VIS-EMPTY / AE-WNF-HOOK 校验器已在 `core/src/aesthetic.ts` 实现，**该缺口销账**；评审步 7 处仍在——全部收编进 docs/版本宣告-v4.0.0.md 处决清单·工单批A/C。）
 - **模型档位纪律**：文学判断节点（novel-deai / novel-judge / dialogue-polish 及各 gate 评审）必须在强模型档执行；轻量档（Flash 类）会话接手此类节点前，须先向用户声明降档风险并经确认——「默默用轻模型跑了文学判断」视同铁律 10 的虚报。
 - **iterate 提交（K6）**：`flow_submit --seal` 语义——iterate 节点逐实例提交时保持 awaiting，实例清单记入 state 节点 `committed`，最后一个实例带 `--seal` 收口置 done；rerun 自动清零 committed。
