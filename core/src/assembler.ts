@@ -14,6 +14,8 @@ import { loadProjectConfig, configCardLines } from "./project-config.js";
 import { applySkillOverlay, appliedPatchesFor } from "./skills.js";
 import { bodySkeleton, classOfPath, foreignOwnTerms, headerTemplate } from "./asserts.js";
 import { resolveBudget, DEFAULT_BUDGET } from "./budget.js";
+import { poolEntries, resolveSelection, resolveSkillFromPool, type DecisionLite, type ExcludedCandidate, type PoolDecl } from "./selection.js";
+import { decisionsMap } from "./decisions.js";
 
 let regCache: { root: string; reg: ProfileRegistry } | undefined;
 function profileRegistry(root: string): ProfileRegistry {
@@ -161,15 +163,39 @@ export function loadKnowledge(
     total: DEFAULT_BUDGET.kbTotalCap.value,
     card: DEFAULT_BUDGET.kbCardCap.value,
   },
-): { cards: KnowledgeCard[]; text: string; missing: string[]; excluded: string[] } {
+  pools: PoolDecl[] = [],
+  decisions: Record<string, DecisionLite> = {},
+): {
+  cards: KnowledgeCard[];
+  text: string;
+  missing: string[];
+  excluded: string[];
+  /** R8：因与本次决策不符而**主动不选**（≠missing 缺失、≠excluded 优化器剔除） */
+  notSelected: ExcludedCandidate[];
+  /** 池引用了不存在的决策 / 决策引用了不存在的标签——显式回显不静默 */
+  poolIssues: string[];
+} {
   const KB_TOTAL_CAP = caps.total;
   const KB_CARD_CAP = caps.card;
   const ex = new Set(exclude);
-  const resolvedAll = resolveKbPaths(root, ids);
+  // R8 §2.1：先按决策过滤池内 entries，再把命中的精确 id 交给 resolveKbPaths 展开（唯一 glob 实现保留）
+  const notSelected: ExcludedCandidate[] = [];
+  const poolIssues: string[] = [];
+  const poolIds: string[] = [];
+  for (const decl of pools) {
+    const res = resolveSelection(poolEntries(root, decl.pool), decisions, decl);
+    poolIds.push(...res.loaded.map((e) => e.id));
+    notSelected.push(...res.excluded);
+    poolIssues.push(...res.issues);
+  }
+  const resolvedAll = resolveKbPaths(root, [...ids, ...poolIds]);
   const dropped = resolvedAll.filter((f) => ex.has(f.id));
   const files = resolvedAll.filter((f) => !ex.has(f.id));
   const found = new Set(files.map((f) => f.id));
   const missing = ids.filter((id) => !found.has(id) && !ex.has(id));
+  for (const pid of poolIds) {
+    if (!found.has(pid) && !ex.has(pid)) missing.push(`${pid}（池命中但文件装载失败）`);
+  }
   const cards: KnowledgeCard[] = [];
   const blocks: string[] = [];
   let used = 0;
@@ -191,7 +217,14 @@ export function loadKnowledge(
     cards.push({ id, path: rel, chars: text.length, ...(truncated ? { truncated: true } : {}) });
     blocks.push(`### ${id}${truncated ? "（超预算截断）" : ""}\n\n<!-- source: ${rel} -->\n\n${text}`);
   }
-  return { cards, text: blocks.join("\n\n"), missing, excluded: dropped.map((d) => d.id) };
+  return {
+    cards,
+    text: blocks.join("\n\n"),
+    missing,
+    excluded: dropped.map((d) => d.id),
+    notSelected,
+    poolIssues,
+  };
 }
 
 /**
@@ -302,12 +335,32 @@ export function buildTaskPackage(
 
   // kit 标尺（K1 装载复位）：kit/op 声明的判定条款为权威；节点 kb 仅在无 kit 归属时生效
   const opRef = resolveNodeOp(node, ROOT, toolOverrides);
-  const skillId = node.skill ?? opRef?.skill;
+  // R8 选择面：决策是**运行中事实**（decisions/<key>.json），装载与选技能都读它——
+  // 不写回 state.inputs（铁律 6：resolveInputs 只跑一次，写回=伪造历史）。
+  const decisions = decisionsMap(projectDir);
+  let skillPoolNote: string | undefined;
+  let skillId: string | undefined;
+  if (node.skill) {
+    skillId = node.skill; // 节点显式指定：逃生口（有 skill_pool 的 op 上出现即 lint warn「绕过选择面」）
+  } else if (opRef?.skillPool) {
+    const picked = resolveSkillFromPool(opRef.skillPool, decisions, (rel) => fs.existsSync(path.join(ROOT, "skills", rel)));
+    skillId = picked.skill;
+    skillPoolNote = picked.note;
+  } else {
+    skillId = opRef?.skill;
+  }
   const knowledgeIds = [...new Set([...(opRef?.knowledge ?? []), ...(node.knowledge ?? node.kb ?? [])])];
-  const kb = loadKnowledge(ROOT, knowledgeIds, opRef?.excludeKnowledge ?? [], {
-    total: budget.values.kbTotalCap,
-    card: budget.values.kbCardCap,
-  });
+  const kb = loadKnowledge(
+    ROOT,
+    knowledgeIds,
+    opRef?.excludeKnowledge ?? [],
+    {
+      total: budget.values.kbTotalCap,
+      card: budget.values.kbCardCap,
+    },
+    opRef?.knowledgePools ?? [],
+    decisions,
+  );
   const asserts = [...new Set([...nodeAsserts(node), ...(opRef?.asserts ?? [])])];
   // R5 内容配置项：overlay.opConfig > 节点 config > op.default > 通用默认
   const ovKey = opRef ? `${opRef.kit}.${opRef.op}` : undefined;
@@ -343,6 +396,20 @@ export function buildTaskPackage(
     parts.push(
       `## 已剔除条款（优化器按指标判定为死条款；不是缺失，是主动不用）\n\n${kb.excluded.map((m) => `- ${m}`).join("\n")}`,
     );
+  }
+  // R8 铁律 4：「为什么没装 X」必须有格子回答——本节与上面两段同构、语义不同（决策过滤 ≠ 缺失 ≠ 优化剔除）
+  if (kb.notSelected.length) {
+    parts.push(
+      `## 未装载的候选（与本次决策不符——不是缺失，是过滤）\n\n${kb.notSelected.map((x) => `- ${x.id}（${x.reason}）`).join("\n")}`,
+    );
+  }
+  if (kb.poolIssues.length) {
+    parts.push(
+      `## 选择面告警（池声明未能按决策求值——禁止假装已过滤）\n\n${kb.poolIssues.map((m) => `- ${m}`).join("\n")}`,
+    );
+  }
+  if (skillPoolNote) {
+    parts.push(`## 技能选择注记（skill_pool + 决策）\n\n- ${skillPoolNote}`);
   }
   if (skillText) {
     parts.push(`## 方法论：${skillId}${skillTruncated ? "（超预算截断）" : ""}\n\n${skillText}`);
@@ -422,7 +489,8 @@ export function buildTaskPackage(
       kit: opRef.kit,
       op: opRef.op,
       domain: opRef.domain,
-      skill: opRef.skill ?? skillId ?? "",
+      // R8：池+决策选中的技能优先回显（选择面生效时 kitRef 要说装的是哪个）
+      skill: skillId ?? opRef.skill ?? "",
       kind: opRef.kind,
     };
   }

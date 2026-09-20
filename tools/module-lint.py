@@ -63,7 +63,7 @@ ID_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 SLOT_RE = re.compile(r"^(after|before):([a-z][a-z0-9-]*)$|^end$")
 TOOL_FIELDS = {
     "title", "desc", "skill", "minitools", "script", "kind", "model_tier",
-    "knowledge", "asserts", "config", "capability", "slot", "also_fits",
+    "knowledge", "knowledge_pools", "skill_pool", "asserts", "config", "capability", "slot", "also_fits",
     "requires", "adds", "output",
 }
 KINDS = {"produce", "review", "check"}
@@ -183,6 +183,18 @@ def lint_module(path, kb_index, minitools_reg):
                 continue  # 通配条目只在 flow 期展开，此处不核
             if kb not in kb_index:
                 E("E-KB-UNKNOWN", f"知识条目不存在：{kb}", oid)
+
+        # R8 选择面 §2.1：候选池必须池有所指（空池=声明了过滤却永远空转，与 E-KB-UNKNOWN 同类）
+        for p in op.get("knowledge_pools", []) or []:
+            pool = (p or {}).get("pool")
+            if not pool:
+                E("E-KB-UNKNOWN", "knowledge_pools 条目缺 pool 字段", oid)
+                continue
+            prefix = pool[:-1] if pool.endswith("*") else pool + "/"
+            if not any(k == pool or k.startswith(prefix) for k in kb_index):
+                E("E-KB-UNKNOWN", f"候选池 {pool} 在 knowledge/index.json 里没有任何条目", oid)
+        if op.get("skill_pool") and op.get("skill"):
+            W("W-SKILL-POOL", f"skill_pool={op['skill_pool']} 之外还焊死 skill={op['skill']}——逃生口绕过选择面（R8 §2.2），仅限无决策机制的降级场景", oid)
 
         for c in op.get("capability", []) or []:
             provided_caps.add(c)

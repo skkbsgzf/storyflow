@@ -50,6 +50,35 @@
             "items": { "type": "string" },
             "description": "R5：从标尺中排除的条目 id。glob 声明（kb/trope/*）无法用 exact 删单条，优化器剔除死条款时写这里——精确、可审计、可回滚"
           },
+          "knowledge_pools": {
+            "type": "array",
+            "description": "R8 选择面 §2.1：带 where 的候选池声明。决策过滤发生在 resolveKbPaths 的 glob 展开**之前**（先过滤 entries 再展开文件）。$decision:<key>.<field> 是唯一决策引用语法。",
+            "items": {
+              "type": "object",
+              "required": ["pool"],
+              "additionalProperties": false,
+              "properties": {
+                "pool": { "type": "string", "description": "kb/... 目录（配 /*）或精确条目 id" },
+                "where": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "tags": { "type": "array", "items": { "type": "string" }, "description": "正过滤：候选标签与展开集有交集才装载（可含 $decision:<key>.tags）" },
+                    "notTags": { "type": "array", "items": { "type": "string" }, "description": "反过滤：命中即排除（如 $decision:genre.excluded_tags）" }
+                  }
+                },
+                "onMissingDecision": {
+                  "enum": ["block", "load-all-with-warning"],
+                  "default": "block",
+                  "description": "引用的决策不存在时：block=整池不装+显式失败；load-all-with-warning=全装但任务包出告警段"
+                }
+              }
+            }
+          },
+          "skill_pool": {
+            "type": "string",
+            "description": "R8 选择面 §2.2：技能候选池（如 style/*）。选哪个由 decisions[<池名>].picked 决定；与之并存的 skill 是「无决策机制时的降级逃生口」，flow/kit-lint 标 warn（绕过了选择面）。"
+          },
           "minitools": { "type": "array", "items": { "type": "string" } },
           "asserts": { "type": "array", "items": { "type": "string" } },
           "assist": {

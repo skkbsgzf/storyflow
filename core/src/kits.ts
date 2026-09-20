@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { assertSchema } from "./schema.js";
+import type { PoolDecl } from "./selection.js";
 
 export type KitDomain = "search" | "plot" | "prose" | "tool" | "module";
 
@@ -28,6 +29,10 @@ export interface KitOp {
   knowledge?: string[];
   /** R5：从标尺中**排除**的条目 id（优化器按指标剔除死条款时用它——不动 glob 声明本身） */
   exclude_knowledge?: string[];
+  /** R8 选择面 §2.1：带 `where` 的候选池声明（先按决策过滤 entries，再交给 resolveKbPaths 展开）。 */
+  knowledge_pools?: PoolDecl[];
+  /** R8 选择面 §2.2：技能池（如 `style/*`）；有决策则经 resolveSkillFromPool 选，节点 `skill` 是降级逃生口。 */
+  skill_pool?: string;
   minitools?: string[];
   asserts?: string[];
   assist?: string[];
@@ -58,6 +63,10 @@ export interface ResolvedOp {
   modelTier?: "high" | "lite";
   knowledge: string[];
   excludeKnowledge: string[];
+  /** R8 §2.1：候选池声明（决策过滤先于 glob 展开）。 */
+  knowledgePools: PoolDecl[];
+  /** R8 §2.2：技能池；节点 skill 是逃生口。 */
+  skillPool?: string;
   minitools: string[];
   asserts: string[];
   assist: string[];
@@ -77,6 +86,8 @@ function toResolved(kit: KitDef, opId: string, op: KitOp): ResolvedOp {
     ...(op.model_tier ? { modelTier: op.model_tier } : {}),
     knowledge: op.knowledge ?? [],
     excludeKnowledge: op.exclude_knowledge ?? [],
+    knowledgePools: op.knowledge_pools ?? [],
+    ...(op.skill_pool ? { skillPool: op.skill_pool } : {}),
     minitools: op.minitools ?? [],
     asserts: op.asserts ?? [],
     assist: op.assist ?? [],
@@ -140,6 +151,8 @@ export class KitRegistry {
             ...(op.kind ? { kind: op.kind } : {}),
             ...(op.model_tier ? { model_tier: op.model_tier } : {}),
             ...(op.knowledge ? { knowledge: op.knowledge } : {}),
+            ...(op.knowledge_pools ? { knowledge_pools: op.knowledge_pools } : {}),
+            ...(op.skill_pool ? { skill_pool: op.skill_pool } : {}),
             ...(op.asserts ? { asserts: op.asserts } : {}),
             ...(op.config ? { config: op.config } : {}),
           };

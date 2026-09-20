@@ -135,6 +135,19 @@ def main():
             for ex in op.get("exclude_knowledge", []):
                 if ex not in kb_index:
                     E.append(f"{tag}: exclude_knowledge 条目不存在 {ex}")
+            # R8 选择面 §2.1：候选池池有所指；命中的条目计入 op_kb（不当孤儿）
+            for p in op.get("knowledge_pools", []):
+                pool = (p or {}).get("pool")
+                if not pool:
+                    E.append(f"{tag}: knowledge_pools 条目缺 pool 字段")
+                    continue
+                prefix = pool[:-1] if pool.endswith("*") else pool + "/"
+                hits = [i for i in kb_index if i == pool or i.startswith(prefix)]
+                if not hits:
+                    E.append(f"{tag}: 候选池 {pool} 在 knowledge/index.json 里没有任何条目")
+                op_kb.update(hits)
+            if op.get("skill_pool") and op.get("skill"):
+                W.append(f"{tag}: skill_pool={op['skill_pool']} 之外还焊死 skill={op['skill']}——逃生口绕过选择面（R8 §2.2）")
             op_cfg_keys.update(cfg)
 
     # ── 技能声明了未登记的 minitool ────────────────────────────
