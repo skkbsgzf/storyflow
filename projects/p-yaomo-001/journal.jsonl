@@ -1,0 +1,120 @@
+{"ts":"2026-09-20T11:52:48.577Z","runId":"run-mu9rbn3z-ebi7jc","event":"run-start","actor":"kernel","detail":"drama-flow@1.1.0 计划 20 节点"}
+{"ts":"2026-09-20T11:52:48.578Z","runId":"run-mu9rbn3z-ebi7jc","event":"note","actor":"kernel:overlay","detail":"生效编排合成：policy 起点取自 flow.json（此前忽略）：link_default=auto adapt=off"}
+{"ts":"2026-09-20T11:52:48.579Z","runId":"run-mu9rbn3z-ebi7jc","event":"note","actor":"kernel:config","detail":"初始化配置装载：严肃性=标准 风格=爽"}
+{"ts":"2026-09-20T11:52:48.608Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","nodeId":"m1.topic-report","detail":"任务包产出（skill=topic-report，上下文 0 件）"}
+{"ts":"2026-09-20T11:52:48.609Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.topic-report（并行）"}
+{"ts":"2026-09-20T11:53:07.224Z","runId":"run-mu9rbn3z-ebi7jc","event":"note","actor":"kernel:overlay","detail":"编排变更 → 重编译计划：20 → 22 节点；新增 itb-m2.world-forge、itb-m3.scene-breakdown；裁撤 无；失效 无","refs":["itb-m2.world-forge","itb-m3.scene-breakdown"]}
+{"ts":"2026-09-20T11:53:07.225Z","runId":"run-mu9rbn3z-ebi7jc","event":"note","actor":"kernel:overlay","detail":"派生边界验收 itb-m2.world-forge：topic → plot（接管 1 条跨界入边 e-link-m2）"}
+{"ts":"2026-09-20T11:53:07.225Z","runId":"run-mu9rbn3z-ebi7jc","event":"note","actor":"kernel:overlay","detail":"派生边界验收 itb-m3.scene-breakdown：plot → drama（接管 1 条跨界入边 e-link-m3）"}
+{"ts":"2026-09-20T11:53:07.233Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.topic-report（并行）"}
+{"ts":"2026-09-20T11:53:17.179Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.topic-report（并行）"}
+{"ts":"2026-09-20T11:55:14.473Z","runId":"run-mu9rbn3z-ebi7jc","event":"submit","actor":"kernel","nodeId":"m1.topic-report","detail":"01-选题/选题报告.md","refs":["01-选题/选题报告.md"]}
+{"ts":"2026-09-20T11:55:14.473Z","runId":"run-mu9rbn3z-ebi7jc","event":"snapshot","actor":"kernel","nodeId":"m1.topic-report","detail":"r1·选题报告.md","refs":["01-选题/选题报告.md"]}
+{"ts":"2026-09-20T11:55:14.481Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","nodeId":"m1.find-trope","detail":"任务包产出（skill=find-trope，上下文 1 件）"}
+{"ts":"2026-09-20T11:55:14.481Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.find-trope（并行）"}
+{"ts":"2026-09-20T11:55:38.296Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.find-trope（并行）"}
+{"ts":"2026-09-20T11:56:44.185Z","runId":"run-mu9rbn3z-ebi7jc","event":"submit","actor":"kernel","nodeId":"m1.find-trope","detail":"01-选题/find-trope.md","refs":["01-选题/find-trope.md"]}
+{"ts":"2026-09-20T11:56:44.186Z","runId":"run-mu9rbn3z-ebi7jc","event":"snapshot","actor":"kernel","nodeId":"m1.find-trope","detail":"r1·find-trope.md","refs":["01-选题/find-trope.md"]}
+{"ts":"2026-09-20T11:56:44.194Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","nodeId":"m1.material-dissect","detail":"任务包产出（skill=material-dissect，上下文 1 件）"}
+{"ts":"2026-09-20T11:56:44.194Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.material-dissect（并行）"}
+{"ts":"2026-09-20T11:56:48.894Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.material-dissect（并行）"}
+{"ts":"2026-09-20T11:59:12.074Z","runId":"run-mu9rbn3z-ebi7jc","event":"submit","actor":"kernel","nodeId":"m1.material-dissect","detail":"01-选题/material-dissect.md","refs":["01-选题/material-dissect.md"]}
+{"ts":"2026-09-20T11:59:12.074Z","runId":"run-mu9rbn3z-ebi7jc","event":"snapshot","actor":"kernel","nodeId":"m1.material-dissect","detail":"r1·material-dissect.md","refs":["01-选题/material-dissect.md"]}
+{"ts":"2026-09-20T11:59:12.085Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","nodeId":"m1.deconstruct-book","detail":"任务包产出（skill=deconstruct-book，上下文 1 件）"}
+{"ts":"2026-09-20T11:59:12.086Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-20T12:00:19.480Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.deconstruct-book（并行）"}
+{"ts":"2026-09-20T12:01:23.010Z","runId":"run-mu9rbn3z-ebi7jc","event":"submit","actor":"kernel","nodeId":"m1.deconstruct-book","detail":"01-选题/deconstruct-book.md","refs":["01-选题/deconstruct-book.md"]}
+{"ts":"2026-09-20T12:01:23.010Z","runId":"run-mu9rbn3z-ebi7jc","event":"snapshot","actor":"kernel","nodeId":"m1.deconstruct-book","detail":"r1·deconstruct-book.md","refs":["01-选题/deconstruct-book.md"]}
+{"ts":"2026-09-20T12:01:23.018Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","nodeId":"m1.topic-zeitgeist","detail":"任务包产出（skill=topic-zeitgeist，上下文 1 件）"}
+{"ts":"2026-09-20T12:01:23.018Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.topic-zeitgeist（并行）"}
+{"ts":"2026-09-20T12:01:28.143Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.topic-zeitgeist（并行）"}
+{"ts":"2026-09-20T12:03:25.299Z","runId":"run-mu9rbn3z-ebi7jc","event":"submit","actor":"kernel","nodeId":"m1.topic-zeitgeist","detail":"01-选题/topic-zeitgeist.md","refs":["01-选题/topic-zeitgeist.md"]}
+{"ts":"2026-09-20T12:03:25.299Z","runId":"run-mu9rbn3z-ebi7jc","event":"snapshot","actor":"kernel","nodeId":"m1.topic-zeitgeist","detail":"r1·topic-zeitgeist.md","refs":["01-选题/topic-zeitgeist.md"]}
+{"ts":"2026-09-20T12:03:25.310Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","nodeId":"m1.internet-feel","detail":"任务包产出（skill=internet-feel，上下文 1 件）"}
+{"ts":"2026-09-20T12:03:25.310Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.internet-feel（并行）"}
+{"ts":"2026-09-20T12:03:26.613Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m1.internet-feel（并行）"}
+{"ts":"2026-09-20T12:04:13.912Z","runId":"run-mu9rbn3z-ebi7jc","event":"submit","actor":"kernel","nodeId":"m1.internet-feel","detail":"01-选题/internet-feel.md","refs":["01-选题/internet-feel.md"]}
+{"ts":"2026-09-20T12:04:13.913Z","runId":"run-mu9rbn3z-ebi7jc","event":"snapshot","actor":"kernel","nodeId":"m1.internet-feel","detail":"r1·internet-feel.md","refs":["01-选题/internet-feel.md"]}
+{"ts":"2026-09-20T12:04:13.919Z","runId":"run-mu9rbn3z-ebi7jc","event":"verdict","actor":"kernel","nodeId":"m2.link","detail":"auto-pass（R6 连接件：自动批准）"}
+{"ts":"2026-09-20T12:04:13.920Z","runId":"run-mu9rbn3z-ebi7jc","event":"verdict","actor":"kernel","nodeId":"itb-m2.world-forge","detail":"auto-pass（边界门：policy.kit_boundary=auto——保留可见与指标，但不拦人；要人验收请置 always）"}
+{"ts":"2026-09-20T12:04:13.923Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","nodeId":"m2.world-forge","detail":"任务包产出（skill=world-forge，上下文 1 件）"}
+{"ts":"2026-09-20T12:04:13.923Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.world-forge（并行）"}
+{"ts":"2026-09-20T12:04:15.268Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.world-forge（并行）"}
+{"ts":"2026-09-20T12:04:37.900Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.world-forge（并行）"}
+{"ts":"2026-09-20T12:13:32.157Z","runId":"run-mu9rbn3z-ebi7jc","event":"submit","actor":"kernel","nodeId":"m2.world-forge","detail":"02-编剧/world-forge.md","refs":["02-编剧/world-forge.md"]}
+{"ts":"2026-09-20T12:13:32.157Z","runId":"run-mu9rbn3z-ebi7jc","event":"snapshot","actor":"kernel","nodeId":"m2.world-forge","detail":"r1·world-forge.md","refs":["02-编剧/world-forge.md"]}
+{"ts":"2026-09-20T12:13:32.164Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","nodeId":"m2.structure-design","detail":"任务包产出（skill=structure-design，上下文 1 件）"}
+{"ts":"2026-09-20T12:13:32.164Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.structure-design（并行）"}
+{"ts":"2026-09-20T12:13:47.827Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.structure-design（并行）"}
+{"ts":"2026-09-20T12:14:53.296Z","runId":"run-mu9rbn3z-ebi7jc","event":"submit","actor":"kernel","nodeId":"m2.structure-design","detail":"02-编剧/structure-design.md","refs":["02-编剧/structure-design.md"]}
+{"ts":"2026-09-20T12:14:53.296Z","runId":"run-mu9rbn3z-ebi7jc","event":"snapshot","actor":"kernel","nodeId":"m2.structure-design","detail":"r1·structure-design.md","refs":["02-编剧/structure-design.md"]}
+{"ts":"2026-09-20T12:14:53.305Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","nodeId":"m2.plot-choreographer","detail":"任务包产出（skill=plot-choreographer，上下文 1 件）"}
+{"ts":"2026-09-20T12:14:53.305Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.plot-choreographer（并行）"}
+{"ts":"2026-09-20T12:14:54.343Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.plot-choreographer（并行）"}
+{"ts":"2026-09-20T12:24:58.374Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.plot-choreographer（并行）"}
+{"ts":"2026-09-20T12:25:09.256Z","runId":"run-mu9rbn3z-ebi7jc","event":"warn","actor":"kernel","nodeId":"m2.plot-choreographer","detail":"声明断言无机器校验器（未执行，归评审/红方剖面）：AE-CURVE-STALL、AE-CURVE-TYPE、AE-CUSHION、AE-DESERT、AE-END-MECH、AE-REV-MIDPOINT、AE-REV-SETUP","refs":["02-编剧/plot-choreographer.md"]}
+{"ts":"2026-09-20T12:25:09.349Z","runId":"run-mu9rbn3z-ebi7jc","event":"submit","actor":"kernel","nodeId":"m2.plot-choreographer","detail":"02-编剧/plot-choreographer.md","refs":["02-编剧/plot-choreographer.md"]}
+{"ts":"2026-09-20T12:25:09.349Z","runId":"run-mu9rbn3z-ebi7jc","event":"snapshot","actor":"kernel","nodeId":"m2.plot-choreographer","detail":"r1·plot-choreographer.md","refs":["02-编剧/plot-choreographer.md"]}
+{"ts":"2026-09-20T12:25:09.356Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","nodeId":"m2.subplot-weave","detail":"任务包产出（skill=subplot-weave，上下文 1 件）"}
+{"ts":"2026-09-20T12:25:09.356Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.subplot-weave（并行）"}
+{"ts":"2026-09-20T12:25:28.732Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.subplot-weave（并行）"}
+{"ts":"2026-09-20T12:26:22.442Z","runId":"run-mu9rbn3z-ebi7jc","event":"submit","actor":"kernel","nodeId":"m2.subplot-weave","detail":"02-编剧/subplot-weave.md","refs":["02-编剧/subplot-weave.md"]}
+{"ts":"2026-09-20T12:26:22.442Z","runId":"run-mu9rbn3z-ebi7jc","event":"snapshot","actor":"kernel","nodeId":"m2.subplot-weave","detail":"r1·subplot-weave.md","refs":["02-编剧/subplot-weave.md"]}
+{"ts":"2026-09-20T12:26:22.450Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","nodeId":"m2.foreshadow-plant","detail":"任务包产出（skill=foreshadow-plant，上下文 1 件）"}
+{"ts":"2026-09-20T12:26:22.450Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.foreshadow-plant（并行）"}
+{"ts":"2026-09-20T12:26:23.652Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.foreshadow-plant（并行）"}
+{"ts":"2026-09-20T12:27:14.003Z","runId":"run-mu9rbn3z-ebi7jc","event":"warn","actor":"kernel","nodeId":"m2.foreshadow-plant","detail":"声明断言无机器校验器（未执行，归评审/红方剖面）：AE-CONT-FORESHADOW","refs":["02-编剧/foreshadow-plant.md"]}
+{"ts":"2026-09-20T12:27:14.104Z","runId":"run-mu9rbn3z-ebi7jc","event":"submit","actor":"kernel","nodeId":"m2.foreshadow-plant","detail":"02-编剧/foreshadow-plant.md","refs":["02-编剧/foreshadow-plant.md"]}
+{"ts":"2026-09-20T12:27:14.105Z","runId":"run-mu9rbn3z-ebi7jc","event":"snapshot","actor":"kernel","nodeId":"m2.foreshadow-plant","detail":"r1·foreshadow-plant.md","refs":["02-编剧/foreshadow-plant.md"]}
+{"ts":"2026-09-20T12:27:14.113Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","nodeId":"m2.scene-breakdown","detail":"任务包产出（skill=scene-breakdown，上下文 2 件）"}
+{"ts":"2026-09-20T12:27:14.113Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.scene-breakdown（并行）"}
+{"ts":"2026-09-20T12:27:16.163Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.scene-breakdown（并行）"}
+{"ts":"2026-09-20T12:28:36.680Z","runId":"run-mu9rbn3z-ebi7jc","event":"submit","actor":"kernel","nodeId":"m2.scene-breakdown","detail":"02-编剧/scene-breakdown.md","refs":["02-编剧/scene-breakdown.md"]}
+{"ts":"2026-09-20T12:28:36.681Z","runId":"run-mu9rbn3z-ebi7jc","event":"snapshot","actor":"kernel","nodeId":"m2.scene-breakdown","detail":"r1·scene-breakdown.md","refs":["02-编剧/scene-breakdown.md"]}
+{"ts":"2026-09-20T12:28:36.688Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","nodeId":"m2.script-drama-beat","detail":"任务包产出（skill=script-drama-beat，上下文 1 件）"}
+{"ts":"2026-09-20T12:28:36.688Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.script-drama-beat（并行）"}
+{"ts":"2026-09-20T12:28:38.752Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.script-drama-beat（并行）"}
+{"ts":"2026-09-20T12:30:02.164Z","runId":"run-mu9rbn3z-ebi7jc","event":"warn","actor":"kernel","nodeId":"m2.script-drama-beat","detail":"声明断言无机器校验器（未执行，归评审/红方剖面）：AE-BEAT-FORMAT、AE-CARD-END、AE-CONT-FORESHADOW、AE-CONT-ITEM、AE-CONT-KNOW、AE-DENSITY-CALM、AE-DENSITY-HOT、AE-HOOK-EVENT、AE-VIS-EMPTY","refs":["02-编剧/script-drama-beat.md"]}
+{"ts":"2026-09-20T12:30:02.262Z","runId":"run-mu9rbn3z-ebi7jc","event":"submit","actor":"kernel","nodeId":"m2.script-drama-beat","detail":"02-编剧/script-drama-beat.md","refs":["02-编剧/script-drama-beat.md"]}
+{"ts":"2026-09-20T12:30:02.263Z","runId":"run-mu9rbn3z-ebi7jc","event":"snapshot","actor":"kernel","nodeId":"m2.script-drama-beat","detail":"r1·script-drama-beat.md","refs":["02-编剧/script-drama-beat.md"]}
+{"ts":"2026-09-20T12:30:02.270Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","nodeId":"m2.plot-redline","detail":"任务包产出（skill=plot-redline，上下文 1 件）"}
+{"ts":"2026-09-20T12:30:02.270Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.plot-redline（并行）"}
+{"ts":"2026-09-20T12:30:04.317Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.plot-redline（并行）"}
+{"ts":"2026-09-20T12:31:00.536Z","runId":"run-mu9rbn3z-ebi7jc","event":"submit","actor":"kernel","nodeId":"m2.plot-redline","detail":"02-编剧/plot-redline.md","refs":["02-编剧/plot-redline.md"]}
+{"ts":"2026-09-20T12:31:00.537Z","runId":"run-mu9rbn3z-ebi7jc","event":"snapshot","actor":"kernel","nodeId":"m2.plot-redline","detail":"r1·plot-redline.md","refs":["02-编剧/plot-redline.md"]}
+{"ts":"2026-09-20T12:31:00.545Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","nodeId":"m2.script-forge","detail":"任务包产出（skill=script-forge，上下文 2 件）"}
+{"ts":"2026-09-20T12:31:00.545Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.script-forge（并行）"}
+{"ts":"2026-09-20T12:31:03.107Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.script-forge（并行）"}
+{"ts":"2026-09-20T12:32:58.928Z","runId":"run-mu9rbn3z-ebi7jc","event":"warn","actor":"kernel","nodeId":"m2.script-forge","detail":"声明断言无机器校验器（未执行，归评审/红方剖面）：AE-SCRIPT-FIELDS","refs":["02-编剧/剧本.md"]}
+{"ts":"2026-09-20T12:32:59.018Z","runId":"run-mu9rbn3z-ebi7jc","event":"submit","actor":"kernel","nodeId":"m2.script-forge","detail":"02-编剧/剧本.md","refs":["02-编剧/剧本.md"]}
+{"ts":"2026-09-20T12:32:59.018Z","runId":"run-mu9rbn3z-ebi7jc","event":"snapshot","actor":"kernel","nodeId":"m2.script-forge","detail":"r1·剧本.md","refs":["02-编剧/剧本.md"]}
+{"ts":"2026-09-20T12:32:59.027Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","nodeId":"m2.novel-bible","detail":"任务包产出（skill=novel-bible，上下文 1 件）"}
+{"ts":"2026-09-20T12:32:59.027Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.novel-bible（并行）"}
+{"ts":"2026-09-20T12:33:24.117Z","runId":"run-mu9rbn3z-ebi7jc","event":"stale","actor":"kernel","nodeId":"m2.script-forge","detail":"rerun 级联失效"}
+{"ts":"2026-09-20T12:33:24.118Z","runId":"run-mu9rbn3z-ebi7jc","event":"stale","actor":"kernel","nodeId":"m2.novel-bible","detail":"rerun 级联失效"}
+{"ts":"2026-09-20T12:33:24.118Z","runId":"run-mu9rbn3z-ebi7jc","event":"rerun","actor":"kernel","nodeId":"m2.script-forge","detail":"scope 6 节点","refs":["m2.script-forge","m2.novel-bible","m2.episodic-outline","m3.link","itb-m3.scene-breakdown","m3.scene-breakdown"]}
+{"ts":"2026-09-20T12:33:24.129Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","nodeId":"m2.script-forge","detail":"任务包产出（skill=script-forge，上下文 2 件）"}
+{"ts":"2026-09-20T12:33:24.129Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.script-forge（并行）"}
+{"ts":"2026-09-20T12:35:58.986Z","runId":"run-mu9rbn3z-ebi7jc","event":"warn","actor":"kernel","nodeId":"m2.script-forge","detail":"声明断言无机器校验器（未执行，归评审/红方剖面）：AE-SCRIPT-FIELDS","refs":["02-编剧/剧本.md"]}
+{"ts":"2026-09-20T12:35:59.071Z","runId":"run-mu9rbn3z-ebi7jc","event":"submit","actor":"kernel","nodeId":"m2.script-forge","detail":"02-编剧/剧本.md","refs":["02-编剧/剧本.md"]}
+{"ts":"2026-09-20T12:35:59.071Z","runId":"run-mu9rbn3z-ebi7jc","event":"snapshot","actor":"kernel","nodeId":"m2.script-forge","detail":"r3·剧本.md","refs":["02-编剧/剧本.md"]}
+{"ts":"2026-09-20T12:35:59.078Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","nodeId":"m2.novel-bible","detail":"任务包产出（skill=novel-bible，上下文 1 件）"}
+{"ts":"2026-09-20T12:35:59.078Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.novel-bible（并行）"}
+{"ts": "2026-09-20T20:37:47", "runId": "run-mu9rbn3z-ebi7jc", "event": "note", "actor": "amend-artifact", "nodeId": "m2.script-forge", "detail": "绕流意图声明：修改 done 产物 02-编剧/剧本.md｜理由：剥离文末制作标准自查段（过程元数据不入交付正文，AE-OUTPUT-PURITY），正文与裁决内容不变｜五步降级启动"}
+{"ts":"2026-09-20T13:53:04.066Z","runId":"run-mu9rbn3z-ebi7jc","event":"note","actor":"user","detail":"编排改写：applied 1 / proposed 0｜原文照搬版：取消3集与篇幅限制（用户直接指令）"}
+{"ts":"2026-09-20T13:53:55.267Z","runId":"run-mu9rbn3z-ebi7jc","event":"stale","actor":"kernel","nodeId":"m2.script-forge","detail":"rerun 级联失效"}
+{"ts":"2026-09-20T13:53:55.268Z","runId":"run-mu9rbn3z-ebi7jc","event":"stale","actor":"kernel","nodeId":"m2.novel-bible","detail":"rerun 级联失效"}
+{"ts":"2026-09-20T13:53:55.268Z","runId":"run-mu9rbn3z-ebi7jc","event":"rerun","actor":"kernel","nodeId":"m2.script-forge","detail":"scope 6 节点","refs":["m2.script-forge","m2.novel-bible","m2.episodic-outline","m3.link","itb-m3.scene-breakdown","m3.scene-breakdown"]}
+{"ts":"2026-09-20T13:53:55.275Z","runId":"run-mu9rbn3z-ebi7jc","event":"note","actor":"kernel:overlay","detail":"编排变更 → 重编译计划：22 → 22 节点；新增 无；裁撤 无；失效 无","refs":[]}
+{"ts":"2026-09-20T13:53:55.275Z","runId":"run-mu9rbn3z-ebi7jc","event":"note","actor":"kernel:overlay","detail":"set-tool plot.script-forge｜原文照搬版：用户指令取消篇幅压缩与3集限制，223-231逐章全量改编"}
+{"ts":"2026-09-20T13:53:55.275Z","runId":"run-mu9rbn3z-ebi7jc","event":"note","actor":"kernel:overlay","detail":"派生边界验收 itb-m2.world-forge：topic → plot（接管 1 条跨界入边 e-link-m2）"}
+{"ts":"2026-09-20T13:53:55.275Z","runId":"run-mu9rbn3z-ebi7jc","event":"note","actor":"kernel:overlay","detail":"派生边界验收 itb-m3.scene-breakdown：plot → drama（接管 1 条跨界入边 e-link-m3）"}
+{"ts":"2026-09-20T13:53:55.291Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","nodeId":"m2.script-forge","detail":"任务包产出（skill=script-forge，上下文 2 件）"}
+{"ts":"2026-09-20T13:53:55.291Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.script-forge（并行）"}
+{"ts":"2026-09-20T14:02:10.891Z","runId":"run-mu9rbn3z-ebi7jc","event":"warn","actor":"kernel","nodeId":"m2.script-forge","detail":"声明断言无机器校验器（未执行，归评审/红方剖面）：AE-SCRIPT-FIELDS","refs":["02-编剧/剧本.md"]}
+{"ts":"2026-09-20T14:02:11.027Z","runId":"run-mu9rbn3z-ebi7jc","event":"submit","actor":"kernel","nodeId":"m2.script-forge","detail":"02-编剧/剧本.md","refs":["02-编剧/剧本.md"]}
+{"ts":"2026-09-20T14:02:11.027Z","runId":"run-mu9rbn3z-ebi7jc","event":"snapshot","actor":"kernel","nodeId":"m2.script-forge","detail":"r5·剧本.md","refs":["02-编剧/剧本.md"]}
+{"ts":"2026-09-20T14:02:11.036Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","nodeId":"m2.novel-bible","detail":"任务包产出（skill=novel-bible，上下文 1 件）"}
+{"ts":"2026-09-20T14:02:11.036Z","runId":"run-mu9rbn3z-ebi7jc","event":"advance","actor":"kernel","detail":"就绪批派发 1 项：m2.novel-bible（并行）"}
+{"ts":"2026-09-20T15:04:27.096Z","runId":"run-mu9rbn3z-ebi7jc","event":"note","actor":"user","detail":"编排改写：applied 2 / proposed 0｜用户指令：全本1-500章世界书增量补录"}
+{"ts": "2026-09-21T00:37:10", "runId": "run-mu9rbn3z-ebi7jc", "event": "note", "actor": "amend-artifact", "nodeId": "m2.world-forge", "detail": "绕流意图声明：修改 done 产物 02-编剧/world-forge.md｜理由：1-500章全本世界书增量补录；flow_rerun级联将作废已交付剧本链（14节点），内核不支持增量式rerun｜五步降级启动"}

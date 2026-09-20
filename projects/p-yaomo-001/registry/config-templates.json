@@ -1,0 +1,17 @@
+{
+  "format": "config-templates@1",
+  "flowId": "drama-flow",
+  "entries": [
+    {
+      "name": "从零新建",
+      "flowId": "drama-flow",
+      "source": "blank",
+      "keys": [
+        "项目"
+      ],
+      "hasBudget": false,
+      "note": "只写必填的「项目」，其余留空 ⇒ 全走 flow 默认（不继承任何已有项目的偏好）"
+    }
+  ],
+  "skipped": []
+}

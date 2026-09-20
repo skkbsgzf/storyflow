@@ -1,0 +1,88 @@
+{
+  "世界书": "p-yaomo-001 世界书（剧本变体）",
+  "变体": "drama",
+  "version": "1.1.0",
+  "updated": "2026-09-20",
+  "note": "唯一 RAG 入口；文件即真相；集回交稿后按 纪律.md 结算五件",
+  "状态机": "draft → active → retired",
+  "sections": [
+    {
+      "id": "设定",
+      "title": "设定",
+      "format": "list",
+      "file": "世界书/设定/",
+      "entries": [
+        { "id": "w-power-jingjie", "title": "境界体系", "tags": ["力量体系", "W-RULE-01"], "status": "active", "file": "世界书/设定/w-power-jingjie.md" },
+        { "id": "w-baiyaopu", "title": "百妖谱（金手指）", "tags": ["力量体系", "金手指", "W-RULE-02"], "status": "active", "file": "世界书/设定/w-baiyaopu.md" },
+        { "id": "w-yaoihua", "title": "妖化", "tags": ["力量体系", "视觉奇观", "W-RULE-03"], "status": "active", "file": "世界书/设定/w-yaoihua.md" },
+        { "id": "w-zangxianguan", "title": "葬仙关夺灵秘术", "tags": ["力量体系", "反派金手指", "W-RULE-04"], "status": "active", "file": "世界书/设定/w-zangxianguan.md" }
+      ]
+    },
+    {
+      "id": "人物",
+      "title": "人物",
+      "format": "list",
+      "file": "世界书/人物/",
+      "entries": [
+        { "id": "w-jiang-yuechu", "title": "姜月初", "tags": ["主角"], "status": "active", "file": "世界书/人物/w-jiang-yuechu.md" },
+        { "id": "w-wei-he", "title": "魏合", "tags": ["盟友", "官面"], "status": "active", "file": "世界书/人物/w-wei-he.md" },
+        { "id": "w-wang-you", "title": "忘忧（反派宗主）", "tags": ["反派"], "status": "active", "file": "世界书/人物/w-wang-you.md" },
+        { "id": "w-wang-chi", "title": "忘痴（反派打手）", "tags": ["反派"], "status": "active", "file": "世界书/人物/w-wang-chi.md" },
+        { "id": "w-jiubu-sanren", "title": "旧部三人组", "tags": ["旧部", "反应衬托"], "status": "active", "file": "世界书/人物/w-jiubu-sanren.md" }
+      ]
+    },
+    {
+      "id": "势力",
+      "title": "势力",
+      "format": "list",
+      "file": "世界书/势力/",
+      "entries": [
+        { "id": "w-qituo-zong", "title": "栖陀宗（含换皮对照总表）", "tags": ["势力", "换皮", "合规"], "status": "active", "file": "世界书/势力/w-qituo-zong.md" },
+        { "id": "w-zhenmosi", "title": "镇魔司（陇右都司）", "tags": ["势力", "官面"], "status": "active", "file": "世界书/势力/w-zhenmosi.md" }
+      ]
+    },
+    {
+      "id": "场景",
+      "title": "场景",
+      "format": "list",
+      "file": "世界书/场景/",
+      "entries": [
+        { "id": "w-qituo-shan", "title": "栖陀山·山庄布局", "tags": ["场景", "决战地"], "status": "active", "file": "世界书/场景/w-qituo-shan.md" },
+        { "id": "w-liangzhou-dusi", "title": "凉州都司与长街", "tags": ["场景", "凉州"], "status": "active", "file": "世界书/场景/w-liangzhou-dusi.md" }
+      ]
+    },
+    {
+      "id": "道具",
+      "title": "道具",
+      "format": "list",
+      "file": "世界书/道具/",
+      "entries": [
+        { "id": "w-hanyue-dao", "title": "寒月刀", "tags": ["道具", "连续性"], "status": "active", "file": "世界书/道具/w-hanyue-dao.md" },
+        { "id": "w-jinhong-lingyu", "title": "金红翎羽（伏笔信物）", "tags": ["道具", "伏笔"], "status": "active", "file": "世界书/道具/w-jinhong-lingyu.md" }
+      ]
+    },
+    {
+      "id": "分集账",
+      "title": "分集账",
+      "format": "list",
+      "file": "世界书/分集账/",
+      "entries": [
+        { "id": "ji-zhang", "title": "集账", "tags": ["handoff"], "status": "active", "file": "世界书/分集账/集账.md" }
+      ]
+    },
+    {
+      "id": "伏笔",
+      "title": "伏笔台账",
+      "format": "text",
+      "file": "世界书/伏笔/台账.md",
+      "entries": []
+    },
+    {
+      "id": "底牌",
+      "title": "暗线底牌（作者专用·永不入正文）",
+      "format": "text",
+      "file": "世界书/底牌/暗线底牌.md",
+      "entries": []
+    }
+  ]
+}

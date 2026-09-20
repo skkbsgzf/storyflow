@@ -1,0 +1,834 @@
+{
+  "世界书": "p-yaomo-001 世界书（剧本变体）",
+  "变体": "drama",
+  "version": "1.1.0",
+  "updated": "2026-09-21",
+  "note": "唯一 RAG 入口；文件即真相；集回交稿后按 纪律.md 结算五件。2026-09-21 全本1-500章增量补录：新增词条带原著原名，既有换皮词条追加「全本增补（原著原名）」小节",
+  "状态机": "draft → active → retired",
+  "sections": [
+    {
+      "id": "设定",
+      "title": "设定",
+      "format": "list",
+      "file": "世界书/设定/",
+      "entries": [
+        {
+          "id": "w-baiyaopu",
+          "title": "百妖谱（金手指）",
+          "tags": [
+            "力量体系",
+            "金手指",
+            "百妖谱",
+            "W-RULE-02"
+          ],
+          "status": "active",
+          "file": "世界书/设定/w-baiyaopu.md"
+        },
+        {
+          "id": "w-daotong-25",
+          "title": "道统与二十五脉正统",
+          "tags": [
+            "设定",
+            "道统",
+            "五曜五显",
+            "皇位"
+          ],
+          "status": "active",
+          "file": "世界书/设定/w-daotong-25.md"
+        },
+        {
+          "id": "w-dili-500",
+          "title": "天下地理志（1-500章）",
+          "tags": [
+            "设定",
+            "地理",
+            "道制",
+            "长安"
+          ],
+          "status": "active",
+          "file": "世界书/设定/w-dili-500.md"
+        },
+        {
+          "id": "w-guifan-xinjiang",
+          "title": "凡俗规矩与风物",
+          "tags": [
+            "设定",
+            "户帖路引",
+            "大唐律",
+            "节俗"
+          ],
+          "status": "active",
+          "file": "世界书/设定/w-guifan-xinjiang.md"
+        },
+        {
+          "id": "w-jiefu-shengzi",
+          "title": "借腹生子与妖胎案",
+          "tags": [
+            "设定",
+            "妖胎",
+            "禁术",
+            "明妃"
+          ],
+          "status": "active",
+          "file": "世界书/设定/w-jiefu-shengzi.md"
+        },
+        {
+          "id": "w-jingjie-upper",
+          "title": "登堂四境以上实录",
+          "tags": [
+            "设定",
+            "境界",
+            "燃灯",
+            "观山"
+          ],
+          "status": "active",
+          "file": "世界书/设定/w-jingjie-upper.md"
+        },
+        {
+          "id": "w-lingin-baoju",
+          "title": "灵印·宝具·法宝体系",
+          "tags": [
+            "设定",
+            "灵印",
+            "宝具",
+            "法宝"
+          ],
+          "status": "active",
+          "file": "世界书/设定/w-lingin-baoju.md"
+        },
+        {
+          "id": "w-power-jingjie",
+          "title": "境界体系",
+          "tags": [
+            "力量体系",
+            "境界",
+            "W-RULE-01"
+          ],
+          "status": "active",
+          "file": "世界书/设定/w-power-jingjie.md"
+        },
+        {
+          "id": "w-renzu-longqi",
+          "title": "太祖·龙气·李唐皇室",
+          "tags": [
+            "设定",
+            "龙气",
+            "太祖",
+            "太庙灵璧"
+          ],
+          "status": "active",
+          "file": "世界书/设定/w-renzu-longqi.md"
+        },
+        {
+          "id": "w-xianghuo-dao",
+          "title": "香火道与金身法",
+          "tags": [
+            "设定",
+            "香火",
+            "愿力",
+            "金身法"
+          ],
+          "status": "active",
+          "file": "世界书/设定/w-xianghuo-dao.md"
+        },
+        {
+          "id": "w-yaoihua",
+          "title": "妖化",
+          "tags": [
+            "力量体系",
+            "妖化",
+            "视觉奇观",
+            "W-RULE-03"
+          ],
+          "status": "active",
+          "file": "世界书/设定/w-yaoihua.md"
+        },
+        {
+          "id": "w-yaoting",
+          "title": "西域妖庭体制",
+          "tags": [
+            "设定",
+            "妖庭",
+            "妖皇",
+            "四圣"
+          ],
+          "status": "active",
+          "file": "世界书/设定/w-yaoting.md"
+        },
+        {
+          "id": "w-yaowu-shicai",
+          "title": "妖物尸材与资源规则",
+          "tags": [
+            "设定",
+            "妖尸",
+            "血食",
+            "府库"
+          ],
+          "status": "active",
+          "file": "世界书/设定/w-yaowu-shicai.md"
+        },
+        {
+          "id": "w-zangxianguan",
+          "title": "葬仙关夺灵秘术",
+          "tags": [
+            "力量体系",
+            "反派金手指",
+            "葬仙关",
+            "W-RULE-04"
+          ],
+          "status": "active",
+          "file": "世界书/设定/w-zangxianguan.md"
+        },
+        {
+          "id": "w-zhenmo-arch",
+          "title": "镇魔司建制与官制（全本增补）",
+          "tags": [
+            "设定",
+            "镇魔司",
+            "官制",
+            "巡察使"
+          ],
+          "status": "active",
+          "file": "世界书/设定/w-zhenmo-arch.md"
+        },
+        {
+          "id": "w-zongjiao-huanci",
+          "title": "全本宗教词汇汇总（换皮扩充底稿）",
+          "tags": [
+            "设定",
+            "宗教",
+            "佛教",
+            "词汇"
+          ],
+          "status": "active",
+          "file": "世界书/设定/w-zongjiao-huanci.md"
+        }
+      ]
+    },
+    {
+      "id": "人物",
+      "title": "人物",
+      "format": "list",
+      "file": "世界书/人物/",
+      "entries": [
+        {
+          "id": "w-bai-yulou",
+          "title": "白玉楼",
+          "tags": [
+            "人物",
+            "镇魔司总司"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-bai-yulou.md"
+        },
+        {
+          "id": "w-cheng-buxiu",
+          "title": "程不休",
+          "tags": [
+            "人物",
+            "大唐朝廷"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-cheng-buxiu.md"
+        },
+        {
+          "id": "w-gu-changge",
+          "title": "顾长歌",
+          "tags": [
+            "人物",
+            "镇魔司总司"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-gu-changge.md"
+        },
+        {
+          "id": "w-gu-wanlan",
+          "title": "顾挽澜",
+          "tags": [
+            "人物",
+            "镇魔司总司"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-gu-wanlan.md"
+        },
+        {
+          "id": "w-huangdi",
+          "title": "皇帝（李氏今上·李承乾）",
+          "tags": [
+            "人物",
+            "皇帝",
+            "皇室"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-huangdi.md"
+        },
+        {
+          "id": "w-huiyue",
+          "title": "晦月大圣",
+          "tags": [
+            "人物",
+            "妖圣"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-huiyue.md"
+        },
+        {
+          "id": "w-jiang-xun",
+          "title": "姜洵（养父）",
+          "tags": [
+            "人物",
+            "姜洵",
+            "皇室",
+            "配角"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-jiang-xun.md"
+        },
+        {
+          "id": "w-jiang-yuechu",
+          "title": "姜月初",
+          "tags": [
+            "人物",
+            "主角",
+            "姜月初"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-jiang-yuechu.md"
+        },
+        {
+          "id": "w-jiubu-jianguan",
+          "title": "凉州旧部将官群像",
+          "tags": [
+            "人物",
+            "陇右镇魔司"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-jiubu-jianguan.md"
+        },
+        {
+          "id": "w-jiubu-sanren",
+          "title": "旧部三人组（陈通/刘珂/不戒）",
+          "tags": [
+            "人物",
+            "旧部",
+            "反应衬托"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-jiubu-sanren.md"
+        },
+        {
+          "id": "w-li-qianyuan",
+          "title": "李乾元（先皇·太上皇）",
+          "tags": [
+            "人物",
+            "反派",
+            "李乾元",
+            "先皇"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-li-qianyuan.md"
+        },
+        {
+          "id": "w-ling-shan-sheng",
+          "title": "灵山妖圣群像",
+          "tags": [
+            "人物",
+            "灵山"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-ling-shan-sheng.md"
+        },
+        {
+          "id": "w-liu-popo",
+          "title": "柳婆婆",
+          "tags": [
+            "人物",
+            "柳氏"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-liu-popo.md"
+        },
+        {
+          "id": "w-liu-shi",
+          "title": "柳家（太后外戚·千年世家）",
+          "tags": [
+            "人物",
+            "柳家",
+            "世家"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-liu-shi.md"
+        },
+        {
+          "id": "w-liu-taihou",
+          "title": "柳太后",
+          "tags": [
+            "人物",
+            "柳太后",
+            "皇室"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-liu-taihou.md"
+        },
+        {
+          "id": "w-lu-changfeng",
+          "title": "陆长风",
+          "tags": [
+            "人物",
+            "东域世家"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-lu-changfeng.md"
+        },
+        {
+          "id": "w-lv-qinghou",
+          "title": "吕青侯",
+          "tags": [
+            "人物",
+            "镇魔司总司"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-lv-qinghou.md"
+        },
+        {
+          "id": "w-mao-ri",
+          "title": "卯日妖王",
+          "tags": [
+            "人物",
+            "西域妖庭"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-mao-ri.md"
+        },
+        {
+          "id": "w-mingfei",
+          "title": "明妃（生母）",
+          "tags": [
+            "人物",
+            "明妃",
+            "皇室"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-mingfei.md"
+        },
+        {
+          "id": "w-wang-chi",
+          "title": "忘痴（反派·疯僧打手）",
+          "tags": [
+            "人物",
+            "反派",
+            "忘痴"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-wang-chi.md"
+        },
+        {
+          "id": "w-wang-you",
+          "title": "忘忧（反派·宗主）",
+          "tags": [
+            "人物",
+            "反派",
+            "忘忧"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-wang-you.md"
+        },
+        {
+          "id": "w-wei-he",
+          "title": "魏合",
+          "tags": [
+            "人物",
+            "魏合",
+            "盟友"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-wei-he.md"
+        },
+        {
+          "id": "w-wei-wenda",
+          "title": "魏文达",
+          "tags": [
+            "人物",
+            "魏文达",
+            "朝廷"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-wei-wenda.md"
+        },
+        {
+          "id": "w-wu-shisan",
+          "title": "无十三",
+          "tags": [
+            "人物",
+            "道统"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-wu-shisan.md"
+        },
+        {
+          "id": "w-xianmen-waiji",
+          "title": "仙门与五仙山群像",
+          "tags": [
+            "人物",
+            "五仙山"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-xianmen-waiji.md"
+        },
+        {
+          "id": "w-xu-changfeng",
+          "title": "徐长风",
+          "tags": [
+            "人物",
+            "陇右镇魔司"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-xu-changfeng.md"
+        },
+        {
+          "id": "w-you-wujiang",
+          "title": "游无疆",
+          "tags": [
+            "人物",
+            "镇魔司总司"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-you-wujiang.md"
+        },
+        {
+          "id": "w-zhao-zhongliu",
+          "title": "赵中流",
+          "tags": [
+            "人物",
+            "镇魔司总司"
+          ],
+          "status": "active",
+          "file": "世界书/人物/w-zhao-zhongliu.md"
+        },
+        {
+          "id": "wang-ziyu",
+          "title": "王子昱",
+          "tags": [
+            "人物",
+            "道统"
+          ],
+          "status": "active",
+          "file": "世界书/人物/wang-ziyu.md"
+        }
+      ]
+    },
+    {
+      "id": "势力",
+      "title": "势力",
+      "format": "list",
+      "file": "世界书/势力/",
+      "entries": [
+        {
+          "id": "f-baodasi-yuan",
+          "title": "宝刹寺（原著真身全档）",
+          "tags": [
+            "势力",
+            "宝刹寺",
+            "佛门",
+            "陇右三派"
+          ],
+          "status": "active",
+          "file": "世界书/势力/f-baodasi-yuan.md"
+        },
+        {
+          "id": "f-chunyang-yujing",
+          "title": "纯阳与玉京楼（道门两轨）",
+          "tags": [
+            "势力",
+            "纯阳宫",
+            "玉京楼",
+            "道门"
+          ],
+          "status": "active",
+          "file": "世界书/势力/f-chunyang-yujing.md"
+        },
+        {
+          "id": "f-dangtang",
+          "title": "落雁山庄与惊涛门（陇右三派之二）",
+          "tags": [
+            "势力",
+            "落雁山庄",
+            "惊涛门",
+            "陇右三派"
+          ],
+          "status": "active",
+          "file": "世界书/势力/f-dangtang.md"
+        },
+        {
+          "id": "f-lingshan",
+          "title": "灵山",
+          "tags": [
+            "势力",
+            "灵山",
+            "妖皇",
+            "洞序制"
+          ],
+          "status": "active",
+          "file": "世界书/势力/f-lingshan.md"
+        },
+        {
+          "id": "f-wanrindaze",
+          "title": "万妖大泽",
+          "tags": [
+            "势力",
+            "万妖大泽",
+            "府君",
+            "妖皇"
+          ],
+          "status": "active",
+          "file": "世界书/势力/f-wanrindaze.md"
+        },
+        {
+          "id": "f-wuxianshan",
+          "title": "五仙山",
+          "tags": [
+            "势力",
+            "五仙山",
+            "香火野道",
+            "五毒"
+          ],
+          "status": "active",
+          "file": "世界书/势力/f-wuxianshan.md"
+        },
+        {
+          "id": "f-xuanchen",
+          "title": "玄真洞天（太阿一脉）",
+          "tags": [
+            "势力",
+            "玄真洞天",
+            "太阿",
+            "洞天福地"
+          ],
+          "status": "active",
+          "file": "世界书/势力/f-xuanchen.md"
+        },
+        {
+          "id": "f-yaoting",
+          "title": "西域妖庭（势力实体）",
+          "tags": [
+            "势力",
+            "妖庭",
+            "万妖殿",
+            "妖皇"
+          ],
+          "status": "active",
+          "file": "世界书/势力/f-yaoting.md"
+        },
+        {
+          "id": "f-yinmachuan",
+          "title": "饮马川（东海之极妖族圣地）",
+          "tags": [
+            "势力",
+            "饮马川",
+            "东海",
+            "妖圣"
+          ],
+          "status": "active",
+          "file": "世界书/势力/f-yinmachuan.md"
+        },
+        {
+          "id": "w-qituo-zong",
+          "title": "栖陀宗（含宗教换皮对照总表）",
+          "tags": [
+            "势力",
+            "换皮",
+            "栖陀宗",
+            "合规"
+          ],
+          "status": "active",
+          "file": "世界书/势力/w-qituo-zong.md"
+        },
+        {
+          "id": "w-zhenmosi",
+          "title": "镇魔司（陇右都司）",
+          "tags": [
+            "势力",
+            "官面",
+            "镇魔司"
+          ],
+          "status": "active",
+          "file": "世界书/势力/w-zhenmosi.md"
+        }
+      ]
+    },
+    {
+      "id": "场景",
+      "title": "场景",
+      "format": "list",
+      "file": "世界书/场景/",
+      "entries": [
+        {
+          "id": "s-chang-an",
+          "title": "长安（京城）",
+          "tags": [
+            "场景",
+            "长安",
+            "皇城",
+            "大明宫"
+          ],
+          "status": "active",
+          "file": "世界书/场景/s-chang-an.md"
+        },
+        {
+          "id": "s-heihe",
+          "title": "黑河（甘州张掖水系）",
+          "tags": [
+            "场景",
+            "黑河",
+            "甘州",
+            "妖患"
+          ],
+          "status": "active",
+          "file": "世界书/场景/s-heihe.md"
+        },
+        {
+          "id": "s-yangnan-shanzei",
+          "title": "江南山水泽国（剑南/江东/江南西道水系场景群）",
+          "tags": [
+            "场景",
+            "羌江",
+            "钱塘江",
+            "太湖"
+          ],
+          "status": "active",
+          "file": "世界书/场景/s-yangnan-shanzei.md"
+        },
+        {
+          "id": "s-yumen-pass",
+          "title": "玉门关与关外",
+          "tags": [
+            "场景",
+            "玉门关",
+            "关外",
+            "妖府"
+          ],
+          "status": "active",
+          "file": "世界书/场景/s-yumen-pass.md"
+        },
+        {
+          "id": "w-liangzhou-dusi",
+          "title": "凉州都司与长街",
+          "tags": [
+            "场景",
+            "凉州",
+            "都司"
+          ],
+          "status": "active",
+          "file": "世界书/场景/w-liangzhou-dusi.md"
+        },
+        {
+          "id": "w-qituo-shan",
+          "title": "栖陀山·山庄布局",
+          "tags": [
+            "场景",
+            "栖陀山",
+            "决战地"
+          ],
+          "status": "active",
+          "file": "世界书/场景/w-qituo-shan.md"
+        }
+      ]
+    },
+    {
+      "id": "道具",
+      "title": "道具",
+      "format": "list",
+      "file": "世界书/道具/",
+      "entries": [
+        {
+          "id": "p-baoju-500",
+          "title": "宝具法宝名录（1-500章）",
+          "tags": [
+            "道具",
+            "宝具",
+            "法宝",
+            "名录"
+          ],
+          "status": "active",
+          "file": "世界书/道具/p-baoju-500.md"
+        },
+        {
+          "id": "p-gongfa-500",
+          "title": "功法体系总账（1-500章）",
+          "tags": [
+            "道具",
+            "功法",
+            "武学",
+            "总账"
+          ],
+          "status": "active",
+          "file": "世界书/道具/p-gongfa-500.md"
+        },
+        {
+          "id": "p-xinwu-fuqi",
+          "title": "信物与伏笔道具账",
+          "tags": [
+            "道具",
+            "信物",
+            "伏笔"
+          ],
+          "status": "active",
+          "file": "世界书/道具/p-xinwu-fuqi.md"
+        },
+        {
+          "id": "w-hanyue-dao",
+          "title": "寒月刀",
+          "tags": [
+            "道具",
+            "寒月刀",
+            "连续性"
+          ],
+          "status": "active",
+          "file": "世界书/道具/w-hanyue-dao.md"
+        },
+        {
+          "id": "w-jinhong-lingyu",
+          "title": "金红翎羽（伏笔信物）",
+          "tags": [
+            "道具",
+            "伏笔",
+            "翎羽"
+          ],
+          "status": "active",
+          "file": "世界书/道具/w-jinhong-lingyu.md"
+        }
+      ]
+    },
+    {
+      "id": "分集账",
+      "title": "分集账",
+      "format": "list",
+      "file": "世界书/分集账/",
+      "entries": [
+        {
+          "id": "ji-zhang",
+          "title": "集账",
+          "tags": [
+            "handoff"
+          ],
+          "status": "active",
+          "file": "世界书/分集账/集账.md"
+        }
+      ]
+    },
+    {
+      "id": "伏笔",
+      "title": "伏笔台账",
+      "format": "text",
+      "file": "世界书/伏笔/台账.md",
+      "entries": []
+    },
+    {
+      "id": "底牌",
+      "title": "暗线底牌（作者专用·永不入正文）",
+      "format": "text",
+      "file": "世界书/底牌/暗线底牌.md",
+      "entries": []
+    }
+  ]
+}

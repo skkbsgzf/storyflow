@@ -1,0 +1,40 @@
+{
+  "format": "flow-overlay@1",
+  "flowId": "drama-flow",
+  "origin": "user",
+  "reason": "用户指令：全本1-500章世界书增量补录",
+  "patches": [
+    {
+      "kind": "set-tool",
+      "kit": "plot",
+      "op": "script-forge",
+      "reason": "原文照搬版：用户指令取消篇幅压缩与3集限制，223-231逐章全量改编",
+      "config": {
+        "maxChars": 999999
+      }
+    },
+    {
+      "kind": "set-tool",
+      "kit": "plot",
+      "op": "world-forge",
+      "reason": "用户指令：worldbook 增量补录全本 1-500 章实体词条，预算 20 不足以容纳新增词条（预计累计 60+）",
+      "config": {
+        "wikiEntries": 60
+      }
+    }
+  ],
+  "history": [
+    {
+      "at": "2026-09-20T13:53:04.064Z",
+      "actor": "user",
+      "flowHashBefore": "2872cd2f",
+      "note": "原文照搬版：取消3集与篇幅限制（用户直接指令）"
+    },
+    {
+      "at": "2026-09-20T15:04:27.095Z",
+      "actor": "user",
+      "flowHashBefore": "fe4d64d5",
+      "note": "用户指令：全本1-500章世界书增量补录"
+    }
+  ]
+}

@@ -1,0 +1,485 @@
+{
+  "artifacts": [
+    {
+      "path": "01-选题/选题报告.md",
+      "node": "m1.topic-report",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {},
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2300 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "AE-REPORT-DENSITY",
+          "status": "pass",
+          "detail": "梗/话题行 8、对标 3、热度数据 11 处"
+        }
+      ],
+      "sha1": "8a5ea208cbd2",
+      "ts": "2026-09-20T11:55:14.349Z"
+    },
+    {
+      "path": "01-选题/find-trope.md",
+      "node": "m1.find-trope",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "01-选题/选题报告.md": "8a5ea208cbd2"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1393 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "3515deb36c0e",
+      "ts": "2026-09-20T11:56:44.069Z"
+    },
+    {
+      "path": "01-选题/material-dissect.md",
+      "node": "m1.material-dissect",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "01-选题/find-trope.md": "3515deb36c0e"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2265 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "1f38736799ee",
+      "ts": "2026-09-20T11:59:11.942Z"
+    },
+    {
+      "path": "01-选题/deconstruct-book.md",
+      "node": "m1.deconstruct-book",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "01-选题/material-dissect.md": "1f38736799ee"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2073 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "cfc93c58d885",
+      "ts": "2026-09-20T12:01:22.907Z"
+    },
+    {
+      "path": "01-选题/topic-zeitgeist.md",
+      "node": "m1.topic-zeitgeist",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "01-选题/deconstruct-book.md": "cfc93c58d885"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1285 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "7b9ae121d300",
+      "ts": "2026-09-20T12:03:25.176Z"
+    },
+    {
+      "path": "01-选题/internet-feel.md",
+      "node": "m1.internet-feel",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "01-选题/topic-zeitgeist.md": "7b9ae121d300"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1124 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "44e8d4654f70",
+      "ts": "2026-09-20T12:04:13.799Z"
+    },
+    {
+      "path": "02-编剧/world-forge.md",
+      "node": "m2.world-forge",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "01-选题/internet-feel.md": "44e8d4654f70"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1713 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "3e118a492b07",
+      "ts": "2026-09-20T12:13:32.067Z"
+    },
+    {
+      "path": "02-编剧/structure-design.md",
+      "node": "m2.structure-design",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "02-编剧/world-forge.md": "3e118a492b07"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1568 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "4f8ede24b192",
+      "ts": "2026-09-20T12:14:53.178Z"
+    },
+    {
+      "path": "02-编剧/plot-choreographer.md",
+      "node": "m2.plot-choreographer",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "02-编剧/structure-design.md": "4f8ede24b192"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1985 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "AE-CURVE-STALL",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-CURVE-TYPE",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-CUSHION",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-DESERT",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-END-MECH",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-REV-MIDPOINT",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-REV-SETUP",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "4d71b626b3c1",
+      "ts": "2026-09-20T12:25:09.257Z"
+    },
+    {
+      "path": "02-编剧/subplot-weave.md",
+      "node": "m2.subplot-weave",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "02-编剧/plot-choreographer.md": "4d71b626b3c1"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1435 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "fc6e464f1ad2",
+      "ts": "2026-09-20T12:26:22.341Z"
+    },
+    {
+      "path": "02-编剧/foreshadow-plant.md",
+      "node": "m2.foreshadow-plant",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "02-编剧/subplot-weave.md": "fc6e464f1ad2"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1653 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "AE-CONT-FORESHADOW",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "683a6035c2cc",
+      "ts": "2026-09-20T12:27:14.005Z"
+    },
+    {
+      "path": "02-编剧/scene-breakdown.md",
+      "node": "m2.scene-breakdown",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "02-编剧/foreshadow-plant.md": "683a6035c2cc",
+        "02-编剧/plot-choreographer.md": "4d71b626b3c1"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2273 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "9df4f60d9efc",
+      "ts": "2026-09-20T12:28:36.581Z"
+    },
+    {
+      "path": "02-编剧/script-drama-beat.md",
+      "node": "m2.script-drama-beat",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "02-编剧/scene-breakdown.md": "9df4f60d9efc"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "2517 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "AE-BEAT-FORMAT",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-CARD-END",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-CONT-FORESHADOW",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-CONT-ITEM",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-CONT-KNOW",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-DENSITY-CALM",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-DENSITY-HOT",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-HOOK-EVENT",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        },
+        {
+          "name": "AE-VIS-EMPTY",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过；引擎判定：非拍级产物，美学断言不适用（转红方视角层）"
+        }
+      ],
+      "sha1": "70ae30ec025b",
+      "ts": "2026-09-20T12:30:02.165Z"
+    },
+    {
+      "path": "02-编剧/plot-redline.md",
+      "node": "m2.plot-redline",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "02-编剧/script-drama-beat.md": "70ae30ec025b"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "1195 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        }
+      ],
+      "sha1": "d76c28295dfe",
+      "ts": "2026-09-20T12:31:00.431Z"
+    },
+    {
+      "path": "02-编剧/剧本.md",
+      "node": "m2.script-forge",
+      "round": 1,
+      "producer": "host-submit",
+      "inputs": {
+        "02-编剧/plot-redline.md": "d76c28295dfe",
+        "02-编剧/scene-breakdown.md": "9df4f60d9efc"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "3428 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "AE-SCRIPT-FIELDS",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+        }
+      ],
+      "sha1": "edb2c3d902ed",
+      "ts": "2026-09-20T12:32:58.930Z"
+    },
+    {
+      "path": "02-编剧/剧本.md",
+      "node": "m2.script-forge",
+      "round": 3,
+      "producer": "host-submit",
+      "inputs": {
+        "02-编剧/plot-redline.md": "d76c28295dfe",
+        "02-编剧/scene-breakdown.md": "9df4f60d9efc"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "3144 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "AE-SCRIPT-FIELDS",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+        }
+      ],
+      "sha1": "6490f3396fb5",
+      "ts": "2026-09-20T12:35:58.987Z"
+    },
+    {
+      "path": "02-编剧/剧本.md",
+      "node": "m2.script-forge",
+      "round": 5,
+      "producer": "host-submit",
+      "inputs": {
+        "02-编剧/plot-redline.md": "d76c28295dfe",
+        "02-编剧/scene-breakdown.md": "9df4f60d9efc"
+      },
+      "validations": [
+        {
+          "name": "exists",
+          "status": "pass",
+          "detail": "15758 chars"
+        },
+        {
+          "name": "no-debris",
+          "status": "pass"
+        },
+        {
+          "name": "AE-SCRIPT-FIELDS",
+          "status": "warn",
+          "detail": "无机器校验器（语义层断言，归评审/红方剖面）——未执行，不计入通过"
+        }
+      ],
+      "sha1": "fbed9cc9f5b7",
+      "ts": "2026-09-20T14:02:10.893Z"
+    }
+  ]
+}
