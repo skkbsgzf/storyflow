@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miniflow.dev/contracts/decision.schema.json",
+  "title": "decision@1 · 决策事实（选择面，规范 R8）",
+  "description": "落 projects/<id>/decisions/<key>.json。决策是运行中产生的事实（与 flow.inputs 的开跑前输入分家，铁律 6：不许写回 inputs）。by 与 evidence 必填——没有来源的决策 = 猜，进 issues 不进 values。picked/excluded_tags 里的标签必须能在 catalog[kind] 的 tags 并集里找到，否则显式回显（不静默）。",
+  "type": "object",
+  "required": ["format", "key", "by", "at", "picked", "evidence"],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "const": "decision@1" },
+    "key": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "决策键（genre / style / structure / route …），与 catalog.kind 对应；文件名 = <key>.json"
+    },
+    "by": {
+      "type": "string",
+      "minLength": 1,
+      "description": "谁做的决策：产出该判断的节点 id（如 m1.topic-report）或 user"
+    },
+    "at": { "type": "string", "description": "决策时刻（ISO 8601）" },
+    "picked": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" },
+      "description": "选中的标签/条目（与 catalog.tags 求交的依据）"
+    },
+    "excluded_tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "反向声明：明确排除的标签（可选，不参与 picked 求交时作 notTags 用）"
+    },
+    "evidence": {
+      "type": "string",
+      "minLength": 1,
+      "description": "依据哪份产物（如 选题定位.md#§2 类型判定）。必填：无证据不立案"
+    },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+  }
+}

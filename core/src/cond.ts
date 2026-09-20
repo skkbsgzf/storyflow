@@ -180,7 +180,15 @@ export function resolveInputs(
       if (def.required) throw new Error(`缺少必填输入: ${key}（${def.desc ?? ""}）`);
       v = def.default;
     }
-    if (v === undefined) continue;
+    if (v === undefined) {
+      // R8 铁律 1：enum = 选择。选择既无取值又无 default 时绝不静默未绑定——
+      // 未绑定的 inputs 会让 when:{input,eq} 条件边悄悄判死（route=dual 事故形态）。开跑即失败。
+      if (def.type === "enum")
+        throw new Error(
+          `选择未决: 输入 ${key}（enum）无取值——开跑前须显式选（CLI --inputs / 项目配置.json / 初始化面板），或走决策（decisions/）`,
+        );
+      continue;
+    }
     switch (def.type) {
       case "number": {
         const n = Number(v);

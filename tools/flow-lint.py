@@ -24,6 +24,7 @@
   E-VARY      vary 结构非法；内嵌 caps/insert 同款规则
   E-OUTPUTS   outputs 元素缺 module/title；module 未引用本 flow 的实例 id
   W-REG       模块库缺失/为空——引用与能力检查退化（显式提示，不静默）
+  W-ENUM-DEFAULT  inputs[type=enum] 带 default——「选择」被当成「值」管（R8 §零；存量清零后升 error）
   W-INSERT-REDUNDANT  insert 的 tool 已在骨架或会被 caps 自动触发——冗余声明，应删
   W-MANUAL-NONE     全 flow 无 manual 连接件（全自动流水线——确认是有意为之）
 
@@ -154,6 +155,15 @@ def lint_flow(path: Path, lib_available, lib_ids):
     unknown_top = set(d.keys()) - TOP_FIELDS
     if unknown_top:
         E("E-FIELD", f"顶层字段不在 flow@3 白名单：{sorted(unknown_top)}{migrate_hint(path)}")
+
+    # R8 判据：取值空间有限枚举且互斥 = 「选择」，不许有 default（有值即须有决策事实）。
+    # S1 阶段只点名不阻断；存量清零后（S4）升 E-ENUM-DEFAULT。
+    ins = d.get("inputs", {}) or {}
+    if isinstance(ins, dict):
+        for k, spec in ins.items():
+            if isinstance(spec, dict) and spec.get("type") == "enum" and "default" in spec:
+                W("W-ENUM-DEFAULT", f"inputs.{k}（enum=选择）带 default={spec['default']!r}——"
+                                    f"选择应走 decisions/，不藏在默认值里（R8 §零 判据）")
 
     defaults = d.get("defaults", {}) or {}
     if not isinstance(defaults, dict) or set(defaults.keys()) - {"link"}:

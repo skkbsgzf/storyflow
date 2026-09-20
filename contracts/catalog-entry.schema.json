@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miniflow.dev/contracts/catalog-entry.schema.json",
+  "title": "catalog-entry@1 · 候选库条目（供给面，规范 R8）",
+  "description": "候选库说「有哪些」，决策说「选哪个」。条目**没有 default 字段**（additionalProperties:false 从契约层面禁止）——候选不参与默认值语义，未被任何决策命中 = 不装载 + 显式回显（铁律 2）。两个根：出厂条目在 repoRoot（kits/ knowledge/ skills/ flows/ demos/），用户补充在 <dataRoot>/catalog/<kind>/，两层 merge、不得合成一处（铁律 5）。",
+  "type": "object",
+  "required": ["format", "id", "kind", "tags", "desc"],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "const": "catalog-entry@1" },
+    "id": {
+      "type": "string",
+      "description": "全局唯一，惯例 <kind>/<slug>（如 style/zhang_ailing）"
+    },
+    "kind": {
+      "type": "string",
+      "description": "池名：style / structure / trope / route / skill / …（与 decision.key 的过滤关系由装载声明的 pool 决定）"
+    },
+    "tags": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" },
+      "description": "过滤轴（唯一）。与 decision.picked / excluded_tags 求交"
+    },
+    "applies_when": {
+      "type": "string",
+      "description": "人读的适用条件，不参与求值（求值只走 tags）"
+    },
+    "desc": { "type": "string", "minLength": 1 },
+    "file": {
+      "type": "string",
+      "description": "内容落点（相对仓库根或数据根的路径 / references 目录）；缺省 = 条目自身即全部信息"
+    },
+    "source": {
+      "enum": ["factory", "user"],
+      "description": "哪一层写的：repoRoot / dataRoot（merge 时用于冲突回显，不静默覆盖）"
+    }
+  }
+}
