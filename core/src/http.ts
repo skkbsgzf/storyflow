@@ -9,6 +9,7 @@ import { Kernel, KernelError } from "./kernel.js";
 import { recordDiag } from "./diag.js";
 import { registerCompat } from "./compat.js";
 import { contentTypeOf, resolveStaticPath } from "./static.js";
+import { VERB_BY_NAME, VERB_NAMES } from "./verbs.js";
 
 export function buildHttpApp(kernel: Kernel) {
   const app = fastify({ logger: false });
@@ -147,24 +148,20 @@ export function buildHttpApp(kernel: Kernel) {
     }
   });
 
-  // 动词直通（POST /api/verbs/<verb>，供 Web 前端不经 CLI 推进 run；M2 起按需细化为细粒度端点）
+  // 动词直通（POST /api/verbs/<verb>）：**按 verbs.ts 的动词表分派**（R8-OPS 步骤 3）。
+  // 此前这里只有 4 个 case（run/next/resume/submit）并让 gate/rerun「走专用端点」——
+  // 那是动词表的第 4 份副本，`flow_init`/`effect`/`mine`/`skill_patch`/`optimize`/`overlay`
+  // 在 HTTP 面上完全不可达。现在表即面：表里有几个动词，这里就能收几个。
+  // 专用端点（/gate、/rerun、/config）保留为便利面，与表分派**同源同语义**。
   app.post("/api/verbs/:verb", async (req, reply) => {
     const { verb } = req.params as { verb: string };
-    const body = (req.body ?? {}) as Record<string, unknown>;
+    const def = VERB_BY_NAME[verb];
+    if (!def) {
+      reply.code(404);
+      return { error: "UNKNOWN_VERB", detail: `可用动词：${VERB_NAMES.join(", ")}` };
+    }
     try {
-      switch (verb) {
-        case "flow_run":
-          return await kernel.flow_run(String(body.flow), String(body.project), (body.inputs as Record<string, unknown>) ?? {});
-        case "flow_next":
-          return await kernel.flow_next(String(body.project));
-        case "flow_resume":
-          return await kernel.flow_resume(String(body.project));
-        case "flow_submit":
-          return await kernel.flow_submit(String(body.project), String(body.node), (body.output as object) ?? {});
-        default:
-          reply.code(404);
-          return { error: "UNKNOWN_VERB", detail: "gate/rerun 走专用端点；flow_import 属 M4" };
-      }
+      return await def.run(kernel, (req.body ?? {}) as Record<string, unknown>);
     } catch (e) {
       return httpError(reply, e);
     }

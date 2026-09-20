@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-// miniflow CLI —— 七动词 + serve/mcp（与 MCP/HTTP 共享同一内核）
+// miniflow CLI —— 内核动词由 `verbs.ts` 唯一声明；本文件只管「参数解析 + 进程面（up/serve/mcp）」。
+// R8-OPS 步骤 3：此前本文件持有一份 13 动词的 switch（动词表的第 1 份副本）。现在**零动词清单**。
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { Kernel, KernelError } from "./kernel.js";
 import { ROOT } from "./schema.js";
-import { skillPatch } from "./skills.js";
-import { deriveProjectName } from "./kernel.js";
+import { VERB_BY_NAME, flagsToArgs, usageFromVerbs } from "./verbs.js";
 
 type Args = Record<string, string | boolean>;
 
@@ -32,32 +32,14 @@ function usage(): string {
   return [
     "miniflow <verb> [options]",
     "",
-    "动词（七动词）:",
-    "  flow_list                                          列出 flows",
-    "  flow_run    --flow <id> --project <id> [--k=v ...] [--config <path>]  开跑（自动装载 项目配置.json，自动迁移 run-state.json）",
-    "  flow_init   --project <id>                          生成项目初始化配置模板（项目配置.json）",
-    "  flow_next   --project <id> [--spawn-prompt]         推进到下一停靠点（--spawn-prompt 附带派发头）",
-    "  flow_submit --project <id> --node <id> [--file <rel>|--content-file <path>] [--seal]",
-    "              （iterate 节点：逐实例提交保持 awaiting，--seal 收口置 done）",
-    "  flow_resume --project <id>                          崩溃/失败恢复",
-    "  flow_gate   --project <id> --node <id> --verdict <pass|pass-with-conditions|send-back|reject>",
-    "              [--comment <s>] [--root-cause-stage <id>] [--round <n>] [--token <t>]",
-    "  flow_rerun  --project <id> --node <id> [--dry-run]",
+    usageFromVerbs(),
+    "进程面（非内核动词）:",
+    "  up            [--port <number>] [--open]        首次启动：内核 API + legacy 页面端点 + 静态页 **同进程单端口**",
+    "                                                  （端口占用自动顺延；--open 顺带打开浏览器）",
+    "  serve         [--port <number>]                 HTTP 面（REST + OpenAPI；与 up 同实现，保留兼容）",
+    "  mcp                                             MCP 面（stdio；tools 由动词表派生）",
     "",
-    "动词（R5 生成式编排）:",
-    "  flow_effect   --project <id>                        生效编排 + 指标汇总（tool 效率/上下文命中率）",
-    "  flow_optimize --project <id> [--apply] [--actor s]  由指标产出编排调优提案；--apply 落 overlay（低风险自动，其余待批）",
-    "  flow_mine     --project <id>                      组装编排挖掘包（journal/指标/中间文件），交编排挖掘师产出 findings@1 → flow_optimize 自动并入",
-    "  skill_patch   --target <skill> --text <s> --reason <s> [--section <s>] [--op append|replace] [--origin user|miner|agent]",
-    "                    提示词补丁（W-05）：默认 proposed 不生效；--approve <id> 批准装载 / --reject <id> 驳回 / --list [--target <skill>]",
-    "  flow_overlay  --project <id> [--patches <file.json>] [--approve <id,...>] [--reason s] [--replan]",
-    "                                                      改写运行时编排（tool 的位置与内容配置）；--replan 立即重编译计划",
-    "",
-    "脸:",
-    "  up   [--port 8421] [--open]                        首次启动：内核 API + legacy 页面端点 + 静态页 **同进程单端口**",
-    "                                                     （端口占用自动顺延；--open 顺带打开浏览器）",
-    "  serve --port 8421                                   HTTP 面（REST + OpenAPI；与 up 同实现，保留兼容）",
-    "  mcp                                                 MCP 面（stdio）",
+    "动词表唯一源：core/src/verbs.ts —— CLI / HTTP(POST /api/verbs/<verb>) / MCP 三面均由其派生。",
   ].join("\n");
 }
 
@@ -72,138 +54,21 @@ async function main(): Promise<number> {
   const kernel = flags.root
     ? new Kernel({ root: String(flags.root), repoRoot: String(flags.root) })
     : new Kernel();
-  const projectId = String(flags.project ?? "");
-  const out = (v: unknown) => {
+  const out = (v: unknown): number => {
     console.log(JSON.stringify(v, null, 2));
     return 0;
   };
 
   try {
+    // ① 内核动词：一律查 `verbs.ts` 的表（含入参归一化；特殊旗标面由 def.fromFlags 提供）
+    const def = VERB_BY_NAME[verb];
+    if (def) {
+      const args = def.fromFlags ? def.fromFlags(kernel, flags) : flagsToArgs(def, flags);
+      return out(await def.run(kernel, args));
+    }
+
+    // ② 进程面：需要常驻进程，天然不属于「内核动词表」
     switch (verb) {
-      case "flow_list":
-        return out(kernel.flow_list());
-      case "flow_run": {
-        const inputs: Record<string, unknown> = {};
-        for (const [k, v] of Object.entries(flags)) {
-          if (!["flow", "project", "config"].includes(k) && typeof v === "string") inputs[k] = v;
-        }
-        // W-项目管理：--project 缺省 → 按灵感提炼自动命名（重名加 -2/-3 序号），不再产出代号
-        let projectName = flags.project ? String(flags.project) : "";
-        if (!projectName) {
-          projectName = deriveProjectName(inputs) || `project-${new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "")}`;
-          let n = 2;
-          const taken = (id: string) => fs.existsSync(path.join(ROOT, "projects", id));
-          while (taken(projectName)) projectName = `${deriveProjectName(inputs) || projectName}-${n++}`;
-          console.error(`[flow_run] 未指定 --project，按灵感自动命名: ${projectName}`);
-        }
-        const projectDir = kernel.projectDir(projectName);
-        if (flags.config) {
-          // 显式指定的初始化配置 → 落位为 项目配置.json（内核 flow_run 自动装载）
-          fs.mkdirSync(projectDir, { recursive: true });
-          fs.copyFileSync(String(flags.config), path.join(projectDir, "项目配置.json"));
-        }
-        return out(await kernel.flow_run(String(flags.flow), projectName, inputs));
-      }
-      case "flow_init": {
-        // 初始化配置模板：用户填 题材/需求/灵感/严肃性/风格/AB测试/市场预估 后再 flow_run
-        const projectDir = kernel.projectDir(String(flags.project));
-        fs.mkdirSync(projectDir, { recursive: true });
-        const file = path.join(projectDir, "项目配置.json");
-        if (fs.existsSync(file)) return out({ exists: true, file });
-        const template = {
-          项目: String(flags.project),
-          题材: "",
-          需求: "",
-          灵感: "",
-          严肃性: "标准",
-          风格: "爽",
-          AB测试: false,
-          市场预估: "",
-          presets: {},
-        };
-        fs.writeFileSync(file, JSON.stringify(template, null, 2) + "\n", "utf-8");
-        return out({ created: file, hint: "填写后 flow_run 自动装载；显式入参 > 配置 > flow 默认" });
-      }
-      case "flow_next":
-        return out(
-          await kernel.flow_next(projectId, {
-            spawnPrompt: flags["spawn-prompt"] === true || flags["spawn-prompt"] === "true",
-          }),
-        );
-      case "flow_submit": {
-        let content: string | undefined;
-        if (flags["content-file"]) content = fs.readFileSync(String(flags["content-file"]), "utf-8");
-        return out(
-          await kernel.flow_submit(projectId, String(flags.node), {
-            content,
-            file: flags.file ? String(flags.file) : undefined,
-            seal: flags.seal === true,
-          }),
-        );
-      }
-      case "flow_resume":
-        return out(await kernel.flow_resume(projectId));
-      case "flow_gate":
-        return out(
-          await kernel.flow_gate(projectId, {
-            nodeId: String(flags.node),
-            verdict: String(flags.verdict) as "pass" | "pass-with-conditions" | "send-back" | "reject",
-            comment: flags.comment ? String(flags.comment) : undefined,
-            rootCauseStage: flags["root-cause-stage"] ? String(flags["root-cause-stage"]) : undefined,
-            round: flags.round !== undefined ? Number(flags.round) : undefined,
-            token: flags.token ? String(flags.token) : undefined,
-          }),
-        );
-      case "flow_rerun":
-        return out(
-          await kernel.flow_rerun(projectId, {
-            nodeId: String(flags.node),
-            dryRun: flags["dry-run"] === true || flags["dry-run"] === "true",
-          }),
-        );
-      case "flow_effect":
-        return out(kernel.viewEffect(projectId));
-      case "flow_mine":
-        return out(kernel.flowMine(projectId));
-      case "skill_patch":
-        return out(
-          skillPatch(ROOT, (() => {
-            if (flags.approve) return { action: "approve", id: String(flags.approve) };
-            if (flags.reject) return { action: "reject", id: String(flags.reject) };
-            if (flags.list) return { action: "list", target: flags.target ? String(flags.target) : undefined };
-            return {
-              action: "add",
-              target: String(flags.target),
-              text: String(flags.text),
-              reason: String(flags.reason),
-              section: flags.section ? String(flags.section) : undefined,
-              op: flags.op ? (String(flags.op) as "append" | "replace") : undefined,
-              origin: flags.origin ? (String(flags.origin) as "user" | "miner" | "agent") : undefined,
-            };
-          })()),
-        );
-      case "flow_optimize":
-        return out(
-          kernel.flowOptimize(projectId, {
-            apply: flags.apply === true || flags.apply === "true",
-            actor: flags.actor ? String(flags.actor) : undefined,
-          }),
-        );
-      case "flow_overlay": {
-        const patches = flags.patches
-          ? (JSON.parse(fs.readFileSync(String(flags.patches), "utf-8")).patches ??
-             JSON.parse(fs.readFileSync(String(flags.patches), "utf-8")))
-          : undefined;
-        return out(
-          await kernel.flowOverlay(projectId, {
-            patches,
-            approve: flags.approve ? String(flags.approve).split(",").map((s) => s.trim()).filter(Boolean) : undefined,
-            actor: flags.actor ? String(flags.actor) : undefined,
-            reason: flags.reason ? String(flags.reason) : undefined,
-            replan: flags.replan === true || flags.replan === "true",
-          }),
-        );
-      }
       case "up": {
         // 首次启动：一个进程同时提供 内核 API + legacy 页面端点 + 静态页面（R8-OPS server 合一）。
         // 端口被占用是"首次启动"最常见的卡点，且与用户无关 ⇒ 自动顺延，不让人去查端口。

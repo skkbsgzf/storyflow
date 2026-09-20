@@ -1,89 +1,70 @@
-// miniflow MCP 面：七动词暴露为 tools（stdio transport）。交付不自动注册进宿主。
+// miniflow MCP 面：**动词表派生**的 tools（stdio transport）。交付不自动注册进宿主。
+//
+// R8-OPS 步骤 3：此前这里是 7 个手写 `registerTool`（list/run/next/submit/resume/gate/rerun），
+// 与 CLI 的 13 个动词不同步 ⇒ `flow_init`（初始化面板的落点）/`flow_effect`/`flow_mine`/
+// `skill_patch`/`flow_optimize`/`flow_overlay` 在 MCP 面上**根本不存在**。
+// 现在改为逐条遍历 `VERBS` —— 新增动词只改 `verbs.ts` 一处，MCP 自动跟上。
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { Kernel } from "./kernel.js";
+import { VERBS, type VerbParam } from "./verbs.js";
 
 const json = (v: unknown) => ({ content: [{ type: "text" as const, text: JSON.stringify(v, null, 2) }] });
 
-export async function startMcp(kernel: Kernel): Promise<void> {
+/** 把动词表的一项参数描述折成 zod（MCP inputSchema 需要 zod 形状）。 */
+export function zodOf(p: VerbParam): z.ZodTypeAny {
+  let base: z.ZodTypeAny;
+  switch (p.type) {
+    case "number":
+      base = z.number();
+      break;
+    case "boolean":
+      base = z.boolean();
+      break;
+    case "record":
+      base = z.record(z.string(), z.unknown());
+      break;
+    case "string[]":
+      base = z.array(z.string());
+      break;
+    default:
+      base = p.enum ? z.enum(p.enum as [string, ...string[]]) : z.string();
+  }
+  return p.required ? base : base.optional().describe(p.desc);
+}
+
+/** 动词表 → MCP tool 形状（导出以便单测断言「MCP 面 = 表」）。 */
+export function verbToolSpecs(): { name: string; description: string; inputSchema: Record<string, z.ZodTypeAny> }[] {
+  return VERBS.map((def) => {
+    const inputSchema: Record<string, z.ZodTypeAny> = {};
+    for (const p of def.params) inputSchema[p.name] = zodOf(p);
+    // required 的参数把 desc 挂在 description 上（zod 的 .describe 对 optional 已用，这里对必填补一次）
+    for (const p of def.params) if (p.required) inputSchema[p.name] = inputSchema[p.name].describe(p.desc);
+    return { name: def.name, description: def.description, inputSchema };
+  });
+}
+
+/** 构建 MCP server（不连接 transport）—— 单独导出以便测试用 in-memory transport 真握手。 */
+export function buildMcpServer(kernel: Kernel): McpServer {
   const server = new McpServer({ name: "miniflow", version: "0.1.0" });
 
-  server.registerTool("flow_list", { description: "列出全部 flow（flow@1 描述符）" }, async () =>
-    json(kernel.flow_list()),
-  );
+  const specs = verbToolSpecs();
+  VERBS.forEach((def, i) => {
+    server.registerTool(
+      def.name,
+      { description: def.description, inputSchema: specs[i].inputSchema as z.ZodRawShape },
+      (async (args: Record<string, unknown>) => json(await def.run(kernel, args ?? {}))) as never,
+    );
+  });
 
-  server.registerTool(
-    "flow_run",
-    {
-      description: "为项目开跑一条 flow（现网 run-state.json 自动迁移）",
-      inputSchema: { flow: z.string(), project: z.string(), inputs: z.record(z.string(), z.unknown()).optional() },
-    },
-    async ({ flow, project, inputs }) => json(await kernel.flow_run(flow, project, inputs ?? {})),
-  );
+  return server;
+}
 
-  server.registerTool(
-    "flow_next",
-    {
-      description:
-        "推进到下一停靠点：awaiting_input（宿主领任务包）/ suspended（门挂起）/ blocked / completed。spawn_prompt=true 时附带渲染好的规范派发头（含项目背景卡，可直接作为 subagent 的 prompt）",
-      inputSchema: { project: z.string(), spawn_prompt: z.boolean().optional() },
-    },
-    async ({ project, spawn_prompt }) => json(await kernel.flow_next(project, { spawnPrompt: spawn_prompt })),
-  );
-
-  server.registerTool(
-    "flow_submit",
-    {
-      description: "提交认知步产物（完整性断言不过 = rejected 打回；iterate 节点逐实例提交，seal 收口置 done）",
-      inputSchema: {
-        project: z.string(),
-        node: z.string(),
-        content: z.string().optional(),
-        file: z.string().optional(),
-        notes: z.string().optional(),
-        seal: z.boolean().optional(),
-      },
-    },
-    async ({ project, node, content, file, notes, seal }) =>
-      json(await kernel.flow_submit(project, node, { content, file, notes, seal })),
-  );
-
-  server.registerTool(
-    "flow_resume",
-    { description: "崩溃/失败后恢复（恢复不读图，沿用快照内计划）", inputSchema: { project: z.string() } },
-    async ({ project }) => json(await kernel.flow_resume(project)),
-  );
-
-  server.registerTool(
-    "flow_gate",
-    {
-      description: "提交人工裁决（pass/pass-with-conditions/send-back/reject；send-back 级联失效）",
-      inputSchema: {
-        project: z.string(),
-        nodeId: z.string(),
-        verdict: z.enum(["pass", "pass-with-conditions", "send-back", "reject"]),
-        comment: z.string().optional(),
-        rootCauseStage: z.string().optional(),
-        round: z.number().optional(),
-        token: z.string().optional(),
-      },
-    },
-    async ({ project, nodeId, verdict, comment, rootCauseStage, round, token }) =>
-      json(await kernel.flow_gate(project, { nodeId, verdict, comment, rootCauseStage, round, token })),
-  );
-
-  server.registerTool(
-    "flow_rerun",
-    {
-      description: "重跑范围推演/执行",
-      inputSchema: { project: z.string(), nodeId: z.string(), dryRun: z.boolean().optional() },
-    },
-    async ({ project, nodeId, dryRun }) => json(await kernel.flow_rerun(project, { nodeId, dryRun })),
-  );
-
+export async function startMcp(kernel: Kernel): Promise<void> {
+  const server = buildMcpServer(kernel);
   await server.connect(new StdioServerTransport());
-  console.error("miniflow MCP server ready (stdio)");
+  console.error(`miniflow MCP server ready (stdio) · ${VERBS.length} verbs: ${VERBS.map((v) => v.name).join(", ")}`);
 }
 
 // 直接运行：tsx src/mcp.ts

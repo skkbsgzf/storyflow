@@ -481,6 +481,7 @@ du -sh projects src/kakaxing-Json/data
 | **R8-OPS 第 0 批 · 失败外显（诊断通道）** | ✅ 已落地 | 新增 `contracts/diagnostics.schema.json` + `core/src/diag.ts`（`recordDiag`/`readDiags`/`summarizeDiags`，**永不抛异常**）；改造 8 处「吞掉会改变结论」的 `catch`；`flow_effect` 与 `/api/diagnostics` 暴露汇总。见下「R8-OPS 第 0 批明细」 | 2026-09-20 |
 | **R8-OPS 第 0 批 · server 合一 + `miniflow up`** | ✅ 已落地 | 新增 `core/src/static.ts`（白名单静态面）+ `core/src/compat.ts`（serve.py 八个 legacy 端点并入内核面）；`cli.ts` 新增 `up`（端口占用自动顺延）。**同进程单端口同时提供 内核 API + legacy 端点 + 页面**。见下明细 | 2026-09-20 |
 | **R8-OPS 第 1 批 · 前端 live 化（快照 → 轮询）** | ✅ 已落地 | 新增 `kernel.viewLive()`（含 `fingerprint`/`revision`/`filesRevision`）+ `GET /api/projects/:id/live(?files=1)`；页面模板由「SSR 快照」改为**静态切片 SSR + 易变切片轮询**；**顺带修 flow@3 `workbench-payload` 500**（`flow.graph` 缺失，第 4 处 N 类 latent）。见下明细 | 2026-09-20 |
+| **R8-OPS 第 2 批 · 动词表唯一源** | ✅ 已落地 | 新建 `core/src/verbs.ts`（13 动词唯一台账）；MCP 由 7 个手写 tool → 遍历表注册；HTTP `/api/verbs/:verb` 由 4-case → 查表分派；CLI 删 13-case switch、`usage()` 由表生成。顺带修 `skill_patch` 写死 `ROOT` 的静默错位（改 `kernel.repoRoot`）；`contracts/http-openapi.json` 11→24 路径（补声明已有未声明端点）。见下明细 | 2026-09-20 |
 | OS-02 阶段 C（默认值回调）/ 阶段 D（死配置 `iterate`） | ⏳ 待开工 | 含 N2（`adapt:"off"` 未实现，需拍板）、N4（`set-link` 契约，需拍板）、§三勘误 2（`model_tier` 默认 `high`）、§二 C/D 两表 | — |
 | OS-00 数据剥离执行 / OS-04 / OS-05 / OS-06 / OS-07 | ⏳ 待开工 | 数据剥离需先拍板 附 D #2/#3/#5 | — |
 
@@ -741,3 +742,100 @@ du -sh projects src/kakaxing-Json/data
   与第 0 批 `core/projects/zzz-dummy-archive` 同理——**不替别的写入者提交其项目数据**。本批只提交「模板 + 内核代码」。
 - **SSE / WebSocket**：仍为轮询（用户拍板的「先轮询」）；订阅式留待需要时再上。
 - **`mcp.ts` 补动词**（下一步，步骤 3）与 **OS-04 初始化面板**（步骤 2）。
+
+---
+
+## R8-OPS · 第 2 批（执行顺序里的「步骤 3」）：动词表唯一源
+
+### 起因：动词表有四份副本
+
+R8-OPS 讨论记录里点名的病灶实体：**「flow 调用规范问题」的实体是动词表四份副本互不同步**。
+
+| 面 | 改造前 | 改造后 |
+|---|---|---|
+| CLI（`cli.ts`） | `switch` 里 **13 个 case** | **零动词清单**（查表分派） |
+| MCP（`mcp.ts`） | **7 个手写 `registerTool`** | 遍历表逐条注册 |
+| HTTP（`POST /api/verbs/:verb`） | `switch` 里 **4 个 case**，其余回「gate/rerun 走专用端点」 | 查表分派，**表里有几个就收几个** |
+| Skill 文档 | 纯文字描述（无清单，故未成第五副本） | 同上（不再需要） |
+
+**最刺眼的证据**：`flow_init` 是**初始化面板的落点**，改造前**CLI 有、MCP 无、HTTP 无**——
+即「最需要被前端的那个动词，恰好在所有非 CLI 面上不可达」。`flow_effect`/`flow_mine`/`skill_patch`/
+`flow_optimize`/`flow_overlay` 同样只存在于 CLI。
+与 **N6**（`MetricPhase` 含 `"link"` 而契约枚举没有 ⇒ 指标被 `catch{}` 静默吞掉）**同源**：
+同一事实写在多处，编译器与 lint 都看不见。
+
+### 做什么
+
+| 文件 | 改动 |
+|---|---|
+| `core/src/verbs.ts` | **新建**：唯一台账 `VERBS: VerbDef[]`（13 动词）。每条 = `{name, description, group, params[], run, fromFlags?}`。`params[]` 是跨面同名的归一化入参描述（`string`/`number`/`boolean`/`record`/`string[]` + `required`/`enum`/`desc`）。附 `resolveProjectName`（自动命名去重，抽自 CLI 内联逻辑 ⇒ **HTTP/MCP 也有**）、`flagsToArgs`（纯函数）、`usageFromVerbs`（usage 由表生成）。**不 import cli/http/mcp**（避免环） |
+| `core/src/mcp.ts` | 删掉 7 个手写 tool → 遍历 `VERBS` 注册；`zodOf(VerbParam)` 把参数描述折成 zod inputSchema。拆出 **`buildMcpServer(kernel)`**（不连 transport）以便测试真握手 |
+| `core/src/http.ts` | `/api/verbs/:verb` 的 4-case `switch` → **查表分派**；未知动词 404 `UNKNOWN_VERB` 且 detail **列出全部可用动词**（不静默）。专用端点（`/gate`、`/rerun`、`/config`）保留为便利面，与表分派同语义 |
+| `core/src/cli.ts` | 删掉 13-case `switch` 与内联 `flow_run` 命名逻辑 → **查表分派**（`def.fromFlags ? … : flagsToArgs`）；`usage()` 由 `usageFromVerbs()` 生成 ⇒ **用法不可能与实现漂移**。仅保留进程面 `up`/`serve`/`mcp` |
+| `core/test/r8-verbs.test.ts` | **新建 11 条**。关键：**不逐条枚举动词**（那又会变成第 5 份副本），而断言**关系**——① 表名字唯一且含那 6 个「只有 CLI 有」的动词；② `usage` 含每个动词名；③ MCP `verbToolSpecs` 名字集合 = 表；④ **HTTP 逐个动词注入请求，断言 body.error ≠ `UNKNOWN_VERB`**（业务错可以，不认识不行）；⑤ 未知动词 404 + detail 列全；⑥ `flow_init` 经 HTTP 真落 `项目配置.json`；⑦ **MCP 真握手**（SDK `InMemoryTransport` → `tools/list` = 表）；⑧ `flagsToArgs`/`fromFlags` 三种归一化 |
+
+### 顺带修掉的静默错位
+
+`skill_patch` 原先写死**编译期 `ROOT`** 作为 skills 根 ⇒ `miniflow --root <path>`（验证层 dist/release 重拍用）
+下补丁**仍写到真实仓库**。改成 `kernel.repoRoot`（缺省即 `ROOT`，`--root` 时跟随工作区）。
+
+### 契约补声明（本次一并收口）
+
+`contracts/http-openapi.json` **11 → 24 条路径**（v1.1.0 → **v1.2.0**）。此前下列端点**真实存在但契约里查不到**，
+正属本批要消灭的「声明面 ≠ 实际面」：
+
+| 补进契约 | 来源 |
+|---|---|
+| `POST /api/verbs/{verb}` | 本批（动词表分派） |
+| `GET /api/projects/{id}/live` | R8-OPS 第 1 批 |
+| `GET /api/diagnostics`、`GET /api/projects/{id}/diagnostics` | R8-OPS 第 0 批（0A） |
+| `GET /api/openapi.json` | 早已存在（自描述契约） |
+| `/_kit/save`、`/api/save`、`/_kit/history`、`/api/archive-project`、`/api/import-flow`、`/api/regen`、`/api/import-demo`、`/_kit/tunnel.json` | R8-OPS 第 0 批（0B，自 serve.py 并入）——**全部标 `deprecated: true`**，只记录事实、不邀请使用 |
+
+### 冒烟实测
+
+**CLI**（临时 `--root`，不写仓库）
+
+| 命令 | 结果 |
+|---|---|
+| `--help` | usage 由表生成：13 动词 + 两组标题 + 进程面，**无手抄清单** |
+| `flow_list --root <tmp>` | `[]` |
+| `flow_init --project t1 --root <tmp>` | 创建 `项目配置.json`；**再跑一次** → `{exists:true}`（幂等） |
+| `skill_patch --list --root <tmp>` | `[]`，且落在 **临时 root 的 skills/**（非真实仓库）⇒ 验证 `repoRoot` 修正 |
+| `nope` | `未知动词: nope` + usage，退出码 2 |
+
+**HTTP**（真进程 `miniflow up --port 8421` + curl）
+
+| 请求 | 结果 |
+|---|---|
+| `GET /api/openapi.json` | `version 1.2.0`，**24 paths** |
+| `POST /api/verbs/flow_init {project:…}` | **200**，真落 `<项目>/项目配置.json`（改造前此动词在 HTTP 面 = `UNKNOWN_VERB`） |
+| `POST /api/verbs/flow_effect {project:"p-wxl-001"}` | **200** |
+| `POST /api/verbs/nope` | **404** `{"error":"UNKNOWN_VERB","detail":"可用动词：flow_list, …, flow_overlay"}` |
+| `GET /`, `GET /projects/p-wxl-001/workflow.html`, `GET /api/projects/p-wxl-001/live` | **200 / 200 / 200** |
+
+**MCP**：`r8-verbs.test.ts` 用 SDK `InMemoryTransport` 真握手 → `tools/list` 返回的正是表里的 13 个动词，
+且真调 `flow_list` 返回 `[]`（与 CLI 同一执行路径）。
+
+### 第 2 批门禁实测（2026-09-20）
+
+| 门 | 结果 |
+|---|---|
+| `cd core && tsc --noEmit` | **OK** |
+| `vitest` | **194 passed / 0 failed（20 files）**（第 1 批后 183/19；本批 +11） |
+| `module-lint.py` | **0 errors** / 36 warnings（同前） |
+| `kit-lint.py` | **0 errors** / 21 warnings（同前） |
+| `flow-lint.py` | **21 errors** / 1 warning（存量 flow@2，同前） |
+| `artifact-lint.py` | **0 errors** / 168 warnings（同前） |
+| `validate-kb.py` | **1 FAIL**（N7 存量） |
+
+### 第 2 批明确未做 / 遗留
+
+- **`AGENTS.md` 未改**（属 OS-06/07 写权，且非本批文件）：建议 OS-07 补一条铁律
+  「**动词唯一表 `core/src/verbs.ts`** —— CLI/HTTP/MCP 三面均由其派生，禁止任一面手抄动词清单」。
+  （AGENTS.md 现状只有 R5 历史叙述「内核新增三动词」，非当前名册，不构成漂移。）
+- **`tools/serve.py` 仍是 legacy 端点的第二实现**：本批把它的八个端点**声明**进契约（deprecated），
+  但未删文件、未删隧道能力。退场仍待办。
+- **下一步 = 步骤 2 · OS-04 初始化面板 + 模板库**（项目地址 + 配置模板：自存／导入官方／从零新建）。
+  本批已为它扫清前置：`flow_init` 三面可达、`GET/PUT /api/projects/{id}/config` 已在契约内、
+  页面可轮询实时状态。**守住「模板 ≠ 配置」**（配置只是项目 overlay 的输入，须经内核合成）。
