@@ -85,7 +85,6 @@
     },
     "route": {
       "type": "enum",
-      "default": "dual",
       "options": [
         "hot",
         "calm",
@@ -95,11 +94,10 @@
         "edge": "e-prop",
         "param": "route"
       },
-      "desc": "风格路线：爽版/合理版/双版本+基线"
+      "desc": "风格路线：爽版/合理版/双版本+基线（R8：选择无默认——显式选或由项目配置 风格/AB测试 推导）"
     },
     "region": {
       "type": "enum",
-      "default": "CN",
       "options": [
         "CN",
         "NA"
@@ -108,7 +106,7 @@
         "edge": "e-market",
         "param": "region"
       },
-      "desc": "目标市场"
+      "desc": "目标市场（R8：选择无默认，开跑前必须显式选）"
     },
     "zeitgeist": {
       "type": "boolean",

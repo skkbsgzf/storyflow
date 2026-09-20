@@ -1608,7 +1608,8 @@ function cfgControl(id, k, kind, val, d){
   if (kind === "enum"){
     const keep = val === undefined || val === null || val === "";
     const opts = (d.options || []).map(o => `<option value="${escapeHtml(o)}"${String(val) === String(o) ? " selected" : ""}>${escapeHtml(o)}</option>`).join("");
-    return `<select id="${id}" data-cfg-key="${escapeHtml(k)}" data-cfg-type="enum"${req}><option value=""${keep ? " selected" : ""}>（用 flow 默认）</option>${opts}</select>`;
+    const ph = d.default !== undefined ? "（用 flow 默认）" : "（未选）";
+    return `<select id="${id}" data-cfg-key="${escapeHtml(k)}" data-cfg-type="enum"${req}><option value=""${keep ? " selected" : ""}>${ph}</option>${opts}</select>`;
   }
   if (kind === "number"){
     const mn = d.min !== undefined ? ` min="${d.min}"` : "";
@@ -1632,7 +1633,9 @@ function configZonesPaper(){
         const desc = d.desc ? `<span class="msg">${escapeHtml(d.desc)}</span>` : "";
         const bind = d.bind ? `<span class="msg">绑 ${escapeHtml(d.bind.edge || "")}.${escapeHtml(d.bind.param || "")}</span>` : "";
         const dflt = d.default !== undefined ? `<span class="msg">flow 默认 ${escapeHtml(JSON.stringify(d.default))}</span>` : "";
-        return `<div class="cfg-row" data-cfg-flow="1" data-cfg-required="${d.required ? 1 : 0}"><label class="k" for="cfg-f-${escapeHtml(k)}">${escapeHtml(k)}${req}</label><span class="v">${cfgControl("cfg-f-" + k, k, d.type === "project" ? "text" : (d.type || "string"), pick(k, d.default), d)}${desc}${bind}${dflt}</span></div>`;
+        const mustPick = d.type === "enum" && d.default === undefined
+          ? `<span class="msg">选择无默认（R8）：开跑前必须显式选${k === "route" ? "，或由定性配置「风格/AB测试」推导" : ""}</span>` : "";
+        return `<div class="cfg-row" data-cfg-flow="1" data-cfg-required="${d.required ? 1 : 0}"><label class="k" for="cfg-f-${escapeHtml(k)}">${escapeHtml(k)}${req}</label><span class="v">${cfgControl("cfg-f-" + k, k, d.type === "project" ? "text" : (d.type || "string"), pick(k, d.default), d)}${desc}${bind}${dflt}${mustPick}</span></div>`;
       }).join("") + `</div>`
     : `<p class="msg">本 flow 未声明 <code>inputs</code>：没有必填输入，直接 flow_run 即可。</p>`;
   h += `</div>`;

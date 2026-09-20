@@ -8,7 +8,7 @@
   "upstream": "outline-production（取其分集大纲/卡点表为输入）",
   "inputs": {
     "project": { "type": "project", "required": true, "desc": "项目上下文" },
-    "route": { "type": "enum", "default": "hot", "options": ["hot", "calm"], "desc": "沿用选题阶段路线档位" },
+    "route": { "type": "enum", "options": ["hot", "calm"], "desc": "沿用选题阶段路线档位（R8：选择无默认——开跑前显式选或由项目配置 风格/AB测试 推导）" },
     "range": { "type": "string", "required": true, "desc": "集数范围（如 '1-6'，前三集优先）" },
     "batch": { "type": "number", "default": 6, "min": 1, "max": 12, "desc": "单批集数（人工验收批次粒度）" }
   },

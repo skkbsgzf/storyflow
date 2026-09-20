@@ -14,13 +14,12 @@
     },
     "route": {
       "type": "enum",
-      "default": "dual",
       "options": [
         "hot",
         "calm",
         "dual"
       ],
-      "desc": "沿用选题阶段路线"
+      "desc": "沿用选题阶段路线（R8：选择无默认——开跑前显式选或由项目配置 风格/AB测试 推导）"
     },
     "episodes": {
       "type": "number",

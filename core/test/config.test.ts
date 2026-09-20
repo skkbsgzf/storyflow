@@ -18,6 +18,8 @@ function config(overrides: Record<string, unknown> = {}): Record<string, unknown
     风格: "爽",
     AB测试: false,
     市场预估: "竞技载体空白带，情绪锚在窗口期",
+    // R8：region 是选择（enum 无 default）——配置里显式表态，与面板开跑前选择同形态
+    region: "CN",
     ...overrides,
   };
 }

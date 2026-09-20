@@ -40,7 +40,7 @@ describe("M1.5 · 角色剖面 / 词汇表守卫 / 缓存命中", () => {
     fs.writeFileSync(path.join(dir, "选题素材.md"), "# 选题素材\n\n甲方点子：老牌发型师。\n", "utf-8");
     // R5：锁定 bootstrap 编排语义（断言门语义与计划序，不是断言 R5 默认策略）
     lockBootstrapPolicy(dir, "topic-selection");
-    const stop = await kernel.flow_run("topic-selection", projectId, { route: "hot", direction: DIRECTION });
+    const stop = await kernel.flow_run("topic-selection", projectId, { route: "hot", region: "CN", direction: DIRECTION });
     expect(stop.status).toBe("awaiting_input");
   });
 

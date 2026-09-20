@@ -19,7 +19,6 @@
     },
     "slots": {
       "type": "enum",
-      "default": "all",
       "options": [
         "all",
         "gimmick",
@@ -30,7 +29,7 @@
         "excerpt",
         "style"
       ],
-      "desc": "拆解槽位（all=六槽位全量）"
+      "desc": "拆解槽位（all=六槽位全量；R8：选择无默认，开跑前必须显式选）"
     }
   },
   "outputs": [

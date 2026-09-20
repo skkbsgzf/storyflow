@@ -306,7 +306,7 @@ describe("R5 · 内核端到端：门自动放行 + 边界拦人 + 指标与提�
     fs.mkdirSync(pd, { recursive: true });
     fs.writeFileSync(path.join(pd, "选题素材.md"), "# 选题素材\n\n甲方点子：老牌发型师。\n", "utf-8");
     lockBoundariesOn(pd, "topic-selection");
-    const run = await kernel.flow_run("topic-selection", projectId, { route: "hot", direction: "R5 边界验收用例" });
+    const run = await kernel.flow_run("topic-selection", projectId, { route: "hot", region: "CN", direction: "R5 边界验收用例" });
     expect(run.status).toBe("awaiting_input");
 
     await kernel.flow_submit(projectId, "tropes", { content: artifact("topic-selection", "tropes", "# 梗卡\n\n快剪 vs 慢工。\n", { projectDir: pd }) });
@@ -379,7 +379,7 @@ describe("R5 · 内核端到端：门自动放行 + 边界拦人 + 指标与提�
     fs.mkdirSync(pd2, { recursive: true });
     fs.writeFileSync(path.join(pd2, "选题素材.md"), "# 选题素材\n\n甲方点子：老牌发型师。\n", "utf-8");
     lockBootstrapPolicy(pd2, "topic-selection");
-    await k2.flow_run("topic-selection", pid, { route: "hot", direction: "锁定 bootstrap" });
+    await k2.flow_run("topic-selection", pid, { route: "hot", region: "CN", direction: "锁定 bootstrap" });
     await k2.flow_submit(pid, "tropes", { content: artifact("topic-selection", "tropes", "# 梗卡\n\n快剪 vs 慢工。\n", { projectDir: pd2 }) });
     await k2.flow_submit(pid, "zeitgeist", { content: artifact("topic-selection", "zeitgeist", "# 时代情绪锚\n\n算法赶人。\n", { projectDir: pd2 }) });
     const last = await k2.flow_submit(pid, "analysis", {
@@ -410,7 +410,7 @@ describe("R7 · 缺省 kit_boundary=auto：边界门可见、自动放行、下�
     const pd3 = path.join(root3, "projects", pid);
     fs.mkdirSync(pd3, { recursive: true });
     fs.writeFileSync(path.join(pd3, "选题素材.md"), "# 选题素材\n\n甲方点子：老牌发型师。\n", "utf-8");
-    await k3.flow_run("topic-selection", pid, { route: "hot", direction: "R7 缺省边界策略" });
+    await k3.flow_run("topic-selection", pid, { route: "hot", region: "CN", direction: "R7 缺省边界策略" });
 
     // 缺省 = auto：策略面如实回显
     expect(k3.viewEffect(pid).policy.kit_boundary).toBe("auto");
@@ -456,7 +456,7 @@ describe("R5 · 读模型：生效编排与指标汇总只由内核定义一次�
   it("flow_run/flow_status 后落 effective.json：含边界、逐节点配置值与其来源", async () => {
     fs.mkdirSync(pd, { recursive: true });
     fs.writeFileSync(path.join(pd, "选题素材.md"), "# 选题素材\n\n甲方点子：夜市烤串摊主。\n", "utf-8");
-    await kernel.flow_run("topic-selection", projectId, { route: "hot", direction: "读模型用例" });
+    await kernel.flow_run("topic-selection", projectId, { route: "hot", region: "CN", direction: "读模型用例" });
 
     expect(fs.existsSync(effPath)).toBe(true);
     const view = JSON.parse(fs.readFileSync(effPath, "utf-8"));
@@ -582,7 +582,7 @@ describe("R5 · 声明断言必须被执行（声明即契约，不是任务包�
     const pda = path.join(root, "projects", pa);
     fs.mkdirSync(pda, { recursive: true });
     fs.writeFileSync(path.join(pda, "选题素材.md"), "# 选题素材\n\n甲方点子：老牌发型师。\n", "utf-8");
-    await kernel.flow_run("topic-selection", pa, { route: "hot", direction: "声明断言用例 A" });
+    await kernel.flow_run("topic-selection", pa, { route: "hot", region: "CN", direction: "声明断言用例 A" });
     await kernel.flowOverlay(pa, {
       patches: [
         { kind: "set-tool", kit: "search", op: "find-trope", add_asserts: ["AE-HOOK-EVENT"], reason: "梗卡首拍必须有钩型" },
@@ -606,7 +606,7 @@ describe("R5 · 声明断言必须被执行（声明即契约，不是任务包�
     const pdb = path.join(root, "projects", pb);
     fs.mkdirSync(pdb, { recursive: true });
     fs.writeFileSync(path.join(pdb, "选题素材.md"), "# 选题素材\n\n甲方点子：老牌发型师。\n", "utf-8");
-    await kernel.flow_run("topic-selection", pb, { route: "hot", direction: "声明断言用例 B" });
+    await kernel.flow_run("topic-selection", pb, { route: "hot", region: "CN", direction: "声明断言用例 B" });
     const ok = await kernel.flow_submit(pb, "tropes", {
       content: artifact("topic-selection", "tropes", bad, { projectDir: pdb }),
     });
@@ -767,7 +767,7 @@ describe("R5 §六 · 编排挖掘师（质性通道并入提案管道）", () =
     const pd = path.join(root, "projects", "p-mine");
     fs.mkdirSync(pd, { recursive: true });
     fs.writeFileSync(path.join(pd, "选题素材.md"), "# 选题素材\n\n甲方点子：编排挖掘用例。\n", "utf-8");
-    await kernel.flow_run("topic-selection", "p-mine", { route: "hot", direction: "编排挖掘用例" });
+    await kernel.flow_run("topic-selection", "p-mine", { route: "hot", region: "CN", direction: "编排挖掘用例" });
 
     const mine = kernel.flowMine("p-mine");
     expect(mine.package.format).toBe("mine-package@1");
@@ -789,7 +789,7 @@ describe("R5 §六 · 编排挖掘师（质性通道并入提案管道）", () =
     const pd = path.join(root, "projects", "p-mine2");
     fs.mkdirSync(pd, { recursive: true });
     fs.writeFileSync(path.join(pd, "选题素材.md"), "# 选题素材\n\n甲方点子：findings 并入用例。\n", "utf-8");
-    await kernel.flow_run("topic-selection", "p-mine2", { route: "hot", direction: "findings 并入用例" });
+    await kernel.flow_run("topic-selection", "p-mine2", { route: "hot", region: "CN", direction: "findings 并入用例" });
 
     fs.writeFileSync(
       path.join(pd, "registry", "miner-findings.json"),
@@ -853,7 +853,7 @@ describe("R5 §六 · 编排挖掘师（质性通道并入提案管道）", () =
     const pd = path.join(root, "projects", "p-mine3");
     fs.mkdirSync(pd, { recursive: true });
     fs.writeFileSync(path.join(pd, "选题素材.md"), "# 选题素材\n\n甲方点子：脏 findings 用例。\n", "utf-8");
-    await kernel.flow_run("topic-selection", "p-mine3", { route: "hot", direction: "脏 findings 用例" });
+    await kernel.flow_run("topic-selection", "p-mine3", { route: "hot", region: "CN", direction: "脏 findings 用例" });
 
     const bad = path.join(pd, "registry", "miner-findings.json");
     fs.mkdirSync(path.join(pd, "registry"), { recursive: true });

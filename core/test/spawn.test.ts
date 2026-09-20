@@ -29,6 +29,7 @@ describe("K1+K2 · 项目背景卡与派发头", () => {
   it("flow_next 默认输出不含 spawnPrompt（向后兼容，主线程零感知）", async () => {
     const stop = await kernel.flow_run("topic-selection", projectId, {
       route: "hot",
+      region: "CN",
       direction: "老牌发型师（spawn 测试）",
     });
     expect(stop.status).toBe("awaiting_input");
@@ -79,7 +80,7 @@ describe("K1+K2 · 项目背景卡与派发头", () => {
       "utf-8",
     );
     // 注意：不创建 词汇表.json
-    const run = await kernel.flow_run("topic-selection", "p-spawn2", { route: "hot", direction: "降级测试" });
+    const run = await kernel.flow_run("topic-selection", "p-spawn2", { route: "hot", region: "CN", direction: "降级测试" });
     expect(["awaiting_input", "blocked"]).toContain(run.status);
     const stop = await kernel.flow_next("p-spawn2", { spawnPrompt: true });
     expect(stop.status).toBe("awaiting_input");

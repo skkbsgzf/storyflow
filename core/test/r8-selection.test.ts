@@ -52,6 +52,41 @@ describe("R8 S1 · 契约就位（decision@1 / catalog-entry@1）", () => {
   });
 });
 
+describe("R8 S4 · 拍板②：enum 输入摘除 default（选择发生在开跑前的表单/配置）", () => {
+  const load = (id: string) =>
+    JSON.parse(fs.readFileSync(path.join(ROOT, "flows", id, "flow.json"), "utf-8")) as {
+      inputs?: Record<string, { type?: string; default?: unknown }>;
+    };
+
+  it("六处历史 default 全部清零：enum 输入不再藏默认值", () => {
+    const flows = ["topic-selection", "novel-prose", "episode-script", "outline-production", "book-deconstruct"];
+    for (const id of flows) {
+      for (const [k, spec] of Object.entries(load(id).inputs ?? {})) {
+        if (spec.type === "enum") expect(spec, `${id}.${k} 不应带 default`).not.toHaveProperty("default");
+      }
+    }
+  });
+
+  it("region（拍板后无默认）：不显式选就开不了跑，显式选即通过", async () => {
+    const { kernel } = seedKernelLite();
+    fs.mkdirSync(kernel.projectDir("p-r8s4"), { recursive: true });
+    await expect(
+      kernel.flow_run("topic-selection", "p-r8s4", { route: "hot", direction: "x" }),
+    ).rejects.toThrow(/选择未决.*region/);
+    const stop = await kernel.flow_run("topic-selection", "p-r8s4", { route: "hot", region: "CN", direction: "x" });
+    expect(stop).toBeTruthy();
+  });
+});
+
+function seedKernelLite() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "miniflow-r8s4-"));
+  fs.mkdirSync(path.join(root, "projects"), { recursive: true });
+  fs.mkdirSync(path.join(root, "flows"), { recursive: true });
+  // 用真实 flows/ 目录：repoRoot/flowsDir 指向仓库根（临时 root 只隔离 projects/）
+  const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
+  const kernel = new Kernel({ root, repoRoot, flowsDir: path.join(repoRoot, "flows") });
+  return { root, kernel };
+}
 describe("R8 S2 · set_decision/list_decisions：决策事实三面可达", () => {
   function seedKernel() {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "miniflow-r8d-"));

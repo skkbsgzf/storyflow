@@ -15,6 +15,7 @@
 9. **正文纯净**：过程元数据（节点/skill/轮次/输入清单/隔离声明/数据快照口径）只进宿主思维链与 journal，绝不进产物正文（AE-OUTPUT-PURITY，block；机械校验 `tools/check-purity.py`）。
 10. **改 done 节点产物必须走 flow**：已完成节点的产物要修改，走 `flow_rerun`；内核暂不支持时（如 iterate 实例重派发）走五步降级路径，**单命令载体 `python tools/amend-artifact.py --project <id> --node <id> --file <rel> --reason "<理由>"`**（①声明绕流意图入 journal → ②实跑校验落收据 → ③修订对照表登记 → ④重快照 → ⑤flow-verify 复检，任一步失败即中止；理由为空直接拒绝）。一切「已扫描/已校验」声明必须引用收据文件，无收据=删声明（事故复盘：docs/绕流改稿事故分析-R2.md——v5 虚报扫描+补拍快照洗白，被甲方人眼揪出）。
 11. **能力必须有家（kit@1）**：技能必须归入 `kits/<域>/kit.json` 四域之一（search 检索取数 / plot 剧情 / prose 文学 / tool 确定性底座；检测评估能力打包于 kits/detect，domain=tool）；flow 节点用 `kit`+`op` 引用，**禁止再手写 `kb` 清单**——两套真相=漂移（R1 报告：47 个 agent 节点中 40 个 node.kb 与技能自称不匹配，且 node.kb 内核从不读取，声明全空转）。守门人 `python tools/kit-lint.py`，0 error 方可提交。
+12. **选择必须有事实（R8）**：判据「有限且互斥的枚举 = 选择，其余 = 值」。①`flow.inputs[type=enum]` 禁止带 `default`（flow-lint E-ENUM-DEFAULT），开跑前必须显式表态，未选即 `flow_run` 抛错，不静默兜底；②catalog/知识候选无默认生效权——未被 decision 命中 = 不装载 + 任务包「未装载的候选」显式回显，禁止回落全装（`onMissingDecision` 只有全项目明知风险后才可设 `load-all-with-warning`）；③决策（`projects/<id>/decisions/<key>.json`）必须带 `by` + `evidence`，缺则进 issues 不进 values；④`excluded` 必须带理由，「为什么没装 X」不许哑；⑤catalog 出厂在 repoRoot、用户补充在 dataRoot，两个根不许合成一处；⑥决策是运行中事实、输入是开跑前事实——禁止把决策写回 `flow.inputs`；⑦选择结果在页面必须能回答三问：选了哪个 / 凭什么 / 排除了哪些及理由。守门人 `python tools/flow-lint.py` + `core/test/r8-selection.test.ts`。
 
 ## 项目开工口径（每个创作轮次）
 

@@ -45,7 +45,7 @@ describe("kernel · 三门语义（topic-selection @ 临时项目）", () => {
   });
 
   it("flow_run 停在首个认知步 tropes，任务包带 skill 与产物契约", async () => {
-    const stop = await kernel.flow_run("topic-selection", projectId, { route: "hot", direction: DIRECTION });
+    const stop = await kernel.flow_run("topic-selection", projectId, { route: "hot", region: "CN", direction: DIRECTION });
     expect(stop.status).toBe("awaiting_input");
     if (stop.status !== "awaiting_input") return;
     expect(stop.nodeId).toBe("tropes");

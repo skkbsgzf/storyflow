@@ -68,10 +68,10 @@ export function configBudget(cfg: ProjectConfig | undefined): Record<string, num
 export function configToInputs(cfg: ProjectConfig, flow: { inputs?: Record<string, unknown> }): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   const declared = (flow.inputs ?? {}) as Record<string, { type?: string; options?: string[] } | undefined>;
-  // ① 直通：与 flow 输入同名的配置键优先
+  // ① 直通：与 flow 输入同名的配置键优先（空串 = 未表态，与面板 readConfigForm 同口径不进参）
   for (const key of Object.keys(declared)) {
     const v = (cfg as Record<string, unknown>)[key];
-    if (v === undefined || v === null) continue;
+    if (v === undefined || v === null || v === "") continue;
     const def = declared[key];
     if (def?.type === "enum" && Array.isArray(def.options) && !def.options.includes(v as string)) {
       throw new Error(

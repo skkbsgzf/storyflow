@@ -29,7 +29,7 @@ describe("migrate · run-state.json → state.json", () => {
     fs.writeFileSync(path.join(dir, "选题素材.md"), "# 选题素材\n\n迁移演练夹具。\n", "utf-8");
 
     const kernel = new Kernel({ root });
-    const stop = await kernel.flow_run("topic-selection", projectId, { direction: "迁移演练" });
+    const stop = await kernel.flow_run("topic-selection", projectId, { route: "hot", region: "CN", direction: "迁移演练" });
 
     const state = JSON.parse(fs.readFileSync(path.join(dir, "state.json"), "utf-8"));
     // run-state.json 已消费（旧文件保留不删，供审计）
