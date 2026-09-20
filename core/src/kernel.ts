@@ -22,6 +22,7 @@ import { effectiveFlow3 } from "./modules.js";
 import { resolveBudget } from "./budget.js";
 import { renderSpawnPrompt } from "./spawn.js";
 import { loadProjectConfig, configToInputs, configBudget, type ProjectConfig } from "./project-config.js";
+import { listConfigTemplates } from "./cfg-template.js";
 import type { BatchEntry, FlowNode, MetricPhase, RunMetric } from "./types.js";
 import {
   effectiveFlow, isBoundaryGate, isWorkGate, factoryOverlayPath, projectOverlayPath, readOverlay, writeProjectOverlay,
@@ -239,6 +240,9 @@ export class Kernel {
    */
   private persistEffective(projectDir: string, eff: EffectiveFlow, state?: RunState): void {
     try {
+      // OS-04 余量：模板清单也只在内核派生一次（页面纯消费，不自己扫盘——否则「页面看到的模板」
+      // 与「套用时的真相」会漂移）。数据根与仓库根分开传：自存模板在 root，官方示例在 repoRoot。
+      this.persistConfigTemplates(projectDir, eff.flow.id);
       if ((eff as any).r6 || eff.flow.format === "flow@3-derived") {
         // R6 生效编排读模型（effective@2）：links 取代 boundaries，composition 按模块实例
         const nodeConfig: Record<string, unknown> = {};
@@ -321,6 +325,26 @@ export class Kernel {
       atomicWriteText(path.join(projectDir, "registry", "effective.json"), JSON.stringify(view, null, 2) + "\n");
     } catch {
       /* 读模型是旁路：写不出来不许阻断流水线（页面会退化为 bootstrap 视图并显式标注） */
+    }
+  }
+
+  /**
+   * OS-04 余量 · 项目配置模板清单读模型（registry/config-templates.json）。
+   * 与 effective/metrics 同理：扫描面（自存模板在 `root`、官方示例在 `repoRoot`）只允许定义一次。
+   * 旁路失败写诊断，不阻断流水线（页面会显式退化为「模板库暂不可用」）。
+   */
+  private persistConfigTemplates(projectDir: string, flowId: string): void {
+    try {
+      const { entries, skipped } = listConfigTemplates({ dataRoot: this.root, repoRoot: this.repoRoot, flowId });
+      fs.mkdirSync(path.join(projectDir, "registry"), { recursive: true });
+      atomicWriteText(
+        path.join(projectDir, "registry", "config-templates.json"),
+        JSON.stringify({ format: "config-templates@1", flowId, entries, skipped }, null, 2) + "\n",
+      );
+    } catch (e) {
+      // 诊断 kind 复用既有枚举里的 `io`（这就是一次读模型落盘失败）；`where` 已经说清是哪个子系统，
+      // 不为一条旁路新增契约枚举——契约枚举是台账，加一项要连着文档/schema/消费方一起动。
+      recordDiag(this.repoRoot, "io", "persistConfigTemplates:registry/config-templates.json", e);
     }
   }
 
@@ -1983,6 +2007,24 @@ export class Kernel {
     const diagnostics = summarizeDiags(projectDir);
 
     const s = state as { status?: string; gate?: { verdict?: string; node?: string }; nodes?: Record<string, { status?: string; round?: number; verdict?: string }> } | null;
+
+    // OS-04 余量：模板清单**每次现算**并入 live 切片——模板库是用户随时会增删的东西，
+    // 靠「上次 flow_effect 落盘的读模型」会立刻过期（面板会显示上一个版本的模板列表，那是撒谎）。
+    const stateFlowId = (state as { flowId?: string } | null)?.flowId;
+    let configTemplates: { entries: unknown[]; skipped: string[] } | null = null;
+    if (stateFlowId) {
+      try {
+        const { entries, skipped } = listConfigTemplates({ dataRoot: this.root, repoRoot: this.repoRoot, flowId: stateFlowId });
+        configTemplates = { entries, skipped };
+      } catch {
+        configTemplates = null; // 扫描失败 ⇒ 面板显式降级，不编造一份空清单
+      }
+    }
+    const tplFingerprint = (configTemplates?.entries ?? []).map((e) => {
+      const x = e as { name?: string; source?: string; updatedAt?: string };
+      return [x.name ?? null, x.source ?? null, x.updatedAt ?? null];
+    });
+
     const revision = fingerprint([
       s?.status ?? null,
       s?.gate?.verdict ?? null,
@@ -1992,6 +2034,7 @@ export class Kernel {
       eff?.planHash ?? null,
       (metrics as { events?: number } | null)?.events ?? null,
       diagnostics.count,
+      tplFingerprint,
     ]);
 
     // 产物指纹：只取「路径 + 大小 + mtime」，不读正文——重活留给 files=true 那一次
@@ -2015,6 +2058,7 @@ export class Kernel {
       optimize,
       metrics,
       diagnostics,
+      configTemplates,
       revision,
       filesRevision,
     };

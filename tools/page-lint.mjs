@@ -55,6 +55,9 @@ function boot(pd) {
     console, setTimeout: noop, clearTimeout: noop, requestAnimationFrame: noop,
     localStorage: { getItem: (k) => (store.has(k) ? store.get(k) : null), setItem: (k, v) => store.set(k, v), removeItem: (k) => store.delete(k) },
     alert: noop, navigator: { clipboard: { writeText: () => Promise.resolve() } },
+    // OS-04 模板库用 prompt/confirm 做「另存名」「覆盖确认」：桩必须存在，否则探针一调就 ReferenceError。
+    // 默认返回「取消」（null / false）——探针要的是**渲染与调用形状**，不是真的走一遍交互。
+    prompt: () => null, confirm: () => false,
     JSON, Math, Object, Array, String, Number, Boolean, Set, Map, Date, RegExp, Error, Promise, URL,
     encodeURIComponent, decodeURIComponent, parseInt, parseFloat, isNaN, FileReader: function () {},
   };
@@ -387,6 +390,54 @@ if (probe(`typeof budgetZonePaper === "function"`) !== true) {
   const nest = probe(`JSON.stringify({read:String(readBudgetForm).includes("data-budget-key"), save:String(saveConfigFromForm).includes("阈值预算"), reset:typeof resetBudgetForm==="function"})`);
   ok("OS-02 阈值落盘为嵌套键「阈值预算」并可一键恢复出厂",
     nest.includes('"read":true') && nest.includes('"save":true') && nest.includes('"reset":true'), nest);
+}
+
+// ================= OS-04 余量 · 项目配置模板库（清单来自内核，页面不扫盘） =================
+// 12d · 模板库清单只允许来自内核（首屏 DATA.configTemplates = 内核读模型原样搬运；
+//       live 时由 /live 的 configTemplates 切片覆盖）。页面**不许自己拼路径扫盘**——
+//       自存模板在数据根 templates/项目配置/、官方示例在仓库根 demos/，两个根只有内核分得清。
+if (probe(`typeof tplZoneHtml === "function"`) !== true) {
+  gaps.push("本页由旧模板生成（无 OS-04 模板库）：重生成后覆盖 —— python tools/project-pages.py --root projects/<id>");
+} else {
+  // (1) 无读模型 ⇒ 显式降级（说明怎么取得），不装作空表、不泄漏 undefined
+  const nl = boot(JSON.parse(JSON.stringify(payload)));
+  nl.probe(`DATA.configTemplates = null`);
+  const nlHtml = nl.probe(`tplZoneHtml()`);
+  ok("OS-04 无模板读模型时模板库显式降级（说明怎么取得，不装作空表、不泄漏 undefined）",
+    nlHtml.includes("暂无模板读模型") && !/undefined|NaN/.test(nlHtml), nlHtml.slice(0, 90));
+
+  // (2) 三来源 + 键/阈值徽标 + 动作按钮：喂一份人造读模型，逐项核对渲染
+  const t6 = boot(JSON.parse(JSON.stringify(payload)));
+  t6.probe(`DATA.configTemplates = {flowId:"demo-flow", skipped:["/x/bad.json（模板不是合法 JSON）"], entries:[
+    {name:"从零新建", flowId:"demo-flow", source:"blank", keys:["项目"], hasBudget:false},
+    {name:"官方示例（demo-flow）", flowId:"demo-flow", source:"official", keys:["项目","题材"], hasBudget:false},
+    {name:"我的配置", flowId:"demo-flow", source:"user", keys:["项目","阈值预算"], hasBudget:true, updatedAt:"2026-09-20T10:00:00.000Z"}]}`);
+  const tHtml = t6.probe(`tplZoneHtml()`);
+  ok("OS-04 模板库逐项渲染三来源（自存 / 官方只读 / 从零新建动作）+ 键清单 + 阈值徽标",
+    tHtml.includes("我的配置") && tHtml.includes("官方只读") && tHtml.includes("从零新建")
+    && tHtml.includes("含阈值预算") && tHtml.includes("键：项目、阈值预算"), tHtml.slice(0, 100));
+  const applyN = (tHtml.match(/data-tpl-apply="/g) || []).length;
+  const delN = (tHtml.match(/data-tpl-del="/g) || []).length;
+  ok("OS-04「套用」每项可达；「删除」只给自存模板（官方只读 / 从零新建动作不可删＝后端也会拒，前端不装作能删）",
+    applyN === 3 && delN === 1, `apply=${applyN} del=${delN}`);
+  ok("OS-04 坏模板由内核原样回报（skipped 不静默跳过）",
+    tHtml.includes("坏模板") && tHtml.includes("bad.json"), tHtml.slice(0, 80));
+  ok("OS-04 模板库 HTML 无 undefined/NaN 泄漏", !/undefined|NaN/.test(tHtml), (tHtml.match(/undefined|NaN/g) || []).slice(0, 3).join(","));
+
+  // (3) 增删套用只走内核动词 cfg_template（唯一入口；页面不自造 REST 路径）
+  const tplVerbSrc = String(probe(`String(tplVerb)`));
+  ok("OS-04 模板库增删套用走内核动词 cfg_template（唯一入口，不自造 REST 路径）",
+    tplVerbSrc.includes("/api/verbs/cfg_template"), tplVerbSrc.slice(0, 90));
+
+  // (4) live 会把内核现扫的清单就地回填并重渲染（否则面板会一直显示上一版清单 = 撒谎）
+  const liveSrc = String(probe(`String(applyLive)`));
+  ok("OS-04 /live 的 configTemplates 切片就地回填 + 重渲染（防展示过期清单）",
+    liveSrc.includes("configTemplates") && liveSrc.includes("renderTplZone"), liveSrc.slice(0, 90));
+
+  // (5) 首屏读模型由生成器注入（python 只搬运内核落盘，绝不重扫模板目录）
+  ok("OS-04 生成器注入 configTemplates 键（python 只搬运内核读模型，不重扫模板目录）",
+    Object.prototype.hasOwnProperty.call(payload.DATA, "configTemplates"),
+    "DATA 键：" + Object.keys(payload.DATA).join(","));
 }
 
 console.log(`\n${page}\n  ${pass}/${pass + fail} passed`);

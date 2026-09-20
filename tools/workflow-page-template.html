@@ -308,6 +308,12 @@ textarea{width:100%;min-height:340px;background:var(--bg-ctl);color:var(--ink);b
 .cfg-grp{margin:10px 0 2px;font-size:calc(11.5px*var(--fs,1));color:var(--ink-3);letter-spacing:1px;font-family:Consolas,'Microsoft YaHei',monospace}
 .cfg-eff{margin:3px 0 8px;font-size:calc(11.5px*var(--fs,1));color:var(--ink-2);background:var(--bg-paper);border-left:2px solid var(--line-paper);padding:5px 9px;border-radius:var(--r-s)}
 .cfg-eff b{color:var(--accent);font-family:Consolas,monospace}
+/* OS-04 余量：模板库条目（自存 / 官方只读 / 从零新建动作） */
+.tpl-row{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 14px;align-items:baseline;font-size:calc(12.5px*var(--fs,1));padding:6px 0;border-bottom:1px dashed var(--line-paper)}
+.tpl-row:last-of-type{border-bottom:0}
+.tpl-row .k{color:var(--ink-2);font-family:Consolas,'Microsoft YaHei',monospace}
+.tpl-row .v{display:flex;gap:9px;align-items:baseline;flex-wrap:wrap;min-width:0}
+.tpl-row[data-tpl-source="official"] .k{color:var(--ink-3)}
 </style>
 </head>
 <body>
@@ -1703,6 +1709,140 @@ function resetBudgetForm(){
 }
 function cfgZonesHtml(){ return configZonesPaper() + budgetZonePaper(); }
 function renderCfgZones(){ const z = document.getElementById("cfg-zones"); if (z) z.innerHTML = cfgZonesHtml(); }
+
+/* ==================== OS-04 余量 · 项目配置模板库 ====================
+   清单来源（两处，都是**内核算过**的）：首屏 `DATA.configTemplates`（内核落盘的读模型
+   `registry/config-templates.json`，由 project-pages.py 原样搬运）、live 时 `/live` 的
+   `configTemplates` 切片（内核**每次现扫**——模板库是用户随时会增删的东西，靠旧读模型会撒谎）。
+
+   页面**绝不自己扫模板目录**：自存模板在数据根 `templates/项目配置/<flow>/`、官方示例在仓库根
+   `demos/<flow>/`——这两个根的分辨只有内核（`this.root` vs `this.repoRoot`）知道，
+   页面/py 各扫一遍必然漂移。
+
+   增删套用一律走内核动词 `cfg_template`（schema 校验 + flow 匹配 + 用户能改的错回 4xx）。 */
+function tplLib(){
+  const t = DATA.configTemplates;
+  return (t && Array.isArray(t.entries)) ? t : null;
+}
+function tplKeysText(e){
+  const ks = e.keys || [];
+  return ks.length ? `键：${ks.join("、")}` : "（空配置）";
+}
+function tplSrcBadge(e){
+  if (e.source === "official") return `<span class="cfg-badge">官方只读</span>`;
+  if (e.source === "blank") return `<span class="cfg-badge">动作</span>`;
+  return `<span class="cfg-badge">自存</span>`;
+}
+function tplRowHtml(e){
+  const budget = e.hasBudget ? `<span class="cfg-badge on">含阈值预算</span>` : "";
+  const when = e.updatedAt ? `<span class="msg">改于 ${escapeHtml(String(e.updatedAt).slice(0,16).replace("T"," "))}</span>` : "";
+  const flowTag = `<span class="msg">flow ${escapeHtml(e.flowId || "*")}</span>`;
+  const del = e.source === "user"
+    ? `<button class="tb" data-tpl-del="${escapeHtml(e.name)}" data-tpl-flow="${escapeHtml(e.flowId || "")}">删除</button>`
+    : "";
+  return `<div class="tpl-row" data-tpl-name="${escapeHtml(e.name)}" data-tpl-source="${escapeHtml(e.source)}">`
+    + `<span class="k">${escapeHtml(e.name)}</span>`
+    + `<span class="v">${tplSrcBadge(e)}${budget}${flowTag}`
+    + `<span class="msg">${escapeHtml(tplKeysText(e))}</span>`
+    + (e.note ? `<span class="msg">${escapeHtml(e.note)}</span>` : "") + when
+    + `<button class="tb" data-tpl-apply="${escapeHtml(e.name)}" style="border-color:var(--accent);color:var(--accent)">套用</button>${del}`
+    + `</span></div>`;
+}
+function tplZoneHtml(){
+  const t = tplLib();
+  let h = `<div class="cfg-zone" id="cfg-zone-tpl"><div class="cfg-zone-h">项目配置模板库 <span class="msg">`;
+  h += t
+    ? `${t.entries.length} 项 · 当前 flow <code>${escapeHtml(t.flowId || "*")}</code> · 自存模板跨项目复用（数据根 <code>templates/项目配置/</code>）· 官方示例随仓库只读`
+    : `暂无模板读模型 —— 先 <code>flow_run</code> / <code>flow_effect</code> 一次（内核扫描后落 <code>registry/config-templates.json</code>，页面不自行扫盘）`;
+  h += `</span></div>`;
+  if (t){
+    h += t.entries.length
+      ? t.entries.map(tplRowHtml).join("")
+      : `<p class="msg">该 flow 下暂无模板：可「从零新建」套用空白配置，或把当前配置另存为模板。</p>`;
+    if (t.skipped && t.skipped.length)
+      h += `<p class="cfg-warn">坏模板（内核原样回报，未静默跳过）：${escapeHtml(t.skipped.join(" ｜ "))}</p>`;
+    h += `<p class="msg">「套用」会<strong>覆盖</strong>本项目 <code>项目配置.json</code>（项目名自动改成本项目）；跨 flow 套用默认拒绝，须显式确认。</p>`;
+  }
+  h += `<div class="act"><button class="tb" id="tpl-save-as">把当前配置另存为模板…</button>`
+    + `<button class="tb" id="tpl-refresh">刷新模板库</button>`
+    + `<span class="msg" id="tpl-msg" aria-live="polite"></span></div></div>`;
+  return h;
+}
+function bindTplZone(){
+  document.querySelectorAll("[data-tpl-apply]").forEach(b => { b.onclick = () => { void tplApply(b.dataset.tplApply); }; });
+  document.querySelectorAll("[data-tpl-del]").forEach(b => { b.onclick = () => { void tplDelete(b.dataset.tplDel, b.dataset.tplFlow); }; });
+  const s = document.getElementById("tpl-save-as"); if (s) s.onclick = () => { void tplSaveAs(); };
+  const r = document.getElementById("tpl-refresh"); if (r) r.onclick = () => { void tplRefresh(); };
+}
+function renderTplZone(){
+  const z = document.getElementById("tpl-zone");
+  if (z){ z.innerHTML = tplZoneHtml(); bindTplZone(); }
+}
+function tplMsg(text){ const m = document.getElementById("tpl-msg"); if (m) m.textContent = text; }
+/** 模板库动词调用（唯一入口；错误消息原样回显内核 message，不吞） */
+async function tplVerb(body){
+  if (!LIVE.on){ tplMsg("模板库需要内核 HTTP 面（miniflow up）—— file:// 快照下不可用"); return null; }
+  try{
+    const r = await fetch("/api/verbs/cfg_template",
+      {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)});
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.message || j.error || ("HTTP " + r.status));
+    return j;
+  }catch(err){ tplMsg("失败：" + (err && err.message ? err.message : err)); return null; }
+}
+/** 刷新清单：list 结果就地回填 DATA.configTemplates（同一份读模型，不另立字段） */
+async function tplRefresh(){
+  const j = await tplVerb({action:"list"});
+  if (!j) return;
+  DATA.configTemplates = { flowId: j.flowId, entries: j.entries || [], skipped: j.skipped || [] };
+  renderTplZone();
+  tplMsg(`已刷新：${(j.entries || []).length} 项`);
+}
+async function tplSaveAs(){
+  const dflt = (DATA.project || "我的") + "-配置";
+  const name = prompt("把当前项目的 项目配置.json 另存为模板\n\n模板名（中英文/数字/_/-/./·，1–40 字；文件名即模板名，不静默改名）：", dflt);
+  if (name === null) return;
+  const nm = String(name).trim();
+  if (!nm) { tplMsg("模板名为空，已取消"); return; }
+  // 先按「不覆盖」提交；内核回 CONFIG_EXISTS 时才问人——不做「先问再试」的双重确认
+  let j = await tplVerb({action:"save", project: DATA.project, name: nm});
+  if (!j){
+    const cur = document.getElementById("tpl-msg");
+    const dup = cur && /已存在/.test(cur.textContent || "");
+    if (!dup) return;
+    if (!confirm(`模板「${nm}」已存在，覆盖它？`)) return;
+    j = await tplVerb({action:"save", project: DATA.project, name: nm, overwrite: true});
+    if (!j) return;
+  }
+  await tplRefresh();
+  tplMsg(`已存为模板「${nm}」（flow ${j.flowId}${j.overwritten ? " · 覆盖了旧模板" : ""}）`);
+}
+async function tplApply(name){
+  if (!confirm(`套用模板「${name}」到项目「${DATA.project}」？\n\n将覆盖本项目 项目配置.json（项目名自动改成本项目）。未保存的表单改动会丢失。`)) return;
+  let j = await tplVerb({action:"apply", project: DATA.project, name, flow: (DATA.flow && DATA.flow.id) || undefined});
+  if (!j){
+    const cur = document.getElementById("tpl-msg");
+    const cross = cur && /其它 flow|跨 flow/.test(cur.textContent || "");
+    if (!cross) return;
+    if (!confirm("该模板属于其它 flow。跨 flow 套用的输入面/阈值未必兼容，确认强行套用？")) return;
+    j = await tplVerb({action:"apply", project: DATA.project, name, flow: (DATA.flow && DATA.flow.id) || undefined, force: true});
+    if (!j) return;
+  }
+  // 套用改了盘上 项目配置.json ⇒ 表单必须跟着走，否则页面显示的是旧值（「静默失效」）
+  const cfg = await fetch("/api/projects/" + encodeURIComponent(DATA.project) + "/config", {cache:"no-store"})
+    .then(r => r.ok ? r.json() : null).catch(() => null);
+  if (cfg && !cfg.__invalid) DATA.projectConfig = cfg;
+  renderCfgZones(); syncCfgJson();
+  await tplRefresh();
+  tplMsg(`已套用「${name}」（来源 ${j.source}）。${j.hint || ""}`);
+}
+async function tplDelete(name, flow){
+  if (!confirm(`删除自存模板「${name}」？此操作删盘上文件，不可撤销。`)) return;
+  const j = await tplVerb({action:"delete", name, flow: flow || undefined});
+  if (!j) return;
+  await tplRefresh();
+  tplMsg(`已删除模板「${name}」（${(j.removed || []).length} 个文件）`);
+}
 /** 表单 → 对象。空串一律**不进参**（= 不表态，让内核回退 flow 默认） */
 function readConfigForm(){
   const out = {};
@@ -1842,6 +1982,7 @@ function openWfMgmt(tab){
       保存优先走内核 <code>PUT /api/projects/&lt;id&gt;/config</code>（schema 校验 + 绑定提示）；<code>miniflow up</code> 未运行时降级为直写文件并会说明。
       阈值预算键名/区间白名单 = <code>core/src/budget.ts::DEFAULT_BUDGET</code>，生效值由内核 <code>resolveBudget</code> 派生后写入 <code>registry/effective.json</code>。</p>
     <div id="cfg-zones">${cfgZonesHtml()}</div>
+    <div id="tpl-zone">${tplZoneHtml()}</div>
     <div class="act">
       <button class="tb" id="cfg-save" style="border-color:var(--accent);color:var(--accent);font-weight:700">保存配置</button>
       <button class="tb" id="cfg-official">载入官方默认</button>
@@ -1866,6 +2007,7 @@ function openWfMgmt(tab){
   document.getElementById("cfg-budget-reset").onclick = resetBudgetForm;
   document.getElementById("cfg-export").onclick = exportConfig;
   document.getElementById("cfg-import").onclick = importConfig;
+  bindTplZone();
   document.getElementById("cfg-save-raw").onclick = async ()=>{
     const m = document.getElementById("cfg-raw-msg");
     try{
@@ -2804,6 +2946,9 @@ function applyLive(live){
   if (live.overlay !== undefined) OVERLAY = live.overlay;
   if (live.optimize !== undefined) OPTIMIZE = live.optimize;
   if (live.metrics !== undefined) METRICS = live.metrics;
+  // OS-04 余量：模板库由内核每次现扫并入 revision（配置面板可能正开着）⇒ 就地回填 + 重渲染。
+  // 不这样做的话：用户在别处存了模板，本页会一直显示上一版清单——那就是面板在撒谎。
+  if (live.configTemplates !== undefined){ DATA.configTemplates = live.configTemplates; renderTplZone(); }
   const structural = !!(EFF && (EFF.overlayHash !== prevOverlayHash || EFF.planHash !== prevPlanHash));
   refreshMwTip();
   bindCanvas();

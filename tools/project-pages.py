@@ -400,6 +400,10 @@ def main():
             module_reports[mr["moduleId"]] = mr
 
     cfg_view, cfg_tpl, cfg_exists = load_config_view(proj, project_id)
+    # OS-04 余量 · 模板库首屏：**读内核落盘的读模型**（registry/config-templates.json），
+    # python **不重扫**模板目录——扫描面（自存 root / 官方 repoRoot）只允许内核定义一次。
+    # 文件不存在（未跑过 flow_effect）⇒ None，前端显式降级为「暂无模板读模型」，不编造空清单。
+    cfg_templates = load_json(proj / "registry" / "config-templates.json", None)
 
     payload = {
         "DATA": {
@@ -421,6 +425,9 @@ def main():
             "projectConfig": cfg_view,
             "configTemplate": cfg_tpl,
             "configExists": cfg_exists,
+            # OS-04 余量 模板库：内核读模型原样搬运（自存/官方/从零新建三来源的清单）。
+            # 页面只渲染；live 时由 /live 的 configTemplates 切片覆盖（内核现扫，防过期）。
+            "configTemplates": cfg_templates,
             # OS-02 阶段 C 阈值预算区：**内核派生**的阈值面（defs/values/sources/issues），
             # 页面纯消费——绝不在 python 侧再实现一遍合并与区间校验（那是「两处各改一半」的开端）。
             "budgetView": (eff or {}).get("budget"),

@@ -18,6 +18,8 @@ import path from "node:path";
 import { deriveProjectName } from "./kernel.js";
 import type { Kernel } from "./kernel.js";
 import { skillPatch } from "./skills.js";
+import { cfgTemplate, CfgTemplateError } from "./cfg-template.js";
+import { KernelError } from "./kernel.js";
 
 export type VerbParamType = "string" | "number" | "boolean" | "record" | "string[]";
 
@@ -138,6 +140,41 @@ export const VERBS: VerbDef[] = [
     group: G_KERNEL,
     params: [{ name: "project", type: "string", required: true, desc: "项目 id" }],
     run: (kernel, a) => writeConfigTemplate(kernel, String(a.project)),
+  },
+  {
+    name: "cfg_template",
+    description:
+      "项目配置模板库：列出 / 自存 / 套用 / 删除（套用「从零新建」= 只写必填「项目」的空白配置）。" +
+      "模板落在 <root>/templates/项目配置/<flow>/<名>.json（项目之外，跨项目可复用）；官方示例读 demos/<flow>/项目配置.json（只读）",
+    group: G_KERNEL,
+    params: [
+      {
+        name: "action", type: "string", required: true, enum: ["list", "save", "apply", "delete"],
+        desc: "list=列模板 / save=把项目的配置存为模板 / apply=套用模板到项目 / delete=删自存模板",
+      },
+      { name: "project", type: "string", desc: "save / apply 的目标项目 id" },
+      { name: "name", type: "string", desc: "模板名（save / apply / delete）；apply 传「从零新建」表示空白配置" },
+      { name: "flow", flag: "flow", type: "string", desc: "限定/指定 flow id（不传则按项目 state.json 判定）" },
+      { name: "overwrite", type: "boolean", desc: "save 时覆盖同名模板（缺省拒绝，不静默覆盖）" },
+      { name: "force", type: "boolean", desc: "apply 时跨 flow 套用（缺省拒绝：输入面/阈值未必兼容，须人确认）" },
+    ],
+    run: (kernel, a) => {
+      try {
+        return cfgTemplate(kernel, {
+          action: String(a.action),
+          project: a.project === undefined ? undefined : String(a.project),
+          name: a.name === undefined ? undefined : String(a.name),
+          flowId: a.flow === undefined ? undefined : String(a.flow),
+          overwrite: B(a.overwrite),
+          force: B(a.force),
+        });
+      } catch (e) {
+        // 用户在模板库里能改的错（名字非法/不存在/跨 flow/已存在）必须原样带着 4xx 码出去，
+        // 不许被三面当成「服务器内部错误」——把用户手误报成 500 与「崩掉当没事」是同一种病。
+        if (e instanceof CfgTemplateError) throw new KernelError(e.code, e.http, e.message);
+        throw e;
+      }
+    },
   },
   {
     name: "flow_next",

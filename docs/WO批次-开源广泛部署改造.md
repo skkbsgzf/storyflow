@@ -484,6 +484,7 @@ du -sh projects src/kakaxing-Json/data
 | **R8-OPS 第 2 批 · 动词表唯一源** | ✅ 已落地 | 新建 `core/src/verbs.ts`（13 动词唯一台账）；MCP 由 7 个手写 tool → 遍历表注册；HTTP `/api/verbs/:verb` 由 4-case → 查表分派；CLI 删 13-case switch、`usage()` 由表生成。顺带修 `skill_patch` 写死 `ROOT` 的静默错位（改 `kernel.repoRoot`）；`contracts/http-openapi.json` 11→24 路径（补声明已有未声明端点）。见下明细 | 2026-09-20 |
 | **R8-OPS 第 3 批 · OS-04 初始化面板** | ✅ 已落地 | 页面「流配置」由**只读 JSON 改成真表单**：项目输入区（读 `flow.inputs` 逐字段渲染，按 `required`/`enum`/布尔/数值分控件）+ 项目定性配置区（中文字段）；模板=初值（**模板≠配置**）、导出/导入、保存走内核 `PUT /api/projects/:id/config`（离线回退写文件并显式标注）。顺带修 `project-pages.py` **`DATA.projectConfig` 从未注入**（面板恒显占位符的根因）；`whereami.py` 空态给首跑指引。见下明细 | 2026-09-20 |
 | **OS-02 阶段 C/D（阈值预算面 + 死配置清账）** | ✅ 已落地 | **C**：`core/src/budget.ts` 为唯一事实源（19 旋钮的出厂默认 + 区间 + 人话 + 消费方），`aesthetic`/`assembler`/`optimize`/`metrics` 四处引擎常量全部改读它；`policy.budget` 由「声明零消费者」变成**唯一覆盖入口**；落盘目标 = `项目配置.json` 的「阈值预算」（实例层），合成优先级 模板层 < 实例层 < 运行时 overlay；`effective@2` 新增 `budget` 读模型块 + 页面新增**阈值预算区**（19 控件、徽标、告警回显、一键恢复出厂），page-lint 新增 7 条断言（57/57）。**D**：`model_tier` 缺省 = 不约束（勘误 2）、`minitool.timeoutMs` 真的带上 spawn、`modules[].iterate` 真的传播到交付节点（D#13）、`adapt:"off"` = 只观测（N2）、`set-link` 为 per-link 降级通道（N4）。见下明细 | 2026-09-20 |
+| **OS-04 余量（项目配置模板库：自存 / 从零新建 / 套用 / 删除）** | ✅ 已落地 | 新建 `core/src/cfg-template.ts`（三来源一个清单：自存 `<数据根>/templates/项目配置/<flow>/`、官方 `<仓库根>/demos/<flow>/`、合成「从零新建」）+ `cfg_template` 动词（四动作，CLI/HTTP/MCP 三面可达）；`kernel.ts` 落读模型 `registry/config-templates.json` 且 `viewLive` 每次现扫；页面新增「项目配置模板库」区（逐项渲染 + 套用/另存/删除 + live 回填），page-lint 新增 8 条断言（65/65）；新增 `core/test/r8-os04tpl.test.ts` 21 条。见下「OS-04 余量」 | 2026-09-20 |
 | OS-00 数据剥离执行 / OS-05 / OS-06 / OS-07 | ⏳ 待开工 | 数据剥离需先拍板 附 D #2/#3/#5 | — |
 
 ### OS-02 执行中新发现（已实测，需拍板才能动）
@@ -993,7 +994,79 @@ D 表那批声明写在契约里却零消费者（`policy.budget.tokens` / `mini
 ### 四 · 本批明确未做
 
 - **存量项目页面未批量重生成**（同第 3 批结论：属产物刷新，且 `projects/` 是否入库待 OS-00 拍板）。
-- **OS-04 模板库余量**（自存模板 / 从零新建）仍待做。
+- **OS-04 模板库余量**（自存模板 / 从零新建）—— 已于**第 5 批**落地，见下「OS-04 余量」。
 - `optimize.ts` 的 R5「承重墙」规则用的 `consumedBy<2 / hitRate<0.6` **不在 R7 §二 C 表白名单内**，
   故**未**纳入预算面（避免把不在表内的阈值偷偷变成「可调」）。如需可调，先在 R7 §二 C 表登记。
+
+---
+
+## OS-04 余量：项目配置模板库（2026-09-20 第 5 批）
+
+第 3 批把「流配置」从只读 JSON 改成了真表单，但**模板本身仍只有一条路**：`flow_init` 造一份出厂默认
+（`demos/<flow>/项目配置.json` 是随仓库发布的示例）。用户改好的配置**存不下来、换项目用不了**，
+「从零新建」也只能靠 `flow_init` 的默认值——那会**继承一堆并非本意的偏好**。
+
+本批把模板做成**一等能力**：四动作（list / save / apply / delete）、三来源（自存 / 官方只读 / 从零新建），
+并守住三条纪律：**两个根不能混**、**用户能改的错一律 4xx**、**诚实失败不瞎猜**。
+
+### 一 · 内核：`core/src/cfg-template.ts`（新，唯一扫描面）
+
+| 概念 | 落点 |
+|---|---|
+| 自存模板 | `<数据根>/templates/项目配置/<flowId>/<名>.json`（**项目之外**，跨项目复用；项目删了模板还在） |
+| 官方示例 | `<仓库根>/demos/<flowId>/项目配置.json`（只读，删不掉） |
+| 从零新建 | **合成项**，不落盘：只含必填 `项目`，**不抄官方默认**（避免把别的项目偏好悄悄带进来） |
+| 清单 | `listConfigTemplates({dataRoot, repoRoot, flowId})` → `{entries, skipped}`；坏文件进 `skipped`（不静默跳过） |
+| 自存 | `saveConfigTemplate` —— 先过 `project-config` schema 校验（**拒绝把坏配置存成模板**）；同名不覆盖，须显式 `overwrite` |
+| 套用 | `applyConfigTemplate` —— `项目` 键一律改写成目标项目（照抄来源名 = 立刻踩一致性校验）；跨 flow 默认拒绝，须显式 `force` |
+| 删除 | `deleteConfigTemplate` —— 只删 `user` 来源；官方示例与 `blank` 明确拒绝（它们不是盘上的用户文件） |
+| 词法 | `cfgTemplate({action,...})` 分派；未知 action ⇒ 400 并列出四选项 |
+
+**两个根必须分开传**（`dataRoot` vs `repoRoot`）：把二者当同一个根，临时数据根下官方示例就会凭空消失
+——与 `skill_patch` 写死 `ROOT` 是同一类病。测试 `r8-os04tpl.test.ts` 用**两个不同的临时目录**专门钉住这条。
+
+**错误分类**：`CfgTemplateError(code, http, message)`（本模块自带，**不 import `kernel.ts`** —— kernel 要 import 本模块落读模型，
+反向引 `KernelError` 就成环）。`verbs.ts` 在动词边界映射成 `KernelError`，三面拿到的仍是统一 4xx 码。
+把用户手误报成 500，与「崩掉当没事」是同一种病。
+
+### 二 · 读模型与前端（页面不扫盘）
+
+| 落点 | 改动 |
+|---|---|
+| `core/src/verbs.ts` | 新增 `cfg_template` 动词（`action/project/name/flow/overwrite/force`）+ `CfgTemplateError → KernelError` 边界映射 ⇒ CLI / HTTP / MCP 三面同时可达 |
+| `core/src/kernel.ts` | `persistConfigTemplates()` 在 `persistEffective` 内落 `registry/config-templates.json`（`config-templates@1`；旁路失败写诊断，不阻断）；`viewLive` **每次现扫**并入 `configTemplates` 切片 + `revision` 指纹（模板是用户随时会增删的东西，靠旧读模型 = 面板显示上一版清单 = 撒谎） |
+| `tools/project-pages.py` | `DATA.configTemplates` = **原样搬运**内核读模型（python 不重扫模板目录——扫描面只允许内核定义一次） |
+| `tools/workflow-page-template.html` | 新增「项目配置模板库」区：逐项渲染三来源 + 键清单 + 「含阈值预算」徽标 + `apply/save-as/delete`；`tplVerb()` 为**唯一动词入口**；`applyLive` 就地回填并重渲染 |
+| `tools/page-lint.mjs` | 新增 12d 断言块（8 条）：无读模型显式降级、三来源逐项渲染、删除只给自存、坏模板回显、无 `undefined` 泄漏、动词入口唯一、live 回填、生成器注入 |
+| `core/test/r8-os04tpl.test.ts`（新） | 21 条：两个根分离、三来源清单、坏文件 skipped、保存落数据根、同名 409、名字非法 400、套用改写 `项目`、跨 flow 400 vs `force`、歧义报错、删除只删自存、动词边界 4xx 穿透、HTTP 往返、`viewEffect` 落读模型且与 live 切片同源 |
+
+**面板语义**：`list` 的结果是**唯一清单**（页面不自己扫盘，也不自己拼路径）；「套用」会覆盖
+`项目配置.json`（页面明确写出这一点，并在套用后**重新拉配置回填表单**——否则表单显示的是旧值 = 静默失效）；
+跨 flow 套用要过二次确认才带 `force`。
+
+### 三 · 门禁（2026-09-20 第 5 批后新基线）
+
+| 门 | 结果 |
+|---|---|
+| `cd core && tsc --noEmit` | **OK** |
+| `vitest` | **242 passed / 0 failed（22 files）**（新增 `r8-os04tpl.test.ts` 21 条） |
+| `node tools/page-lint.mjs projects/p-wxl-001/workflow.html` | **65/65 passed**（第 4 批 57/57；本批 +8） |
+| `module-lint.py` / `kit-lint.py` / `flow-lint.py` / `artifact-lint.py` / `validate-kb.py` | 同第 4 批（0/36、0/21、21/1、0/168、1 FAIL N7） |
+
+**端到端实测**（CLI，临时 `--root`，不写仓库）
+
+| 步骤 | 结果 |
+|---|---|
+| `flow_init --project demo-a` → `cfg_template --action save --name 我的现代都市` | 落 `<数据根>/templates/项目配置/demo-flow/我的现代都市.json`（**不在仓库根**） |
+| 同名再 save | `CONFIG_EXISTS` / **409**（不静默覆盖）；`--overwrite` 才覆盖 |
+| `--action apply --name 从零新建` | 盘上 `项目配置.json` 只剩 `{"项目":"demo-a"}`；自存模板 `m1.json` 仍在（套用不动模板库） |
+| `--action delete --name 从零新建` | **400** INVALID_INPUT（blank 是动作不是文件） |
+| `--action delete --name 我的现代都市` | 200，删文件并清空目录 |
+
+### 四 · 本批明确未做
+
+- **存量项目页面未批量重生成**（同第 3/4 批结论：属产物刷新，`projects/` 是否入库待 OS-00 拍板）。
+  本批只重生成 `p-wxl-001` 用于门禁。
+- **模板无版本/血缘字段**：套用不记录「来自哪个模板」。当前以 `keys`/`hasBudget`/`updatedAt` 够用；
+  若将来要做「模板升级提示」，需要在内核加 `appliedTemplate` 记账（属新契约，不在本批）。
 
