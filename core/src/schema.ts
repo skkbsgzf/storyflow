@@ -34,6 +34,7 @@ const SCHEMA_IDS = [
   "toolbox",
   "page-payload",
   "metrics",
+  "diagnostics",
   "flow-pack",
   "kit",
   "agent-profile",

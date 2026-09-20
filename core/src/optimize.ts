@@ -17,6 +17,7 @@ import { BOUNDARY_PREFIX, isBoundaryGate, type FlowOverlay, type FlowPolicy, typ
 import { DEFAULT_POLICY } from "./overlay.js";
 import { kitRegistry } from "./kits.js";
 import { nowIso } from "./ids.js";
+import { recordDiag } from "./diag.js";
 
 export interface Proposal {
   id: string;
@@ -51,7 +52,9 @@ function readKbIndex(root: string): KbIndexEntry[] {
   try {
     const raw = JSON.parse(fs.readFileSync(path.join(root, "knowledge", "index.json"), "utf-8")) as { entries?: KbIndexEntry[] };
     return raw.entries ?? [];
-  } catch {
+  } catch (e) {
+    // 索引读不到 ⇒ 提案基于"零知识卡" ⇒ 优化器给的结论是假的。留痕（仓库级）。
+    recordDiag(root, "kb", "readKbIndex:knowledge/index.json", e);
     return [];
   }
 }

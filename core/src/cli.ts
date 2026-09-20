@@ -54,7 +54,9 @@ function usage(): string {
     "                                                      改写运行时编排（tool 的位置与内容配置）；--replan 立即重编译计划",
     "",
     "脸:",
-    "  serve --port 8421                                   HTTP 面（REST + OpenAPI）",
+    "  up   [--port 8421] [--open]                        首次启动：内核 API + legacy 页面端点 + 静态页 **同进程单端口**",
+    "                                                     （端口占用自动顺延；--open 顺带打开浏览器）",
+    "  serve --port 8421                                   HTTP 面（REST + OpenAPI；与 up 同实现，保留兼容）",
     "  mcp                                                 MCP 面（stdio）",
   ].join("\n");
 }
@@ -202,6 +204,24 @@ async function main(): Promise<number> {
           }),
         );
       }
+      case "up": {
+        // 首次启动：一个进程同时提供 内核 API + legacy 页面端点 + 静态页面（R8-OPS server 合一）。
+        // 端口被占用是"首次启动"最常见的卡点，且与用户无关 ⇒ 自动顺延，不让人去查端口。
+        const { startHttp } = await import("./http.js");
+        const want = Number(flags.port ?? 8421);
+        const chosen = await pickFreePort(want, want + 20);
+        if (chosen === null) {
+          console.error(`端口 ${want}–${want + 20} 全被占用；用 --port <n> 指定其他端口`);
+          return 1;
+        }
+        if (chosen !== want) console.error(`[up] 端口 ${want} 被占用，已顺延到 ${chosen}`);
+        if (!fs.existsSync(path.join(kernel.root, "index.html"))) {
+          console.error("[up] 警告：入口页 index.html 不存在——页面需先由生成器产出（tools/project-pages.py）。");
+        }
+        if (flags.open) openBrowser(`http://127.0.0.1:${chosen}/`);
+        await startHttp(kernel, chosen);
+        return 0; // up 常驻
+      }
       case "serve": {
         const { startHttp } = await import("./http.js");
         await startHttp(kernel, Number(flags.port ?? 8421));
@@ -224,6 +244,39 @@ async function main(): Promise<number> {
     console.error(JSON.stringify({ error: "INTERNAL", message: (e as Error).message }, null, 2));
     return 1;
   }
+}
+
+/** 从 from 到 to 找第一个可监听端口（127.0.0.1）；全占则 null。 */
+async function pickFreePort(from: number, to: number): Promise<number | null> {
+  const net = await import("node:net");
+  for (let p = from; p <= to; p++) {
+    const free = await new Promise<boolean>((resolve) => {
+      const srv = net.createServer();
+      srv.once("error", () => resolve(false));
+      srv.once("listening", () => srv.close(() => resolve(true)));
+      srv.listen(p, "127.0.0.1");
+    });
+    if (free) return p;
+  }
+  return null;
+}
+
+/** 打开浏览器（仅 `up --open` 时调用）；失败不影响服务本身。 */
+function openBrowser(url: string): void {
+  void import("node:child_process").then(({ spawn }) => {
+    const [cmd, args] =
+      process.platform === "win32"
+        ? ["cmd", ["/c", "start", "", url]]
+        : process.platform === "darwin"
+          ? ["open", [url]]
+          : ["xdg-open", [url]];
+    try {
+      spawn(cmd, args, { detached: true, stdio: "ignore" }).unref();
+    } catch {
+      /* 打开失败不是错误：把 URL 打出来即可 */
+      console.error(`[up] 无法自动打开浏览器，请手动访问 ${url}`);
+    }
+  });
 }
 
 /**

@@ -27,6 +27,7 @@ import {
   type EffectiveFlow, type FlowOverlay, type FlowPolicy, type OverlayPatch,
 } from "./overlay.js";
 import { recordMetric, readMetrics, summarizeMetrics, extractCtxUsage } from "./metrics.js";
+import { recordDiag, summarizeDiags } from "./diag.js";
 import { proposeFromMetrics, buildReport, overlayFromProposals, readMinerFindings, minerToProposals } from "./optimize.js";
 import { resolveToolConfig } from "./kits.js";
 import { fnv1a, stableStringify } from "./ids.js";
@@ -1233,15 +1234,21 @@ export class Kernel {
     try {
       this.flowMine(projectId);
       this.flowOptimize(projectId, { actor: "auto-completed" });
-    } catch {
-      /* 负反馈旁路：不阻塞完成态 */
+    } catch (e) {
+      // 负反馈是旁路（不阻塞完成态），但"声明了却静默没跑"正是本仓最反感的模式 ⇒ 留痕
+      recordDiag(projectDir, "feedback", "auto-mine+optimize", e);
     }
     return { status: "completed" };
   }
 
   // ---------- R5：运行指标与生成式编排 ----------
 
-  /** 指标落盘（旁路）：任何异常都不许阻断流水线——主线事实记账在 journal。 */
+  /**
+   * 指标落盘（旁路）：任何异常都不许阻断流水线——主线事实记账在 journal。
+   * **但不许静默**：曾经的裸 `catch {}` 让 N6（contracts/metrics.schema.json 的 phase.enum 漏了 link）
+   * 藏了整整一版——436 行 metrics 里 link/boundary 相各 0 条，而指标是唯一调优依据。
+   * 现在改为落 `registry/diagnostics.jsonl` + stderr 一次。
+   */
   private metric(
     projectDir: string,
     state: RunState,
@@ -1260,8 +1267,8 @@ export class Kernel {
         round: state.nodes[nodeId]?.round ?? 0,
         ...extra,
       });
-    } catch {
-      /* 指标是旁路 */
+    } catch (e) {
+      recordDiag(projectDir, "metric", `${nodeId}/${phase}`, e);
     }
   }
 
@@ -1393,6 +1400,9 @@ export class Kernel {
         /* journal 缺失 = 无提醒（旁路） */
       }
     }
+    // R8-OPS 诊断通道：旁路失败不再静默——指标/断言/知识库台账的读取失败在此汇总暴露。
+    // 页面与 flow_effect 都消费它；`count > 0` 意味着"本项目的某个结论可能不可信"。
+    const diagnostics = summarizeDiags(projectDir);
     return {
       projectId,
       flowId: eff.flow.id,
@@ -1404,6 +1414,7 @@ export class Kernel {
       applied: eff.appliedCount,
       overlay: overlay ? { origin: overlay.origin, patches: overlay.patches, history: overlay.history ?? [] } : null,
       metrics: { events: events.length, window: summary.window, byTool: summary.byTool, knowledge: summary.knowledge, gates: summary.gates },
+      diagnostics,
       mine,
       gatesDue,
     };
@@ -1911,7 +1922,19 @@ export class Kernel {
       runstate: state ?? (() => { try { return JSON.parse(fs.readFileSync(legacyStatePath(projectDir), "utf-8")); } catch { return {}; } })(),
       project: projectId,
       snapshots,
+      // R8-OPS：旁路失败的可见面。页面据此显示「本项目有 N 条诊断」——能力必须有家的第③环（UI 可见）。
+      diagnostics: summarizeDiags(projectDir),
     };
+  }
+
+  /**
+   * 诊断通道只读面（R8-OPS）：旁路失败汇总。
+   * `projectId` 缺省 = 仓库级（知识库索引/台账类失败记在 `<root>/registry/diagnostics.jsonl`）。
+   */
+  viewDiagnostics(projectId?: string) {
+    if (!projectId) return { scope: "repo" as const, dir: this.repoRoot, ...summarizeDiags(this.repoRoot, 20) };
+    const projectDir = this.projectDir(projectId);
+    return { scope: "project" as const, projectId, dir: projectDir, ...summarizeDiags(projectDir, 20) };
   }
 }
 

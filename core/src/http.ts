@@ -2,9 +2,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import fastify from "fastify";
+import type { FastifyReply, FastifyRequest } from "fastify";
 import cors from "@fastify/cors";
 import { CONTRACTS_DIR, ROOT } from "./schema.js";
 import { Kernel, KernelError } from "./kernel.js";
+import { recordDiag } from "./diag.js";
+import { registerCompat } from "./compat.js";
+import { contentTypeOf, resolveStaticPath } from "./static.js";
 
 export function buildHttpApp(kernel: Kernel) {
   const app = fastify({ logger: false });
@@ -49,7 +53,9 @@ export function buildHttpApp(kernel: Kernel) {
     if (!flowId) { reply.code(404); return { error: "NO_FLOW" }; }
     try {
       return kernel.loadFlow(flowId);
-    } catch {
+    } catch (e) {
+      // 报 NO_FLOW 是"可见的失败"，但失败原因（flow 损坏？schema 违约？）此前被丢掉 ⇒ 留痕。
+      recordDiag(kernel.projectDir(id), "io", `http:graph:loadFlow(${flowId})`, e);
       reply.code(404);
       return { error: "NO_FLOW" };
     }
@@ -76,6 +82,16 @@ export function buildHttpApp(kernel: Kernel) {
     const { since, limit, node } = req.query as { since?: string; limit?: string; node?: string };
     return kernel.viewJournal(id, { since, limit: limit ? Number(limit) : undefined, node });
   });
+
+  // R8-OPS 诊断通道（旁路失败可见面）：
+  //   项目级 = 指标/断言/词汇表类失败；仓库级（/api/diagnostics）= 知识库索引/台账类失败。
+  //   count > 0 意味着"本项目的某个结论可能不可信"——页面据此出黄条，不再静默。
+  app.get("/api/projects/:id/diagnostics", async (req) => {
+    const { id } = req.params as { id: string };
+    return kernel.viewDiagnostics(id);
+  });
+
+  app.get("/api/diagnostics", async () => kernel.viewDiagnostics());
 
   app.get("/api/projects/:id/snapshots/:node", async (req) => {
     const { id, node } = req.params as { id: string; node: string };
@@ -145,13 +161,42 @@ export function buildHttpApp(kernel: Kernel) {
     }
   });
 
+  // R8-OPS：legacy 页面端点（serve.py 语义）并入内核面 —— 同一份页面在本进程内即可跑。
+  registerCompat(app, kernel);
+
+  // 静态面（最末优先级）：同端口托管页面。白名单见 static.ts —— 关键差别是它**不会**
+  // 把 .zhuque-key / .git / src/kakaxing-Json 一起发出去（旧 serve.py 会）。
+  // 注册两次是因为 find-my-way 里 `/*` 与 `/` 是两条不同路由，`/`（入口页）不能漏。
+  const statics = async (req: FastifyRequest, reply: FastifyReply) => {
+    const url = (req.raw.url ?? "/").split("?")[0];
+    const abs = resolveStaticPath(kernel.root, url);
+    if (!abs) {
+      reply.code(404);
+      return { error: "NOT_FOUND" };
+    }
+    reply.header("cache-control", "no-store, must-revalidate");
+    reply.type(contentTypeOf(abs));
+    return fs.readFileSync(abs);
+  };
+  app.get("/", statics);
+  app.get("/*", statics);
+
   return app;
 }
 
 export async function startHttp(kernel: Kernel, port = 8421): Promise<void> {
   const app = buildHttpApp(kernel);
   await app.listen({ port, host: "127.0.0.1" });
-  console.log(`miniflow kernel HTTP listening on http://127.0.0.1:${port}  (OpenAPI: /api/openapi.json, ROOT=${ROOT})`);
+  console.log(
+    [
+      `miniflow 内核 + 前端已同进程启动：http://127.0.0.1:${port}`,
+      `  页面  /                       （静态面，白名单托管）`,
+      `  索引  /index.html`,
+      `  接口  /api/openapi.json       （OpenAPI ${String((app as unknown as { openapi?: string }).openapi ?? "contracts/http-openapi.json")}）`,
+      `  诊断  /api/diagnostics        （仓库级旁路失败；项目级 /api/projects/<id>/diagnostics）`,
+      `  ROOT=${ROOT}`,
+    ].join("\n"),
+  );
 }
 
 function httpError(reply: { code: (n: number) => { send: (v: unknown) => void } }, e: unknown): void {

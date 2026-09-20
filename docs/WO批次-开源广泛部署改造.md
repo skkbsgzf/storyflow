@@ -478,6 +478,8 @@ du -sh projects src/kakaxing-Json/data
 | OS-02 波 2 第一批（词表落地 + policy 声明生效） | ✅ 已落地 | `modules.ts::effectiveFlow3` 实装 `set-tool`/`set-input`/`unsupported` 回显/`flow.policy` 起点；`kernel.ts::effectiveOf` 去掉硬编码 `{}`。新增 9 条单测（`modules.test.ts` 8→16 条） | 2026-09-20 |
 | OS-03 门禁崩溃（3/12 处，预修） | ✅ 已落地 | `tools/validate-kb.py`、`tools/flow-normalize.py`、`tools/r5-migrate.py` 补 flow@3 免检分支 | 2026-09-20 |
 | **OS-02 阶段 A（可中断 / 可恢复）** | ✅ 已落地 | 等待态显式化（`blocked` 独立于 `failed`）；`flow_resume` 接 `failed`/`blocked`；连接件驳回封顶 `maxRounds`；出厂 `kit_boundary: always→auto`（含 N5 修复）；`overlayHash` 首装漂移即重编译；`awaitTimeoutMs` → `stalledAt`。见下「OS-02 阶段 A 明细」 | 2026-09-20 |
+| **R8-OPS 第 0 批 · 失败外显（诊断通道）** | ✅ 已落地 | 新增 `contracts/diagnostics.schema.json` + `core/src/diag.ts`（`recordDiag`/`readDiags`/`summarizeDiags`，**永不抛异常**）；改造 8 处「吞掉会改变结论」的 `catch`；`flow_effect` 与 `/api/diagnostics` 暴露汇总。见下「R8-OPS 第 0 批明细」 | 2026-09-20 |
+| **R8-OPS 第 0 批 · server 合一 + `miniflow up`** | ✅ 已落地 | 新增 `core/src/static.ts`（白名单静态面）+ `core/src/compat.ts`（serve.py 八个 legacy 端点并入内核面）；`cli.ts` 新增 `up`（端口占用自动顺延）。**同进程单端口同时提供 内核 API + legacy 端点 + 页面**。见下明细 | 2026-09-20 |
 | OS-02 阶段 C（默认值回调）/ 阶段 D（死配置 `iterate`） | ⏳ 待开工 | 含 N2（`adapt:"off"` 未实现，需拍板）、N4（`set-link` 契约，需拍板）、§三勘误 2（`model_tier` 默认 `high`）、§二 C/D 两表 | — |
 | OS-00 数据剥离执行 / OS-04 / OS-05 / OS-06 / OS-07 | ⏳ 待开工 | 数据剥离需先拍板 附 D #2/#3/#5 | — |
 
@@ -553,3 +555,102 @@ du -sh projects src/kakaxing-Json/data
 | `validate-kb` 1 FAIL（`kb/trope/saturation`） | `skills/orchestration-miner.md` 引用了不存在的知识条目 | **被 `KeyError: 'graph'` 崩溃掩盖** —— 「崩 = 通过」 |
 | `kit-lint` 未登记断言 `AE-CH-LEN` | 引擎自造 id，未进注册表台账 | 两套命名漂移，lint 只报 WARN |
 | `kit-config-init` 覆盖缺口 | config 表未覆盖若干 system op | 需 `--allow-generic` 或补表 |
+
+---
+
+## R8-OPS · 第 0 批：常驻 server 架构的前置两件
+
+### 起因：用户提出的架构诉求（2026-09-20 讨论）
+
+原话要点：工具链现**寄生于其他 Agent 上下文**（Skill/插件形态）；希望**首次启动起一个 server 线程**、
+默认初始化**常驻前端页**；初始化面板含几个 step（**项目地址** + **项目配置文件**，支持「用户自存模板／
+导入官方模板／从零填参数新建模板」）；要求先讨论「agent↔server 持续通信能否解决 flow 调用规范问题、
+让前后端更稳」；未来让工具**原生适配 pi agent**。
+
+**讨论结论（已由用户拍板）**
+
+1. 方向**对**，且是「补最后一段」而非重建——`core/src/http.ts`（REST + OpenAPI v1.1.0）与
+   `core/src/mcp.ts`（MCP/stdio）**早已存在**。
+2. 持续通信的价值不在"通信"，在**收敛到唯一入口**。病灶实测：`flow_init` **在 CLI 有、MCP 无、
+   HTTP verb switch 无** ⇒ 初始化面板所需动词恰好最不可达。「规范问题」的实体是
+   **动词表四份副本（CLI 13 / MCP 7 / HTTP 4 / Skill 纯文档）互不同步**——与 N6 同源。
+3. **常驻前置条件 = 失败必须外显**（本批 0A）。
+4. **两台 server 必须合一**（本批 0B）：`tools/serve.py`（Python，管页面）与 `core/src/http.ts`
+   （TS，管内核）并存，且页面 `fetch` **全打在 serve.py 上、一个都没打到内核 API** ⇒ 页面状态是
+   构建时注入的静态快照、写操作绕开内核直接改文件。**这才是"前后端不稳定"的真正来源**。
+5. 前端「快照 → 订阅」是**架构改动**，建议先轮询 `/api/projects/:id/state`（端点已有、内核已落盘读模型、
+   零新增契约），再考虑 SSE。
+6. 初始化面板的数据模型**已存在**（`contracts/project-config.schema.json` +
+   `docs/项目初始化配置.md` + `tools/project-init.py`），要做的是「schema → 表单 + 模板库」。
+   **必须守住：模板 ≠ 配置**；配置只是**项目 overlay 的输入**，须经内核合成，不得直接当 flow 参数。
+7. pi agent：MCP SDK `^1.7.0` **自带 `streamableHttp` transport**（server + client 均有），无需新依赖；
+   但建议**放最后**，先稳单机链路。
+
+**用户拍板（AskUserQuestion 三选）**：① server 架构 = **单进程（http.ts 兼静态托管）**；
+② 前端实时性 = **先轮询**；③ 下一步 = **先做前置两件**。
+
+### 0A · 失败外显（诊断通道）
+
+| 文件 | 改动 |
+|---|---|
+| `contracts/diagnostics.schema.json` | **新建**：`diagnostics@1`（`ts`/`format`/`kind`/`scope`/`detail`，`additionalProperties:false`）。`kind` enum：`metric`/`assert`/`kb`/`aesthetic`/`overlay`/`feedback`/`io`/`other` |
+| `core/src/diag.ts` | **新建**：`recordDiag`（落 `<dir>/registry/diagnostics.jsonl` + stderr 一次，**永不抛异常**）、`readDiags`（坏行容错）、`summarizeDiags`（`count`/`byKind`/`byScope`/`recent`） |
+| `core/src/schema.ts` | `SCHEMA_IDS` 增 `"diagnostics"`（测试侧据此做契约复验） |
+| `core/src/kernel.ts` | ①`metric()` 的裸 `catch{}`（N6 藏身地）→ `recordDiag(kind:"metric")`；②`completed` 后的负反馈自动触发（`flowMine`+`flowOptimize`）失败 → `recordDiag(kind:"feedback")`；③`flowEffect` 返回体增 `diagnostics`；④新增 `viewDiagnostics(projectId?)`（无参=仓库级） |
+| `core/src/asserts.ts` | `checksVia` 读 `knowledge/aesthetic/assertions.json` 失败 → 留痕（台账读不到 = 别名全失 = 断言链"看起来正常但整链降级"） |
+| `core/src/metrics.ts` | `buildConceptIndex` 读 `knowledge/index.json` 失败 → 留痕（概念层整体跳过 ⇒ **「命中率崩了」这个结论本身不可信**，而它正是要不要动编排的判据） |
+| `core/src/optimize.ts` | `readKbIndex` 失败 → 留痕（提案基于"零知识卡" ⇒ 优化器给的结论是假的） |
+| `core/src/aesthetic.ts` | `projectConfig`（词汇表）+ `purityRegexps`（纯净度标记台账）失败 → 留痕。**词汇表区分 ENOENT**：缺文件是合法常态（未配置），只有「存在但读不出来」才留痕——否则噪声会淹没信号 |
+| `core/src/http.ts` | 新增 `GET /api/projects/:id/diagnostics` 与 `GET /api/diagnostics`；`graph` 的 `loadFlow` 失败也留痕（原先把失败原因丢了） |
+| `core/test/r8-diag.test.ts` | **新建 4 条**：契约合规 + 坏行容错；**失败注入**（把 `metrics.jsonl` 占成目录 ⇒ EISDIR）；kb 索引损坏；两档 scope 互不串味 |
+
+**判据（不是所有 `catch` 都要改）**：只有「**吞掉就会改变结论 / 让能力静默失效**」的必须留痕；
+纯容错型（半行 JSON 跳过、锁目录清理、默认值回退）**保持吞**——全仓 ~57 处静默 `catch`，本批只改 8 处，
+其余定性为「可吞」。
+
+### 0B · server 合一 + `miniflow up`
+
+| 文件 | 改动 |
+|---|---|
+| `core/src/static.ts` | **新建**：受白名单约束的静态托管。**顺带修掉一个 P0**：旧 `serve.py` 继承 `SimpleHTTPRequestHandler`，任何 `/xxx` 都照发 ⇒ `/.zhuque-key`、`/.git/config`、`/src/kakaxing-Json/*`（29M 含真实姓名/电话/UCloud 密钥）**全部可下载**。新模型 = 后缀白名单 ∩ 路径包含 ∩ 敏感段/前缀拒绝；拒绝一律 404（不泄露存在性）。私有目录可用 `MINIFLOW_STATIC_DENY_PREFIX` 追加 |
+| `core/src/compat.ts` | **新建**：`serve.py` 八个 legacy 端点并入内核面（`/_kit/save`、`/api/save`、`/_kit/history`(GET/POST)、`/api/archive-project`、`/api/import-flow`、`/api/regen`、`/api/import-demo`、`/_kit/tunnel.json`）。与 serve.py 的三点差别：①不再无声吞错（全部写 diagnostics）；②写路径复用 `isDeniedRelativePath`（与静态面**单点实现**）；③页面生成失败**显式返回**（`MINIFLOW_PYTHON` 可指定解释器），不假装成功 |
+| `core/src/http.ts` | 注册 `registerCompat` + 静态面（`/` 与 `/*` 两条路由——find-my-way 里它们是不同路由，入口页不能漏）；`startHttp` 启动横幅改为「内核 + 前端已同进程启动」 |
+| `core/src/cli.ts` | 新增 **`up`** 动词：`miniflow up [--port 8421] [--open]`；端口被占用**自动顺延**（首次启动最常见的卡点，且与用户无关）；入口页缺失时**明确告警**；`serve` 保留兼容 |
+| `core/test/r8-server.test.ts` | **新建 7 条**：`resolveStaticPath` 拒绝穿越/敏感文件；`isDeniedRelativePath` 读写共用；入口页与技能文档可发、敏感面一律 404；写入端点合法落盘 + 敏感路径 400；归档进 `_archived` 而非真删；隧道端点显式声明未启用；诊断端点两档 |
+
+**冒烟实测（真跑 `miniflow up --port 8433` + curl）**
+
+| 请求 | 结果 | 说明 |
+|---|---|---|
+| `GET /` | **200** | 入口页（storyflow 项目工作台） |
+| `GET /projects/p-wxl-001/workflow.html` | **200** | 项目工作台页 |
+| `GET /knowledge/index.json` | **200** | 页面需要（技能/标尺卡文档） |
+| `GET /src/kakaxing-Json/README.md` | **404** | ✅ 旧 serve.py 会发出去 |
+| `GET /.git/config` | **404** | ✅ |
+| `GET /core/src/kernel.ts` | **404** | 后缀不在白名单 |
+| `GET /api/diagnostics` | **200** | `{"scope":"repo",…,"count":0}` |
+| `GET /api/projects` | **200** | 11 项目清单正常 |
+
+### 第 0 批门禁实测（2026-09-20）
+
+| 门 | 结果 |
+|---|---|
+| `cd core && tsc --noEmit` | **OK** |
+| `vitest` | **183 passed / 0 failed（19 files）**（阶段 A 后为 172/17；本批 +11） |
+| `module-lint.py` | **0 errors** / 36 warnings（同前） |
+| `kit-lint.py` | **0 errors** / 21 warnings（同前） |
+| `flow-lint.py` | **21 errors** —— 与阶段 A 同数，全部为 7 个未迁移 flow@2 存量红档 |
+| `artifact-lint.py` | **0 errors** / 168 warnings（同前） |
+| `validate-kb.py` | **1 FAIL**（N7 存量） |
+
+### 第 0 批明确未做（下一批候选）
+
+- **前端 live 化**（把页面 `fetch` 从 serve.py 路径改为内核端点 / 轮询 `/api/projects/:id/state`）——
+  本批只做到「同一份页面在单进程内能跑」，**没有改页面**。
+- **初始化面板（OS-04）**：项目地址 + 配置模板（自存/导入官方/从零新建）。数据模型已在
+  `contracts/project-config.schema.json`，缺的是表单与模板库。
+- **`mcp.ts` 补动词**：仍只 7 个（缺 `flow_init`/`effect`/`mine`/`skill_patch`/`optimize`/`overlay`）——
+  「唯一动词表」要真正落地，必须让 CLI/HTTP/MCP 三面从**同一份声明**派生。
+- **`tools/serve.py` 的退场**：目前与 `up` 并存（隧道能力暂只在 serve.py 侧，`/_kit/tunnel.json`
+  已显式声明未启用）。
+- **pi agent 适配**：MCP SDK 自带 `streamableHttp`，可留待 OS-07 之后。

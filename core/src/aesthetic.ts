@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { Validation } from "./types.js";
+import { recordDiag } from "./diag.js";
 
 /** 中文集数解析：第X集 → 数字（支持 一~九十九 的常见写法） */
 const DIGITS: Record<string, number> = { 零: 0, 一: 1, 二: 2, 两: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9 };
@@ -71,7 +72,12 @@ function projectConfig(projectDir: string): { memes: string[]; banned: string[] 
       memes: Array.isArray(g.memes) ? g.memes.map(String) : [],
       banned: Array.isArray(g.banned) ? g.banned.map(String) : [],
     };
-  } catch {
+  } catch (e) {
+    // 区分「没配」与「坏了」：词汇表是可选项，ENOENT 是合法常态（检查本就不适用），
+    // 只有**存在但读不出来**才是真故障——那意味着去机味/禁忌检查静默失效却仍报"通过"。
+    if ((e as NodeJS.ErrnoException)?.code !== "ENOENT") {
+      recordDiag(projectDir, "aesthetic", "projectConfig:词汇表.json", e);
+    }
     return { memes: [], banned: [] };
   }
 }
@@ -113,12 +119,15 @@ function purityRegexps(projectDir: string): RegExp[] {
     for (const s of j.regex ?? []) {
       try {
         out.push(new RegExp(s));
-      } catch {
-        /* 台账里的坏正则跳过，不拖垮整个检查 */
+      } catch (e) {
+        // 台账里的坏正则：跳过是对的（不拖垮整检），但"一条标记静默失效"必须可见。
+        recordDiag(projectDir, "aesthetic", `purityRegexps:bad-regex`, `${s} :: ${String(e)}`);
       }
     }
-  } catch {
-    /* 台账缺失 = 本检查不适用 */
+  } catch (e) {
+    // 台账缺失 ⇒ 纯净度检查**整项不适用**（返回空表，调用方视作"无需检查"）。
+    // 与 check-purity.py 共享同一份台账，缺失时两边都不报——最典型的"静默不设防"。
+    recordDiag(projectDir, "aesthetic", "purityRegexps:knowledge/aesthetic/purity-markers.json", e);
   }
   purityReCache = { root, re: out };
   return out;

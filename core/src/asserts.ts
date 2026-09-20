@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { Validation } from "./types.js";
+import { recordDiag } from "./diag.js";
 import { runAestheticAsserts } from "./aesthetic.js";
 
 /**
@@ -100,8 +101,10 @@ function checksVia(projectDir: string): Map<string, string> {
     for (const a of j.asserts ?? []) {
       if (a.id && a.checks_via && a.checks_via !== "self") via.set(a.id, a.checks_via);
     }
-  } catch {
-    /* 注册表缺失 = 无别名 */
+  } catch (e) {
+    // 台账读不到 ⇒ 所有 checks_via 别名消失 ⇒ 断言链"看起来正常但整链降级"。
+    // 这是「以为有，其实没有」的教科书形态（09-19 三方对账：87 条声明只 15 条有校验器）。
+    recordDiag(projectDir, "assert", "checksVia:knowledge/aesthetic/assertions.json", e);
   }
   viaCache = { root, via };
   return via;

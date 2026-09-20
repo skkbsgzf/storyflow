@@ -14,6 +14,7 @@ import type { RunMetric } from "./types.js";
 import { appendJsonl, readJsonl } from "./fsio.js";
 import { assertSchema } from "./schema.js";
 import { nowIso } from "./ids.js";
+import { recordDiag } from "./diag.js";
 
 export interface CtxUsage {
   offered: number;
@@ -176,7 +177,10 @@ function buildConceptIndex(root: string): ConceptIndex | null {
   let entries: { id: string; file: string }[] = [];
   try {
     entries = (JSON.parse(fs.readFileSync(indexPath, "utf-8")).entries ?? []) as { id: string; file: string }[];
-  } catch {
+  } catch (e) {
+    // 索引读不到 ⇒ 概念层整体跳过（extractCtxUsage 只在 idx 非空时做概念匹配）⇒
+    // 「命中率崩了」这个结论本身不可信，而它正是要不要动编排的判据。必须留痕。
+    recordDiag(root, "kb", "buildConceptIndex:knowledge/index.json", e);
     return null;
   }
   const df = new Map<string, number>();
