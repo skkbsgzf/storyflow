@@ -13,8 +13,8 @@
     "kit": { "type": "string" },
     "op": { "type": "string", "description": "kit.<op> —— 指标按 tool 聚合的主键" },
     "phase": {
-      "enum": ["dispatch", "submit", "gate", "auto-gate", "boundary", "core"],
-      "description": "dispatch=派发（上下文装载量）/ submit=提交（产出与断言）/ gate=人工裁决 / auto-gate=R5 自动门 / boundary=kit 边界验收 / core=确定性步"
+      "enum": ["dispatch", "submit", "gate", "auto-gate", "boundary", "link", "core"],
+      "description": "dispatch=派发（上下文装载量）/ submit=提交（产出与断言）/ gate=人工裁决 / auto-gate=R5 自动门 / boundary=kit 边界验收 / link=R6 模块间连接件裁决 / core=确定性步。R7（OS-02A）补 link：`types.ts::MetricPhase` 早就有它、内核也在写，但本契约的 enum 漏了 ⇒ recordMetric 抛 SchemaViolation，被 kernel.metric 的 `catch{}`（指标是旁路）吞掉——实盘 436 行 metrics 里 link 相 **0 条**，连接件驳回率对优化器完全不可见。"
     },
     "round": { "type": "integer" },
     "latencyMs": { "type": "number" },

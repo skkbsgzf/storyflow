@@ -27,6 +27,9 @@ export interface FlowPolicy {
   link_default?: "auto" | "manual";
   adapt?: AdaptPolicy;
   budget?: { tokens?: number; latencyMs?: number; humanGates?: number };
+  /** R7（OS-02A）：同一门累计驳回上限 / 等待态超时毫秒。见 kernel.ts 的 blocked 出口。 */
+  maxRounds?: number;
+  awaitTimeoutMs?: number;
 }
 
 export interface OverlayEvidence {
@@ -115,8 +118,18 @@ export interface EffectiveFlow {
   appliedCount: number;
 }
 
+/**
+ * 出厂缺省策略。
+ *
+ * R7（OS-02A）改动：`kit_boundary` 由 `"always"` 改 `"auto"`。
+ * 开源部署的第一道阻塞就在这里——`always` 会在**每一个跨域交接**插一道人工验收门：
+ * 一份干净的 clone 跑起来立刻被拦在门外，而仓储里 7 条 flow@2 的 `policy` 全是 `{}`（全吃缺省）。
+ * `auto` 不是「不派生」：边界门照派生（页面看得见、boundaries 清单里有、优化器认它、指标照记），
+ * 只是由 `advance` **在计划内自动裁决**——可见、可审计、不阻塞。
+ * 要人工验收的 flow 显式写 `policy.kit_boundary="always"`：策略是旋钮，不是硬编码。
+ */
 export const DEFAULT_POLICY: Required<Pick<FlowPolicy, "kit_boundary" | "gate_mode" | "adapt">> = {
-  kit_boundary: "always",
+  kit_boundary: "auto",
   gate_mode: "auto",
   adapt: "propose",
 };
@@ -456,8 +469,11 @@ export function injectKitBoundaries(
       kind: "gate",
       gate_role: "kit-boundary",
       title: `跨域交接验收：${S} → ${T}`,
-      desc: `R5 唯一保留的人工验收点：${S} 域的产物交给 ${T} 域执行前，由人确认交接口径（范围/术语/依据）。域内质量由各 tool 自己的 asserts 与 config 负责。`,
-      when: policy === "auto" ? { input: "__boundary_auto__", eq: "never" } : undefined,
+      desc: `R5 人工验收点：${S} 域的产物交给 ${T} 域执行前，由人确认交接口径（范围/术语/依据）。域内质量由各 tool 自己的 asserts 与 config 负责。`,
+      // R7（OS-02A）修：此处**不得**用节点级 when 关掉边界门。`compilePlan` 会把不活跃节点的
+      // 出入边一起裁掉（plan.ts:52）⇒ 边界门的下游整段失去活跃入边、又不是源点、直接不可达：
+      // 计划在门上截断、run 判 completed，人看到的却是「还有一半节点 status=none」。
+      // 探针实证（policy=auto 时 plan.order 止于 gate-r1）。改为「留在计划内、由 advance 自动裁决」。
     };
     for (const e of edges) e.to = id;   // 原地改线：保留边 id 与既有 role/when/params
     const eid = `e-${id}-out`;
@@ -502,6 +518,9 @@ export function effectiveFlow(
     gate_mode: res.policy.gate_mode ?? DEFAULT_POLICY.gate_mode,
     adapt: res.policy.adapt ?? DEFAULT_POLICY.adapt,
     ...(res.policy.budget ? { budget: res.policy.budget } : {}),
+    // R7：两个可中断旋钮对 flow@2 同样生效（此前只在 flow@3 的 policy 白名单里，flow@2 静默丢弃）
+    ...(res.policy.maxRounds !== undefined ? { maxRounds: res.policy.maxRounds } : {}),
+    ...(res.policy.awaitTimeoutMs !== undefined ? { awaitTimeoutMs: res.policy.awaitTimeoutMs } : {}),
   };
   const b = injectKitBoundaries(res.flow, { policy: policy.kit_boundary, suppressed: res.suppressed });
   return {

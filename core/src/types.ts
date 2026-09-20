@@ -114,13 +114,18 @@ export interface FlowDescriptor {
   version: string;
   status?: string;
   /** R5 编排策略：kit 边界验收 / 门语义 / 优化 agent 权力 / 预算（运行时被 overlay 的 set-policy 覆盖）。
-   *  R6（flow@3）：kit_boundary/gate_mode 退役，只剩 link_default / adapt / budget。 */
+   *  R6（flow@3）：kit_boundary/gate_mode 退役，只剩 link_default / adapt / budget。
+   *  R7（OS-02A）：`maxRounds`（同一门重跑上限）/ `awaitTimeoutMs`（等待超时）对两种格式都生效。 */
   policy?: {
     kit_boundary?: "always" | "auto" | "off";
     gate_mode?: "auto" | "manual";
     link_default?: "auto" | "manual";
     adapt?: "off" | "propose" | "apply";
     budget?: { tokens?: number; latencyMs?: number; humanGates?: number };
+    /** R7：同一门累计驳回上限，超越即 blocked（缺省不限，但不再静默无限乒乓——越限必 journal 留痕）。 */
+    maxRounds?: number;
+    /** R7：等待态（suspended/awaiting_input）超时毫秒数；到点标 blocked + stalledAt，**不自动放行**。 */
+    awaitTimeoutMs?: number;
   };
   inputs?: Record<string, FlowInputDef>;
   outputs?: FlowOutput[];
@@ -165,7 +170,14 @@ export interface FlowOutput {
 }
 
 // run-state.schema.json v1.0.1
-export type RunStatus = "running" | "awaiting_input" | "suspended" | "completed" | "failed";
+/**
+ * R7（OS-02A）等待态显式化：`blocked` 与 `failed` 分开。
+ *  - blocked = **停机等人**：重跑超 `policy.maxRounds`、等待超 `policy.awaitTimeoutMs`、源文件缺失。
+ *    `flow_resume` 恢复；`advance` 不得自动越过（静默自动推进比停机坏得多）。
+ *  - failed  = **终态**：门裁决 reject 终止。`flow_resume` 只能靠「重跑失效范围」救回，
+ *    仅 `flow_rerun` / `flow_resume` 两条路。
+ */
+export type RunStatus = "running" | "awaiting_input" | "suspended" | "blocked" | "completed" | "failed";
 export type NodeStatus = "none" | "running" | "done" | "pending" | "awaiting" | "rejected" | "stale";
 export type GateVerdict = "none" | "awaiting" | "pass" | "pass-with-conditions" | "send-back" | "reject";
 
@@ -214,6 +226,10 @@ export interface RunState {
   comments?: Record<string, string[]>;
   notes?: string[];
   lastRejectReason?: string;
+  /** R7（OS-02A）：逐门累计驳回轮次 {gateNodeId: n}；`policy.maxRounds` 判据，超越即 blocked。 */
+  rejects?: Record<string, number>;
+  /** R7（OS-02A）：等待超 `policy.awaitTimeoutMs` 的到点时刻（ISO）；与 status=blocked 同写。 */
+  stalledAt?: string;
 }
 
 // task-package.schema.json

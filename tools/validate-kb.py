@@ -67,8 +67,15 @@ flow_files = glob.glob("flows/*/flow.json")
 skills = {os.path.basename(f)[:-3] for f in glob.glob("skills/*.md")}
 missing_skills = set()
 flow_count = 0
+skipped_flow3 = []
 for ff in flow_files:
     fl = json.load(open(ff, encoding="utf-8"))
+    # flow@3（模块序列）：无手画 graph，节点由内核 expandFlow3 派生。
+    # 派生面的 skill 引用由 module-lint.py 覆盖；此处显式跳过而不是 KeyError 崩掉
+    # ——「校验工具自己崩掉 ≠ 通过」（2026-09-20 实测：本行曾让 flow@3 之后的检查全部被掩盖）。
+    if "graph" not in fl:
+        skipped_flow3.append(fl.get("id", os.path.basename(os.path.dirname(ff))))
+        continue
     flow_count += 1
     for n in fl["graph"]["nodes"].values():
         for s in [n.get("skill", "")] + n.get("assist", []):
@@ -78,6 +85,11 @@ if missing_skills:
     report["fail"].append(f"flow references missing skills: {missing_skills}")
 else:
     R(f"all skills referenced by {flow_count} flows exist in skills/")
+if skipped_flow3:
+    report["warn"].append(
+        f"flow@3 无 graph，skill 引用免检（{len(skipped_flow3)} 条：{sorted(skipped_flow3)}）——"
+        "派生面由 module-lint.py 覆盖"
+    )
 
 # agent profile binding checks
 try:

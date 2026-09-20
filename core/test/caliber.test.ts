@@ -4,7 +4,9 @@
  * 这一组测试锁的是**数字可信度**本身：optimize.ts 的全部提案都吃 registry/metrics-summary.json，
  * 口径一旦失真，优化器就会稳定地优化噪声。所以这里断言的不是"功能有没有"，而是"算得对不对"。
  */
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { summarizeMetrics } from "../src/metrics.js";
 import { bodySkeleton, foreignOwnTerms, headerTemplate } from "../src/asserts.js";
@@ -91,21 +93,75 @@ describe("D5 · 派发前置（正文骨架 + 禁词表）", () => {
     expect(tpl.endsWith("---")).toBe(true);
   });
 
+  /**
+   * 禁词表（foreignOwnTerms）的两条用例。
+   *
+   * ⚠️ 数据来源改造（2026-09-20 · OS-00 第 8 项）：原先这两条直接读 `projects/p-fq-001`、
+   * `p-ts-001`、`p-key-soul` 三个真实项目目录。这三个目录后来被归档到 `_archive`/`_archived`，
+   * 于是 `readProjectOwn` 返回空 → `asserts.ts:477 if (!myOwn.length) return []` →
+   * 断言拿到 `[]`，测试长期红着（`expected [] to include '老周'`）。
+   *
+   * 现在改为**自建 fixture**（临时目录），不再依赖任何真实项目数据 —— 这是把 `projects/`
+   * 移出仓库跟踪的前置条件。词条沿用当年 _918test 的三处真实打回记录
+   * （老周 / 魏峥 / 思维链），所以断言语义与当年完全一致，只是数据搬进了测试自己。
+   */
+  const GLOSSARY: Record<string, string[]> = {
+    // 本项目（me）：own 词「陈潮生 / 思维链」是当年被 glossary 打回的真实专名
+    "p-fq-001": ["陈潮生", "思维链", "海记大排档"],
+    // 他项目 A：own 含「老周」（当年打回本项目的违禁词）；「青川」用于验证包含豁免
+    "p-ts-001": ["老周", "清川河", "青川", "临江圩"],
+    // 他项目 B：own 含「魏峥」（当年打回本项目的违禁词）与「青川县」（包含豁免的母词）
+    "p-key-soul": ["魏峥", "青川县", "沈让"],
+  };
+
+  let fixtureRoot = "";
+  beforeAll(() => {
+    fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "mf-glossary-"));
+    const projectsDir = path.join(fixtureRoot, "projects");
+    for (const [id, own] of Object.entries(GLOSSARY)) {
+      fs.mkdirSync(path.join(projectsDir, id), { recursive: true });
+      fs.writeFileSync(
+        path.join(projectsDir, id, "词汇表.json"),
+        JSON.stringify({ project: id, own }, null, 2),
+        "utf-8",
+      );
+    }
+    // 一个只有目录、没有词汇表的项目：验证「未登记词汇表 → 守卫未启用」
+    fs.mkdirSync(path.join(projectsDir, "p-bare"), { recursive: true });
+  });
+  afterAll(() => {
+    if (fixtureRoot) fs.rmSync(fixtureRoot, { recursive: true, force: true });
+  });
+
   it("禁词表 = 他项目 own 词的投影，本项目 own 词不进表", () => {
-    const me = path.join(ROOT, "projects", "p-fq-001");
-    const terms = foreignOwnTerms(ROOT, me);
-    // 真实数据实证：这三个词正是 _918test 里 glossary 打回的三处
+    const me = path.join(fixtureRoot, "projects", "p-fq-001");
+    const terms = foreignOwnTerms(fixtureRoot, me);
+    // 真实事件实证：这两处正是 _918test 里 glossary 打回本项目的违禁词
     expect(terms).toContain("老周"); // p-ts-001 own
     expect(terms).toContain("魏峥"); // p-key-soul own
     expect(terms).not.toContain("陈潮生"); // 本项目 own 词——不是违禁词
+    expect(terms).not.toContain("思维链"); // 本项目 own 词
     expect(new Set(terms).size).toBe(terms.length); // 去重
   });
 
-  it("未被包含豁免生效：`青川` ⊂ `青川河` → 不把自己项目的派生词当违禁词", () => {
-    // p-key-soul own 含「青川县」；p-ts-001 own 含「清川河」（不同字，不构成包含）
-    const terms = foreignOwnTerms(ROOT, path.join(ROOT, "projects", "p-key-soul"));
+  it("未被包含豁免生效：`青川` ⊂ `青川县` → 不把自己项目的派生词当违禁词", () => {
+    const me = path.join(fixtureRoot, "projects", "p-key-soul");
+    // 「本项目」own 含「青川县」「魏峥」「沈让」；他项目 own 含「青川」（⊂ 青川县）
+    const terms = foreignOwnTerms(fixtureRoot, me);
     expect(terms).not.toContain("沈让"); // 本项目 own
+    expect(terms).not.toContain("魏峥"); // 本项目 own
+    expect(terms).not.toContain("青川"); // 被本项目 own「青川县」包含 → 豁免
+    expect(terms).toContain("清川河"); // 不被包含 → 仍是违禁词
     expect(terms).toContain("老周"); // 他项目 own
+  });
+
+  it("项目未登记词汇表 → 守卫未启用（返回空，不误报违禁词）", () => {
+    // p-bare 只有目录、没有 词汇表.json ⇒ readProjectOwn 返回 [] ⇒ 提前 return []
+    expect(foreignOwnTerms(fixtureRoot, path.join(fixtureRoot, "projects", "p-bare"))).toEqual([]);
+    // 目录都不存在时同样返回 []，不抛
+    expect(foreignOwnTerms(fixtureRoot, path.join(fixtureRoot, "projects", "不存在"))).toEqual([]);
+    // 但它仍然作为「他项目」向别人贡献 0 条（不会因为文件缺失把别人搞崩）
+    expect(foreignOwnTerms(fixtureRoot, path.join(fixtureRoot, "projects", "p-fq-001"))).toContain("老周");
   });
 });
 

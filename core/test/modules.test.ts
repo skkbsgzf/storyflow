@@ -12,7 +12,7 @@ import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { expandFlow3 } from "../src/modules.js";
+import { effectiveFlow3, expandFlow3 } from "../src/modules.js";
 import { ROOT } from "../src/schema.js";
 
 /** 最小双模块夹具：plot（骨架 3 + 插件 1）+ prose（骨架 1）。 */
@@ -205,5 +205,199 @@ describe("R6 · 模块展开器（expandFlow3）", () => {
     expect(prose.skeleton.spine).toEqual(["ghostwrite", "novel-deai"]);
     expect(prose.ops["ghostwrite"].output).toBe("正文.md");
     expect(prose.ops["novel-deai"].output).toBe("终稿.md");
+  });
+});
+
+/**
+ * R7 · 生效编排（effectiveFlow3）——「声明了就必须生效」
+ *
+ * 锁住三类此前的「静默不生效」（2026-09-20 审计 + p-wxl-001 复盘）：
+ *   ① `flow.policy` 被整个忽略（只读 defaults.link，且 adapt 硬编码 "propose"）
+ *   ② `set-tool` / `set-input` 在 flow@3 结构性不可达（kernel 把 toolOverrides/inputs 硬编码为 {}）
+ *      —— 铁证：`projects/ccwd-fq/registry/overlay.json` 里 2 条 `status:"applied"` 的 set-tool 从没被读
+ *   ③ 非 flow@3 的 patch kind 静默丢弃（日志记 applied、内核没读）
+ */
+describe("R7 · 生效编排（effectiveFlow3）：声明了就必须生效", () => {
+  /** 在夹具根写一个带 policy 声明的最小 flow@3。 */
+  function miniFlow(root: string, policy?: Record<string, unknown>, defaults?: Record<string, unknown>) {
+    return {
+      format: "flow@3",
+      id: "mini-f3",
+      title: "最小模块序列",
+      version: "1.0.0",
+      status: "draft",
+      defaults: defaults ?? { link: "manual" },
+      policy,
+      modules: [{ id: "m1", module: "m-plot", link: "auto" }],
+    } as never;
+  }
+  function fixture(): string {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "miniflow-eff3-"));
+    writeFixture(root);
+    return root;
+  }
+  const ov = (patches: unknown[]) =>
+    ({ format: "flow-overlay@1", flowId: "mini-f3", origin: "user", reason: "t", patches }) as never;
+
+  it("policy 起点取自 flow.json 声明——此前被整个忽略（adapt 硬编码 propose）", () => {
+    const root = fixture();
+    const r = effectiveFlow3(
+      root,
+      miniFlow(root, { link_default: "auto", adapt: "off", maxRounds: 3, awaitTimeoutMs: 60000 }),
+    );
+    expect(r.policy.link_default).toBe("auto"); // policy 声明胜过 defaults.link=manual
+    expect(r.policy.adapt).toBe("off"); // 此前恒为 "propose" ⇒ 用户关掉优化器也没用
+    expect(r.policy.maxRounds).toBe(3);
+    expect(r.policy.awaitTimeoutMs).toBe(60000);
+    expect(r.notes.join()).toMatch(/policy 起点取自 flow\.json/);
+  });
+
+  it("flow 未声明 policy 时回落 defaults.link（旧行为不破）", () => {
+    const root = fixture();
+    const r = effectiveFlow3(root, miniFlow(root, undefined, { link: "auto" }));
+    expect(r.policy.link_default).toBe("auto");
+    expect(r.policy.adapt).toBe("propose"); // 兜底值
+  });
+
+  it("set-tool 在 flow@3 真的进 toolOverrides（此前 kernel 硬编码 {}）", () => {
+    const root = fixture();
+    const r = effectiveFlow3(root, miniFlow(root), {
+      overlays: [
+        ov([
+          {
+            kind: "set-tool", kit: "m-plot", op: "bible", reason: "收窄注入 + 改旋钮",
+            config: { maxChars: 2000 }, model_tier: "lite",
+            add_knowledge: ["kb/craft/foreshadow"], remove_knowledge: ["kb/craft/structure"],
+            add_asserts: ["AE-FORESHADOW-CLOSE"], remove_asserts: ["AE-REPORT-DENSITY"],
+          },
+        ]),
+      ],
+    });
+    // key = <kit>.<op>，与 assembler.resolveNodeOp 的消费口径一致
+    expect(r.toolOverrides["m-plot.bible"]).toEqual({
+      config: { maxChars: 2000 }, model_tier: "lite",
+      add_knowledge: ["kb/craft/foreshadow"], remove_knowledge: ["kb/craft/structure"],
+      add_asserts: ["AE-FORESHADOW-CLOSE"], remove_asserts: ["AE-REPORT-DENSITY"],
+    });
+    expect(r.appliedCount).toBe(1);
+    expect(r.unsupported).toEqual([]);
+  });
+
+  it("多条 set-tool 命中同一 op 时字段累加（与 legacy 分支同语义）", () => {
+    const root = fixture();
+    const r = effectiveFlow3(root, miniFlow(root), {
+      overlays: [
+        ov([{ kind: "set-tool", kit: "m-plot", op: "bible", reason: "a", add_knowledge: ["kb/a"] }]),
+        ov([{ kind: "set-tool", kit: "m-plot", op: "bible", reason: "b", add_knowledge: ["kb/b"], model_tier: "lite" }]),
+      ],
+    });
+    expect(r.toolOverrides["m-plot.bible"].add_knowledge).toEqual(["kb/a", "kb/b"]);
+    expect(r.toolOverrides["m-plot.bible"].model_tier).toBe("lite");
+  });
+
+  it("set-input 在 flow@3 真的进 inputs（此前同样硬编码 {}）", () => {
+    const root = fixture();
+    const r = effectiveFlow3(root, miniFlow(root), {
+      overlays: [ov([{ kind: "set-input", key: "chapters", value: 6, reason: "章数拍板" }])],
+    });
+    expect(r.inputs).toEqual({ chapters: 6 });
+    expect(r.appliedCount).toBe(1);
+  });
+
+  it("set-module / insert-tool / set-policy 仍生效（回归）", () => {
+    const root = fixture();
+    const r = effectiveFlow3(root, miniFlow(root), {
+      overlays: [
+        ov([
+          { kind: "set-policy", key: "link_default", value: "manual", reason: "p" },
+          { kind: "set-module", id: "m1", caps: ["伏笔"], reason: "m" },
+          { kind: "insert-tool", module: "m1", tool: "foreshadow", slot: "end", reason: "i" },
+        ]),
+      ],
+    });
+    expect(r.policy.link_default).toBe("manual");
+    expect(r.appliedCount).toBe(3);
+    expect(r.unsupported).toEqual([]);
+  });
+
+  it("flow@3 不消费的 kind 显式回显且不计入 appliedCount（不许静默丢弃）", () => {
+    const root = fixture();
+    const r = effectiveFlow3(root, miniFlow(root), {
+      overlays: [
+        ov([
+          // 手工图语义：flow@3 无手画 graph，不消费
+          { kind: "set-node", id: "m1.bible", config: { depth: "深" }, reason: "x" },
+          { kind: "place-node", reason: "x" },
+          { kind: "suppress-boundary", from: "a", to: "b", reason: "x" },
+          // R6 已退役的 policy 键（optimize.ts 曾产出它）
+          { kind: "set-policy", key: "kit_boundary", value: "auto", reason: "x" },
+          // 合法的一条，用来验证对账
+          { kind: "set-tool", kit: "m-plot", op: "bible", reason: "ok", config: { a: 1 } },
+        ]),
+      ],
+    });
+    expect(r.appliedCount).toBe(1); // 只有合法的 set-tool 计数
+    expect(r.unsupported).toEqual([
+      "kind=set-node（flow@3 不消费，见规范 R7 §一）",
+      "kind=place-node（flow@3 不消费，见规范 R7 §一）",
+      "kind=suppress-boundary（flow@3 不消费，见规范 R7 §一）",
+      "set-policy:kit_boundary（不在 flow@3 policy 白名单）",
+    ]);
+    expect(r.notes.join()).toMatch(/未被 flow@3 消费/);
+  });
+
+  it("set-tool 缺 kit/op、set-input 缺 key → 显式 unsupported，不静默", () => {
+    const root = fixture();
+    const r = effectiveFlow3(root, miniFlow(root), {
+      overlays: [
+        ov([
+          { kind: "set-tool", op: "bible", reason: "缺 kit" },
+          { kind: "set-input", value: 1, reason: "缺 key" },
+          { kind: "set-policy", key: "link_default", value: "乱写", reason: "非法取值" },
+        ]),
+      ],
+    });
+    expect(r.appliedCount).toBe(0);
+    expect(r.unsupported.join("|")).toMatch(/set-tool（缺 kit\/op）/);
+    expect(r.unsupported.join("|")).toMatch(/set-input（缺 key）/);
+    expect(r.unsupported.join("|")).toMatch(/link_default=乱写/);
+  });
+
+  it("status=proposed/rejected 的补丁不参与合成（只有 applied 生效）", () => {
+    const root = fixture();
+    const r = effectiveFlow3(root, miniFlow(root), {
+      overlays: [
+        ov([
+          { kind: "set-tool", kit: "m-plot", op: "bible", reason: "x", config: { a: 1 }, status: "proposed" },
+          { kind: "set-input", key: "k", value: 1, reason: "x", status: "rejected" },
+          { kind: "set-policy", key: "link_default", value: "manual", reason: "x", status: "applied" },
+        ]),
+      ],
+    });
+    expect(r.toolOverrides).toEqual({});
+    expect(r.inputs).toEqual({});
+    expect(r.appliedCount).toBe(1);
+    expect(r.policy.link_default).toBe("manual");
+  });
+
+  it("真仓 flow：policy 声明被读取（此前整个被忽略，adapt 恒为 propose）", () => {
+    const flow = JSON.parse(
+      fs.readFileSync(path.join(ROOT, "flows", "caocao-wudalang", "flow.json"), "utf-8"),
+    );
+    // flow.json 声明 policy = { link_default: "auto", adapt: "off" }
+    const r = effectiveFlow3(ROOT, flow);
+    expect(r.policy.link_default).toBe("auto");
+    expect(r.policy.adapt).toBe("off");
+  });
+
+  it("真仓 flow：无 overlay 时 toolOverrides/inputs 为空且无 unsupported（不误报）", () => {
+    const flow = JSON.parse(
+      fs.readFileSync(path.join(ROOT, "flows", "caocao-wudalang", "flow.json"), "utf-8"),
+    );
+    const r = effectiveFlow3(ROOT, flow);
+    expect(r.toolOverrides).toEqual({});
+    expect(r.inputs).toEqual({});
+    expect(r.unsupported).toEqual([]);
+    expect(r.appliedCount).toBe(0);
   });
 });

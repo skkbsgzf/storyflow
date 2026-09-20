@@ -625,6 +625,10 @@ def needs_migration(d: dict, text: str) -> list[str]:
     """结构化判定（不靠全文正则——`roleModel.review` 这类同名字段曾造成误判）。
     已是 flow@2 且无任何旧形态残留 → 不动盘上文件（保护手工写就的规范样板排版）。"""
     hits: list[str] = []
+    # flow@3（模块序列）无手画 graph，节点由内核 expandFlow3 派生 —— 本工具只面向 flow@1→flow@2。
+    # 显式免检，不要 KeyError 崩掉（2026-09-20 实测：崩掉会把后面的全部检查一起掩盖）。
+    if d.get("format") == "flow@3" or "graph" not in d:
+        return hits
     if d.get("format") != "flow@2":
         hits.append("format=flow@1")
     if not d.get("status"):

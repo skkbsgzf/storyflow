@@ -61,9 +61,16 @@ def strip_dangling_commas(text: str) -> str:
 
 def main() -> int:
     changed, total = [], 0
+    skipped_flow3 = []
     for fp in sorted(ROOT.glob("flows/*/flow.json")):
         text = fp.read_text(encoding="utf-8")
         flow = json.loads(text)
+        # flow@3（模块序列）无手画 graph，节点由内核 expandFlow3 派生；legacy gate_role 概念在
+        # flow@3 已由模块间 link 取代 —— 显式免检，不要 KeyError 崩掉
+        # （2026-09-20 实测：崩掉会把「迁移是否幂等」这个结论一起吞掉）。
+        if "graph" not in flow:
+            skipped_flow3.append(flow.get("id", fp.parent.name))
+            continue
         todo = {
             nid for nid, n in flow["graph"]["nodes"].items()
             if n.get("kind") == "gate" and n.get("gate_role") not in LEGAL
@@ -91,6 +98,8 @@ def main() -> int:
         return 1
     if not changed:
         print("  已全部为 R5 形态（幂等）")
+    if skipped_flow3:
+        print(f"  flow@3 免检 {len(skipped_flow3)} 条（无 graph，无 legacy gate_role 概念）：{', '.join(sorted(skipped_flow3))}")
     return 0
 
 

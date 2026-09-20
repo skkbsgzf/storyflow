@@ -11,6 +11,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { assertSchema } from "./schema.js";
+// 仅类型导入（编译期擦除，不构成运行时循环依赖）——set-tool 的生效结果与 legacy 路径同一形状。
+import type { ToolOverride } from "./overlay.js";
 
 export interface Flow3ModuleInstance {
   id: string;
@@ -32,7 +34,14 @@ export interface Flow3Descriptor {
   status?: string;
   inputs?: Record<string, unknown>;
   defaults?: { link?: "auto" | "manual" };
-  policy?: { link_default?: "auto" | "manual"; adapt?: string; budget?: Record<string, unknown> };
+  /** R7：`maxRounds` / `awaitTimeoutMs` 来自 contracts/flow.schema.json 的 policy 扩展。 */
+  policy?: {
+    link_default?: "auto" | "manual";
+    adapt?: string;
+    budget?: Record<string, unknown>;
+    maxRounds?: number;
+    awaitTimeoutMs?: number;
+  };
   modules: Flow3ModuleInstance[];
   outputs?: { module: string; title: string; audience?: string }[];
 }
@@ -338,35 +347,91 @@ export function expandFlow3(
   return { flow: derived, modules, links, moduleNodes, dirs };
 }
 
-/** R6 生效编排（flow@3 专用）：flow@3 overlay（set-policy/set-module/insert-tool）在展开前应用于模块实例。 */
+/** R6 生效编排（flow@3 专用）：flow@3 overlay 在展开前应用于模块实例。
+ *
+ *  R7（2026-09-20）修复三类「声明了不生效」：
+ *  ① `flow.policy` 此前被整个忽略（只读 `defaults.link`，且 `adapt` 硬编码 `"propose"`）
+ *     ⇒ 用户声明 `adapt:"off"` 也拦不住优化器提案。现以 flow.policy 为起点。
+ *  ② `set-tool` / `set-input` 此前在 flow@3 路径**结构性不可达**（kernel 把 toolOverrides/inputs
+ *     硬编码成 `{}`）⇒ §一.3「每个 tool 的内容可调」无落点，只能改 repo 级 module.json（跨项目污染）。
+ *     现两者均在本函数内实装，并由 `kernel.effectiveOf` 透传。
+ *  ③ 不属于 flow@3 的 patch kind 此前**静默丢弃**。现显式回显进 `notes` 且不计入 `appliedCount`，
+ *     使「日志记 applied、内核没读」这类事故在下一轮不可能再发生。
+ */
 export function effectiveFlow3(
   root: string,
   flow3: Flow3Descriptor,
   opts: { projectDir?: string; overlays?: any[] } = {},
-): ExpandResult & { policy: Record<string, unknown>; notes: string[]; overlayHash: string; appliedCount: number } {
+): ExpandResult & {
+  policy: Record<string, unknown>;
+  notes: string[];
+  overlayHash: string;
+  appliedCount: number;
+  toolOverrides: Record<string, ToolOverride>;
+  inputs: Record<string, unknown>;
+  unsupported: string[];
+} {
   let flow: Flow3Descriptor = JSON.parse(JSON.stringify(flow3));
   const notes: string[] = [];
   let applied = 0;
-  const policy: Record<string, unknown> = { link_default: flow.defaults?.link ?? "auto", adapt: "propose" };
+
+  // ① policy 起点 = flow.json 的 policy 声明（此前整个被忽略），defaults.link 兜底。
+  const declared = (flow.policy ?? {}) as Record<string, unknown>;
+  const policy: Record<string, unknown> = {
+    link_default: declared.link_default ?? flow.defaults?.link ?? "auto",
+    adapt: declared.adapt ?? "propose",
+  };
+  if (declared.budget) policy.budget = declared.budget;
+  for (const k of ["maxRounds", "awaitTimeoutMs"]) {
+    if (declared[k] !== undefined) policy[k] = declared[k];
+  }
+  notes.push(
+    `policy 起点取自 flow.json（此前忽略）：link_default=${String(policy.link_default)} adapt=${String(policy.adapt)}` +
+      (policy.maxRounds !== undefined ? ` maxRounds=${String(policy.maxRounds)}` : "") +
+      (policy.awaitTimeoutMs !== undefined ? ` awaitTimeoutMs=${String(policy.awaitTimeoutMs)}` : ""),
+  );
+
+  const toolOverrides: Record<string, ToolOverride> = {};
+  const inputs: Record<string, unknown> = {};
+  const unsupported: string[] = [];
+
+  /** flow@3 展开器真正消费的 kind。其余（手工图语义）须显式回显，不许静默丢弃。 */
+  const FLOW3_KINDS = new Set(["set-policy", "set-module", "insert-tool", "set-tool", "set-input"]);
+  /** flow@3 允许被 set-policy 改写的 policy 键（白名单，对齐 contracts/flow.schema.json）。 */
+  const POLICY_KEYS = new Set(["link_default", "adapt", "maxRounds", "awaitTimeoutMs"]);
 
   const list = (opts.overlays ?? []).filter(Boolean);
   for (const ov of list) {
     for (const p of ov.patches ?? []) {
       if (p.status && p.status !== "applied") continue;
-      if (p.kind === "set-policy") {
-        if (p.key === "link_default" && (p.value === "auto" || p.value === "manual")) {
-          policy.link_default = p.value;
-          notes.push(`set-policy link_default=${p.value}`);
-          applied++;
+      const kind = String(p.kind);
+      if (!FLOW3_KINDS.has(kind)) {
+        unsupported.push(`kind=${kind}（flow@3 不消费，见规范 R7 §一）`);
+        continue;
+      }
+      if (kind === "set-policy") {
+        const k = String(p.key ?? "");
+        if (!POLICY_KEYS.has(k)) {
+          unsupported.push(`set-policy:${k || "(缺 key)"}（不在 flow@3 policy 白名单）`);
+          continue;
         }
-      } else if (p.kind === "set-module") {
+        if (k === "link_default" && p.value !== "auto" && p.value !== "manual") {
+          unsupported.push(`set-policy:link_default=${String(p.value)}（须 auto|manual）`);
+          continue;
+        }
+        policy[k] = p.value;
+        notes.push(`set-policy ${k}=${String(p.value)}`);
+        applied++;
+      } else if (kind === "set-module") {
         const inst = (flow.modules ?? []).find((m) => m.id === p.id);
         if (inst) {
           inst.caps = [...((p as any).caps ?? inst.caps ?? [])];
           notes.push(`set-module ${p.id} caps=[${inst.caps.join("，")}]`);
           applied++;
+        } else {
+          unsupported.push(`set-module:${String(p.id)}（模块实例不存在）`);
         }
-      } else if (p.kind === "insert-tool") {
+      } else if (kind === "insert-tool") {
         const inst = (flow.modules ?? []).find((m) => m.id === (p as any).module);
         if (inst) {
           inst.insert = { ...(inst.insert ?? {}), [(p as any).slot ?? "end"]: [
@@ -375,7 +440,34 @@ export function effectiveFlow3(
           ] };
           notes.push(`insert-tool ${(p as any).tool} @ ${(p as any).slot} → ${inst.id}`);
           applied++;
+        } else {
+          unsupported.push(`insert-tool:${String((p as any).tool)}@${String((p as any).module)}（模块实例不存在）`);
         }
+      } else if (kind === "set-tool") {
+        // 与 overlay.ts legacy 分支**同一套语义**（key = <kit>.<op>），asssembler.resolveNodeOp 直接消费。
+        if (!p.kit || !p.op) {
+          unsupported.push("set-tool（缺 kit/op）");
+          continue;
+        }
+        const key = `${p.kit}.${p.op}`;
+        const cur = toolOverrides[key] ?? {};
+        if (p.add_knowledge) cur.add_knowledge = [...(cur.add_knowledge ?? []), ...p.add_knowledge];
+        if (p.remove_knowledge) cur.remove_knowledge = [...(cur.remove_knowledge ?? []), ...p.remove_knowledge];
+        if (p.add_asserts) cur.add_asserts = [...(cur.add_asserts ?? []), ...p.add_asserts];
+        if (p.remove_asserts) cur.remove_asserts = [...(cur.remove_asserts ?? []), ...p.remove_asserts];
+        if (p.model_tier) cur.model_tier = p.model_tier;
+        if (p.config) cur.config = { ...(cur.config ?? {}), ...p.config };
+        toolOverrides[key] = cur;
+        notes.push(`set-tool ${key}`);
+        applied++;
+      } else if (kind === "set-input") {
+        if (!p.key) {
+          unsupported.push("set-input（缺 key）");
+          continue;
+        }
+        inputs[String(p.key)] = p.value;
+        notes.push(`set-input ${String(p.key)}=${String(p.value)}`);
+        applied++;
       }
     }
   }
@@ -386,5 +478,20 @@ export function effectiveFlow3(
   for (let i = 0; i < fingerprint.length; i++) hash = ((hash << 5) - hash + fingerprint.charCodeAt(i)) | 0;
   const overlayHash = "r6-" + (hash >>> 0).toString(16);
 
-  return { ...res, flow: { ...res.flow, __flow3: flow }, policy, notes, overlayHash, appliedCount: applied };
+  if (unsupported.length) {
+    const uniq = [...new Set(unsupported)];
+    notes.push(`⚠️ 有 ${unsupported.length} 条 patch 未被 flow@3 消费（已显式忽略，未计入 appliedCount）：${uniq.join("；")}`);
+  }
+
+  return {
+    ...res,
+    flow: { ...res.flow, __flow3: flow },
+    policy,
+    notes,
+    overlayHash,
+    appliedCount: applied,
+    toolOverrides,
+    inputs,
+    unsupported: [...new Set(unsupported)],
+  };
 }

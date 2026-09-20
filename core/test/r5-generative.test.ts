@@ -285,9 +285,27 @@ describe("R5 · 内核端到端：门自动放行 + 边界拦人 + 指标与提�
   const kernel = new Kernel({ root });
   const pd = path.join(root, "projects", projectId);
 
-  it("默认策略：带产活的门降级为「评审步」——评审照跑、裁决自动；再撞上 kit 边界验收", async () => {
+  // R7（OS-02A）：出厂缺省已由 kit_boundary=always 改为 auto（开源 clone 不该被边界门拦在门外）。
+  // 本组用例要断言的恰恰是「边界拦人」，所以必须**显式**声明 always——顺带验证「策略是旋钮」。
+  const lockBoundariesOn = (dir: string, flowId: string): void => {
+    fs.mkdirSync(path.join(dir, "registry"), { recursive: true });
+    fs.writeFileSync(
+      path.join(dir, "registry", "overlay.json"),
+      JSON.stringify({
+        format: "flow-overlay@1",
+        flowId,
+        origin: "user",
+        reason: "R7 测试锁定：显式要求边界人工验收（缺省已是 auto）",
+        patches: [{ kind: "set-policy", key: "kit_boundary", value: "always", reason: "本组断言边界拦人" }],
+      }, null, 2) + "\n",
+      "utf-8",
+    );
+  };
+
+  it("显式 kit_boundary=always：带产活的门降级为「评审步」——评审照跑、裁决自动；再撞上 kit 边界验收", async () => {
     fs.mkdirSync(pd, { recursive: true });
     fs.writeFileSync(path.join(pd, "选题素材.md"), "# 选题素材\n\n甲方点子：老牌发型师。\n", "utf-8");
+    lockBoundariesOn(pd, "topic-selection");
     const run = await kernel.flow_run("topic-selection", projectId, { route: "hot", direction: "R5 边界验收用例" });
     expect(run.status).toBe("awaiting_input");
 
@@ -344,7 +362,8 @@ describe("R5 · 内核端到端：门自动放行 + 边界拦人 + 指标与提�
       replan: true,
       actor: "test",
     });
-    expect(r.applied).toBe(1);
+    // 本组用例的 overlay 里有 2 条 applied：前面锁边界的 set-policy + 本次的 set-node（改写是叠加不是覆盖）
+    expect(r.applied).toBe(2);
     expect(fs.existsSync(path.join(pd, "registry", "overlay.json"))).toBe(true);
     // 重编译后：编排指纹变了，且 tropes 因 config 变更被判为需要重做
     const eff = kernel.viewEffect(projectId);
@@ -370,6 +389,59 @@ describe("R5 · 内核端到端：门自动放行 + 边界拦人 + 指标与提�
     if (last.next?.status !== "suspended") return;
     expect(last.next.nodeId).toBe("gate-r1"); // 手动门回来，边界门不派生
     expect(k2.viewEffect(pid).boundaries).toEqual([]);
+  });
+});
+
+/**
+ * R7 · OS-02A 回归：缺省 `kit_boundary=auto` 必须是「边界门可见但不拦人」，
+ * **不是**「把边界门从图里关掉」。
+ *
+ * 为什么单独立一组：旧实现给 auto 的边界门挂节点级 `when:{input:"__boundary_auto__",eq:"never"}`，
+ * 而 `compilePlan` 会把不活跃节点的出入边一起裁掉（plan.ts:52）⇒ 边界门及其整段下游失去活跃入边、
+ * 又不是源点、直接不可达。实测 plan.order 止于 gate-r1（8 节点，应为 22），run 被误判 completed，
+ * 而一半节点 status 还是 "none"。因为出厂缺省一直是 always，这条路径从没被跑到；
+ * 偏偏 optimize.ts 会把 kit_boundary=auto 当低风险提案自动落地——等于优化器一动手就截断流程。
+ */
+describe("R7 · 缺省 kit_boundary=auto：边界门可见、自动放行、下游不断（回归）", () => {
+  it("auto 下计划完整、边界门自动裁决、下游照常派发；always 才拦人", async () => {
+    const root3 = fs.mkdtempSync(path.join(os.tmpdir(), "miniflow-r7b-"));
+    const pid = "p-r7b";
+    const k3 = new Kernel({ root: root3 });
+    const pd3 = path.join(root3, "projects", pid);
+    fs.mkdirSync(pd3, { recursive: true });
+    fs.writeFileSync(path.join(pd3, "选题素材.md"), "# 选题素材\n\n甲方点子：老牌发型师。\n", "utf-8");
+    await k3.flow_run("topic-selection", pid, { route: "hot", direction: "R7 缺省边界策略" });
+
+    // 缺省 = auto：策略面如实回显
+    expect(k3.viewEffect(pid).policy.kit_boundary).toBe("auto");
+
+    await k3.flow_submit(pid, "tropes", { content: artifact("topic-selection", "tropes", "# 梗卡\n\n快剪 vs 慢工。\n", { projectDir: pd3 }) });
+    await k3.flow_submit(pid, "zeitgeist", { content: artifact("topic-selection", "zeitgeist", "# 时代情绪锚\n\n算法赶人。\n", { projectDir: pd3 }) });
+    await k3.flow_submit(pid, "analysis", { content: artifact("topic-selection", "analysis", "# 选题分析报告\n\n## 五、创作约束移交单\n- 场景 ≤3。\n", { projectDir: pd3 }) });
+    const afterReview = await k3.flow_submit(pid, "gate-r1", {
+      content: artifact("topic-selection", "gate-r1", "# 多视角意见书 R1\n\n## 结论\n- 调研口径成立。\n", { projectDir: pd3 }),
+    });
+
+    // ① 边界门不再拦人：交卷后直接推进到下游认知步，而不是 suspended 在 itb-structure
+    expect(afterReview.next?.status).toBe("awaiting_input");
+    if (afterReview.next?.status !== "awaiting_input") return;
+    expect(afterReview.next.nodeId).toBe("structure");
+
+    // ② 边界门**仍在计划内**且已被自动裁决——这是「可见、可审计」的证据，也是旧实现的失血点
+    const st = JSON.parse(fs.readFileSync(path.join(pd3, "state.json"), "utf-8")) as {
+      plan: { order: string[] };
+      nodes: Record<string, { status: string; verdict?: string }>;
+    };
+    expect(st.plan.order).toContain("itb-structure");
+    expect(st.plan.order.indexOf("itb-structure")).toBeLessThan(st.plan.order.indexOf("structure"));
+    expect(st.nodes["itb-structure"].status).toBe("done");
+    expect(st.nodes["itb-structure"].verdict).toBe("pass");
+    // 计划必须贯通到交付端，而不是在边界门上截断
+    expect(st.plan.order).toContain("delivery");
+    expect(st.plan.order.length).toBeGreaterThan(15);
+
+    // ③ 指标照记 boundary 相（旧实现连 phase 都漏在契约 enum 外，被 catch{} 吞成 0 行）
+    expect(readMetrics(pd3).some((m) => m.phase === "boundary" && m.nodeId === "itb-structure")).toBe(true);
   });
 });
 

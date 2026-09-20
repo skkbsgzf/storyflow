@@ -66,13 +66,23 @@
           "enum": ["off", "propose", "apply"],
           "description": "优化器权限：off=只观测 / propose=只出提案 / apply=低风险自动落地（R5 口径沿用）"
         },
-        "budget": {
-          "type": "object",
-          "description": "成本预算（tokens/时延上限等），优化器超支预警用",
-          "additionalProperties": true
-        }
+      "budget": {
+        "type": "object",
+        "description": "成本预算（tokens/时延上限等），优化器超支预警用",
+        "additionalProperties": true
+      },
+      "maxRounds": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "R7 新增：单个模块连接件（link）最多允许的重跑轮次。超限 → run 置 blocked 并写明原因。缺省不声明 = 不设上限（旧行为）；建议项目初始化面板显式填写。消费者 = 内核 doGate 的 link reject 分支"
+      },
+      "awaitTimeoutMs": {
+        "type": "integer",
+        "minimum": 10000,
+        "description": "R7 新增：等待人工/代理提交的最长毫秒数。到点 → run 置 stalled 并写 journal（只标记，不自动推进、不自动裁决）。缺省不声明 = 不设超时"
       }
-    },
+    }
+  },
     "modules": {
       "type": "array",
       "minItems": 1,

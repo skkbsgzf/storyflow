@@ -147,8 +147,11 @@ export class Kernel {
   effectiveOf(projectDir: string, flow: FlowDescriptor): EffectiveFlow {
     try {
       if (flow.format === "flow@3") {
-        // R6：flow@3 = 模块序列。overlay（set-policy/set-module/insert-tool）作用于模块实例，
-        // 随后 expandFlow3 派生节点与边（派生只算一次，persistEffective 落 effective@2）。
+        // R6：flow@3 = 模块序列。overlay 作用于模块实例，随后 expandFlow3 派生节点与边
+        // （派生只算一次，persistEffective 落 effective@2）。
+        // R7（2026-09-20）：toolOverrides / inputs 此前被硬编码成 `{}` ⇒ `set-tool`（唯一能改
+        // op.config / model_tier / knowledge / asserts 的通道）与 `set-input` 在 flow@3 结构性不可达，
+        // 而 overlay.json 里却记着 `status:"applied"`。现由 effectiveFlow3 计算后透传。
         const overlays = [
           readOverlay(factoryOverlayPath(this.repoRoot, flow.id)),
           readOverlay(projectOverlayPath(projectDir)),
@@ -157,8 +160,8 @@ export class Kernel {
         return {
           flow: r.flow,
           policy: r.policy as FlowPolicy,
-          inputs: {},
-          toolOverrides: {},
+          inputs: r.inputs,
+          toolOverrides: r.toolOverrides,
           boundaries: [],
           links: r.links,
           r6: { modules: r.modules, links: r.links, moduleNodes: r.moduleNodes, dirs: r.dirs },
@@ -590,7 +593,12 @@ export class Kernel {
 
   async flow_resume(projectId: string): Promise<AdvanceStop> {
     const { state, projectDir, flow } = this.ctx(projectId);
-    if (state.status === "completed" || state.status === "failed") return { status: state.status };
+    if (state.status === "completed") return { status: state.status };
+    // R7（OS-02A）：failed / blocked 此前对 resume 是**空操作**（原样返回 status）——
+    // 人以为「恢复了」，实际 run 早就停了，下游永远等不到。现在显式重跑「被打回门的上游范围」。
+    if (state.status === "failed" || state.status === "blocked") {
+      return this.recoverRejected(projectId, state, projectDir, flow);
+    }
     // 恢复纪律：running 的半成品宁重跑；awaiting（等提交）保留
     for (const ns of Object.values(state.nodes)) {
       if (ns.status === "running") ns.status = "none";
@@ -599,8 +607,141 @@ export class Kernel {
       journalAppend(projectDir, state.runId, "warn", { detail: "flow 指纹与快照不一致——沿用快照内计划（恢复不读图）" });
     }
     state.status = state.gate.verdict === "awaiting" ? "suspended" : "running";
+    state.stalledAt = undefined; // 人工已介入：清停机标记
     saveState(projectDir, state);
     return this.advance(projectId, state, projectDir, flow);
+  }
+
+  /** R7（OS-02A）：停机态出口。把「为什么停下」原样交给宿主，而不是一个没有上下文的 status。 */
+  private blockedStop(state: RunState): AdvanceStop {
+    const nodeId = state.gate.node ?? state.focus ?? Object.keys(state.nodes)[0] ?? "-";
+    return {
+      status: "blocked",
+      nodeId,
+      reason: state.lastRejectReason || "停机：等待人工介入（重跑超 maxRounds / 等待超 awaitTimeoutMs / 源文件缺失）",
+    };
+  }
+
+  /** R7（OS-02A）：某门累计驳回是否已达 `policy.maxRounds`（未声明 = 不封顶，保留旧行为）。 */
+  private rejectCapped(state: RunState, gateId: string): boolean {
+    const max = (state.policy as { maxRounds?: number } | undefined)?.maxRounds;
+    if (max === undefined) return false;
+    return (state.rejects?.[gateId] ?? 0) >= max;
+  }
+
+  /**
+   * R7（OS-02A）：等待态超时判定。到点把 run 标 blocked + stalledAt，**只标一次**，绝不自动放行——
+   * 静默自动推进（放行/跳过）比停机坏得多。缺省不启用（`policy.awaitTimeoutMs` 未声明即 no-op）。
+   */
+  private markStalled(state: RunState, projectDir: string): boolean {
+    const ms = (state.policy as { awaitTimeoutMs?: number } | undefined)?.awaitTimeoutMs;
+    if (ms === undefined) return false;
+    if (state.status !== "suspended" && state.status !== "awaiting_input") return false;
+    const since = state.gate.at;
+    if (!since || Date.now() - Date.parse(since) < ms) return false;
+    const secs = Math.round(ms / 1000);
+    state.stalledAt = nowIso();
+    state.status = "blocked";
+    state.lastRejectReason = `等待超时：${state.gate.node ?? state.focus ?? "-"} 悬置超过 ${secs}s（policy.awaitTimeoutMs）——停机等人`;
+    journalAppend(projectDir, state.runId, "warn", {
+      nodeId: state.gate.node,
+      detail: `await-timeout：悬置超 ${secs}s → run 标 blocked（不自动放行；请裁决 / flow_resume / 调整 awaitTimeoutMs）`,
+    });
+    saveState(projectDir, state);
+    return true;
+  }
+
+  /**
+   * R7（OS-02A）：failed / blocked 的恢复 = 重跑「被打回那道门的上游范围」。
+   * 方向与 `doRerun`（`order.slice(idx)` = 本节点及其下游）**相反**：驳回的语义是上游不合格，
+   * 要重做的是上游，不是门之后。所以此处不复用 doRerun。
+   */
+  private async recoverRejected(
+    projectId: string,
+    state: RunState,
+    projectDir: string,
+    flow: FlowDescriptor,
+  ): Promise<AdvanceStop> {
+    const gateId = state.gate.node;
+    const prevStatus = state.status;
+    if (!gateId) {
+      throw new KernelError(
+        "NO_RECOVERY_SCOPE",
+        409,
+        `状态 ${state.status} 无可指认的失效门（gate.node 为空）——请用 flow_rerun 显式指定重跑节点`,
+      );
+    }
+    // 两种停机必须分开：**被打回**（上游不合格 ⇒ 重跑上游）与**等待超时**（上游无辜 ⇒ 只澄清停机标记）。
+    // 把「等太久」也当驳回去清上游 = 白扔已验收的成果——那不是恢复，是破坏。
+    const byTimeout = state.status === "blocked" && !!state.stalledAt;
+    const scope = byTimeout ? [] : this.rejectedScope(state, flow, gateId);
+    for (const id of scope) {
+      const n = state.nodes[id];
+      if (!n) continue;
+      if (n.status === "done" || n.status === "awaiting") {
+        n.status = "pending";
+        n.stale = true;
+        n.round += 1;
+        n.committed = [];
+        journalAppend(projectDir, state.runId, "stale", {
+          nodeId: id,
+          detail: `resume 恢复：重跑门 ${gateId} 的上游范围`,
+        });
+      }
+    }
+    if (byTimeout) {
+      // 人工已介入 ⇒ 等待计时**重起**：否则下一轮 advance 会拿同一个陈旧的 gate.at 立刻再判超时，
+      // 变成「resume 无效」的另一种形态。门本身仍等裁决，不计已驳回。
+      if (state.gate.verdict === "awaiting") state.gate = { ...state.gate, at: nowIso() };
+      journalAppend(projectDir, state.runId, "note", {
+        nodeId: gateId,
+        actor: "kernel:resume",
+        detail: "等待超时恢复：澄清停机标记、等待计时重起，保留上游成果（门仍在等裁决）",
+      });
+    } else {
+      // 人工已介入的信号：清该门的累计驳回计数（maxRounds 重新起算），journal 留痕
+      const prevRejects = state.rejects?.[gateId];
+      if (prevRejects !== undefined) {
+        journalAppend(projectDir, state.runId, "note", {
+          nodeId: gateId,
+          actor: "kernel:resume",
+          detail: `人工恢复：清空 ${gateId} 累计驳回计数（原 ${prevRejects} 次）`,
+        });
+        delete state.rejects![gateId];
+      }
+      const gn = state.nodes[gateId];
+      if (gn) {
+        gn.status = "pending";
+        gn.stale = true;
+        gn.round += 1;
+        gn.committed = [];
+      }
+      state.gate = { verdict: "none" };
+    }
+    state.stalledAt = undefined;
+    state.status = state.gate.verdict === "awaiting" ? "suspended" : "running";
+    journalAppend(projectDir, state.runId, "rerun", {
+      nodeId: gateId,
+      detail: byTimeout
+        ? `flow_resume 从 ${prevStatus} 恢复：等待超时（不重跑上游）`
+        : `flow_resume 从 ${prevStatus} 恢复：失效范围 ${scope.length} 节点（重跑门 ${gateId} 的上游）`,
+      refs: scope,
+    });
+    saveState(projectDir, state);
+    return this.advance(projectId, state, projectDir, flow);
+  }
+
+  /** R7（OS-02A）：被打回门的上游范围。flow@3 走模块表（与 doGate 的 link 分支同一口径）；否则取计划前缀。 */
+  private rejectedScope(state: RunState, flow: FlowDescriptor, gateId: string): string[] {
+    const order = state.plan?.order ?? Object.keys(state.nodes);
+    const r6 = (flow as unknown as {
+      r6?: { moduleNodes: Record<string, string[]>; links: Array<{ id: string; fromModule: string }> };
+    }).r6;
+    const upstream = r6?.links.find((l) => l.id === gateId)?.fromModule;
+    const modScope = upstream ? (r6?.moduleNodes[upstream] ?? []) : [];
+    if (modScope.length) return modScope.filter((id) => id !== gateId);
+    const idx = order.indexOf(gateId);
+    return order.slice(0, idx < 0 ? order.length : idx);
   }
 
   async flow_gate(projectId: string, req: GateRequest): Promise<{ applied: true; completed?: boolean; failed?: boolean; rollbackScope?: string[]; next?: AdvanceStop }> {
@@ -656,6 +797,10 @@ export class Kernel {
       } else {
         ns.status = "pending";
         state.gate = { verdict: "reject", node: req.nodeId, at: nowIso(), note: req.comment };
+        // R7（OS-02A）：累计驳回轮次。此前无上限 ⇒ 「驳回→重跑上游→再撞同一门→再驳回」无限乒乓，
+        // 只有人肉盯得住；policy.maxRounds 到顶即停机等人。
+        state.rejects = state.rejects ?? {};
+        state.rejects[req.nodeId] = (state.rejects[req.nodeId] ?? 0) + 1;
       }
       state.lastRejectReason = pass ? "" : (req.comment ?? `重跑上游模块 ${upstream ?? ""}`);
       state.status = "running";
@@ -667,6 +812,14 @@ export class Kernel {
         detail: `${pass ? "pass" : "reject"}（R6 连接件：${pass ? "放行" : `重跑上游模块 ${upstream ?? ""}`}）${req.comment ? "：" + req.comment : ""}`,
         refs: scope,
       });
+      if (!pass && this.rejectCapped(state, req.nodeId)) {
+        const cap = (state.policy as { maxRounds?: number } | undefined)?.maxRounds;
+        state.status = "blocked";
+        state.lastRejectReason = `连接件 ${req.nodeId} 累计驳回 ${state.rejects?.[req.nodeId] ?? 0} 次达 policy.maxRounds=${String(cap)} 上限——停机等人（放行 / 调上游 / 调 maxRounds）`;
+        journalAppend(projectDir, state.runId, "run-end", { nodeId: req.nodeId, detail: state.lastRejectReason });
+        saveState(projectDir, state);
+        return { applied: true, rollbackScope: scope, next: this.blockedStop(state) };
+      }
       saveState(projectDir, state);
       if (!pass) {
         const next = await this.advance(projectId, state, projectDir, flow);
@@ -814,6 +967,10 @@ export class Kernel {
   // ---------- 调度循环 ----------
 
   private async advance(projectId: string, state: RunState, projectDir: string, bootstrap: FlowDescriptor, forceNodeId?: string): Promise<AdvanceStop> {
+    // R7（OS-02A）：停机态是屏障不是终态——恢复只走 flow_resume，advance 不许自己绕过去。
+    if (state.status === "blocked") return this.blockedStop(state);
+    // R7（OS-02A）：等待超时判定（policy.awaitTimeoutMs 缺省=不启用）。到点只停机，不自动放行。
+    if (this.markStalled(state, projectDir)) return this.blockedStop(state);
     // R5：装载生效编排（bootstrap ⊕ overlay ⊕ 边界派生）。编排被人/优化 agent 改过即重编译计划。
     const eff = this.effectiveOf(projectDir, bootstrap);
     const flow = eff.flow;
@@ -822,17 +979,30 @@ export class Kernel {
     let order = state.plan?.order ?? compilePlan(flow, state.inputs ?? {}, cond);
     const planHash = this.planHashOf(order, flow, eff.overlayHash);
     if (state.overlayHash === undefined) {
-      // 旧 run 首次接触 R5：认领当前编排指纹但不重编译——在跑的 run 不因版本升级被打断
+      // 旧 run 首次接触 R5：认领当前编排指纹。**但只在快照计划与当前生效编排一致时**才静默沿用——
+      // 不一致说明编排真的变了（新 clone / 换了 overlay / 迁移来的旧快照），沿用旧计划等于拿旧图跑新编排，
+      // 节点凭空消失而状态照打 done（静默断路）。R7（OS-02A）：不一致就重编译，别装没看见。
       state.overlayHash = eff.overlayHash;
       state.policy = eff.policy as Record<string, unknown>;
       state.planHash = planHash;
-      if (eff.boundaries.length) {
-        journalAppend(projectDir, state.runId, "note", {
+      const snapshot = state.plan?.order ?? [];
+      const recompiled = compilePlan(flow, state.inputs ?? {}, cond);
+      const same = recompiled.length === snapshot.length && recompiled.every((id, i) => id === snapshot[i]);
+      if (!same) {
+        journalAppend(projectDir, state.runId, "warn", {
           actor: "kernel:overlay",
-          detail: `R5 编排已就绪（${eff.boundaries.length} 个 kit 边界验收待生效）。本次沿用快照内计划；如需启用请 flow_overlay --replan。`,
+          detail: `R7 首次装载：快照计划与当前生效编排不一致（${snapshot.length} → ${recompiled.length} 节点）——重编译而非沿用旧计划`,
         });
+        order = this.replan(state, flow, cond, eff, projectDir);
+      } else {
+        if (eff.boundaries.length) {
+          journalAppend(projectDir, state.runId, "note", {
+            actor: "kernel:overlay",
+            detail: `R5 编排已就绪（${eff.boundaries.length} 个 kit 边界验收待生效）。本次沿用快照内计划；如需启用请 flow_overlay --replan。`,
+          });
+        }
+        saveState(projectDir, state);
       }
-      saveState(projectDir, state);
     } else if (state.overlayHash !== eff.overlayHash) {
       order = this.replan(state, flow, cond, eff, projectDir);
     }
@@ -922,6 +1092,23 @@ export class Kernel {
             nodeId: id,
             detail: `评审步派发（R5：评审照跑，裁决自动——域内质量交回该 tool 的 asserts/config；如需人工请置 policy.gate_mode=manual）`,
           });
+          continue;
+        }
+        // R7（OS-02A）：`policy.kit_boundary=auto` → 边界门**留在计划内自动裁决**（可见、可审计、不拦人）。
+        // 旧实现靠节点级 when 关掉它，compilePlan 连出入边一起裁 ⇒ 计划在门上截断、run 判 completed。
+        // 此处是唯一正确落点：图不动，裁决在 advance 里做，指标照记 boundary 相。
+        if (boundary && !humanEngaged && (eff.policy.kit_boundary ?? "auto") === "auto") {
+          ns.status = "done";
+          ns.verdict = "pass";
+          ns.round += 1;
+          ns.stale = false;
+          state.gate = { verdict: "pass", node: id, at: nowIso(), note: "kit_boundary=auto 自动放行" };
+          this.metric(projectDir, state, id, node, "boundary", { verdict: "pass", note: "kit_boundary=auto 自动放行" });
+          journalAppend(projectDir, state.runId, "verdict", {
+            nodeId: id,
+            detail: "auto-pass（边界门：policy.kit_boundary=auto——保留可见与指标，但不拦人；要人验收请置 always）",
+          });
+          saveState(projectDir, state);
           continue;
         }
         if (humanEngaged) {

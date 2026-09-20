@@ -1,8 +1,16 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://miniflow.dev/contracts/run-state.schema.json",
-  "title": "run-state · run 状态机（v1.0.2）",
-  "description": "projects/<id>/state.json。原子写 + 落盘前 schema 复验。v1.0.1 增补事实契约字段：comments/inputs/notes（可视化页面在用）、节点级 verdict/rootCauseStage/stale、gate 三出口裁决值域。v1.0.2 增补节点级 committed（K6：iterate 节点逐实例提交窗口清单）。现网 run-state.json 由内核迁移器无损映射（notes 同时转 journal 种子）。",
+  "title": "run-state · run 状态机（v1.0.3）",
+  "description": "projects/<id>/state.json。原子写 + 落盘前 schema 复验。v1.0.1 增补事实契约字段：comments/inputs/notes（可视化页面在用）、节点级 verdict/rootCauseStage/stale、gate 三出口裁决值域。v1.0.2 增补节点级 committed（K6：iterate 节点逐实例提交窗口清单）。v1.0.3（R7·OS-02A）等待态显式化 + 重跑封顶：status 增 blocked，根级增 rejects/stalledAt——此前「门 reject 只置 failed、resume 无效」与「连接件驳回无限乒乓」都靠人肉盯，属能力声明了但内核不读。",
+  "x-status-semantics": {
+    "running": "推进中（可 advance）",
+    "awaiting_input": "等 agent 交卷（advanced 会重组任务包）",
+    "suspended": "等人工裁决（gate.verdict=awaiting，可 flow_gate）",
+    "blocked": "停机等人（重跑超 maxRounds / 等待超 awaitTimeoutMs / 源文件缺失）——flow_resume 恢复，advance 不得自动越过",
+    "completed": "终态，run 收口",
+    "failed": "终态，门裁决 reject 终止——**只有 flow_rerun 或 flow_resume（重跑失效范围）能救**"
+  },
   "type": "object",
   "required": ["runId", "flowId", "flowVersion", "nodes", "gate"],
   "additionalProperties": false,
@@ -15,7 +23,7 @@
     "planHash": { "type": "string", "description": "R5：编译时**生效编排**（flow ⊕ overlay ⊕ 边界注入）的计划指纹。与当前重算不符 = 编排被人/优化 agent 改过 → 重编译计划并 journal 留痕（生成式 flow 的落地机制）" },
     "overlayHash": { "type": "string", "description": "R5：本次计划所依据的 overlay 合成指纹（审计：这份计划出自哪一版编排）" },
     "policy": { "type": "object", "description": "R5：本 run 生效的编排策略快照（kit_boundary/gate_mode/adapt/budget）", "additionalProperties": true },
-    "status": { "type": "string", "enum": ["running", "awaiting_input", "suspended", "completed", "failed"] },
+    "status": { "type": "string", "enum": ["running", "awaiting_input", "suspended", "blocked", "completed", "failed"], "description": "R7：blocked = 停机等人（不是终态）。语义见 x-status-semantics。" },
     "plan": {
       "type": "object",
       "description": "编译后的执行计划（快照自带计划，恢复不读图）",
@@ -62,6 +70,15 @@
     "inputs": { "type": "object", "description": "flow 输入绑定（route/批注回流 等 when 谓词取值处）；缺省时取 flow.inputs[].default", "additionalProperties": true },
     "comments": { "type": "object", "description": "用户批注 {nodeId: string[]}", "additionalProperties": { "type": "array", "items": { "type": "string" } } },
     "notes": { "type": "array", "items": { "type": "string" }, "description": "项目级时间线（迁移期保留；新事件一律进 journal）" },
-    "lastRejectReason": { "type": "string", "description": "最近一次 send-back 的根因（when 谓词『根因=X』的取值处）" }
+    "lastRejectReason": { "type": "string", "description": "最近一次 send-back 的根因（when 谓词『根因=X』的取值处）" },
+    "rejects": {
+      "type": "object",
+      "description": "R7（OS-02A）：逐门累计驳回轮次 {gateNodeId: 次数}。`policy.maxRounds` 的判据——超越即 blocked，杜绝「连接件驳回 → 重跑上游 → 再撞同一门 → 再驳回」的无限乒乓（此前无上限，靠人肉盯）。",
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "stalledAt": {
+      "type": "string",
+      "description": "R7（OS-02A）：等待超 `policy.awaitTimeoutMs` 的到点时刻（ISO）。内核不自动放行，只把 run 标 blocked 等人——静默自动推进比停机坏得多。"
+    }
   }
 }

@@ -61,8 +61,11 @@
             "set-tool",
             "set-policy",
             "suppress-boundary",
-            "set-input"
-          ]
+            "set-input",
+            "set-module",
+            "insert-tool"
+          ],
+          "description": "R7 勘误：此前 schema 只列 11 种，而 flow@3 展开器实际只消费 set-policy/set-module/insert-tool——契约与实现各有对方没有的 kind（交集仅 set-policy），已把 13 种统一进本枚举。每种 kind 的『消费者』见 docs/规范-开源部署与可调面-R7.md §二。"
         },
         "reason": { "type": "string", "description": "为什么改（必填，优化器还须给 evidence）" },
         "evidence": {
@@ -146,7 +149,25 @@
         "value": {},
         "proposal": { "type": "string", "description": "来源提案 id（优化器产出时带上；人可凭 flow_overlay --approve <id> 把 proposed 批为 applied）" },
         "from": { "type": "string", "description": "suppress-boundary：源节点 id" },
-        "to": { "type": "string", "description": "suppress-boundary：目标节点 id" }
+        "to": { "type": "string", "description": "suppress-boundary：目标节点 id" },
+
+        "caps": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "set-module：模块实例要启用的能力清单（整体替换该实例的 caps）。消费者 = core/src/modules.ts::effectiveFlow3"
+        },
+        "module": {
+          "type": "string",
+          "description": "insert-tool：目标模块实例 id（如 m2）。消费者 = core/src/modules.ts::effectiveFlow3"
+        },
+        "tool": {
+          "type": "string",
+          "description": "insert-tool：要插入的 tool（op）id；必须存在于目标模块的 ops 声明中"
+        },
+        "slot": {
+          "type": "string",
+          "description": "insert-tool：插入锚点，取值 after:<spine成员> / before:<spine成员> / end（end = 追加到模块末尾）"
+        }
       }
     }
   }

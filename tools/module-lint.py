@@ -23,7 +23,7 @@
                      声明了但内核无执行体——ccwd-fq export-doc 事故的 lint 侧闭环）
   E-SCRIPT-MISSING   op.script 对应 tools/<script>.py 不存在
   E-KB-UNKNOWN    op.knowledge / adds.knowledge 条目不在 knowledge/index.json
-  E-MODEL-TIER    model_tier 不在 high|low（勘误 §十一.13）
+  E-MODEL-TIER    model_tier 不在 high|lite（R7 勘误：原为 high|low，与引擎 kits.ts 冲突）
   E-SPINE-UNKNOWN spine 引用未声明的 tool
   E-SPINE-DUP     spine 重复项
   E-EDGE-ENDPOINT 骨架边端点不在 spine（规范 §一：edges 只写骨架成员之间）
@@ -67,7 +67,7 @@ TOOL_FIELDS = {
     "requires", "adds", "output",
 }
 KINDS = {"produce", "review", "check"}
-TIERS = {"high", "low"}
+TIERS = {"high", "lite"}
 ADDS_KEYS = {"asserts", "knowledge", "config"}
 # 通用 Skill（脱离 flow 的轮末入口，R5 §6.0 / R6 勘误 §十一.15）：与机器件同待遇，不占流水线位
 INLINE_SKILLS = {"orchestration-miner"}
@@ -175,7 +175,7 @@ def lint_module(path, kb_index, minitools_reg):
                 E("E-SCRIPT-MISSING", f"脚本缺失 tools/{target}", oid)
         tier = op.get("model_tier")
         if tier is not None and tier not in TIERS:
-            E("E-MODEL-TIER", f"model_tier 非法：{tier!r}（high|low）", oid)
+            E("E-MODEL-TIER", f"model_tier 非法：{tier!r}（high|lite）", oid)
 
         kb_entries = list(op.get("knowledge", []) or []) + list((op.get("adds") or {}).get("knowledge", []) or [])
         for kb in kb_entries:

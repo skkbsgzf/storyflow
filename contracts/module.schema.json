@@ -190,9 +190,9 @@
         "model_tier": {
           "enum": [
             "high",
-            "low"
+            "lite"
           ],
-          "description": "运行档位声明（勘误 §十一.13）：high=强模型档（文学判断节点：novel-deai/novel-judge/dialogue-polish/评审类——AGENTS 模型档位纪律），low=轻量档可接管。缺省不声明 = 无档位约束；轻档会话接手 high 节点前必须声明降档风险（AGENTS 铁律）"
+          "description": "运行档位声明（R7 勘误：原枚举为 high|low，与引擎 kits.ts 的 high|lite 冲突——写 low 能过 lint 却被引擎丢弃。已统一为 high|lite）。high=强模型档（文学判断节点：novel-deai/novel-judge/dialogue-polish/评审类），lite=轻量档可接管。**缺省不声明 = 无档位约束**；轻档会话接手 high 节点前必须声明降档风险（AGENTS 铁律）"
         },
         "kind": {
           "enum": [
