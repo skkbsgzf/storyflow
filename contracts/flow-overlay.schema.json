@@ -63,9 +63,10 @@
             "suppress-boundary",
             "set-input",
             "set-module",
-            "insert-tool"
+            "insert-tool",
+            "set-link"
           ],
-          "description": "R7 勘误：此前 schema 只列 11 种，而 flow@3 展开器实际只消费 set-policy/set-module/insert-tool——契约与实现各有对方没有的 kind（交集仅 set-policy），已把 13 种统一进本枚举。每种 kind 的『消费者』见 docs/规范-开源部署与可调面-R7.md §二。"
+          "description": "R7 勘误：此前 schema 只列 11 种，而 flow@3 展开器实际只消费 set-policy/set-module/insert-tool——契约与实现各有对方没有的 kind（交集仅 set-policy），已把 13 种统一进本枚举。R7+N4：补第 14 种 `set-link`（per-link 降级通道）——`R7-boundary-auto` 此前产 `set-policy{key:kit_boundary}`，而 R6 已退役该键 ⇒ flow@3 结构性无法表达「只把某一处交界降为 auto」。每种 kind 的『消费者』见 docs/规范-开源部署与可调面-R7.md §二。"
         },
         "reason": { "type": "string", "description": "为什么改（必填，优化器还须给 evidence）" },
         "evidence": {
@@ -167,6 +168,14 @@
         "slot": {
           "type": "string",
           "description": "insert-tool：插入锚点，取值 after:<spine成员> / before:<spine成员> / end（end = 追加到模块末尾）"
+        },
+        "link": {
+          "type": "string",
+          "description": "set-link：目标连接件 id（连接件节点 id 为 `<模块实例id>.link`，如 m2.link；也接受裸实例 id `m2`）。消费者 = core/src/modules.ts::effectiveFlow3（改模块实例的 link 字段，由 expandFlow3 派生连接件时生效）"
+        },
+        "mode": {
+          "enum": ["auto", "manual"],
+          "description": "set-link：该处交界的裁决模式。auto = 自动放行（仅在跨界风险升高时才拦人）；manual = 每次跨此交界都挂人工门。**改的是人工裁决的位置 = 结构类改动，永远只 proposed、不会自动落地**"
         }
       }
     }

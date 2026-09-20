@@ -421,6 +421,9 @@ def main():
             "projectConfig": cfg_view,
             "configTemplate": cfg_tpl,
             "configExists": cfg_exists,
+            # OS-02 阶段 C 阈值预算区：**内核派生**的阈值面（defs/values/sources/issues），
+            # 页面纯消费——绝不在 python 侧再实现一遍合并与区间校验（那是「两处各改一半」的开端）。
+            "budgetView": (eff or {}).get("budget"),
             "annos": annos.get("annos") or {},
             "projects": projects_switcher(),
         },

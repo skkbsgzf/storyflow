@@ -246,12 +246,36 @@ export const GENERIC_CONFIG: Record<string, OpConfigDef> = {
     desc: "本步产物正文的篇幅上限（超出即视为未收敛）",
     effect: "提高 = 允许更长产物；成本随字数上升",
   },
+  /**
+   * OS-02 阶段 D（D#14）：脚本壳/机器件的**执行超时**。
+   * 此前 `contracts/minitool.schema.json` 声明了 `exec.timeoutMs`（默认 60000），但内核 spawn
+   * 时**根本没传 timeout** ⇒ 脚本卡住 = 内核永久卡住（与阶段 A 修的 agent 侧「悬置」同一类故障，
+   * 但那一侧只覆盖了认知步）。现把超时收进通用配置面（一处声明、处处可调），
+   * 由 `minitools.ts::runCoreNode` 传给子进程；到时**显式失败**，不静默挂死、也不自动放行。
+   */
+  timeoutMs: {
+    type: "number",
+    min: 1000,
+    max: 3600000,
+    default: 60000,
+    unit: "ms",
+    desc: "本步执行体（script 壳 / 机器件）的超时上限，到时内核终止并显式报错",
+    effect: "提高 = 容忍更慢的确定性脚本；过低会误杀长任务（复检/导 docx 类）",
+    tunable_by: ["user", "optimizer"],
+  },
+  /**
+   * R7 勘误（OS-02 阶段 C）：**缺省不声明 = 不约束**，不是 `high`。
+   * 此前这里写死 `default: "high"`，等于引擎替所有作者拍板——契约
+   * `contracts/module.schema.json` 的措辞早已改为「缺省不声明 = 无档位约束」，
+   * 引擎却没跟上（又一处「声明面 ≠ 实际面」）。故**不设 default**：
+   * `values.model_tier === undefined` 即「不约束」，由执行方按自身能力选档。
+   */
   model_tier: {
     type: "enum",
     enum: ["high", "lite"],
-    default: "high",
-    desc: "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）",
-    effect: "文学与结构判断节点必须 high；机械整理类可降 lite",
+    desc: "执行档位：high=强模型（文学/结构判断），lite=轻量档（可用即省）。**未声明 = 不约束**",
+    effect: "文学与结构判断节点必须 high；机械整理类可降 lite；不声明则引擎不替作者拍板",
+    tunable_by: ["user", "optimizer"],
   },
 };
 
@@ -285,6 +309,11 @@ export function resolveToolConfig(
   const values: Record<string, unknown> = {};
   const sources: Record<string, ConfigSource> = {};
   for (const [k, d] of Object.entries(defs)) {
+    // OS-02 阶段 C：**无默认值的旋钮（如 model_tier）不进 values/sources**。
+    // 原因有二：① 语义上「不约束」就是「没有值」，不该伪装成一个取值为 undefined 的条目
+    //（`JSON.stringify` 又会把它丢掉 ⇒ 落盘前后 values/sources 键集不对称，读模型撒谎）；
+    // ② 旋钮本身仍在 `defs` 里（能力有家），页面/任务包据「defs 有、values 无」显式标「未约束」。
+    if (d.default === undefined) continue;
     values[k] = d.default;
     sources[k] = k in opConfig ? "op" : "generic";
   }

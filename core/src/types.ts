@@ -121,7 +121,12 @@ export interface FlowDescriptor {
     gate_mode?: "auto" | "manual";
     link_default?: "auto" | "manual";
     adapt?: "off" | "propose" | "apply";
-    budget?: { tokens?: number; latencyMs?: number; humanGates?: number };
+    /**
+     * OS-02 阶段 C：**阈值预算面**（R7 规范 §二 C 表）。键名与区间白名单 = `budget.ts::DEFAULT_BUDGET`。
+     * 改前此处声明 `tokens/latencyMs/humanGates` 三键而**零消费者**（「声明了没人读」）；
+     * 现改为那 C 表常量的项目级覆盖入口——未知键由 `resolveBudget` 显式回显、契约侧 `additionalProperties:false` 硬拦。
+     */
+    budget?: Record<string, number>;
     /** R7：同一门累计驳回上限，超越即 blocked（缺省不限，但不再静默无限乒乓——越限必 journal 留痕）。 */
     maxRounds?: number;
     /** R7：等待态（suspended/awaiting_input）超时毫秒数；到点标 blocked + stalledAt，**不自动放行**。 */

@@ -9,16 +9,11 @@ import { listArtifacts } from "./registry.js";
 import { ROOT } from "./schema.js";
 import { ProfileRegistry } from "./profiles.js";
 import { kitRegistry, resolveToolConfig, applyToolOverride, type ResolvedOp } from "./kits.js";
-import type { ToolOverride } from "./overlay.js";
+import type { ToolOverride, FlowPolicy } from "./overlay.js";
 import { loadProjectConfig, configCardLines } from "./project-config.js";
 import { applySkillOverlay, appliedPatchesFor } from "./skills.js";
 import { bodySkeleton, classOfPath, foreignOwnTerms, headerTemplate } from "./asserts.js";
-
-const CONTEXT_BUDGET = 20000;
-const SKILL_CAP = 6000;
-/** 标尺装载预算：单卡封顶 + 总量封顶，防止长篇跑起来 worldbook 全量吃光上下文。 */
-const KB_CARD_CAP = 1600;
-const KB_TOTAL_CAP = 9000;
+import { resolveBudget, DEFAULT_BUDGET } from "./budget.js";
 
 let regCache: { root: string; reg: ProfileRegistry } | undefined;
 function profileRegistry(root: string): ProfileRegistry {
@@ -162,7 +157,13 @@ export function loadKnowledge(
   root: string,
   ids: string[],
   exclude: string[] = [],
+  caps: { total: number; card: number } = {
+    total: DEFAULT_BUDGET.kbTotalCap.value,
+    card: DEFAULT_BUDGET.kbCardCap.value,
+  },
 ): { cards: KnowledgeCard[]; text: string; missing: string[]; excluded: string[] } {
+  const KB_TOTAL_CAP = caps.total;
+  const KB_CARD_CAP = caps.card;
   const ex = new Set(exclude);
   const resolvedAll = resolveKbPaths(root, ids);
   const dropped = resolvedAll.filter((f) => ex.has(f.id));
@@ -265,9 +266,17 @@ export function buildTaskPackage(
   state: RunState,
   nodeId: string,
   toolOverrides?: Record<string, ToolOverride>,
+  policy?: FlowPolicy | null,
 ): TaskPackage {
   const node = flow.graph.nodes[nodeId];
   if (!node) throw new Error(`图中无节点 ${nodeId}`);
+  // OS-02 阶段 C：装载预算改由「出厂默认 + policy.budget 覆盖」决定（此前是四个模块级常量，
+  // 项目级改不了 ⇒ 面板无字段可渲染）。未知/越界键由 resolveBudget 显式回显进任务包。
+  const budget = resolveBudget(policy);
+  const CONTEXT_BUDGET = budget.values.contextBudget;
+  const SKILL_CAP = budget.values.skillCap;
+  const KB_CARD_CAP = budget.values.kbCardCap;
+  const KB_TOTAL_CAP = budget.values.kbTotalCap;
 
   // 输出契约
   const file = artifactPathOf(flow, nodeId);
@@ -295,7 +304,10 @@ export function buildTaskPackage(
   const opRef = resolveNodeOp(node, ROOT, toolOverrides);
   const skillId = node.skill ?? opRef?.skill;
   const knowledgeIds = [...new Set([...(opRef?.knowledge ?? []), ...(node.knowledge ?? node.kb ?? [])])];
-  const kb = loadKnowledge(ROOT, knowledgeIds, opRef?.excludeKnowledge ?? []);
+  const kb = loadKnowledge(ROOT, knowledgeIds, opRef?.excludeKnowledge ?? [], {
+    total: budget.values.kbTotalCap,
+    card: budget.values.kbCardCap,
+  });
   const asserts = [...new Set([...nodeAsserts(node), ...(opRef?.asserts ?? [])])];
   // R5 内容配置项：overlay.opConfig > 节点 config > op.default > 通用默认
   const ovKey = opRef ? `${opRef.kit}.${opRef.op}` : undefined;
@@ -342,8 +354,24 @@ export function buildTaskPackage(
     });
     parts.push(`## 本步配置（生效值；tool 的内容配置项，可由人或优化 agent 调优）\n\n${lines.join("\n")}`);
   }
+  // OS-02 阶段 C：**未约束的旋钮显式列出**。它们不在 values 里（没有值），但旋钮是存在的——
+  // 不写出来就等于「引擎偷偷替你定了档」的反面：作者不知道这里有个可调的口子。
+  const unconstrained = Object.entries(cfg.defs)
+    .filter(([k, d]) => !(k in cfg.values) && d.default === undefined)
+    .map(([k, d]) => `- ${k} = （未约束；由执行方按自身能力选档）${d.desc ? `（${d.desc}）` : ""}`);
+  if (unconstrained.length) {
+    parts.push(
+      `## 本步未约束的配置项（引擎不替作者拍板，见 contracts/module.schema.json）\n\n${unconstrained.join("\n")}`,
+    );
+  }
   if (cfg.unknownKeys.length) {
     parts.push(`## 配置告警（写了却没人认的键——禁止假装生效）\n\n${cfg.unknownKeys.map((k) => `- ${k}`).join("\n")}`);
+  }
+  // OS-02 阶段 C：阈值预算面的未知键/越界键显式回显（与配置告警同构——买了没生效的旋钮要说出来）。
+  if (budget.issues.length) {
+    parts.push(
+      `## 阈值预算告警（flow.policy.budget 里没生效的键——禁止假装生效）\n\n${budget.issues.map((k) => `- ${k}`).join("\n")}`,
+    );
   }
   if (patchMisses.length) {
     parts.push(`## 提示词补丁告警（skill-overlay 补丁未命中目标小节——已跳过，检查 section 拼写）\n\n${patchMisses.map((k) => `- ${k}`).join("\n")}`);
@@ -385,7 +413,7 @@ export function buildTaskPackage(
     instruction,
     context,
     outputContract: { file, asserts: [...asserts, "integrity"] },
-    budget: { maxContextChars: CONTEXT_BUDGET + SKILL_CAP + KB_TOTAL_CAP },
+    budget: { maxContextChars: budget.values.maxContextChars as number },
   };
   if (kb.cards.length) pkg.knowledge = kb.cards;
   if (opRef) pkg.toolConfig = cfg.values;

@@ -342,6 +342,53 @@ if (probe(`typeof configZonesPaper === "function"`) !== true) {
     saveSrc.includes('"kernel":true') && saveSrc.includes('"offline":true'), saveSrc);
 }
 
+// ================= OS-02 阶段 C · 阈值预算区（声明面来自内核，页面不重算） =================
+// 12c · 阈值预算区的**旋钮键集必须与内核 budget.defs 逐键相等**（多一个 = 页面自造旋钮，
+//       少一个 = 声明了却不可调）。生效值/来源/告警一律读内核读模型，页面不做第二套合并。
+if (probe(`typeof budgetZonePaper === "function"`) !== true) {
+  gaps.push("本页由旧模板生成（无 OS-02 阈值预算区）：重生成后覆盖 —— python tools/project-pages.py --root projects/<id>");
+} else if (!(payload.DATA && payload.DATA.budgetView && payload.DATA.budgetView.defs && Object.keys(payload.DATA.budgetView.defs).length)) {
+  gaps.push("本页无阈值读模型（registry/effective.json 缺 budget 块，flow_run 一次即可）：阈值预算区显式降级");
+  const g5 = boot(JSON.parse(JSON.stringify(payload)));
+  const gh = g5.probe(`budgetZonePaper()`);
+  ok("OS-02 无读模型时阈值区显式降级（说明怎么取得，不装作空表、不泄漏 undefined）",
+    gh.includes("本页暂无阈值读模型") && !/undefined|NaN/.test(gh), gh.slice(0, 80));
+} else {
+  const p5 = JSON.parse(JSON.stringify(payload));
+  const bv = p5.DATA.budgetView;
+  const knobs = Object.keys(bv.defs).sort();
+  const b5 = boot(p5);
+  const bh = b5.probe(`budgetZonePaper()`);
+  const pageKnobs = (bh.match(/data-budget-key="([^"]+)"/g) || []).map(x => x.slice(17, -1)).sort();
+  ok("OS-02 阈值预算区：旋钮键集与内核 budget.defs **逐键相等**（页面不自造、也不漏渲染）",
+    JSON.stringify(pageKnobs) === JSON.stringify(knobs),
+    "页 " + pageKnobs.length + " / 内核 " + knobs.length);
+  ok("OS-02 每个旋钮带「谁读它」+ 合法区间（能力必须有家，不是只有名字）",
+    knobs.every(k => {
+      const d = bv.defs[k];
+      const bound = d.min === undefined ? true : bh.includes(String(d.min));
+      return (d.consumer ? bh.includes(d.consumer) : false) && bound;
+    }), knobs.filter(k => !bh.includes(String(bv.defs[k].consumer))).join(","));
+  ok("OS-02 面板 HTML 无 undefined/NaN 泄漏", !/undefined|NaN/.test(bh), (bh.match(/undefined|NaN/g) || []).slice(0, 3).join(","));
+  // 未覆盖 ⇒ 输入框留空、占位为出厂值（绝不把出厂值写死进项目配置，否则以后改出厂值就不生效了）
+  const blank = b5.probe(`(()=>{DATA.projectConfig=null; const s=budgetZonePaper();
+    const vals=(s.match(/data-budget-key="[^"]+" data-budget-type="number" value="[^"]*"/g)||[]);
+    return JSON.stringify([vals.length, vals.every(x=>x.endsWith('value=""'))]);})()`);
+  ok("OS-02 未覆盖的旋钮输入框留空（= 用出厂默认，不冻进配置）", blank === "[" + knobs.length + ",true]", blank);
+  // 已覆盖 ⇒ 回填真实值 + 徽标改口「本项目已改」
+  const filled5 = b5.probe(`(()=>{DATA.projectConfig={阈值预算:{fillerQuota:9}}; const s=budgetZonePaper();
+    return JSON.stringify([s.includes('data-budget-key="fillerQuota" data-budget-type="number" value="9"'), s.includes("本项目已改")]);})()`);
+  ok("OS-02 项目已覆盖的旋钮回填真实值并标「本项目已改」", filled5 === "[true,true]", filled5);
+  // 内核告警原样回显（未知键/越界/交叉校验——本仓最反感静默）
+  const issueShown = b5.probe(`(()=>{const old=DATA.budgetView.issues; DATA.budgetView.issues=["budget.nope（未知阈值键）"];
+    const s=budgetZonePaper(); DATA.budgetView.issues=old; return JSON.stringify([s.includes("阈值告警"), s.includes("budget.nope")]);})()`);
+  ok("OS-02 内核阈值告警原样回显（未知键/越界不静默）", issueShown === "[true,true]", issueShown);
+  // 落盘形状：阈值必须作为**嵌套键**写进 项目配置.json（不是拍平成一堆顶层键）
+  const nest = probe(`JSON.stringify({read:String(readBudgetForm).includes("data-budget-key"), save:String(saveConfigFromForm).includes("阈值预算"), reset:typeof resetBudgetForm==="function"})`);
+  ok("OS-02 阈值落盘为嵌套键「阈值预算」并可一键恢复出厂",
+    nest.includes('"read":true') && nest.includes('"save":true') && nest.includes('"reset":true'), nest);
+}
+
 console.log(`\n${page}\n  ${pass}/${pass + fail} passed`);
 if (gaps.length) console.log("  已知缺口：\n   - " + gaps.join("\n   - "));
 process.exit(fail ? 1 : 0);

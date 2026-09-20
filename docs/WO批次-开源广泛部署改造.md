@@ -483,7 +483,7 @@ du -sh projects src/kakaxing-Json/data
 | **R8-OPS 第 1 批 · 前端 live 化（快照 → 轮询）** | ✅ 已落地 | 新增 `kernel.viewLive()`（含 `fingerprint`/`revision`/`filesRevision`）+ `GET /api/projects/:id/live(?files=1)`；页面模板由「SSR 快照」改为**静态切片 SSR + 易变切片轮询**；**顺带修 flow@3 `workbench-payload` 500**（`flow.graph` 缺失，第 4 处 N 类 latent）。见下明细 | 2026-09-20 |
 | **R8-OPS 第 2 批 · 动词表唯一源** | ✅ 已落地 | 新建 `core/src/verbs.ts`（13 动词唯一台账）；MCP 由 7 个手写 tool → 遍历表注册；HTTP `/api/verbs/:verb` 由 4-case → 查表分派；CLI 删 13-case switch、`usage()` 由表生成。顺带修 `skill_patch` 写死 `ROOT` 的静默错位（改 `kernel.repoRoot`）；`contracts/http-openapi.json` 11→24 路径（补声明已有未声明端点）。见下明细 | 2026-09-20 |
 | **R8-OPS 第 3 批 · OS-04 初始化面板** | ✅ 已落地 | 页面「流配置」由**只读 JSON 改成真表单**：项目输入区（读 `flow.inputs` 逐字段渲染，按 `required`/`enum`/布尔/数值分控件）+ 项目定性配置区（中文字段）；模板=初值（**模板≠配置**）、导出/导入、保存走内核 `PUT /api/projects/:id/config`（离线回退写文件并显式标注）。顺带修 `project-pages.py` **`DATA.projectConfig` 从未注入**（面板恒显占位符的根因）；`whereami.py` 空态给首跑指引。见下明细 | 2026-09-20 |
-| OS-02 阶段 C（默认值回调）/ 阶段 D（死配置 `iterate`） | ⏳ 待开工 | 含 N2（`adapt:"off"` 未实现，需拍板）、N4（`set-link` 契约，需拍板）、§三勘误 2（`model_tier` 默认 `high`）、§二 C/D 两表 | — |
+| **OS-02 阶段 C/D（阈值预算面 + 死配置清账）** | ✅ 已落地 | **C**：`core/src/budget.ts` 为唯一事实源（19 旋钮的出厂默认 + 区间 + 人话 + 消费方），`aesthetic`/`assembler`/`optimize`/`metrics` 四处引擎常量全部改读它；`policy.budget` 由「声明零消费者」变成**唯一覆盖入口**；落盘目标 = `项目配置.json` 的「阈值预算」（实例层），合成优先级 模板层 < 实例层 < 运行时 overlay；`effective@2` 新增 `budget` 读模型块 + 页面新增**阈值预算区**（19 控件、徽标、告警回显、一键恢复出厂），page-lint 新增 7 条断言（57/57）。**D**：`model_tier` 缺省 = 不约束（勘误 2）、`minitool.timeoutMs` 真的带上 spawn、`modules[].iterate` 真的传播到交付节点（D#13）、`adapt:"off"` = 只观测（N2）、`set-link` 为 per-link 降级通道（N4）。见下明细 | 2026-09-20 |
 | OS-00 数据剥离执行 / OS-05 / OS-06 / OS-07 | ⏳ 待开工 | 数据剥离需先拍板 附 D #2/#3/#5 | — |
 
 ### OS-02 执行中新发现（已实测，需拍板才能动）
@@ -927,4 +927,73 @@ R8-OPS 讨论记录里点名的病灶实体：**「flow 调用规范问题」的
   多模板管理与自存仍属 OS-04 余量。
 - **`AGENTS.md` 未改**（同上，属 OS-06/07 写权）：建议 OS-07 补一条
   「**配置面板 ≠ 配置生效**：页面只填/存，`flow.inputs ⊕ 项目配置.json` 的合成只在内核做一次」。
+
+
+---
+
+## OS-02 阶段 C/D：阈值预算面 + 死配置清账（2026-09-20 第 4 批）
+
+本批治的是同一类病：**引擎里的常数与契约里的声明各活各的**——
+C 表那批常量写死在四个模块里（项目级改不了 ⇒ 初始化面板「阈值预算区」无字段可渲染），
+D 表那批声明写在契约里却零消费者（`policy.budget.tokens` / `minitool.timeoutMs` / `modules[].iterate`）。
+
+### 一 · C：`budget.ts` 单一事实源，面板才有东西可渲染
+
+| 落点 | 改动 |
+|---|---|
+| `core/src/budget.ts`（新） | `DEFAULT_BUDGET`：19 个旋钮，每个带 `value/min/max/unit/group/consumer/desc/effect`；`resolveBudget(policy)` 返回 `{values, defs, sources, issues, overridden}` |
+| `core/src/assembler.ts` | `CONTEXT_BUDGET/SKILL_CAP/KB_CARD_CAP/KB_TOTAL_CAP` 四个 top-level 常量删除 → 读 `budget.values`；任务包新增「本步未约束的配置项」+「阈值预算告警」两节 |
+| `core/src/aesthetic.ts` | 章长（AE-CH-LEN）、集数（AE-SCRIPT-FIELDS）、三处文风配额（TRIPLET/NOTBUT/RHYTHM）全部改读预算 |
+| `core/src/optimize.ts` | R1–R4 的 `minSamples` / `blockRate≥0.3` / `hitRate≥0.4,0.5` 全部改读预算 |
+| `core/src/metrics.ts` | `costOf` 的 `1000 / 60000 / 5 / 2` 四个魔数改读预算（口径注释同步写进 `DEFAULT_BUDGET.desc`） |
+| `contracts/project-config.schema.json` | 新增 `阈值预算`（`additionalProperties: {type:"number"}`）——**落盘目标**（R7 §四） |
+| `core/src/project-config.ts` | `ProjectConfig.阈值预算` 类型 + `configBudget()`（只搬运，合法性判定统一归 `resolveBudget`） |
+| `core/src/kernel.ts` | `effectiveOf` 造一个**派生 overlay 层**（`origin:"kernel"`，不落盘）夹在出厂层与项目层之间 ⇒ 优先级天然成立，**不新增任何优先级规则**；`persistEffective` 把 `resolveBudget` 结果写进 `effective@2` 的 `budget` 块 |
+| `core/src/modules.ts` | flow@3 的 `POLICY_KEYS` 补 `budget`（此前结构性调不了阈值）+ 形状校验（须「键→number」对象） |
+| `core/src/overlay.ts` + `modules.ts` | `set-policy` 对**对象值按 key 浅合并**（与 `set-node.config` 同语义）：只调一个阈值不该把项目声明的其余阈值整条抹掉 |
+| `tools/project-pages.py` | DATA 新增 `budgetView`（读 `effective.json` 的 `budget` 块，**页面不重算**） |
+| `tools/page-lint.mjs` | 新增 12c 断言块：旋钮键集与内核 `defs` **逐键相等**（防页面自造旋钮/漏渲染）、留空不冻出厂值、已覆盖回填+徽标、告警原样回显、落盘为嵌套键 |
+
+**`set-policy` 键集白名单**（此前 flow@3 只认 4 键、flow@2 什么都认）现在两边都覆盖
+`link_default / adapt / maxRounds / awaitTimeoutMs / budget`。
+
+**面板语义**（反「填了没人读」）：输入框**留空 = 用出厂默认且不写进配置**（占位符显示出厂值），
+填值 = 只覆盖该键；每行显示 `生效值 · 区间 · 消费方`，标题栏显示徽标「出厂 N / 本项目已改 / 模板或运行时已改」。
+
+### 二 · D：四组「声明零消费者」逐项清账
+
+| 声明 | 处置 | 落点 |
+|---|---|---|
+| `policy.budget.tokens/latencyMs/humanGates` | **删**（换成上面那 19 旋钮的真实覆盖入口） | `types.ts` / `overlay.ts` / `project-config.schema.json` |
+| `minitool.timeoutMs`（契约 default 60000） | **实现**：`runCoreNode` 真带 `timeout` + `killSignal`，区分「超时被杀」与「非零退出」，报错文案不同 | `core/src/minitools.ts` |
+| `modules[].iterate` | **实现**：`expandFlow3` 规则 8 把它传播到**该模块的交付节点**（模块内最后一个有产物节点，或 `derivedOutputs[].node`），并派生单实例产物模板 `03-写作/章节正文/第{n}章.md` | `core/src/modules.ts` |
+| `set-policy{key:"kit_boundary"}`（R6 已退役键） | **改产 `set-link`**（per-link 降级通道，N4）；`STRUCTURAL_KINDS` 收编它（搬动的是「哪里必须人批」⇒ 永不自动落地） | `core/src/optimize.ts` |
+
+### 三 · 门禁（2026-09-20 第 4 批后新基线）
+
+| 门 | 结果 |
+|---|---|
+| `cd core && tsc --noEmit` | **OK** |
+| `vitest` | **221 passed / 0 failed（21 files）**（新增 `r8-os02cd.test.ts` 27 条） |
+| `python tools/page-lint.mjs projects/p-wxl-001/workflow.html` | **57/57 passed**（旧模板页仍 39/39 + 缺口说明，不误报） |
+| `module-lint.py` | 0 errors / 36 warnings |
+| `kit-lint.py` | 0 errors / 21 warnings |
+| `flow-lint.py` | 21 errors / 1 warning（存量 flow@2） |
+| `artifact-lint.py` | 0 errors / 168 warnings |
+| `validate-kb.py` | 1 FAIL（N7 存量） |
+
+**端到端实测**（`p-wxl-001`，真内核 + 真配置 + 真页面）
+
+| 步骤 | 结果 |
+|---|---|
+| 写 `项目配置.json` 的 `阈值预算:{chapterBlockChars:1200, fillerQuota:0, nope:1}` → `flow_effect` | `effective.json` 的 `budget.overridden=true`；`values` 生效 1200/0；`sources` 为 `policy`；**`nope` 出现在 `issues`**（未知键不静默） |
+| 删掉配置 → 再 `flow_effect` | `overridden=false`、`issues=[]`（层随配置消失，不留残影） |
+| 重生成页面 → `page-lint` | 57/57；`budgetView` 19 旋钮全部渲染 |
+
+### 四 · 本批明确未做
+
+- **存量项目页面未批量重生成**（同第 3 批结论：属产物刷新，且 `projects/` 是否入库待 OS-00 拍板）。
+- **OS-04 模板库余量**（自存模板 / 从零新建）仍待做。
+- `optimize.ts` 的 R5「承重墙」规则用的 `consumedBy<2 / hitRate<0.6` **不在 R7 §二 C 表白名单内**，
+  故**未**纳入预算面（避免把不在表内的阈值偷偷变成「可调」）。如需可调，先在 R7 §二 C 表登记。
 

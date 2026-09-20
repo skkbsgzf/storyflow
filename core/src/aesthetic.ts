@@ -2,6 +2,16 @@ import fs from "node:fs";
 import path from "node:path";
 import type { Validation } from "./types.js";
 import { recordDiag } from "./diag.js";
+import { DEFAULT_BUDGET } from "./budget.js";
+
+/**
+ * OS-02 阶段 C：阈值从「引擎常量」改读**阈值预算面**（`budget.ts::DEFAULT_BUDGET`）。
+ * `budget` 由调用方（内核/`runCoreNode`）用 `resolveBudget(eff.policy)` 解析后传入；
+ * 未传/未覆盖 = 出厂默认。键名与语义见 budget.ts——**不要再在这里写死数字**。
+ */
+function th(budget: Record<string, number> | undefined, key: string): number {
+  return budget?.[key] ?? DEFAULT_BUDGET[key].value;
+}
 
 /** 中文集数解析：第X集 → 数字（支持 一~九十九 的常见写法） */
 const DIGITS: Record<string, number> = { 零: 0, 一: 1, 二: 2, 两: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9 };
@@ -409,10 +419,11 @@ export function reportDensityAssert(text: string): Validation {
  * 正常剧本格式——逐集（第X集），每集有 场景头 / 角色:台词（≥2 行）/ 动作（△ 或 行动）/ 集末「卡点：」。
  * 5W1H 字段行废止：剧本要通顺流畅，结构意图（每段表达什么、什么效果）写在创作里，不摆表单。
  */
-export function scriptFieldsAssert(text: string): Validation {
+export function scriptFieldsAssert(text: string, budget?: Record<string, number>): Validation {
   const problems: string[] = [];
+  const minBeats = th(budget, "minBeats");
   const eps = text.split(/(?=^第[一二三四五六七八九十百0-9]+集\s*(?:《|$))/gm).filter((s) => /^第[一二三四五六七八九十百0-9]+集/.test(s));
-  if (eps.length < 3) problems.push(`集数 ${eps.length} < 3（试稿至少 3 集，每集一个完整冲突回合）`);
+  if (eps.length < minBeats) problems.push(`集数 ${eps.length} < ${minBeats}（试稿至少 ${minBeats} 集，每集一个完整冲突回合）`);
   let missScene = 0, missDlg = 0, missAct = 0, missCard = 0;
   for (const e of eps) {
     if (!/场景[:：]/.test(e)) missScene++;
@@ -436,27 +447,29 @@ export function scriptFieldsAssert(text: string): Validation {
  * 自门控：正文含 ≥2 个「## 第N章」小节才生效；单章文件不适用。
  * 阈值：每章 <800 CJK 判 block，<1500 判 warn（对齐 chapterMin 默认值）。
  */
-export function chapterLengthAssert(text: string): Validation {
+export function chapterLengthAssert(text: string, budget?: Record<string, number>): Validation {
   const chapters = text.split(/^##\s*第[一二三四五六七八九十百0-9]+章/gm).slice(1);
   if (chapters.length < 2) {
     return { name: "AE-CH-LEN", status: "warn", detail: "非多章正文（章节数 <2），章长检查不适用" };
   }
+  const blockMin = th(budget, "chapterBlockChars");
+  const warnMin = th(budget, "chapterWarnChars");
   const cjk = (s: string) => (s.match(/[一-鿿]/g) ?? []).length;
   const lens = chapters.map(cjk);
-  const blocks = lens.filter((n) => n < 800);
-  const warns = lens.filter((n) => n < 1500);
+  const blocks = lens.filter((n) => n < blockMin);
+  const warns = lens.filter((n) => n < warnMin);
   if (blocks.length) {
     return {
       name: "AE-CH-LEN",
       status: "block",
-      detail: `${chapters.length} 章中有 ${blocks.length} 章 CJK 字数 <800（各章：${lens.join("/")}）——概览代叙不是正文`,
+      detail: `${chapters.length} 章中有 ${blocks.length} 章 CJK 字数 <${blockMin}（各章：${lens.join("/")}）——概览代叙不是正文`,
     };
   }
   if (warns.length) {
     return {
       name: "AE-CH-LEN",
       status: "warn",
-      detail: `${warns.length} 章低于 1500 字下限（各章：${lens.join("/")}）——信息密度待加厚`,
+      detail: `${warns.length} 章低于 ${warnMin} 字下限（各章：${lens.join("/")}）——信息密度待加厚`,
     };
   }
   return { name: "AE-CH-LEN", status: "pass", detail: `${chapters.length} 章字数达标（${lens.join("/")}）` };
@@ -467,7 +480,11 @@ export function chapterLengthAssert(text: string): Validation {
  * 机器可查维度：钩型四型/拍三件套/时长区间/尾钩在场/台词密度/梗点/卡点位/合规禁词/自造专名限额/编排表忠实性。
  * 视角类维度（代入感/节奏体感…）机器查不了——不在此表，归红方剖面。
  */
-export function runAestheticAsserts(projectDir: string, relPath: string): Validation[] {
+export function runAestheticAsserts(
+  projectDir: string,
+  relPath: string,
+  budget?: Record<string, number>,
+): Validation[] {
   const results: Validation[] = [];
   let text: string;
   try {
@@ -483,7 +500,7 @@ export function runAestheticAsserts(projectDir: string, relPath: string): Valida
   }
   // 剧本 IR（小说流 v2·m2 模块交付）：验收职责 = 每场 5W1H/行动/台词/价值/钩 字段齐备
   if (/^02-编剧\/剧本\.md$/.test(relNorm) && /###\s*场/.test(text)) {
-    return [scriptFieldsAssert(text), ...ledgerSliceAsserts(projectDir, relPath, text)];
+    return [scriptFieldsAssert(text, budget), ...ledgerSliceAsserts(projectDir, relPath, text)];
   }
   // 剧本类产物（成品剧本/试稿）：脚本格式专项断言（M2.5，客户版式契约）+ 连续性切片
   if (/剧本|试稿/.test(relPath) && !/\*\*B\d{4}｜/.test(text)) {
@@ -495,7 +512,7 @@ export function runAestheticAsserts(projectDir: string, relPath: string): Valida
   if (allBeats.length === 0) {
     if (/章节正文|第\d+章|正文|终稿/.test(relPath)) {
       return [
-        ...proseAsserts(text),
+        ...proseAsserts(text, budget),
         chapterHookAssert(projectDir, relPath, text),
         ...ledgerSliceAsserts(projectDir, relPath, text),
         purityAssert(projectDir, text),
@@ -608,7 +625,7 @@ export function runAestheticAsserts(projectDir: string, relPath: string): Valida
   // 连续性切片（成文产物路径生效；小纲/大纲过程件自动跳过）
   results.push(...ledgerSliceAsserts(projectDir, relPath, text));
   // 章长下限（AE-CH-LEN）：自门控——文本含 ≥2 章节头才生效
-  results.push(chapterLengthAssert(text));
+  results.push(chapterLengthAssert(text, budget));
 
   return results;
 }
@@ -619,7 +636,7 @@ export function runAestheticAsserts(projectDir: string, relPath: string): Valida
  * 配额口径：三连排比每章 ≤1（文书体/笑点本体豁免，定场区不豁免——豁免判给人工，此处超 1 即 warn）；
  * 「不是A(而)是B」每章 ≤2；突然/仿佛/似乎 ≤2；slop 高频词零容忍。
  */
-export function proseAsserts(text: string): Validation[] {
+export function proseAsserts(text: string, budget?: Record<string, number>): Validation[] {
   const results: Validation[] = [];
   const add = (id: string, ok: boolean, detail: string, level: "major" | "minor" = "major") =>
     results.push({ name: id, status: ok ? "pass" : "warn", detail });
@@ -648,21 +665,24 @@ export function proseAsserts(text: string): Validation[] {
         trips.push(`${x}，${y}，${z}`);
     }
   }
+  const parallelQuota = th(budget, "parallelQuota");
   add(
     "AE-PROSE-TRIPLET",
-    trips.length <= 1,
+    trips.length <= parallelQuota,
     trips.length === 0 ? "无三连排比"
-      : trips.length === 1 ? `三连排比 1 处（配额内，须为笑点/文书本体）: ${trips[0].slice(0, 42)}`
-      : `三连排比 ${trips.length} 处超配额(≤1): ${trips.slice(0, 3).join(" ⋅ ")}`,
+      : trips.length <= parallelQuota ? `三连排比 ${trips.length} 处（配额内，须为笑点/文书本体）: ${trips[0].slice(0, 42)}`
+      : `三连排比 ${trips.length} 处超配额(≤${parallelQuota}): ${trips.slice(0, 3).join(" ⋅ ")}`,
   );
 
   // AE-PROSE-NOTBUT：假转折配额
+  const contrastQuota = th(budget, "contrastQuota");
   const nb = [...body.matchAll(/不是[^。！？\n]{1,18}?[，。；][^。！？\n]{0,6}?(而是|是)/g)].length;
-  add("AE-PROSE-NOTBUT", nb <= 2, `「不是A(而)是B」${nb} 处（配额 2）${nb > 2 ? "——超配额" : ""}`);
+  add("AE-PROSE-NOTBUT", nb <= contrastQuota, `「不是A(而)是B」${nb} 处（配额 ${contrastQuota}）${nb > contrastQuota ? "——超配额" : ""}`);
 
   // AE-PROSE-RHYTHM：节奏词
+  const fillerQuota = th(budget, "fillerQuota");
   const rhythm = (body.match(/突然|仿佛|似乎/g) ?? []).length;
-  add("AE-PROSE-RHYTHM", rhythm <= 2, `突然/仿佛/似乎 ${rhythm} 处（≤2）${rhythm > 2 ? "——超配额" : ""}`, "minor");
+  add("AE-PROSE-RHYTHM", rhythm <= fillerQuota, `突然/仿佛/似乎 ${rhythm} 处（≤${fillerQuota}）${rhythm > fillerQuota ? "——超配额" : ""}`, "minor");
 
   // AE-PROSE-SLOP：AI 高频词（OpenAI 8 类中文映射的词句层）
   const slopWords = ["值得注意的是", "综上", "总之", "可以说", "真的", "确实", "其实", "显然", "某种程度", "一定程度上", "深入探讨", "赋能", "彰显"];

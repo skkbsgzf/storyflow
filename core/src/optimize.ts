@@ -18,6 +18,7 @@ import { DEFAULT_POLICY } from "./overlay.js";
 import { kitRegistry } from "./kits.js";
 import { nowIso } from "./ids.js";
 import { recordDiag } from "./diag.js";
+import { resolveBudget } from "./budget.js";
 
 export interface Proposal {
   id: string;
@@ -39,11 +40,12 @@ function coversRef(ref: string, id: string): boolean {
 export interface KbIndexEntry { id: string; dimension?: string; title?: string }
 
 /**
- * 结构类补丁：会改变图的形状（节点增删、换 op、边增删改）。
+ * 结构类补丁：会改变图的形状（节点增删、换 op、边增删改）**或人工裁决的位置**。
  * 这类改动无论乐观到什么程度都不许自动落地——改的是流水线的骨架，必须有人点头。
  * 内容类补丁（config / knowledge / asserts / model_tier / policy）才够格当 low risk。
+ * R7/N4：`set-link` 归入结构类——它搬动的是「哪里必须人批」（铁律③「结构类改动永远人批」）。
  */
-const STRUCTURAL_KINDS = new Set(["place-node", "remove-node", "set-op", "add-edge", "set-edge", "remove-edge"]);
+const STRUCTURAL_KINDS = new Set(["place-node", "remove-node", "set-op", "add-edge", "set-edge", "remove-edge", "set-link"]);
 export function isStructuralPatch(patch: { kind: string }): boolean {
   return STRUCTURAL_KINDS.has(patch.kind);
 }
@@ -74,7 +76,10 @@ export function proposeFromMetrics(
   opts: { root: string; policy?: FlowPolicy; minSamples?: number } = { root: "." },
 ): Proposal[] {
   const policy = opts.policy ?? {};
-  const minSamples = opts.minSamples ?? 3;
+  // OS-02 阶段 C：规则阈值不再写死在规则体里，全部从 `policy.budget` 经 `resolveBudget` 取
+  // （未知键/越界会进 issues，见 budget.ts）。缺省 = 出厂默认（与改前逐位等价）。
+  const b = resolveBudget(policy).values;
+  const minSamples = opts.minSamples ?? b.optMinSamples;
   const out: Proposal[] = [];
   const kitReg = kitRegistry(opts.root);
   const kbIndex = readKbIndex(opts.root);
@@ -158,20 +163,24 @@ export function proposeFromMetrics(
     const [kitId, opId] = key.split(".");
     const op = kitReg.resolve(kitId, opId);
     if (!op || t.submits < minSamples) continue;
-    const tier = op.modelTier ?? "high";
-    if (blockRate(t) >= 0.3 && tier !== "high") {
+    // OS-02 阶段 C：**不再 `?? "high"`**。未声明档位 = 不约束（引擎不替作者拍板），
+    // 于是 R4「成本高可降 lite」只在**显式 high** 时才提（不许把不约束当 high 去降）；
+    // R3「升到 high」在未约束或轻档时都提（那是**收紧**，低风险）。
+    const tier = op.modelTier;
+    const tierLabel = tier === undefined ? "未约束" : tier === "high" ? "high 档" : "lite 档";
+    if (blockRate(t) >= b.optBlockRateHigh && tier !== "high") {
       push({
         id: `R3@${key}`, rule: "R3-tier-up", severity: "high", risk: "low",
-        title: `档位偏轻：${key} 升到 high`,
-        reason: `打回率 ${(blockRate(t) * 100).toFixed(0)}%（样本 ${t.submits}）——该 tool 承担的是判断类工作，轻量档出的错会一路放大。`,
+        title: `档位偏轻（${tierLabel}）：${key} 升到 high`,
+        reason: `打回率 ${(blockRate(t) * 100).toFixed(0)}%（样本 ${t.submits}）——该 tool 承担的是判断类工作，轻量档/不约束出的错会一路放大。`,
         evidence: { rule: "R3-tier-up", metric: "asserts.blockRate", value: Number(blockRate(t).toFixed(3)), samples: t.submits },
         patch: {
           kind: "set-tool", kit: kitId, op: opId, model_tier: "high",
-          reason: "打回率高，判断类工作不适合轻量档",
+          reason: `打回率高，判断类工作不适合${tierLabel}`,
           evidence: { rule: "R3-tier-up", metric: "asserts.blockRate", value: Number(blockRate(t).toFixed(3)), samples: t.submits },
         },
       });
-    } else if (blockRate(t) === 0 && t.hitRate >= 0.5 && t.cost > medianCost && tier === "high") {
+    } else if (blockRate(t) === 0 && t.hitRate >= b.optHitRateHigh && t.cost > medianCost && tier === "high") {
       push({
         id: `R4@${key}`, rule: "R4-tier-down", severity: "medium", risk: "medium",
         title: `成本偏高：${key} 可试降 lite`,
@@ -240,21 +249,43 @@ export function proposeFromMetrics(
     });
   }
 
-  // ── R7 边界验收降噪：连续全过 → 转 auto ────────────────────────
+  // ── R7 交界验收降噪：连续全过 → 转 auto ────────────────────────
+  // N4：flow@3 的「交界」是模块间的连接件（phase=link，节点 id `<实例id>.link`），
+  // R6 已退役 `itb-` 边界门 ⇒ 对连接件必须产 **per-link** 的 `set-link`，
+  // 而不是 `set-policy{key:"kit_boundary"}`（那个键 flow@3 不认，产了就是装饰）。
+  // legacy flow@2 的 `itb-*` 边界门仍走 `set-policy{kit_boundary}`（overlay.ts 消费）。
   for (const g of summary.gates) {
-    if (!g.nodeId.startsWith(BOUNDARY_PREFIX)) continue;
+    const isLink = g.phase === "link";
+    const isBoundary = g.nodeId.startsWith(BOUNDARY_PREFIX);
+    if (!isLink && !isBoundary) continue;
     if (g.samples < minSamples || g.sendBacks > 0) continue;
-    if ((policy.kit_boundary ?? DEFAULT_POLICY.kit_boundary) === "auto") continue;
-    push({
-      id: `R7@${g.nodeId}`, rule: "R7-boundary-auto", severity: "medium", risk: "low",
-      title: `边界验收降噪：${g.nodeId} 连续 ${g.samples} 次全过`,
-      reason: `该交界已经稳定（${g.samples} 次零打回），人工验收的价值递减——转 auto 后仅在跨界风险升高时才拦人。人工预算留给真正的新交界。`,
+    if (isLink) {
+      if ((nodes[g.nodeId] as { link_mode?: string } | undefined)?.link_mode === "auto") continue;
+    } else if ((policy.kit_boundary ?? DEFAULT_POLICY.kit_boundary) === "auto") continue;
+    const unit = isLink ? "交界" : "边界";
+    const shared = {
+      id: `R7@${g.nodeId}`, rule: "R7-boundary-auto" as const,
+      severity: "medium" as const,
+      // 连接件降级搬动人工裁决位置 ⇒ 结构类（永远 proposed，不会自动落地）；
+      // legacy 边界门改的是 policy 值 ⇒ 内容类。
+      risk: (isLink ? "medium" : "low") as "medium" | "low",
+      title: `${unit}验收降噪：${g.nodeId} 连续 ${g.samples} 次全过`,
+      reason: `该${unit}已经稳定（${g.samples} 次零打回），人工验收的价值递减——转 auto 后仅在跨界风险升高时才拦人。人工预算留给真正的新${unit}。`,
       evidence: { rule: "R7-boundary-auto", metric: "boundary.sendBacks", value: 0, samples: g.samples },
-      patch: {
-        kind: "set-policy", key: "kit_boundary", value: "auto",
-        reason: `边界 ${g.nodeId} 连续 ${g.samples} 次零打回，降噪为 auto`,
-        evidence: { rule: "R7-boundary-auto", metric: "boundary.sendBacks", value: 0, samples: g.samples },
-      },
+    };
+    push({
+      ...shared,
+      patch: isLink
+        ? {
+            kind: "set-link", link: g.nodeId, mode: "auto",
+            reason: `连接件 ${g.nodeId} 连续 ${g.samples} 次零打回，降噪为 auto（per-link，不动其他交界）`,
+            evidence: shared.evidence,
+          }
+        : {
+            kind: "set-policy", key: "kit_boundary", value: "auto",
+            reason: `边界 ${g.nodeId} 连续 ${g.samples} 次零打回，降噪为 auto`,
+            evidence: shared.evidence,
+          },
     });
   }
 
@@ -317,20 +348,27 @@ export function buildReport(
 
 /**
  * 提案 → overlay（规范 R5 §六）：`adapt` 决定自动化的边界。
- *   off      → 不产出（只观测）
+ *   off      → **不产出提案**（只观测；提案仍全部记入 `registry/optimize.json` 供人看）
  *   propose  → 全部 status="proposed"，等人在前端/CLI 批
  *   apply    → risk=low 直接 applied，其余仍 proposed
  * 注意：**没有任何策略能让 risk≥medium 的改动自动落地**——那类改动会改变编排结构，
  * 必须有人（或明确授权的优化 agent 会话）点头。
+ *
+ * OS-02（N2）：`off` 此前与 `propose` **行为完全等价**（唯一判断是 `adapt === "apply"`）
+ * ⇒ 契约里这个取值是装饰、作者声明 `adapt:"off"` 拦不住提案落盘。本条注释的「不产出」
+ * 一直是**注释里的意图**，实现里没有。现按注释实现。
  */
 export function overlayFromProposals(
   proposals: Proposal[],
   opts: { flowId: string; adapt?: FlowPolicy["adapt"]; reason?: string },
 ): FlowOverlay {
   const adapt = opts.adapt ?? DEFAULT_POLICY.adapt;
+  // off = 只观测：一条补丁也不落（不是「落成 proposed」——那仍是落盘、仍会改变 effective 的
+  // overlayHash，人工不批也在 diff 里活着）。观测结果由 buildReport 的 optimize.json 承载。
+  const patched: Proposal[] = adapt === "off" ? [] : proposals;
   const auto = (p: Proposal): boolean =>
     adapt === "apply" && p.risk === "low" && !isStructuralPatch(p.patch);
-  const patches: OverlayPatch[] = proposals.map((p) => ({
+  const patches: OverlayPatch[] = patched.map((p) => ({
     ...p.patch,
     proposal: p.id,
     status: auto(p) ? "applied" : "proposed",
@@ -339,7 +377,11 @@ export function overlayFromProposals(
     format: "flow-overlay@1",
     flowId: opts.flowId,
     origin: "optimizer",
-    reason: opts.reason ?? `优化器提案 ${patches.length} 条（adapt=${adapt}）`,
+    reason:
+      opts.reason ??
+      (adapt === "off"
+        ? `adapt=off：只观测，不产出提案（观测到 ${proposals.length} 条，见 registry/optimize.json）`
+        : `优化器提案 ${patches.length} 条（adapt=${adapt}）`),
     patches,
   };
 }

@@ -302,6 +302,12 @@ textarea{width:100%;min-height:340px;background:var(--bg-ctl);color:var(--ink);b
 .cfg-bool{display:inline-flex;gap:6px;align-items:center;color:var(--ink-2)}
 .cfg-warn{margin:8px 0 0;font-size:calc(11.5px*var(--fs,1));color:#a5433a}
 .cfg-ok{color:var(--acc-ok,#3a7a43)}
+/* OS-02 阶段 C：阈值预算区 —— 旋钮来源徽标（出厂 / 本项目已改） */
+.cfg-badge{font-size:calc(10.5px*var(--fs,1));border-radius:999px;padding:1px 8px;border:1px solid var(--line);color:var(--ink-3)}
+.cfg-badge.on{border-color:var(--accent);color:var(--accent)}
+.cfg-grp{margin:10px 0 2px;font-size:calc(11.5px*var(--fs,1));color:var(--ink-3);letter-spacing:1px;font-family:Consolas,'Microsoft YaHei',monospace}
+.cfg-eff{margin:3px 0 8px;font-size:calc(11.5px*var(--fs,1));color:var(--ink-2);background:var(--bg-paper);border-left:2px solid var(--line-paper);padding:5px 9px;border-radius:var(--r-s)}
+.cfg-eff b{color:var(--accent);font-family:Consolas,monospace}
 </style>
 </head>
 <body>
@@ -1635,6 +1641,68 @@ function configZonesPaper(){
   h += `</div>`;
   return h;
 }
+/**
+ * OS-02 阶段 C · 阈值预算区。
+ * 旋钮声明面 = 内核 `budget.ts::DEFAULT_BUDGET`（经 effective.json 的 `budget.defs` 下发）——
+ * 页面**不自造旋钮、不重算生效值**（values/sources/issues 全是内核 resolveBudget 的产物）。
+ * 输入框语义：留空 = 用出厂默认（不写进配置）；填值 = 只覆盖该键。
+ */
+function budgetDeclared(){
+  const c = (DATA.projectConfig && !DATA.projectConfig.__invalid) ? DATA.projectConfig : {};
+  const b = c["阈值预算"];
+  return (b && typeof b === "object" && !Array.isArray(b)) ? b : {};
+}
+function budgetZonePaper(){
+  const bv = DATA.budgetView;
+  if (!bv || !bv.defs || !Object.keys(bv.defs).length)
+    return `<div class="cfg-zone" id="cfg-zone-budget"><div class="cfg-zone-h">阈值预算 <span class="msg">本页暂无阈值读模型（先 flow_run 一次：阈值面由内核派生，页面不重算）</span></div></div>`;
+  const decl = budgetDeclared();
+  const groups = [];
+  for (const d of Object.values(bv.defs)){ const g = d.group || "其它"; if (!groups.includes(g)) groups.push(g); }
+  let h = `<div class="cfg-zone" id="cfg-zone-budget"><div class="cfg-zone-h">阈值预算 <span class="msg">${Object.keys(bv.defs).length} 个旋钮 · 出厂默认 + 本项目覆盖 · assembler / aesthetic / optimize / metrics 四处都读它</span></div>`;
+  for (const g of groups){
+    h += `<div class="cfg-grp">${escapeHtml(g)}</div><div class="cfg-grid">`;
+    for (const [k, d] of Object.entries(bv.defs)){
+      if ((d.group || "其它") !== g) continue;
+      const inProj = decl[k] !== undefined;
+      const fromPolicy = !!(bv.sources && bv.sources[k] === "policy");
+      const eff = (bv.values && bv.values[k] !== undefined) ? bv.values[k] : d.value;
+      const range = `${d.min !== undefined ? d.min : "-∞"}~${d.max !== undefined ? d.max : "+∞"}${d.unit ? " " + d.unit : ""}`;
+      const badge = inProj ? "本项目已改" : (fromPolicy ? "模板/运行时已改" : "出厂 " + String(d.value));
+      h += `<div class="cfg-row" data-cfg-budget="1"><label class="k" for="cfg-b-${escapeHtml(k)}">${escapeHtml(k)}</label><span class="v">`
+        + `<input type="number" id="cfg-b-${escapeHtml(k)}" data-budget-key="${escapeHtml(k)}" data-budget-type="number" value="${inProj ? escapeHtml(String(decl[k])) : ""}" placeholder="${escapeHtml(String(d.value))}" min="${d.min !== undefined ? d.min : ""}" max="${d.max !== undefined ? d.max : ""}" step="any">`
+        + `<span class="cfg-badge${inProj || fromPolicy ? " on" : ""}">${escapeHtml(badge)}</span>`
+        + `<span class="msg">生效 ${escapeHtml(String(eff))} · 区间 ${escapeHtml(range)} · 消费方 ${escapeHtml(d.consumer || "-")}</span>`
+        + `</span></div>`
+        + `<div class="cfg-eff">${escapeHtml(d.desc || "")}${d.effect ? ` · <b>${escapeHtml(d.effect)}</b>` : ""}</div>`;
+    }
+    h += `</div>`;
+  }
+  if (bv.issues && bv.issues.length) h += `<p class="cfg-warn">阈值告警（内核原样回显，未静默）：${escapeHtml(bv.issues.join(" ｜ "))}</p>`;
+  h += `<p class="msg">留空 = 出厂默认（不写进配置）· 填值 = 只覆盖该键 · 越界/未知键内核会响亮报错。保存后需再 flow_run 一次才会体现在本页显示值。</p>`;
+  h += `</div>`;
+  return h;
+}
+/** 阈值表单 → `{旋钮: number}`（留空不进参，与 readConfigForm 同口径） */
+function readBudgetForm(){
+  const out = {};
+  document.querySelectorAll("[data-budget-key]").forEach(el => {
+    const k = el.dataset.budgetKey;
+    if (!k) return;
+    const v = el.value === undefined || el.value === null ? "" : String(el.value).trim();
+    if (v === "") return;
+    out[k] = Number(v);
+  });
+  return out;
+}
+/** 恢复出厂：只清空表单（不动盘上配置，未保存前随时可反悔） */
+function resetBudgetForm(){
+  document.querySelectorAll("[data-budget-key]").forEach(el => { el.value = ""; });
+  const m = document.getElementById("cfg-msg");
+  if (m) m.textContent = "阈值已全部留空（= 出厂默认），点「保存配置」才落盘";
+}
+function cfgZonesHtml(){ return configZonesPaper() + budgetZonePaper(); }
+function renderCfgZones(){ const z = document.getElementById("cfg-zones"); if (z) z.innerHTML = cfgZonesHtml(); }
 /** 表单 → 对象。空串一律**不进参**（= 不表态，让内核回退 flow 默认） */
 function readConfigForm(){
   const out = {};
@@ -1689,6 +1757,9 @@ async function saveConfigObject(obj, msgEl){
 }
 async function saveConfigFromForm(){
   const obj = readConfigForm();
+  // OS-02 阶段 C：阈值预算作为**嵌套对象**一并落盘（留空则整键不写 = 全走出厂默认）
+  const b = readBudgetForm();
+  if (Object.keys(b).length) obj["阈值预算"] = b; else delete obj["阈值预算"];
   const miss = cfgMissingRequired(obj);
   if (miss.length){
     const m = document.getElementById("cfg-msg");
@@ -1697,16 +1768,17 @@ async function saveConfigFromForm(){
   return saveConfigObject(obj);
 }
 function loadOfficialConfig(){
-  if (!confirm("载入官方默认（本 flow 的出厂配置模板）？当前表单内容将被覆盖。")) return;
+  if (!confirm("载入官方默认（本 flow 的出厂配置模板）？当前表单内容（含阈值预算覆盖）将被清空，未保存前不影响盘上配置。")) return;
   DATA.projectConfig = { ...(DATA.configTemplate || {}) };
-  const z = document.getElementById("cfg-zones");
-  if (z) z.innerHTML = configZonesPaper();
+  renderCfgZones();
   syncCfgJson();
   const m = document.getElementById("cfg-msg");
   if (m) m.textContent = "已载入官方默认（尚未保存）";
 }
 function exportConfig(){
   const obj = { ...readConfigForm(), "项目": DATA.project };
+  const b = readBudgetForm();
+  if (Object.keys(b).length) obj["阈值预算"] = b; else delete obj["阈值预算"];
   const blob = new Blob([JSON.stringify(obj, null, 2) + "\n"], {type:"application/json"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
@@ -1726,8 +1798,7 @@ function importConfig(){
         const obj = JSON.parse(String(fr.result));
         if (!obj || typeof obj !== "object" || Array.isArray(obj)) throw new Error("顶层必须是对象");
         DATA.projectConfig = obj;
-        const z = document.getElementById("cfg-zones");
-        if (z) z.innerHTML = configZonesPaper();
+        renderCfgZones();
         syncCfgJson();
         const m = document.getElementById("cfg-msg");
         if (m) m.textContent = "已导入（尚未保存；点「保存配置」落盘）";
@@ -1767,12 +1838,14 @@ function openWfMgmt(tab){
   let h = `<div class="shelf-row" id="open-store" style="border-color:var(--accent)"><span class="no">店</span><span class="nm">流商店 · ${flows.length} 条生产线 <span class="msg">卡片浏览 / 搜索 / 分类 / 详情</span></span><span class="go">进入商店 →</span></div>`;
   h += `<div class="paper"><div class="doc-h"><span>流配置</span><span>${DATA.project}</span></div><div class="md">
     <div class="kv"><span class="k">流程 id</span><span class="v"><code>${flow.id}</code></span><span class="k">版本</span><span class="v">v${flow.version}</span></div>
-    <p class="msg">初始化面板（OS-04）：项目输入 + 定性配置 → 落 <code>项目配置.json</code>（flow_init 契约，flow_run 自动装载）。
-      保存优先走内核 <code>PUT /api/projects/&lt;id&gt;/config</code>（schema 校验 + 绑定提示）；<code>miniflow up</code> 未运行时降级为直写文件并会说明。</p>
-    <div id="cfg-zones">${configZonesPaper()}</div>
+    <p class="msg">初始化面板（OS-04 + OS-02 C）：项目输入 + 定性配置 + 阈值预算 → 落 <code>项目配置.json</code>（flow_init 契约，flow_run 自动装载）。
+      保存优先走内核 <code>PUT /api/projects/&lt;id&gt;/config</code>（schema 校验 + 绑定提示）；<code>miniflow up</code> 未运行时降级为直写文件并会说明。
+      阈值预算键名/区间白名单 = <code>core/src/budget.ts::DEFAULT_BUDGET</code>，生效值由内核 <code>resolveBudget</code> 派生后写入 <code>registry/effective.json</code>。</p>
+    <div id="cfg-zones">${cfgZonesHtml()}</div>
     <div class="act">
       <button class="tb" id="cfg-save" style="border-color:var(--accent);color:var(--accent);font-weight:700">保存配置</button>
       <button class="tb" id="cfg-official">载入官方默认</button>
+      <button class="tb" id="cfg-budget-reset">阈值恢复出厂</button>
       <button class="tb" id="cfg-export">导出 JSON（存为模板）</button>
       <button class="tb" id="cfg-import">导入模板…</button>
       <span class="msg" id="cfg-msg" aria-live="polite"></span>
@@ -1790,6 +1863,7 @@ function openWfMgmt(tab){
   dBody.querySelectorAll(".shelf-row[data-skill]").forEach(r=>r.addEventListener("click",()=>openSkillEditor(r.dataset.skill)));
   document.getElementById("cfg-save").onclick = () => { void saveConfigFromForm(); };
   document.getElementById("cfg-official").onclick = loadOfficialConfig;
+  document.getElementById("cfg-budget-reset").onclick = resetBudgetForm;
   document.getElementById("cfg-export").onclick = exportConfig;
   document.getElementById("cfg-import").onclick = importConfig;
   document.getElementById("cfg-save-raw").onclick = async ()=>{
@@ -1797,7 +1871,7 @@ function openWfMgmt(tab){
     try{
       const v = JSON.parse(document.getElementById("cfg-ta").value);
       if (!v || typeof v !== "object" || Array.isArray(v)) throw new Error("顶层必须是对象");
-      if (await saveConfigObject(v, m)) document.getElementById("cfg-zones").innerHTML = configZonesPaper();
+      if (await saveConfigObject(v, m)) renderCfgZones();
     }catch(err){ if (m) m.textContent = "失败：" + err.message; }
   };
   syncCfgJson();

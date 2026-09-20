@@ -20,7 +20,15 @@ export interface Flow3ModuleInstance {
   link?: "auto" | "manual";
   caps?: string[];
   insert?: Record<string, string[]>;
-  iterate?: { unit?: string; over?: string; first?: number };
+  /**
+   * 模块级迭代声明（OS-02 阶段 D 起**真的会传播到派生节点**）。
+   *   unit     迭代单位（chapter/episode/shot/beat…），仅用于显示与默认产物模板
+   *   over     迭代来源（上游产物名，给人看）
+   *   first    **本期实例数量**（本期要跑几个实例；默认 1）。前端以「本期前 N {unit}」呈现，
+   *            内核**不**消费它（它是规模声明而非调度参数）——逐实例提交靠 flow_submit，收口靠 --seal
+   *   artifact 单实例产物模板（含 `{n}`/`{i}`）；缺省由交付节点 output 派生
+   */
+  iterate?: { unit?: string; over?: string; first?: number; artifact?: string };
   vary?: Record<string, { caps?: string[]; insert?: Record<string, string[]> }>;
   when?: unknown;
 }
@@ -79,6 +87,8 @@ export interface ExpandResult {
   links: LinkDef[];
   moduleNodes: Record<string, string[]>;
   dirs: Record<string, string>;
+  /** 展开期的事实回显（如 iterate 传播到哪个节点）——由 effectiveFlow3 并入 notes，不许静默。 */
+  notes?: string[];
 }
 
 /** 模块注册表（进程内缓存；modules/<id>/module.json，module@1 契约校验）。 */
@@ -107,6 +117,32 @@ export function moduleDirOf(order: number, name: string): string {
   return `${String(order).padStart(2, "0")}-${name}`;
 }
 
+/** 迭代单位的默认文件名样式（OS-02 阶段 D）。约定表，不用魔法：未列出的单位用裸 `{n}`。 */
+const UNIT_FILE_STYLE: Record<string, string> = {
+  chapter: "第{n}章",
+  episode: "第{n}集",
+  script: "第{n}集",
+  beat: "第{n}拍",
+  shot: "镜{n}",
+};
+
+/**
+ * 单实例产物模板缺省值（模块 `iterate` 未声明 `artifact` 时）：
+ *   `<产物目录>/<产物名去扩展名>/<单位样式><扩展名>`
+ * 例：交付节点 output = `03-写作/章节正文.md`，unit = `chapter`
+ *     ⇒ `03-写作/章节正文/第{n}章.md`
+ * 与 `flows/novel-fanqie` 的既有约定、以及页面前端 iterate 槽位区的候选路径一致
+ * （前端 `it.artifact || "章节正文/第{n}章.md"` 的硬编码兜底正是这条规则的影子）。
+ */
+export function defaultArtifactTemplate(output: string, unit: string): string {
+  const dir = path.posix.dirname(output);
+  const base = path.posix.basename(output);
+  const stem = base.replace(/\.[^.]+$/, "");
+  const ext = base.slice(stem.length) || ".md";
+  const label = UNIT_FILE_STYLE[unit] ?? "{n}";
+  return `${dir === "." ? "" : dir + "/"}${stem}/${label}${ext}`;
+}
+
 /**
  * 展开一条 flow@3（规范 §三 八条规则）。
  * 幂等：同一输入两次展开逐字节一致（纯函数，除文件读取外无状态）。
@@ -123,6 +159,7 @@ export function expandFlow3(
   const nodes: Record<string, any> = {};
   const edges: { id: string; from: string; to: string; role?: string; via?: string; params?: Record<string, unknown> }[] = [];
   const derivedStages: any[] = [];
+  const notes: string[] = [];
 
   let prev: { mid: string; terminals: string[]; linkId: string } | null = null;
 
@@ -330,6 +367,42 @@ export function expandFlow3(
       return last ? { node: last, module: o.module, title: o.title, ...(o.audience ? { audience: o.audience } : {}) } : null;
     })
     .filter(Boolean);
+
+  // ── 规则 8（OS-02 阶段 D · 死配置复活）：模块级 `iterate` → **派生节点传播**。
+  // 此前 `inst.iterate` 只有类型声明、零传播代码 ⇒ 派生节点永不带该字段，而
+  // `kernel.ts` 的 `batchable = !!node.iterate`、`cond.pendingInstancesOf`、`minitools.artifactPathsOf`
+  // **全都在 node 上读** ⇒ flow@3 的逐章迭代从未生效（「声明了却不生效」的又一实例）。
+  //
+  // 传播目标 = 该模块**产出交付件的节点**（flow.outputs[].module → 模块内最后一个有产物节点，
+  // 与 derivedOutputs 同一口径；未声明 outputs 时取模块内最后一个有产物节点）。理由：
+  //   ① 与 flow@2 实践一致（`novel-fanqie` 只有 chapter 一个节点带 iterate）；
+  //   ② 单实例产物模板只对「交付件」有意义（台词层/场景层没有 per-chapter 产物）；
+  //   ③ 页面前端 iterate 槽位区用 `.find()` 取**第一个**带 iterate 的节点，多节点传播会取错。
+  // 注：**不**为此合成回边。逐章不靠图回路驱动，而靠节点「未 seal 前保持 awaiting、逐实例入账」
+  // （kernel.flow_submit + --seal）；`when:{loop:"pending"}` 仍留给显式声明了回边的流使用。
+  const deliverNodeOf: Record<string, string> = {};
+  for (const o of derivedOutputs as Array<{ node: string; module: string }>) deliverNodeOf[o.module] = o.node;
+  for (const inst of flow3.modules ?? []) {
+    if (!inst.iterate) continue;
+    const members = (moduleNodes[inst.id] ?? []).filter((id) => nodes[id]?.output);
+    const target = deliverNodeOf[inst.id] ?? members.at(-1);
+    if (!target) {
+      notes.push(`⚠️ 模块 ${inst.id} 声明了 iterate，但该模块没有产出节点可承载——声明未生效（不进 appliedCount）`);
+      continue;
+    }
+    const unit = inst.iterate.unit ?? "实例";
+    const iter = {
+      unit,
+      ...(inst.iterate.over ? { over: inst.iterate.over } : {}),
+      first: inst.iterate.first ?? 1,
+      artifact: inst.iterate.artifact ?? defaultArtifactTemplate(String(nodes[target].output), unit),
+    };
+    nodes[target].iterate = iter;
+    notes.push(
+      `iterate 传播：模块 ${inst.id} → 节点 ${target}（单位 ${unit}，本期 ${iter.first}，产物模板 ${iter.artifact}）`,
+    );
+  }
+
   const derived: any = {
     format: "flow@3-derived",
     id: flow3.id,
@@ -344,7 +417,7 @@ export function expandFlow3(
     r6: { modules, links, moduleNodes, dirs },
   };
 
-  return { flow: derived, modules, links, moduleNodes, dirs };
+  return { flow: derived, modules, links, moduleNodes, dirs, notes };
 }
 
 /** R6 生效编排（flow@3 专用）：flow@3 overlay 在展开前应用于模块实例。
@@ -396,9 +469,11 @@ export function effectiveFlow3(
   const unsupported: string[] = [];
 
   /** flow@3 展开器真正消费的 kind。其余（手工图语义）须显式回显，不许静默丢弃。 */
-  const FLOW3_KINDS = new Set(["set-policy", "set-module", "insert-tool", "set-tool", "set-input"]);
-  /** flow@3 允许被 set-policy 改写的 policy 键（白名单，对齐 contracts/flow.schema.json）。 */
-  const POLICY_KEYS = new Set(["link_default", "adapt", "maxRounds", "awaitTimeoutMs"]);
+  const FLOW3_KINDS = new Set(["set-policy", "set-module", "insert-tool", "set-tool", "set-input", "set-link"]);
+  /** flow@3 允许被 set-policy 改写的 policy 键（白名单，对齐 contracts/flow.schema.json）。
+   *  OS-02 阶段 C：补 `budget`——项目配置层与运行时的阈值覆盖都经 `set-policy{budget}` 表达，
+   *  此前不在白名单 ⇒ 结构性无法调阈值（面板填了也静默 unsupported）。 */
+  const POLICY_KEYS = new Set(["link_default", "adapt", "maxRounds", "awaitTimeoutMs", "budget"]);
 
   const list = (opts.overlays ?? []).filter(Boolean);
   for (const ov of list) {
@@ -419,8 +494,19 @@ export function effectiveFlow3(
           unsupported.push(`set-policy:link_default=${String(p.value)}（须 auto|manual）`);
           continue;
         }
-        policy[k] = p.value;
-        notes.push(`set-policy ${k}=${String(p.value)}`);
+        if (k === "budget") {
+          const v = p.value as Record<string, unknown> | undefined;
+          if (!v || typeof v !== "object" || Array.isArray(v) || !Object.values(v).every((x) => typeof x === "number")) {
+            unsupported.push(`set-policy:budget（须「键→number」对象，键名白名单见 core/src/budget.ts::DEFAULT_BUDGET）`);
+            continue;
+          }
+        }
+        // 对象值按键浅合并（与 applyOverlay 同语义）：只调一个阈值不该抹掉其余阈值声明。
+        const curP = policy[k];
+        policy[k] = p.value && typeof p.value === "object" && !Array.isArray(p.value) && curP && typeof curP === "object"
+          ? { ...(curP as Record<string, unknown>), ...(p.value as Record<string, unknown>) }
+          : p.value;
+        notes.push(`set-policy ${k}=${JSON.stringify(policy[k])}`);
         applied++;
       } else if (kind === "set-module") {
         const inst = (flow.modules ?? []).find((m) => m.id === p.id);
@@ -468,11 +554,31 @@ export function effectiveFlow3(
         inputs[String(p.key)] = p.value;
         notes.push(`set-input ${String(p.key)}=${String(p.value)}`);
         applied++;
+      } else if (kind === "set-link") {
+        // N4：per-link 降级通道。连接件节点 id 是 `<实例id>.link`（expandFlow3 规则 6），
+        // 而 `link` 键在契约里写作「<实例id>」——两种写法都收（去尾 .link），避免因命名口径
+        // 不同而静默落进 unsupported。
+        const raw = String((p as any).link ?? "");
+        const mid = raw.endsWith(".link") ? raw.slice(0, -".link".length) : raw;
+        const inst = (flow.modules ?? []).find((m) => m.id === mid);
+        const mode = (p as any).mode;
+        if (!inst) {
+          unsupported.push(`set-link:${raw || "(缺 link)"}（模块实例不存在）`);
+        } else if (mode !== "auto" && mode !== "manual") {
+          unsupported.push(`set-link:${raw}.mode=${String(mode)}（须 auto|manual）`);
+        } else {
+          // 改的是模块实例的声明；expandFlow3 规则 6 会据此铸连接件（inst.link 优先级最高）
+          inst.link = mode;
+          notes.push(`set-link ${inst.id}.link=${mode}`);
+          applied++;
+        }
       }
     }
   }
 
   const res = expandFlow3(root, flow, { policy: policy as any });
+  // 展开期的事实回显（如 iterate 传播落点）并入 notes：展开器内部发生的事不许静默。
+  notes.push(...(res.notes ?? []));
   let hash = 0;
   const fingerprint = JSON.stringify({ m: flow.modules, p: policy });
   for (let i = 0; i < fingerprint.length; i++) hash = ((hash << 5) - hash + fingerprint.charCodeAt(i)) | 0;

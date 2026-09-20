@@ -19,8 +19,9 @@ import { runAestheticAsserts } from "./aesthetic.js";
 import { runCoreNode, artifactPathOf, nodeOutput, outputPathOf, nodeAsserts } from "./minitools.js";
 import { buildTaskPackage, effectiveUpstreams, resolveNodeOp } from "./assembler.js";
 import { effectiveFlow3 } from "./modules.js";
+import { resolveBudget } from "./budget.js";
 import { renderSpawnPrompt } from "./spawn.js";
-import { loadProjectConfig, configToInputs, type ProjectConfig } from "./project-config.js";
+import { loadProjectConfig, configToInputs, configBudget, type ProjectConfig } from "./project-config.js";
 import type { BatchEntry, FlowNode, MetricPhase, RunMetric } from "./types.js";
 import {
   effectiveFlow, isBoundaryGate, isWorkGate, factoryOverlayPath, projectOverlayPath, readOverlay, writeProjectOverlay,
@@ -158,6 +159,33 @@ export class Kernel {
    */
   effectiveOf(projectDir: string, flow: FlowDescriptor): EffectiveFlow {
     try {
+      // OS-02 阶段 C：`项目配置.json` 的「阈值预算」是阈值面的**实例层**。
+      // 合成优先级：flow.policy.budget（模板层） < 本层（实例层） < 项目 overlay（运行时调整层）。
+      // 实现方式 = 造一个派生 overlay 夹在出厂层与项目层之间：一个派生层、一个插入点，
+      // **不新增任何优先级规则**（applyOverlay 本来就有序叠加）。本层不落盘（每次由配置派生）。
+      const cfgB = ((): Record<string, number> | undefined => {
+        try {
+          return configBudget(loadProjectConfig(projectDir));
+        } catch (e) {
+          // 配置非法绝不静默降级（否则「面板填的阈值没生效」会变成最难查的一类问题）。
+          // 错误码/文案沿用既有约定（`flow_run` 侧同一句话），不新造第二套口径。
+          throw new KernelError("INVALID_INPUT", 400, `项目配置非法: ${(e as Error).message}`);
+        }
+      })();
+      const cfgBudgetLayer: FlowOverlay | undefined = cfgB
+        ? {
+            format: "flow-overlay@1",
+            flowId: flow.id,
+            origin: "kernel",
+            reason: "项目配置.json 的「阈值预算」（初始化面板）",
+            patches: [{
+              kind: "set-policy",
+              key: "budget",
+              value: cfgB,
+              reason: `项目配置.json 阈值预算：${Object.keys(cfgB).sort().join("、")}`,
+            }],
+          }
+        : undefined;
       if (flow.format === "flow@3") {
         // R6：flow@3 = 模块序列。overlay 作用于模块实例，随后 expandFlow3 派生节点与边
         // （派生只算一次，persistEffective 落 effective@2）。
@@ -166,8 +194,9 @@ export class Kernel {
         // 而 overlay.json 里却记着 `status:"applied"`。现由 effectiveFlow3 计算后透传。
         const overlays = [
           readOverlay(factoryOverlayPath(this.repoRoot, flow.id)),
+          cfgBudgetLayer,
           readOverlay(projectOverlayPath(projectDir)),
-        ].filter(Boolean);
+        ].filter(Boolean) as FlowOverlay[];
         const r = effectiveFlow3(this.repoRoot, flow as never, { projectDir, overlays });
         return {
           flow: r.flow,
@@ -178,12 +207,14 @@ export class Kernel {
           links: r.links,
           r6: { modules: r.modules, links: r.links, moduleNodes: r.moduleNodes, dirs: r.dirs },
           notes: r.notes,
+          unsupported: r.unsupported,
           overlayHash: r.overlayHash,
           appliedCount: r.appliedCount,
         };
       }
-      return effectiveFlow(this.repoRoot, flow, { projectDir });
+      return effectiveFlow(this.repoRoot, flow, { projectDir, overlays: cfgBudgetLayer ? [cfgBudgetLayer] : [] });
     } catch (e) {
+      if (e instanceof KernelError) throw e; // 已分类的错误原样上抛，不被 BAD_OVERLAY 掩盖
       throw new KernelError("BAD_OVERLAY", 409, `overlay 非法（拒绝静默降级为 bootstrap 编排）: ${(e as Error).message}`);
     }
   }
@@ -230,6 +261,13 @@ export class Kernel {
             link_default: (eff.policy as any).link_default ?? "auto",
             adapt: (eff.policy as any).adapt ?? "propose",
           },
+          /**
+           * OS-02 阶段 C：阈值预算面**只在内核派生一次**（`budget.ts::resolveBudget`），
+           * 页面生成器纯消费本块渲染「阈值预算区」——绝不在 python 侧再实现一遍合并/校验。
+           * 含 defs（旋钮声明：区间/单位/人话说明）+ values（生效值）+ sources（factory|policy）
+           * + issues（未知键/越界/交叉校验告警）+ overridden。
+           */
+          budget: resolveBudget(eff.policy),
           overlayHash: eff.overlayHash,
           planHash: state?.planHash,
           links: (eff as any).links ?? [],
@@ -266,6 +304,8 @@ export class Kernel {
         flowId: eff.flow.id,
         flowVersion: eff.flow.version,
         policy: eff.policy,
+        /** OS-02 阶段 C：阈值预算面同 effective@2，只在内核派生一次（页面纯消费） */
+        budget: resolveBudget(eff.policy),
         overlayHash: eff.overlayHash,
         planHash: state?.planHash,
         boundaries: eff.boundaries,
@@ -297,7 +337,7 @@ export class Kernel {
         const p = artifactPathOf(eff.flow, id);
         if (p) pathToNode[p] = id;
       }
-      const summary = summarizeMetrics(events, { pathToNode });
+      const summary = summarizeMetrics(events, { pathToNode, budget: resolveBudget(eff.policy).values });
       const view = { format: "metrics-summary@1", runId: state.runId, ...summary };
       fs.mkdirSync(path.join(projectDir, "registry"), { recursive: true });
       atomicWriteText(path.join(projectDir, "registry", "metrics-summary.json"), JSON.stringify(view, null, 2) + "\n");
@@ -495,14 +535,16 @@ export class Kernel {
     const glossary = checkGlossary(this.root, projectDir, rel);
     if (glossary) problems.push(glossary);
     const opRef = resolveNodeOp(node, this.repoRoot, eff.toolOverrides);
+    // OS-02 阶段 C：美学断言阈值（章长/配额/集数）改读作用域内的阈值预算面（出厂默认 + policy.budget 覆盖）
+    const budgetVals = resolveBudget(eff.policy).values;
     // R5 §四：节点 + op 声明的断言必须真跑（声明即契约，不是任务包上的一行字）。
     // op 侧带上 overlay 的 set-tool（add_asserts）——加过的断言从这一刻起就是硬的。
     const declared = [...new Set([...nodeAsserts(node), ...(opRef?.asserts ?? [])])];
-    const declaredOutcome = runDeclaredAsserts(projectDir, rel, declared);
+    const declaredOutcome = runDeclaredAsserts(projectDir, rel, declared, undefined, budgetVals);
     problems.push(...declaredOutcome.results);
     if (rel.replaceAll("\\", "/").startsWith("对外交付/")) {
       // 客户交付件：引擎全量（交付出口的兜底体检，与声明无关也照跑）
-      problems.push(...runAestheticAsserts(projectDir, rel));
+      problems.push(...runAestheticAsserts(projectDir, rel, budgetVals));
     }
     const finalProblems = dedupeValidations(problems);
     const blocks = blocked(finalProblems);
@@ -567,7 +609,7 @@ export class Kernel {
       // 此处若改用 op 声明的**原始**清单，`kb/trope/*` 这类通配符会以字面形态占着分母、
       // 永不可能命中 → 标尺卡命中率被系统性压到 0（_918test 实证：梗卡明明引用了 5 张，
       // 计数仍是 0）。故重算任务包，取与派发完全同源的那份清单。
-      const pkg = buildTaskPackage(projectDir, flow, state, nodeId, eff.toolOverrides);
+      const pkg = buildTaskPackage(projectDir, flow, state, nodeId, eff.toolOverrides, eff.policy);
       const injected = [...(pkg.knowledge ?? []).map((k) => k.id), ...pkg.context.map((c) => c.ref)];
       // 概念词命中层（D1 第一层改造）：kb 卡按签名词在正文的落点计命中，
       // 路径字面匹配只作保底——知识库根以 repoRoot 为准（knowledge/ 与 projects/ 分居）。
@@ -1089,7 +1131,7 @@ export class Kernel {
         // (b) 带产活的门 = 评审步：**照跑**（派发任务包、产物照出），只是裁决自动。
         //     这是「拥抱生成式 flow」的关键一步——评审不再是人的串行屏障，但它该干的活不许被跳过。
         if (autoRegion && isWorkGate(node) && !humanEngaged) {
-          const pkg = buildTaskPackage(projectDir, flow, state, id, eff.toolOverrides);
+          const pkg = buildTaskPackage(projectDir, flow, state, id, eff.toolOverrides, eff.policy);
           batch.push({ nodeId: id, taskPackage: pkg });
           ns.status = "awaiting";
           state.status = "awaiting_input";
@@ -1141,7 +1183,7 @@ export class Kernel {
 
       if (ns.status === "awaiting") {
         // 已派发、等待提交的认知步：每轮重组任务包（磁盘真相 > 对话记忆），并入就绪批
-        batch.push({ nodeId: id, taskPackage: buildTaskPackage(projectDir, flow, state, id, eff.toolOverrides) });
+        batch.push({ nodeId: id, taskPackage: buildTaskPackage(projectDir, flow, state, id, eff.toolOverrides, eff.policy) });
         state.status = "awaiting_input";
         continue;
       }
@@ -1177,7 +1219,16 @@ export class Kernel {
             continue;
           }
         }
-        const r = await runCoreNode(projectDir, flow, state, id);
+        // D#14：脚本壳的超时旋钮。此前 `timeoutMs` 只活在契约里（spawn 不带 timeout）⇒ 脚本卡住
+        // = 内核永久卡住。现按「节点 config > op/overlay config > 通用默认 60000」解析后交给
+        // runCoreNode，由它传给子进程；到时显式失败，不静默挂死。
+        const coreOp = resolveNodeOp(node, this.repoRoot);
+        const coreOv = coreOp ? eff.toolOverrides[`${coreOp.kit}.${coreOp.op}`]?.config : undefined;
+        const coreCfg = resolveToolConfig(coreOp, (node as { config?: Record<string, unknown> }).config, coreOv).values;
+        const r = await runCoreNode(projectDir, flow, state, id, {
+          timeoutMs: typeof coreCfg.timeoutMs === "number" ? coreCfg.timeoutMs : undefined,
+          budget: resolveBudget(eff.policy).values,
+        });
         if (!r.ok && r.kind === "missing") {
           journalAppend(projectDir, state.runId, "warn", { nodeId: id, detail: r.reason });
           return { status: "blocked", nodeId: id, reason: r.reason ?? "minitool missing" };
@@ -1207,7 +1258,7 @@ export class Kernel {
 
       if (node.kind === "agent") {
         if (!isReady(id)) continue; // 上游未齐：不派发
-        const pkg = buildTaskPackage(projectDir, flow, state, id, eff.toolOverrides);
+        const pkg = buildTaskPackage(projectDir, flow, state, id, eff.toolOverrides, eff.policy);
         batch.push({ nodeId: id, taskPackage: pkg });
         ns.status = "awaiting";
         state.status = "awaiting_input";
@@ -1364,7 +1415,7 @@ export class Kernel {
       const p = artifactPathOf(eff.flow, id);
       if (p) pathToNode[p] = id;
     }
-    const summary = summarizeMetrics(events, { pathToNode });
+    const summary = summarizeMetrics(events, { pathToNode, budget: resolveBudget(eff.policy).values });
     const overlay = readOverlay(projectOverlayPath(projectDir));
     // 编排挖掘提示（R5 §六 质性通道）：距上次挖掘又积累了一轮运行 → 建议跑 flow_mine
     let mine: { due: boolean; events: number; eventsAtLastMine: number; lastMinedAt?: string } = {
@@ -1445,7 +1496,7 @@ export class Kernel {
       const p = artifactPathOf(eff.flow, id);
       if (p) pathToNode[p] = id;
     }
-    const summary = summarizeMetrics(readMetrics(projectDir), { pathToNode });
+    const summary = summarizeMetrics(readMetrics(projectDir), { pathToNode, budget: resolveBudget(eff.policy).values });
     const proposals = proposeFromMetrics(eff.flow, summary, { root: this.repoRoot, policy: eff.policy });
     let sources: ("metrics" | "miner")[] = ["metrics"];
     let mineStructural: ReturnType<typeof minerToProposals>["structural"] = [];
@@ -1491,15 +1542,23 @@ export class Kernel {
     fs.mkdirSync(path.join(projectDir, "registry"), { recursive: true });
     atomicWriteText(path.join(projectDir, "registry", "optimize.json"), JSON.stringify(report, null, 2) + "\n");
     let written: string | undefined;
-    if (opts.apply && proposals.length) {
+    const adaptMode = eff.policy.adapt ?? "propose";
+    if (opts.apply && proposals.length && adaptMode !== "off") {
       const ov = overlayFromProposals(proposals, { flowId: eff.flow.id, adapt: eff.policy.adapt });
       written = writeProjectOverlay(projectDir, ov, opts.actor ?? "optimizer", state.overlayHash, undefined);
       journalAppend(projectDir, state.runId, "note", {
         actor: opts.actor ?? "optimizer",
-        detail: `优化提案落地 ${ov.patches.filter((p) => p.status === "applied").length} 条（adapt=${eff.policy.adapt ?? "propose"}），其余 ${ov.patches.filter((p) => p.status === "proposed").length} 条待批；来源 ${sources.join("+")}；挖掘师结构类拍板项 ${mineStructural.length} 条未入 overlay`,
+        detail: `优化提案落地 ${ov.patches.filter((p) => p.status === "applied").length} 条（adapt=${adaptMode}），其余 ${ov.patches.filter((p) => p.status === "proposed").length} 条待批；来源 ${sources.join("+")}；挖掘师结构类拍板项 ${mineStructural.length} 条未入 overlay`,
+      });
+    } else if (opts.apply && proposals.length && adaptMode === "off") {
+      // N2：`adapt=off` = 只观测。**不落 overlay、也不许静默** —— 显式记一条 journal，
+      // 否则「0 条落地」和「跑失败」在日志里长得一样。
+      journalAppend(projectDir, state.runId, "note", {
+        actor: opts.actor ?? "optimizer",
+        detail: `adapt=off：只观测，不产出提案（观测到 ${proposals.length} 条，已记入 registry/optimize.json，未落 overlay）；来源 ${sources.join("+")}`,
       });
     }
-    return { report, written, adapt: eff.policy.adapt ?? "propose", mineStructural };
+    return { report, written, adapt: adaptMode, mineStructural };
   }
 
   /**

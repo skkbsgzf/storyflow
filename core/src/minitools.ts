@@ -38,16 +38,21 @@ function resolveLoads(loads: string | string[] | undefined): string[] {
   return out;
 }
 
+/** 脚本壳/机器件执行超时兜底（与 `GENERIC_CONFIG.timeoutMs` 的 default 同值；单一事实源见 kits.ts）。 */
+export const SCRIPT_TIMEOUT_MS = 60000;
+
 /**
  * core 步（零 token，内核进程内执行）。
  * M1 实现：kb_load（内建）；check_* 走 integrity 模式（美学断言 M2 接入）；
  * 其余 minitool 返回类型化 missing（不静默放行）。
+ * `opts.timeoutMs`：由内核按「节点 config > op/overlay config > 通用默认」解析后传入（D#14）。
  */
 export async function runCoreNode(
   projectDir: string,
   flow: FlowDescriptor,
   state: RunState,
   nodeId: string,
+  opts: { timeoutMs?: number; budget?: Record<string, number> } = {},
 ): Promise<CoreResult> {
   const node = flow.graph.nodes[nodeId];
   const tool = node.minitool ?? "";
@@ -96,16 +101,29 @@ export async function runCoreNode(
     const pid = path.basename(projectDir);
     const { execFile } = await import("node:child_process");
     const { promisify } = await import("node:util");
+    // D#14：脚本壳超时。此前 spawn **不带 timeout** ⇒ 脚本卡住 = 内核永久卡住
+    // （与阶段 A 修的 agent 侧悬置同一类故障）。值由调用方按「节点 config > op/overlay config >
+    // 通用默认 60000ms」（GENERIC_CONFIG.timeoutMs）解析后传入；到时显式报错，不静默挂死。
+    const timeoutMs = opts.timeoutMs && opts.timeoutMs >= 1000 ? opts.timeoutMs : SCRIPT_TIMEOUT_MS;
+    const startedAt = Date.now();
     try {
       await promisify(execFile)(
         "python",
         [scriptPath, path.join("projects", pid, src), path.join("projects", pid, outRel),
          "--title", title, "--node", nodeId, "--flow", state.flowId ?? ""].filter((a) => a !== ""),
-        { cwd: ROOT, windowsHide: true, maxBuffer: 32 * 1024 * 1024 },
+        { cwd: ROOT, windowsHide: true, maxBuffer: 32 * 1024 * 1024, timeout: timeoutMs, killSignal: "SIGTERM" },
       );
     } catch (e) {
-      const tail = String((e as { stderr?: string })?.stderr ?? (e as { message?: string })?.message ?? "")
-        .split("\n").filter(Boolean).slice(-5).join(" ｜ ");
+      const err = e as { killed?: boolean; signal?: string; stderr?: string; message?: string };
+      const elapsed = Date.now() - startedAt;
+      // 超时与「退出非零」必须分开报——混在一起就分不清「脚本有 bug」和「脚本跑太久」
+      if (err.killed || err.signal === "SIGTERM") {
+        return {
+          ok: false, artifacts, kind: "assert",
+          reason: `script ${script} 超时 ${timeoutMs}ms 被内核终止（已跑 ${elapsed}ms；调 GENERIC_CONFIG/timeoutMs 或节点 config.timeoutMs 放宽）`,
+        };
+      }
+      const tail = String(err?.stderr ?? err?.message ?? "").split("\n").filter(Boolean).slice(-5).join(" ｜ ");
       return { ok: false, artifacts, kind: "assert", reason: `script ${script} 退出非零：${tail}` };
     }
     makeArtifact(projectDir, { path: outRel, node: nodeId, producer: `script:${path.basename(script)}`, inputs: {} });
@@ -150,10 +168,10 @@ export async function runCoreNode(
         results.push(...runIntegrityAsserts(projectDir, rel));
         if (aesthetic) {
           // 引擎全量照跑（不因声明收窄而丢掉引擎自己发现的 block）
-          const engine = runAestheticAsserts(projectDir, rel);
+          const engine = runAestheticAsserts(projectDir, rel, opts.budget);
           results.push(...engine);
           // 声明契约：本次产物有没有真守住它声明的那几条
-          const d = runDeclaredAsserts(projectDir, rel, declared, engine);
+          const d = runDeclaredAsserts(projectDir, rel, declared, engine, opts.budget);
           results.push(...d.results);
           contract.push({ rel, declared: declared.length, checked: d.checked, unverified: d.unverified });
         }

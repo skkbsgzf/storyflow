@@ -42,6 +42,11 @@
       "type": "object",
       "description": "可选：按阶段覆写执行模式（S1-S5: auto/semi/manual）。出品级建议人工门",
       "additionalProperties": { "type": "string", "enum": ["auto", "semi", "manual"] }
+    },
+    "阈值预算": {
+      "type": "object",
+      "description": "OS-02 阶段 C（2026-09-20）：阈值预算面。键名与合法区间白名单 = core/src/budget.ts::DEFAULT_BUDGET（出厂默认 + 项目可覆盖），未知键/非数/越界一律在任务包「阈值预算告警」区显式回显，绝不静默丢弃。合成优先级：flow.policy.budget（模板层） < 本键（实例层） < 项目 overlay 的 set-policy{budget}（运行时调整层）。消费点：assembler / aesthetic / optimize / metrics。",
+      "additionalProperties": { "type": "number" }
     }
   }
 }

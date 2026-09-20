@@ -15,6 +15,7 @@ import { appendJsonl, readJsonl } from "./fsio.js";
 import { assertSchema } from "./schema.js";
 import { nowIso } from "./ids.js";
 import { recordDiag } from "./diag.js";
+import { DEFAULT_BUDGET } from "./budget.js";
 
 export interface CtxUsage {
   offered: number;
@@ -286,16 +287,35 @@ export interface MetricsSummary {
 
 const EPS = 1e-6;
 
-function costOf(s: { tokensIn: number; tokensOut: number; latencyMs: number; assertBlock: number; retries: number }): number {
+/**
+ * 成本系数取自 OS-02 阶段 C 的单一事实源（`budget.ts::DEFAULT_BUDGET`），
+ * 项目级可用 `policy.budget.cost*` 覆盖——改前是写死在这里的魔数 1000/60000/5/2。
+ * `budget` 缺省 = 出厂默认（旧口径逐位等价，R5 基线的成本断言不受影响）。
+ */
+function th(b: Record<string, number> | undefined, key: string): number {
+  return b?.[key] ?? DEFAULT_BUDGET[key].value;
+}
+
+function costOf(
+  s: { tokensIn: number; tokensOut: number; latencyMs: number; assertBlock: number; retries: number },
+  budget?: Record<string, number>,
+): number {
   // 成本口径：token 千分位 + 时延分钟位 + 打回/重试的返工溢价
-  return Math.max(EPS, (s.tokensIn + s.tokensOut) / 1000 + s.latencyMs / 60000 + s.assertBlock * 5 + s.retries * 2);
+  return Math.max(
+    EPS,
+    (s.tokensIn + s.tokensOut) / th(budget, "costTokenDivisor") +
+      s.latencyMs / th(budget, "costLatencyDivisor") +
+      s.assertBlock * th(budget, "costBlockPremium") +
+      s.retries * th(budget, "costRetryPremium"),
+  );
 }
 
 export function summarizeMetrics(
   events: RunMetric[],
-  opts: { pathToNode?: Record<string, string> } = {},
+  opts: { pathToNode?: Record<string, string>; budget?: Record<string, number> } = {},
 ): MetricsSummary {
   const pathToNode = opts.pathToNode ?? {};
+  const budget = opts.budget;
   const byNode: Record<string, NodeStats> = {};
   const kbOffered: Record<string, number> = {};
   const kbUsed: Record<string, number> = {};
@@ -349,7 +369,7 @@ export function summarizeMetrics(
   }
 
   for (const s of Object.values(byNode)) {
-    s.cost = costOf(s);
+    s.cost = costOf(s, budget);
     s.efficiency = s.consumedBy / s.cost;
     s.hitRate = s.ctxOffered > 0 ? s.ctxUsed / s.ctxOffered : 0;
   }
@@ -380,7 +400,7 @@ export function summarizeMetrics(
   }
   for (const t of Object.values(byTool)) {
     t.nodes = [...new Set(t.nodes)];
-    t.cost = costOf(t);
+    t.cost = costOf(t, budget);
     t.efficiency = t.consumedBy / t.cost;
     t.hitRate = t.ctxOffered > 0 ? t.ctxUsed / t.ctxOffered : 0;
   }

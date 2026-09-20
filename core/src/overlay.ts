@@ -26,7 +26,8 @@ export interface FlowPolicy {
   /** R6：模块间连接件缺省模式（flow@3；旧 kit_boundary/gate_mode 对 flow@2 沿用） */
   link_default?: "auto" | "manual";
   adapt?: AdaptPolicy;
-  budget?: { tokens?: number; latencyMs?: number; humanGates?: number };
+  /** OS-02 阶段 C：阈值预算面（键名/区间见 `budget.ts::DEFAULT_BUDGET`）。改前是零消费者的占位三键。 */
+  budget?: Record<string, number>;
   /** R7（OS-02A）：同一门累计驳回上限 / 等待态超时毫秒。见 kernel.ts 的 blocked 出口。 */
   maxRounds?: number;
   awaitTimeoutMs?: number;
@@ -40,10 +41,17 @@ export interface OverlayEvidence {
 }
 
 export interface OverlayPatch {
+  /**
+   * 14 种 kind，**逐项对齐** `contracts/flow-overlay.schema.json`。
+   * R7/N4 勘误：TS 联合此前只有 11 种，而 `modules.ts::effectiveFlow3` 早已消费
+   * `set-module`/`insert-tool`（靠 `as any` 绕类型）——契约、实现、类型三方各说一套。
+   * 现补齐并加 `set-link`（per-link 降级通道）。
+   */
   kind:
     | "set-node" | "set-op" | "place-node" | "remove-node"
     | "set-edge" | "add-edge" | "remove-edge"
-    | "set-tool" | "set-policy" | "suppress-boundary" | "set-input";
+    | "set-tool" | "set-policy" | "suppress-boundary" | "set-input"
+    | "set-module" | "insert-tool" | "set-link";
   reason: string;
   evidence?: OverlayEvidence;
   status?: "applied" | "proposed" | "rejected";
@@ -71,6 +79,15 @@ export interface OverlayPatch {
   value?: unknown;
   from?: string;
   to?: string;
+  /** set-module：模块实例 id */
+  module?: string;
+  /** insert-tool：模块实例 id（`module` 亦可）+ slot 锚点 + 要插入的 tool */
+  tool?: string;
+  slot?: string;
+  caps?: string[];
+  /** set-link：目标连接件 id（`<实例id>.link` 或裸实例 id）+ 该处交界的裁决模式 */
+  link?: string;
+  mode?: "auto" | "manual";
   /** 来源提案 id（优化器产出时带上；人可凭它批准 proposed → applied） */
   proposal?: string;
 }
@@ -113,6 +130,12 @@ export interface EffectiveFlow {
   };
   /** 应用日志（进 journal / 前端编排说明） */
   notes: string[];
+  /**
+   * flow@3 独有的「未被消费的 patch」清单（N3：不许静默丢弃）。
+   * flow@2 无此面（applyOverlay 逐条 note 跳过原因）。**必须透传到 EffectiveFlow**，
+   * 否则调用方只能看到 notes 里的一句汇总，拿不到可编程的清单。
+   */
+  unsupported?: string[];
   overlayHash: string;
   /** 只含 applied 补丁的合成层（写回磁盘时用它） */
   appliedCount: number;
@@ -325,8 +348,17 @@ export function applyOverlay(flow: FlowDescriptor, overlays: FlowOverlay[]): App
         }
         case "set-policy": {
           if (!p.key) break;
-          (policy as Record<string, unknown>)[p.key] = p.value;
-          touch(p, `set-policy ${p.key}=${String(p.value)}`);
+          const cur = (policy as Record<string, unknown>)[p.key];
+          // R6/R7 的 policy 键都是标量；`budget`（OS-02 C）是对象 ⇒ **按 key 浅合并**。
+          // 整体替换会让「只调一个阈值」的 patch 把项目声明的其余阈值静默抹掉——
+          // 那正是本仓最反感的「静默丢配置」。与 set-node.config / set-tool.config 同语义。
+          const objMerge = p.value && typeof p.value === "object" && !Array.isArray(p.value) &&
+            cur && typeof cur === "object" && !Array.isArray(cur);
+          const val = objMerge
+            ? { ...(cur as Record<string, unknown>), ...(p.value as Record<string, unknown>) }
+            : p.value;
+          (policy as Record<string, unknown>)[p.key] = val;
+          touch(p, `set-policy ${p.key}=${JSON.stringify(val)}`);
           break;
         }
         case "suppress-boundary": {

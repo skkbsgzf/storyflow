@@ -128,13 +128,14 @@ export function runDeclaredAsserts(
   relPath: string,
   ids: string[],
   engine?: Validation[],
+  budget?: Record<string, number>,
 ): DeclaredAssertOutcome {
   const declared = [...new Set(ids.filter((x): x is string => typeof x === "string" && !!x.trim()))].filter(
     (x) => !RESERVED_ASSERTS.has(x),
   );
   if (!declared.length) return { results: [], checked: [], unverified: [] };
 
-  const eng = engine ?? runAestheticAsserts(projectDir, relPath);
+  const eng = engine ?? runAestheticAsserts(projectDir, relPath, budget);
   const base = (n: string): string => n.split("#")[0];
   const byId = new Map<string, Validation[]>();
   for (const r of eng) {

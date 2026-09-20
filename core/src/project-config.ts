@@ -12,6 +12,12 @@ export interface ProjectConfig {
   AB测试?: boolean;
   市场预估?: string;
   presets?: Record<string, "auto" | "semi" | "manual">;
+  /**
+   * OS-02 阶段 C：阈值预算面（键名/区间白名单见 `budget.ts::DEFAULT_BUDGET`）。
+   * 它是 `policy.budget` 的**实例层**来源——优先级：flow.policy.budget（模板层）
+   *  < 本键（实例层）< 项目 overlay 的 `set-policy{budget}`（运行时调整层）。
+   */
+  阈值预算?: Record<string, number>;
   [k: string]: unknown;
 }
 
@@ -29,6 +35,21 @@ export function loadProjectConfig(projectDir: string): ProjectConfig | undefined
     throw new Error(`${CONFIG_FILE} 的「项目」(${cfg.项目}) 与目录名 (${dirName}) 不一致`);
   }
   return cfg;
+}
+
+/**
+ * OS-02 阶段 C：项目级阈值预算（`项目配置.json` 的 `阈值预算`）。
+ *
+ * 它只是**搬运**：合法性判定（未知键 / 越界 / 非数）由 `budget.ts::resolveBudget` 统一负责——
+ * 面板只渲染白名单旋钮、契约只允许 number，非法值要么在 `loadProjectConfig` 的 schema 校验上
+ * 大声失败，要么在 `resolveBudget.issues` 里被点名。此处绝不静默丢弃任何键。
+ */
+export function configBudget(cfg: ProjectConfig | undefined): Record<string, number> | undefined {
+  const raw = cfg?.阈值预算;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return undefined;
+  const out: Record<string, number> = {};
+  for (const [k, v] of Object.entries(raw)) if (typeof v === "number") out[k] = v;
+  return Object.keys(out).length ? out : undefined;
 }
 
 /**
