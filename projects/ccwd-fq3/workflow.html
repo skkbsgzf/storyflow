@@ -288,6 +288,32 @@ textarea{width:100%;min-height:340px;background:var(--bg-ctl);color:var(--ink);b
 .sd-skills{display:flex;flex-wrap:wrap;gap:7px}
 .sd-skill{border:1px dashed var(--line);border-radius:999px;padding:3px 11px;font-size:calc(11.5px*var(--fs,1));color:var(--ink-2);font-family:Consolas,monospace}
 .st-empty{max-width:1200px;margin:70px auto;text-align:center;color:var(--ink-3);font-size:calc(13px*var(--fs,1))}
+/* OS-04 初始化面板：项目输入区 / 定性配置区 */
+.cfg-zone{border:1px solid var(--line-paper);border-radius:var(--r-m);padding:12px 14px;margin:12px 0;background:var(--bg-cmt)}
+.cfg-zone-h{font-size:calc(12.5px*var(--fs,1));color:var(--ink-2);letter-spacing:1px;margin-bottom:10px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.cfg-grid{display:grid;grid-template-columns:1fr;gap:8px}
+.cfg-row{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 14px;align-items:baseline;font-size:calc(12.5px*var(--fs,1))}
+.cfg-row .k{color:var(--ink-3);font-family:Consolas,'Microsoft YaHei',monospace}
+.cfg-row .k .req{color:#a5433a;font-weight:700;margin-left:3px}
+.cfg-row .v{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-width:0}
+.cfg-row input[type=text],.cfg-row input[type=number],.cfg-row select{background:var(--bg-paper);border:1px solid var(--line);border-radius:var(--r-s);color:var(--ink);padding:4px 8px;font-size:calc(12.5px*var(--fs,1));min-width:120px;max-width:100%}
+.cfg-row input[type=text]{flex:1;min-width:220px}
+.cfg-row input.cfg-bad{border-color:#a5433a}
+.cfg-bool{display:inline-flex;gap:6px;align-items:center;color:var(--ink-2)}
+.cfg-warn{margin:8px 0 0;font-size:calc(11.5px*var(--fs,1));color:#a5433a}
+.cfg-ok{color:var(--acc-ok,#3a7a43)}
+/* OS-02 阶段 C：阈值预算区 —— 旋钮来源徽标（出厂 / 本项目已改） */
+.cfg-badge{font-size:calc(10.5px*var(--fs,1));border-radius:999px;padding:1px 8px;border:1px solid var(--line);color:var(--ink-3)}
+.cfg-badge.on{border-color:var(--accent);color:var(--accent)}
+.cfg-grp{margin:10px 0 2px;font-size:calc(11.5px*var(--fs,1));color:var(--ink-3);letter-spacing:1px;font-family:Consolas,'Microsoft YaHei',monospace}
+.cfg-eff{margin:3px 0 8px;font-size:calc(11.5px*var(--fs,1));color:var(--ink-2);background:var(--bg-paper);border-left:2px solid var(--line-paper);padding:5px 9px;border-radius:var(--r-s)}
+.cfg-eff b{color:var(--accent);font-family:Consolas,monospace}
+/* OS-04 余量：模板库条目（自存 / 官方只读 / 从零新建动作） */
+.tpl-row{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 14px;align-items:baseline;font-size:calc(12.5px*var(--fs,1));padding:6px 0;border-bottom:1px dashed var(--line-paper)}
+.tpl-row:last-of-type{border-bottom:0}
+.tpl-row .k{color:var(--ink-2);font-family:Consolas,'Microsoft YaHei',monospace}
+.tpl-row .v{display:flex;gap:9px;align-items:baseline;flex-wrap:wrap;min-width:0}
+.tpl-row[data-tpl-source="official"] .k{color:var(--ink-3)}
 </style>
 </head>
 <body>
@@ -302,8 +328,10 @@ textarea{width:100%;min-height:340px;background:var(--bg-ctl);color:var(--ink);b
 <div id="canvas-col">
 <header>
   <span class="brand">StoryFlow</span>
-  <select id="proj-switch" class="tb" title="切换项目（生成时快照）"></select>
-  <span class="ver" id="v"></span><span class="sp"></span>
+  <select id="proj-switch" class="tb" title="切换项目"></select>
+  <span class="ver" id="v"></span>
+  <span class="msg" id="live-pill" style="white-space:nowrap">● 快照</span>
+  <span class="sp"></span>
   <button class="tb" onclick="importFlowHint()" title="流商店：浏览 / 搜索全部生产线，一键导入到当前项目">⇪ 导入新流</button>
   <button class="tb" onclick="openDeliverables()" title="产物管理：模块交付件 / 过程件内幕 / 旧目录交付">📦 产物管理</button>
   <button class="tb" id="mw-btn" onclick="openWorldbook()" title="世界书：设定/人物/势力/地理/编年/伏笔/底牌（文件即真相）——大纲与成稿之间的设定中间件">▦ 中间件</button>
@@ -312,6 +340,8 @@ textarea{width:100%;min-height:340px;background:var(--bg-ctl);color:var(--ink);b
   <a class="tb" id="dl-link" href="#" style="display:none">交付产物页 →</a>
 </header>
   <div id="eff-banner" style="display:none"></div>
+  <div id="diag-strip" style="display:none"></div>
+  <div id="decision-strip" style="display:none"></div>
   <div id="stage"><div id="world"><svg id="edges"></svg><div id="nodes"></div></div>
     <div id="ctip"></div>
   </div>
@@ -360,39 +390,62 @@ textarea{width:100%;min-height:340px;background:var(--bg-ctl);color:var(--ink);b
     <div class="dc" id="d-body"></div>
     <div id="drawer"></div>
   </div>
-<script type="application/json" id="payload">{"DATA": {"project": "ccwd-fq3", "flow": {"id": "caocao-wudalang", "title": "曹操穿越武大郎", "version": "1.1.0", "status": "draft"}, "modules": [{"id": "m1", "module": "topic", "name": "选题", "link": "auto", "order": 1, "dir": "01-选题", "caps": ["找梗", "素材解剖", "时代情绪锚", "网感文案", "拆书入库", "选题报告"], "capsEnabled": ["选题报告"], "spine": ["m1.topic-report"], "plugins": [], "nodes": ["m1.topic-report"], "io": {"input": {"from": "flow-input", "shape": "一个灵感（点子/命题/素材，任一形态）"}, "output": {"file": "选题报告.md", "audience": "作者（选题决策文档，兼作编剧模块唯一输入）"}, "acceptance": {"asserts": ["AE-REPORT-DENSITY"]}}}, {"id": "m2", "module": "plot", "name": "编剧", "link": "manual", "order": 2, "dir": "02-编剧", "caps": ["结构", "主线", "人设", "分场", "世界观", "单元剧大纲", "短剧节拍", "暗线", "伏笔", "悬念", "红队评审", "编剧"], "capsEnabled": ["编剧"], "spine": ["m2.script-forge"], "plugins": [], "nodes": ["m2.script-forge"], "io": {"input": {"from": "topic", "shape": "选题报告（梗选型+竞品对标+结构手法+可用话题）"}, "output": {"file": "剧本.md", "audience": "写手（正文模块唯一输入；5W1H 结构化剧本 IR）"}, "acceptance": {"asserts": ["AE-SCRIPT-FIELDS"]}}}, {"id": "m3", "module": "prose", "name": "写作", "link": "auto", "order": 3, "dir": "03-写作", "caps": ["台词层", "场景层", "设定层", "拼装盖章", "终稿打磨", "去机味", "直写单章", "剧本成稿", "对话打磨", "文学评审", "视频提示词", "正文"], "capsEnabled": ["正文", "终稿打磨", "去机味"], "spine": ["m3.ghostwrite", "m3.novel-deai"], "plugins": [], "nodes": ["m3.ghostwrite", "m3.novel-deai"], "io": {"input": {"from": "plot", "shape": "剧本 IR（逐场行动/台词/价值/钩 + 伏笔登记）"}, "output": {"file": "终稿.md", "audience": "读者（对外正文终稿，文学化+去AI味）"}, "acceptance": {"asserts": ["AE-AI-QUOTA", "AE-AI-STRUCT", "AE-PROSE-SLOP", "AE-WNF-HOOK"]}}}, {"id": "m4", "module": "delivery", "name": "交付", "link": "auto", "order": 4, "dir": "04-交付", "caps": ["docx交付", "交付页", "批注回流"], "capsEnabled": ["docx交付"], "spine": ["m4.export-doc"], "plugins": [], "nodes": ["m4.export-doc"], "io": {"input": {"from": "prose", "shape": "正文终稿（每模块一份成熟交付）"}, "output": {"file": "export-doc.docx", "audience": "编辑/甲方（可批注 docx）"}, "acceptance": {"asserts": []}}}], "toolbox": {"format": "toolbox@1", "modules": {"m1": {"module": "topic", "name": "选题", "desc": "选题域：市场盘面调研取数——找梗/素材解剖/时代情绪/热点采集，产出结构化选题素材包", "caps": ["找梗", "素材解剖", "时代情绪锚", "网感文案", "拆书入库", "选题报告"], "capsEnabled": ["选题报告"], "spine": ["m1.topic-report"], "plugins": [], "groups": [{"cap": "找梗", "tools": [{"tool": "find-trope", "title": "find-trope", "slot": "end", "alsoFits": [], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "素材解剖", "tools": [{"tool": "material-dissect", "title": "material-dissect", "slot": "end", "alsoFits": [], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "时代情绪锚", "tools": [{"tool": "topic-zeitgeist", "title": "时代情绪锚", "slot": "after:find-trope", "alsoFits": ["before:material-dissect"], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "网感文案", "tools": [{"tool": "internet-feel", "title": "internet-feel", "slot": "after:material-dissect", "alsoFits": ["end"], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "拆书入库", "tools": [{"tool": "deconstruct-book", "title": "deconstruct-book", "slot": "end", "alsoFits": [], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "选题报告", "tools": [{"tool": "topic-report", "title": "选题报告师", "slot": "end", "alsoFits": [], "requires": [], "enabled": true, "defaultEnabled": true}]}]}, "m2": {"module": "plot", "name": "编剧", "desc": "编剧域：主线剧情、人设、世界观、暗线、伏笔悬念的编排——剧情在成文前锁定，成文层无权改戏", "caps": ["结构", "主线", "人设", "分场", "世界观", "单元剧大纲", "短剧节拍", "暗线", "伏笔", "悬念", "红队评审", "编剧"], "capsEnabled": ["编剧"], "spine": ["m2.script-forge"], "plugins": [], "groups": [{"cap": "结构", "tools": [{"tool": "structure-design", "title": "structure-design", "slot": "end", "alsoFits": [], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "主线", "tools": [{"tool": "plot-choreographer", "title": "plot-choreographer", "slot": "end", "alsoFits": [], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "人设", "tools": [{"tool": "novel-bible", "title": "novel-bible", "slot": "end", "alsoFits": [], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "分场", "tools": [{"tool": "scene-breakdown", "title": "scene-breakdown", "slot": "end", "alsoFits": [], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "世界观", "tools": [{"tool": "world-forge", "title": "world-forge", "slot": "before:structure-design", "alsoFits": [], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "单元剧大纲", "tools": [{"tool": "episodic-outline", "title": "episodic-outline", "slot": "end", "alsoFits": [], "requires": ["structure-design"], "enabled": false, "defaultEnabled": false}]}, {"cap": "短剧节拍", "tools": [{"tool": "script-drama-beat", "title": "短剧节拍表", "slot": "after:scene-breakdown", "alsoFits": ["end"], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "暗线", "tools": [{"tool": "subplot-weave", "title": "暗线编织", "slot": "after:plot-choreographer", "alsoFits": [], "requires": ["plot-choreographer"], "enabled": false, "defaultEnabled": false}]}, {"cap": "伏笔", "tools": [{"tool": "foreshadow-plant", "title": "伏笔悬念插入", "slot": "before:scene-breakdown", "alsoFits": [], "requires": ["plot-choreographer"], "enabled": false, "defaultEnabled": false}]}, {"cap": "悬念", "tools": [{"tool": "foreshadow-plant", "title": "伏笔悬念插入", "slot": "before:scene-breakdown", "alsoFits": [], "requires": ["plot-choreographer"], "enabled": false, "defaultEnabled": false}]}, {"cap": "红队评审", "tools": [{"tool": "plot-redline", "title": "剧情红队·多方视角评审", "slot": "after:scene-breakdown", "alsoFits": ["after:plot-choreographer", "before:structure-design", "end"], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "编剧", "tools": [{"tool": "script-forge", "title": "剧本师", "slot": "end", "alsoFits": [], "requires": [], "enabled": true, "defaultEnabled": true}]}]}, "m3": {"module": "prose", "name": "写作", "desc": "文学域：三专科层稿 + 成文师逐段六维盖章 + 终稿打磨——文学质量内置在成文流水线，剧情前置锁定后成文层无权改戏", "caps": ["台词层", "场景层", "设定层", "拼装盖章", "终稿打磨", "去机味", "直写单章", "剧本成稿", "对话打磨", "文学评审", "视频提示词", "正文"], "capsEnabled": ["正文", "终稿打磨", "去机味"], "spine": ["m3.ghostwrite", "m3.novel-deai"], "plugins": [], "groups": [{"cap": "台词层", "tools": [{"tool": "layer-voices", "title": "layer-voices", "slot": "end", "alsoFits": [], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "场景层", "tools": [{"tool": "layer-scenes", "title": "layer-scenes", "slot": "end", "alsoFits": [], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "设定层", "tools": [{"tool": "layer-canon", "title": "layer-canon", "slot": "end", "alsoFits": [], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "拼装盖章", "tools": [{"tool": "prose-assembler", "title": "prose-assembler", "slot": "end", "alsoFits": [], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "终稿打磨", "tools": [{"tool": "novel-deai", "title": "novel-deai", "slot": "end", "alsoFits": [], "requires": [], "enabled": true, "defaultEnabled": true}]}, {"cap": "去机味", "tools": [{"tool": "novel-deai", "title": "novel-deai", "slot": "end", "alsoFits": [], "requires": [], "enabled": true, "defaultEnabled": true}]}, {"cap": "直写单章", "tools": [{"tool": "novel-chapter", "title": "novel-chapter", "slot": "end", "alsoFits": [], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "剧本成稿", "tools": [{"tool": "script-final", "title": "script-final", "slot": "end", "alsoFits": ["after:prose-assembler"], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "对话打磨", "tools": [{"tool": "dialogue-polish", "title": "dialogue-polish", "slot": "after:script-final", "alsoFits": ["after:novel-deai"], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "文学评审", "tools": [{"tool": "novel-judge", "title": "novel-judge", "slot": "after:novel-deai", "alsoFits": ["after:prose-assembler", "end"], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "视频提示词", "tools": [{"tool": "render-prompt-seedance", "title": "Seedance 分镜提示词", "slot": "after:script-final", "alsoFits": ["end"], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "正文", "tools": [{"tool": "ghostwrite", "title": "文学化师", "slot": "end", "alsoFits": [], "requires": [], "enabled": true, "defaultEnabled": true}]}]}, "m4": {"module": "delivery", "name": "交付", "desc": "交付域：成品出库——docx 硬断言导出、交付页渲染、客户批注回流解析", "caps": ["docx交付", "交付页", "批注回流"], "capsEnabled": ["docx交付"], "spine": ["m4.export-doc"], "plugins": [], "groups": [{"cap": "docx交付", "tools": [{"tool": "export-doc", "title": "export-doc.py", "slot": "end", "alsoFits": [], "requires": [], "enabled": true, "defaultEnabled": true}]}, {"cap": "交付页", "tools": [{"tool": "render_html", "title": "交付页渲染", "slot": "end", "alsoFits": [], "requires": [], "enabled": false, "defaultEnabled": false}]}]}}}, "files": {"01-选题/选题报告.md": "---\nartifact: 1\nid: topic.topic-report\nclass: draft\nnode: m1.topic-report\nround: 1\nversion: v1\nstate: draft\nat: 2026-09-19 05:25\nby: module/topic.topic-report\nupstream:\n  - 输入/点子.md\n  - kb/trope/dalian-nuezha\n  - kb/trope/majia-diaoma\n  - kb/market/topic-anatomy\n  - kb/market/meme-rules\nreview: null\n---\n\n# 选题报告 · 《炊饼令》\n\n> 一句话：三国头号枭雄魂穿市井炊饼郎——打脸虐渣当众清算 × 马甲掉马身份反差，权谋对无赖是彻底的降维打击。\n\n## 一、梗选型（判定纪律：每结论挂数据，快照 2026-09-15）\n\n| 候选族 | 饱和度 | n | 均热度 | 判定 |\n|---|---|---|---|---|\n| 打脸虐渣 | 红海·有效 | 1510 | 18558 万 | **主梗**：有效红海必须带新变体进 |\n| 马甲掉马 | 红海·过饱和 | 750 | 9215 万 | 辅梗：只借机制（掉马即打脸） |\n| 重生复仇 | 红海·有效 | 702 | 11978 万 | 辅梗：借「先手布局精准清算」 |\n| 流放种田 | 上升期·蓝海 | 92 | 22598 万 | 避开：与方向不符 |\n\n**主梗新变体落点**：链上对标全是现代职场/家庭清算，没人做过「枭雄魂穿小贩用兵法当众清算」——人设新（枭雄 instead 赘婿）、武器新（兵法权谋 instead 证据流）、对手轴新（泼皮/县吏 instead 渣男/资本家）。辅梗相性：马甲掉马改变主梗的清算条件（对方以为在欺负武大郎，实际在惹曹操），不是只占时长。\n\n## 二、竞品对标（借鉴点 explicit）\n\n- 《离婚后，我送前夫一份PPT》：借鉴点=**清算证据流的铺垫密度**（第2章对账戏对齐其证据链节奏，用作爆发段强度标尺）\n- 《拆盲盒后，我把渣男净身出户了》：借鉴点=**受辱蓄力的低谷写法**（第1章蓄力段对齐，用作开局压抑标尺）\n- 《顾太太当众退股了》：借鉴点=**当众戏的围观群像调度**（看客反应拍，第3章县衙对质参照）\n\n## 三、素材结构解剖\n\n现象层：北宋阳谷县，任人拿捏的炊饼小贩一夜换了个人。利益层：泼皮要白吃白拿立威、县吏要灰色孝敬、同行要捂死客源、看客要热闹、武松要兄长平安。权力层：泼皮握生杀权（零成本即时）、县吏握定罪权、同行握封锁权、武松的暴力威慑强而慢、看客握可收割的舆论。结构层：**弱者的摊位是强者的猎场**——猎杀即时零成本 vs 反制慢速全额，七倍速差即爽点矿脉。逆位候选：①生杀权逆位→店规公审（金手指=权谋经验；关系轴=泼皮变被告；机制=当众清算）；②定罪权逆位→规矩反咬定规矩的人（把柄流）；③威慑慢速逆位→名声先行、人到案到。\n\n## 四、可用话题清单（梗素材表）\n\n| 素材/梗 | 传播度 | 可挂接场景 | 消费去向 |\n|---|---|---|---|\n| 宁教我负天下人 | 全民·高 | 内心 vs 嘴上反差 | 每章台词梗 |\n| 说曹操曹操到 | 俗语·高 | 解围名场面 | 第1章出场梗 |\n| 挟天子以令诸侯 | 成语·高 | 清算宣言 | 第2章台词梗 |\n| 望梅止渴 | 成语·高 | 饥饿营销 | 限量预售桥段 |\n| 煮酒论英雄 | 成语·高 | 与县令谈判 | 第2章场面梗 |\n| 三顾茅庐 | 成语·高 | 兄弟线反转 | 第3章身份线 |\n| 火烧赤壁 | 典故·高 | 烤炉阵法 | 开业大战 |\n| 短衣帮vs长衫客 | 孔乙己·中高 | 市集阶层轴 | 群像世界观 |\n| 当众掉马 | 短剧·高 | 掉马即打脸 | 每章机制位 |\n| 好感度结算 | 网文·中高 | 店规积分制 | 店规审判桥段 |\n\n风险：主梗红海拥挤，每场清算必须有权谋.only 解法；历史人物形象正面化处理。\n"}, "runstate": {"runId": "run-mu7grvzg-yrdb60", "projectId": "ccwd-fq3", "flowId": "caocao-wudalang", "flowVersion": "1.1.0", "flowHash": "4e5d4bf7", "status": "suspended", "plan": {"order": ["m1.topic-report", "m2.link", "itb-m2.script-forge", "m2.script-forge", "m3.link", "itb-m3.ghostwrite", "m3.ghostwrite", "m3.novel-deai", "m4.link", "itb-m4.export-doc", "m4.export-doc"]}, "nodes": {"m1.topic-report": {"status": "done", "round": 2, "stale": false, "committed": [], "failCount": 2, "lastArtifact": "01-选题/选题报告.md"}, "m2.script-forge": {"status": "none", "round": 0}, "m2.link": {"status": "awaiting", "round": 0}, "m3.ghostwrite": {"status": "none", "round": 0}, "m3.novel-deai": {"status": "none", "round": 0}, "m3.link": {"status": "none", "round": 0}, "m4.export-doc": {"status": "none", "round": 0}, "m4.link": {"status": "none", "round": 0}, "itb-m2.script-forge": {"status": "none", "round": 0}, "itb-m3.ghostwrite": {"status": "none", "round": 0}, "itb-m4.export-doc": {"status": "none", "round": 0}}, "gate": {"verdict": "awaiting", "node": "m2.link", "round": 0, "token": "approval:ccwd-fq3:run-mu7grvzg-yrdb60:m2.link", "at": "2026-09-18T21:25:25.941Z", "note": "连接 · 编剧（待人工批准）"}, "inputs": {"project": "ccwd-fq3", "direction": "曹操魂穿武大郎：用兵法做炊饼、以权谋治小店；当武松推门而入时，发现弟弟已非吴下阿蒙", "chapters": 3, "题材": "历史穿越 + 美食（快餐抽象向）", "需求": "曹操穿越成武大郎，从被鄙视的炊饼郎到权谋厨房之王的快餐爽文；前三章试稿", "灵感": "三国最强枭雄的灵魂困在北宋最卑微的躯壳里；用兵法做炊饼、以权谋待客官", "严肃性": "探索"}, "comments": {}, "overlayHash": "314efa96", "policy": {"kit_boundary": "always", "gate_mode": "auto", "adapt": "propose"}, "planHash": "c6ae12f8", "focus": "m2.link"}, "deliverables": [], "moduleFiles": [{"id": "m1", "name": "选题", "dir": "01-选题", "deliverable": "01-选题/选题报告.md", "audience": "作者（选题决策文档，兼作编剧模块唯一输入）", "process": []}, {"id": "m2", "name": "编剧", "dir": "02-编剧", "deliverable": null, "audience": "写手（正文模块唯一输入；5W1H 结构化剧本 IR）", "process": []}, {"id": "m3", "name": "写作", "dir": "03-写作", "deliverable": null, "audience": "读者（对外正文终稿，文学化+去AI味）", "process": []}, {"id": "m4", "name": "交付", "dir": "04-交付", "deliverable": null, "audience": "编辑/甲方（可批注 docx）", "process": []}], "moduleReports": {"m1": {"format": "module-report@1", "projectId": "ccwd-fq3", "flowId": "caocao-wudalang", "moduleId": "m1", "moduleName": "m1", "title": "选题报告师", "closedAt": "2026-09-18T21:25:25.935Z", "io": {"input": ["direction", "chapters", "题材", "需求", "灵感", "严肃性"], "output": "01-选题/选题报告.md"}, "artifacts": [{"node": "m1.topic-report", "op": "topic-report", "path": "01-选题/选题报告.md", "role": "deliverable"}], "acceptance": [{"node": "m1.topic-report", "assert": "AE-REPORT-DENSITY", "status": "pass", "detail": "梗/话题行 8、对标 6、热度数据 4 处"}], "metrics": {"submits": 1, "retries": 2, "tokensIn": 0, "tokensOut": 0, "latencyMs": 0, "ctxOffered": 10, "ctxUsed": 5, "hitRate": 0.5}, "feedback": {"annotations": 0, "proposals": 0}}}, "kits": {"base": {"domain": "base", "title": "底座", "ops": {"check_aesthetic_asserts": {"title": "美学硬断言校验", "knowledge": [], "asserts": [], "minitools": ["check_aesthetic_asserts"]}, "check_trope_combo": {"title": "梗组合相性校验", "knowledge": [], "asserts": [], "minitools": ["check_trope_combo"]}, "continuity_slice": {"title": "台账切片", "knowledge": [], "asserts": [], "minitools": ["continuity_slice"]}, "continuity_commit": {"title": "台账结算", "knowledge": [], "asserts": [], "minitools": ["continuity_commit"]}, "analyze-kakaxing": {"title": "analyze-kakaxing.py", "knowledge": [], "asserts": [], "minitools": []}, "artifact-lint": {"title": "artifact-lint.py", "knowledge": [], "asserts": [], "minitools": []}, "check-purity": {"title": "check-purity.py", "knowledge": [], "asserts": [], "minitools": []}, "flow-kit-apply": {"title": "flow-kit-apply.py", "knowledge": [], "asserts": [], "minitools": []}, "flow-lint": {"title": "flow-lint.py", "knowledge": [], "asserts": [], "minitools": []}, "flow-normalize": {"title": "flow-normalize.py", "knowledge": [], "asserts": [], "minitools": []}, "flow-verify": {"title": "flow-verify.py", "knowledge": [], "asserts": [], "minitools": []}, "kit-config-init": {"title": "kit-config-init.py", "knowledge": [], "asserts": [], "minitools": []}, "kit": {"title": "kit.py", "knowledge": [], "asserts": [], "minitools": []}, "project-pages": {"title": "project-pages.py", "knowledge": [], "asserts": [], "minitools": []}, "r5-migrate": {"title": "r5-migrate.py", "knowledge": [], "asserts": [], "minitools": []}, "render-flow": {"title": "render-flow.py", "knowledge": [], "asserts": [], "minitools": []}, "serve": {"title": "serve.py", "knowledge": [], "asserts": [], "minitools": []}, "snapshot": {"title": "snapshot.py", "knowledge": [], "asserts": [], "minitools": []}, "stage": {"title": "stage.py", "knowledge": [], "asserts": [], "minitools": []}, "validate-kb": {"title": "validate-kb.py", "knowledge": [], "asserts": [], "minitools": []}, "whereami": {"title": "whereami.py", "knowledge": [], "asserts": [], "minitools": []}, "worldbook": {"title": "worldbook.py", "knowledge": [], "asserts": [], "minitools": []}, "orchestration-mine": {"title": "编排挖掘", "knowledge": [], "asserts": [], "minitools": []}}}, "delivery": {"domain": "delivery", "title": "交付", "ops": {"export-doc": {"title": "export-doc.py", "knowledge": [], "asserts": [], "minitools": []}, "render_html": {"title": "交付页渲染", "knowledge": [], "asserts": [], "minitools": ["render_html"]}}}, "detect": {"domain": "detect", "title": "检测", "ops": {"ai-flavor-score": {"title": "本地AI味打分（L1）", "knowledge": ["kb/aesthetic/ai-detection-sources"], "asserts": [], "minitools": []}, "zhuque-check": {"title": "朱雀AI检测（L2 对照）", "knowledge": ["kb/aesthetic/ai-detection-sources"], "asserts": [], "minitools": []}, "prose-scan": {"title": "prose-scan.py", "knowledge": [], "asserts": [], "minitools": []}}}, "drama": {"domain": "drama", "title": "成剧", "ops": {"scene-breakdown": {"title": "小纲师·分镜脚本", "knowledge": ["kb/aesthetic/character", "kb/aesthetic/dialogue", "kb/aesthetic/hook-3s", "kb/aesthetic/pacing-density", "kb/aesthetic/scene-value", "kb/method/longform-engineering"], "asserts": ["AE-BEAT-FORMAT", "AE-VIS-EMPTY", "AE-HOOK-EVENT"], "minitools": []}}}, "plan": {"domain": "plan", "title": "方案", "ops": {"topic-analysis-report": {"title": "选题分析报告方法论", "knowledge": ["kb/aesthetic/oversight", "kb/market/*", "kb/structure/episodic-webnovel"], "asserts": [], "minitools": []}, "topic-proposal": {"title": "选题方案方法论", "knowledge": ["kb/aesthetic/*", "kb/benchmark/*"], "asserts": [], "minitools": []}, "topic-chief-aesthetic": {"title": "审美总编·选题方案质量观", "knowledge": [], "asserts": [], "minitools": []}, "topic-delivery-gate": {"title": "需求交付·对账清单", "knowledge": [], "asserts": [], "minitools": []}}}, "plot": {"domain": "plot", "title": "编剧", "ops": {"structure-design": {"title": "structure-design", "knowledge": ["kb/aesthetic/conflict-escalation", "kb/aesthetic/pacing-density", "kb/aesthetic/reversal", "kb/market/setting-rules", "kb/market/structure", "kb/structure/catalog"], "asserts": [], "minitools": ["kb_search", "check_trope_combo"]}, "plot-choreographer": {"title": "plot-choreographer", "knowledge": ["kb/aesthetic/conflict-escalation", "kb/aesthetic/emotion-curve", "kb/aesthetic/ending", "kb/aesthetic/pacing-density", "kb/aesthetic/reversal", "kb/aesthetic/scene-value", "kb/market/constraints"], "asserts": ["AE-CURVE-STALL", "AE-CURVE-TYPE", "AE-CUSHION", "AE-DESERT", "AE-END-MECH", "AE-REV-MIDPOINT", "AE-REV-SETUP"], "minitools": ["check_aesthetic_asserts"]}, "novel-bible": {"title": "novel-bible", "knowledge": ["kb/aesthetic/character", "kb/aesthetic/conflict-escalation", "kb/formats/webnovel-longform", "kb/trope/*"], "asserts": [], "minitools": ["kb_search", "check_trope_combo"]}, "scene-breakdown": {"title": "scene-breakdown", "knowledge": ["kb/aesthetic/character", "kb/aesthetic/dialogue", "kb/aesthetic/hook-3s", "kb/aesthetic/pacing-density", "kb/aesthetic/scene-value", "kb/method/longform-engineering"], "asserts": [], "minitools": ["check_aesthetic_asserts"]}, "world-forge": {"title": "world-forge", "knowledge": ["kb/aesthetic/character", "kb/aesthetic/conflict-escalation", "kb/continuity/worldbook", "kb/formats/webnovel-fastfood", "kb/formats/webnovel-longform", "kb/structure/episodic-webnovel", "kb/trope/*", "kb/craft/highlight-loop"], "asserts": [], "minitools": []}, "episodic-outline": {"title": "episodic-outline", "knowledge": ["kb/aesthetic/pacing-density", "kb/formats/webnovel-fastfood", "kb/structure/episodic-webnovel", "kb/craft/highlight-loop"], "asserts": [], "minitools": []}, "script-drama-beat": {"title": "短剧节拍表", "knowledge": ["kb/aesthetic/dialogue", "kb/aesthetic/hook-3s", "kb/aesthetic/pacing-density", "kb/aesthetic/platform-compliance", "kb/aesthetic/visual-poster"], "asserts": ["AE-BEAT-FORMAT", "AE-CARD-END", "AE-CONT-FORESHADOW", "AE-CONT-ITEM", "AE-CONT-KNOW", "AE-DENSITY-CALM", "AE-DENSITY-HOT", "AE-HOOK-EVENT", "AE-VIS-EMPTY"], "minitools": ["check_aesthetic_asserts"]}, "plot-redline": {"title": "剧情红队·多方视角评审", "knowledge": ["kb/aesthetic/ai-trace", "kb/aesthetic/constitution", "kb/aesthetic/perspective-review", "kb/aesthetic/platform-compliance", "kb/aesthetic/redline-scoring", "kb/aesthetic/unreasonable-highlight", "kb/structure/catalog"], "asserts": [], "minitools": ["kb_read", "kb_search", "flow_read_artifact", "check_aesthetic_asserts"]}, "subplot-weave": {"title": "暗线编织", "knowledge": ["kb/structure/episodic-webnovel", "kb/aesthetic/emotion-curve", "kb/aesthetic/reversal", "kb/craft/highlight-loop"], "asserts": [], "minitools": ["check_aesthetic_asserts"]}, "foreshadow-plant": {"title": "伏笔悬念插入", "knowledge": ["kb/continuity/state-ledger", "kb/continuity/worldbook", "kb/craft/highlight-loop"], "asserts": [], "minitools": ["continuity_commit"]}, "script-forge": {"title": "剧本师", "knowledge": ["kb/aesthetic/scene-value", "kb/aesthetic/conflict-escalation", "kb/aesthetic/reversal", "kb/aesthetic/character", "kb/craft/highlight-loop", "kb/aesthetic/pacing-density", "kb/aesthetic/hook-3s"], "asserts": ["AE-SCRIPT-FIELDS"], "minitools": []}}}, "prose": {"domain": "prose", "title": "写作", "ops": {"layer-voices": {"title": "layer-voices", "knowledge": ["kb/aesthetic/character", "kb/aesthetic/dialogue", "kb/craft/prose-constraints", "kb/craft/user-style-rules", "kb/craft/highlight-loop"], "asserts": [], "minitools": []}, "layer-scenes": {"title": "layer-scenes", "knowledge": ["kb/aesthetic/metaphor-zh", "kb/aesthetic/scene-value", "kb/craft/prose-constraints", "kb/deconstruct/style-learning", "kb/craft/user-style-rules"], "asserts": [], "minitools": []}, "layer-canon": {"title": "layer-canon", "knowledge": ["kb/aesthetic/character", "kb/continuity/state-ledger", "kb/continuity/worldbook", "kb/craft/prose-constraints", "kb/craft/user-style-rules"], "asserts": [], "minitools": []}, "prose-assembler": {"title": "prose-assembler", "knowledge": ["kb/aesthetic/ai-trace", "kb/aesthetic/slop-list", "kb/craft/prose-constraints", "kb/deconstruct/style-learning", "kb/formats/webnovel-fastfood", "kb/craft/user-style-rules", "kb/craft/highlight-loop"], "asserts": ["AE-PROSE-NOTBUT", "AE-PROSE-RHYTHM", "AE-PROSE-SLOP", "AE-PROSE-TRIPLET", "AE-WNF-HOOK"], "minitools": []}, "novel-deai": {"title": "novel-deai", "knowledge": ["kb/aesthetic/ai-trace", "kb/aesthetic/character", "kb/aesthetic/metaphor-zh", "kb/aesthetic/naturalness-zh", "kb/aesthetic/slop-list", "kb/deconstruct/style-learning", "kb/formats/webnovel-fastfood", "kb/formats/webnovel-longform", "kb/method/longform-engineering", "kb/method/revision-loop"], "asserts": ["AE-AI-QUOTA", "AE-AI-STRUCT", "AE-PROSE-SLOP", "AE-WNF-HOOK"], "minitools": ["check_aesthetic_asserts"]}, "novel-chapter": {"title": "novel-chapter", "knowledge": ["kb/aesthetic/ai-trace", "kb/aesthetic/naturalness-zh", "kb/aesthetic/scene-value", "kb/continuity/state-ledger", "kb/deconstruct/style-learning", "kb/formats/webnovel-longform", "kb/method/longform-engineering", "kb/aesthetic/sensory-detail"], "asserts": ["AE-AI-QUOTA", "AE-AI-STRUCT", "AE-COMPLIANCE", "AE-CONT-FORESHADOW", "AE-CONT-ITEM", "AE-CONT-KNOW", "AE-NAT-HIT", "AE-PROSE-NOTBUT", "AE-PROSE-RHYTHM", "AE-PROSE-SLOP", "AE-PROSE-TRIPLET", "AE-WNF-HOOK"], "minitools": ["check_aesthetic_asserts"]}, "script-final": {"title": "script-final", "knowledge": ["kb/aesthetic/ai-trace", "kb/aesthetic/character", "kb/aesthetic/dialogue", "kb/aesthetic/naturalness-zh", "kb/aesthetic/pacing-density", "kb/aesthetic/scene-value"], "asserts": [], "minitools": ["check_aesthetic_asserts"]}, "dialogue-polish": {"title": "dialogue-polish", "knowledge": ["kb/aesthetic/ai-trace", "kb/aesthetic/character", "kb/aesthetic/dialogue", "kb/aesthetic/naturalness-zh"], "asserts": [], "minitools": ["check_aesthetic_asserts"]}, "novel-judge": {"title": "novel-judge", "knowledge": ["kb/aesthetic/ai-trace", "kb/aesthetic/character", "kb/aesthetic/metaphor-zh", "kb/aesthetic/naturalness-zh", "kb/aesthetic/scene-value", "kb/method/revision-loop"], "asserts": [], "minitools": ["check_aesthetic_asserts"]}, "render-prompt-seedance": {"title": "Seedance 分镜提示词", "knowledge": ["kb/aesthetic/visual-poster", "kb/deconstruct/style-learning"], "asserts": [], "minitools": ["check_aesthetic_asserts"]}, "ghostwrite": {"title": "文学化师", "knowledge": ["kb/craft/prose-constraints", "kb/aesthetic/slop-list", "kb/aesthetic/ai-trace", "kb/aesthetic/metaphor-zh", "kb/craft/user-style-rules"], "asserts": [], "minitools": []}}}, "search": {"domain": "search", "title": "检索", "ops": {"kb_load": {"title": "知识装载", "knowledge": [], "asserts": [], "minitools": ["kb_load"]}, "kb_search": {"title": "知识检索", "knowledge": [], "asserts": [], "minitools": ["kb_search"]}, "kb_read": {"title": "知识条目读取", "knowledge": [], "asserts": [], "minitools": ["kb_read"]}, "flow_read_artifact": {"title": "产物读取", "knowledge": [], "asserts": [], "minitools": ["flow_read_artifact"]}}}, "topic": {"domain": "topic", "title": "选题", "ops": {"find-trope": {"title": "find-trope", "knowledge": ["kb/market/snapshot", "kb/market/structure", "kb/trope/*"], "asserts": [], "minitools": ["kb_search", "check_trope_combo"]}, "material-dissect": {"title": "material-dissect", "knowledge": ["kb/market/meme-rules", "kb/market/topic-anatomy"], "asserts": [], "minitools": []}, "topic-zeitgeist": {"title": "时代情绪锚", "knowledge": [], "asserts": [], "minitools": []}, "internet-feel": {"title": "internet-feel", "knowledge": ["kb/aesthetic/hook-3s", "kb/aesthetic/naturalness-zh", "kb/market/internet-feel"], "asserts": [], "minitools": ["check_aesthetic_asserts"]}, "deconstruct-book": {"title": "deconstruct-book", "knowledge": ["kb/aesthetic/character", "kb/aesthetic/pacing-density", "kb/deconstruct/protocol", "kb/deconstruct/style-learning"], "asserts": [], "minitools": ["kb_search", "check_trope_combo"]}, "topic-report": {"title": "选题报告师", "knowledge": ["kb/trope/chongsheng-fuchou", "kb/trope/dalian-nuezha", "kb/market/topic-anatomy", "kb/market/meme-rules", "kb/aesthetic/pacing-density"], "asserts": ["AE-REPORT-DENSITY"], "minitools": ["kb_search", "check_trope_combo"]}}}, "tool": {"domain": "tool", "title": "tool kit", "ops": {"kb_load": {"title": "知识装载", "knowledge": [], "asserts": [], "minitools": ["kb_load"]}, "check_aesthetic_asserts": {"title": "美学硬断言校验", "knowledge": [], "asserts": [], "minitools": ["check_aesthetic_asserts"]}, "check_trope_combo": {"title": "梗组合相性校验", "knowledge": [], "asserts": [], "minitools": ["check_trope_combo"]}, "render_html": {"title": "交付页渲染", "knowledge": [], "asserts": [], "minitools": ["render_html"]}, "docx_ingest": {"title": "批注回流解析", "knowledge": [], "asserts": [], "minitools": ["docx_ingest"]}, "continuity_slice": {"title": "台账切片", "knowledge": [], "asserts": [], "minitools": ["continuity_slice"]}, "continuity_commit": {"title": "台账结算", "knowledge": [], "asserts": [], "minitools": ["continuity_commit"]}, "kb_search": {"title": "知识检索", "knowledge": [], "asserts": [], "minitools": ["kb_search"]}, "meme_harvest": {"title": "热点素材采集", "knowledge": [], "asserts": [], "minitools": ["meme_harvest"]}, "kb_read": {"title": "知识条目读取", "knowledge": [], "asserts": [], "minitools": ["kb_read"]}, "flow_read_artifact": {"title": "产物读取", "knowledge": [], "asserts": [], "minitools": ["flow_read_artifact"]}, "continuity_check": {"title": "连续性校验", "knowledge": [], "asserts": [], "minitools": ["continuity_check"]}, "analyze-kakaxing": {"title": "analyze-kakaxing.py", "knowledge": [], "asserts": [], "minitools": []}, "artifact-lint": {"title": "artifact-lint.py", "knowledge": [], "asserts": [], "minitools": []}, "check-purity": {"title": "check-purity.py", "knowledge": [], "asserts": [], "minitools": []}, "export-doc": {"title": "export-doc.py", "knowledge": [], "asserts": [], "minitools": []}, "flow-kit-apply": {"title": "flow-kit-apply.py", "knowledge": [], "asserts": [], "minitools": []}, "flow-lint": {"title": "flow-lint.py", "knowledge": [], "asserts": [], "minitools": []}, "flow-normalize": {"title": "flow-normalize.py", "knowledge": [], "asserts": [], "minitools": []}, "flow-verify": {"title": "flow-verify.py", "knowledge": [], "asserts": [], "minitools": []}, "kit-config-init": {"title": "kit-config-init.py", "knowledge": [], "asserts": [], "minitools": []}, "kit": {"title": "kit.py", "knowledge": [], "asserts": [], "minitools": []}, "project-pages": {"title": "project-pages.py", "knowledge": [], "asserts": [], "minitools": []}, "prose-scan": {"title": "prose-scan.py", "knowledge": [], "asserts": [], "minitools": []}, "r5-migrate": {"title": "r5-migrate.py", "knowledge": [], "asserts": [], "minitools": []}, "render-flow": {"title": "render-flow.py", "knowledge": [], "asserts": [], "minitools": []}, "serve": {"title": "serve.py", "knowledge": [], "asserts": [], "minitools": []}, "snapshot": {"title": "snapshot.py", "knowledge": [], "asserts": [], "minitools": []}, "stage": {"title": "stage.py", "knowledge": [], "asserts": [], "minitools": []}, "validate-kb": {"title": "validate-kb.py", "knowledge": [], "asserts": [], "minitools": []}, "whereami": {"title": "whereami.py", "knowledge": [], "asserts": [], "minitools": []}, "worldbook": {"title": "worldbook.py", "knowledge": [], "asserts": [], "minitools": []}, "orchestration-mine": {"title": "编排挖掘", "knowledge": [], "asserts": [], "minitools": []}}}}, "kbTitles": {"kb/aesthetic/ai-trace": "AI 痕迹标准（结构级去机味）", "kb/aesthetic/assertions": "审美硬断言表（机器可查）（73 条）", "kb/aesthetic/character": "人物审美标准（三维·真相·维度）", "kb/aesthetic/conflict-escalation": "冲突升级标准（代价梯与危机选择）", "kb/aesthetic/constitution": "审美体系总纲", "kb/aesthetic/dialogue": "对白标准（对白即行动）", "kb/aesthetic/emotion-curve": "情绪曲线标准（六型判别）", "kb/aesthetic/ending": "结局标准（反推五条件与禁止项）", "kb/aesthetic/hook-3s": "开场钩子标准（3 秒公式）", "kb/aesthetic/metaphor-zh": "中文叙事比喻规范（悬浮比喻五病 + 场景内喻体）", "kb/aesthetic/naturalness-zh": "中文自然度标准（24 类去模板化清单）", "kb/aesthetic/oversight": "双专家监管标准（审美总编 × 需求交付监理）", "kb/aesthetic/pacing-density": "节奏与爆点密度标准", "kb/aesthetic/perspective-review": "视角评审协议（红方 v2：代入人，不念指标）", "kb/aesthetic/platform-compliance": "平台适配与合规标准", "kb/aesthetic/redline-scoring": "红方评分标准（对抗式打分）", "kb/aesthetic/reversal": "反转标准（类型学与铺垫合规）", "kb/aesthetic/scene-value": "场景价值转变标准", "kb/aesthetic/style-routes": "风格路线参数表（爽版 / 合理版）", "kb/aesthetic/unreasonable-highlight": "不合理亮点标准（被磨平的冒险选择）", "kb/aesthetic/visual-poster": "名场面可视化标准（海报级分镜）", "kb/benchmark/b001-cn": "对标 · 仵作状元：开局金殿断奇案", "kb/benchmark/b002-cn": "对标 · 败家状元：开局做空敌国商会", "kb/benchmark/b003-cn": "对标 · 草包状元：开局沙盘点崩十军", "kb/benchmark/b004-cn": "对标 · 天灾流放，我靠百亿空间养活瞎眼杀神", "kb/benchmark/b005-cn": "对标 · 荒漠驿站：光脑美食养战神", "kb/benchmark/b006-cn": "对标 · 深海炼金：我把人鱼养成了皇", "kb/benchmark/b007-cn": "对标 · 荒沙之上，罪妻手握机械狂潮", "kb/benchmark/b008-cn": "对标 · 流放荒岛：我契约巨兽养出海上帝王", "kb/benchmark/b009-cn": "对标 · 暴雪封关，我靠种田捂热冷酷战神", "kb/benchmark/b010-cn": "对标 · 大漠狂沙：我驯服异兽与糙汉将军", "kb/benchmark/b011-cn": "对标 · 冰原种田：发配边关养大猫", "kb/benchmark/b012-cn": "对标 · 拆盲盒后，我把渣男净身出户了", "kb/benchmark/b013-fam": "对标 · 白月光归来：前夫，牢房已满员", "kb/benchmark/b014-fam": "对标 · 离婚后，前夫跪求当我的贴身男仆", "kb/benchmark/b015-fam": "对标 · 被嫌弃的真千金手握封神配方", "kb/benchmark/b016-fam": "对标 · 扫地姑娘是百亿精算师", "kb/benchmark/b017-fam": "对标 · 废土她不等你", "kb/benchmark/b018-fam": "对标 · 全员听我心声，豪门保姆成了团宠", "kb/benchmark/b019-na": "对标 · Inferno Tower Savior", "kb/benchmark/b020-na": "对标 · Crush Depth", "kb/benchmark/b021-na": "对标 · Mayday: The Shadow Pilot", "kb/benchmark/b022-na": "对标 · Deadman Velocity", "kb/benchmark/b023-na": "对标 · Deep Abyss Master", "kb/benchmark/b024-na": "对标 · Tower Inferno: The Lone Architect", "kb/benchmark/b025-s": "对标 · I Heard The Baby Alpha Whimper", "kb/benchmark/b026-s": "对标 · The Beast Prince Refuses Any Other Nanny", "kb/benchmark/b027-s": "对标 · 给大妈爆改后我成了顶流", "kb/benchmark/b028-s": "对标 · 重回前夫假死那天，我大摆招魂席", "kb/continuity/state-ledger": "长程连续性与状态台账标准", "kb/deconstruct/protocol": "拆书总协议（六槽位与溯源纪律）", "kb/deconstruct/style-learning": "文风学习协议（情绪决定笔墨密度）", "kb/formats/webnovel-longform": "长篇网文形态标准（章末钩子与批量生成）", "kb/market/constraints": "生产约束基线（短剧/漫剧实盘值）", "kb/market/internet-feel": "网感公式标准（标题 / 卖点 / 共情点句式）", "kb/market/meme-rules": "梗密度与发散性约束（S1 网感输入源）", "kb/market/setting-rules": "设定体系约束（项目级：世界观代入成本红线）", "kb/market/snapshot": "咔咔猩市场快照（机器可读）", "kb/market/structure": "短剧市场结构标准（咔咔猩语料蒸馏）", "kb/structure/catalog": "叙事结构选型目录（第二阶段深挖用）", "kb/trope/chongsheng-fuchou": "梗族 · 重生复仇梗", "kb/trope/dalian-nuezha": "梗族 · 打脸虐渣梗", "kb/trope/liufang-zhongtian": "梗族 · 流放种田梗", "kb/trope/majia-diaoma": "梗族 · 马甲掉马梗", "kb/trope/na-billionaire": "梗族 · 豪门财富梗(NA)", "kb/trope/na-fantasy": "梗族 · 奇幻生物梗(NA)", "kb/trope/na-werewolf": "梗族 · 狼人命定梗(NA)", "kb/trope/shenhao-baofu": "梗族 · 神豪暴富梗", "kb/trope/tuanchong": "梗族 · 团宠护短梗", "kb/trope/xianhun-lianai": "梗族 · 先婚后爱梗", "kb/trope/zhenjia-qianjin": "梗族 · 真假千金梗", "kb/trope/zhuiqi-huozangchang": "梗族 · 追妻火葬场梗", "kb/trope/zhuxu-zhanshen": "梗族 · 赘婿战神梗", "kb/continuity/worldbook": "世界书体系标准（小说/剧本双变体）", "kb/formats/webnovel-fastfood": "快餐抽象网文形态标准（番茄线）", "kb/market/topic-anatomy": "题材解剖学（素材聚合与关系逆位选题法）", "kb/structure/episodic-webnovel": "单元剧网文结构标准（多故事集合体·暗线先行）", "kb/aesthetic/slop-list": "AI 味禁则清单（OpenAI 官方 8 类 + 中文映射）", "kb/method/revision-loop": "多轮精修循环协议（判分→定向修订→防劣化收敛）", "kb/method/longform-engineering": "长篇工程方法（细纲节拍/递归重提示/双层记忆/大纲贴附）", "kb/craft/prose-constraints": "成文约束总纲（六维路由——写前看什么、盖章查什么）", "kb/aesthetic/ai-detection-sources": "AI味检测口径卡（本地打分×朱雀对照·两级门·50万token纪律）", "kb/craft/user-style-rules": "用户补充·文学规则（公用 md，手动追加区——引号/加粗/箭头链红线）", "kb/craft/highlight-loop": "亮点闭环（卖点→台词范式→成文消费；AI语音梗台词范式库）", "kb/aesthetic/sensory-detail": "感官细节密度与心理距离标准", "kb/market/brief-four-questions": "命题四问确认单（开工前对题）"}, "inputs": {"project": "ccwd-fq3", "direction": "曹操魂穿武大郎：用兵法做炊饼、以权谋治小店；当武松推门而入时，发现弟弟已非吴下阿蒙", "chapters": 3, "题材": "历史穿越 + 美食（快餐抽象向）", "需求": "曹操穿越成武大郎，从被鄙视的炊饼郎到权谋厨房之王的快餐爽文；前三章试稿", "灵感": "三国最强枭雄的灵魂困在北宋最卑微的躯壳里；用兵法做炊饼、以权谋待客官", "严肃性": "探索"}, "annos": {}, "projects": [{"id": "p-slj-004", "title": "", "flow": null, "status": "", "mtime": "09-19 18:03", "renderable": true}, {"id": "p-slj-003", "title": "", "flow": null, "status": "", "mtime": "09-19 06:58", "renderable": true}, {"id": "p-slj-002", "title": "", "flow": null, "status": "", "mtime": "09-19 06:47", "renderable": true}, {"id": "p-slj-001", "title": "", "flow": null, "status": "", "mtime": "09-19 06:11", "renderable": true}, {"id": "ccwd-fq", "title": "", "flow": null, "status": "", "mtime": "09-19 05:51", "renderable": true}, {"id": "ccwd-fq3", "title": "", "flow": null, "status": "", "mtime": "09-19 05:25", "renderable": true}, {"id": "ccwd-fq2", "title": "", "flow": null, "status": "", "mtime": "09-19 04:25", "renderable": true}, {"id": "p-ccwdl-decon", "title": "", "flow": null, "status": "", "mtime": "09-19 03:03", "renderable": false}, {"id": "p-ccwdl-ep", "title": "", "flow": null, "status": "", "mtime": "09-19 03:03", "renderable": false}, {"id": "p-ccwdl-long", "title": "", "flow": null, "status": "", "mtime": "09-19 03:03", "renderable": false}, {"id": "p-ccwdl-prose", "title": "", "flow": null, "status": "", "mtime": "09-19 03:03", "renderable": false}, {"id": "p-ccwdl-fq", "title": "", "flow": null, "status": "", "mtime": "09-18 01:32", "renderable": false}, {"id": "p-ccwdl-outline", "title": "", "flow": null, "status": "", "mtime": "09-18 01:00", "renderable": false}, {"id": "p-ccwdl-topic", "title": "", "flow": null, "status": "", "mtime": "09-18 00:56", "renderable": false}, {"id": "p-fq-001", "title": "", "flow": null, "status": "", "mtime": "09-17 11:21", "renderable": false}, {"id": "p-key-soul", "title": "", "flow": null, "status": "", "mtime": "09-17 06:11", "renderable": false}, {"id": "p-ts-001", "title": "", "flow": null, "status": "", "mtime": "09-17 06:11", "renderable": false}, {"id": "demo-book-deconstruct", "title": "", "flow": null, "status": "未开跑", "mtime": "", "renderable": false}, {"id": "demo-novel-fanqie", "title": "", "flow": null, "status": "未开跑", "mtime": "", "renderable": false}]}, "EFF": {"format": "effective@2", "flowId": "caocao-wudalang", "flowVersion": "1.1.0", "policy": {"link_default": "auto", "adapt": "propose"}, "overlayHash": "r6-410cc95f", "planHash": "c6ae12f8", "links": [{"id": "m2.link", "fromModule": "m1", "toModule": "m2", "mode": "manual"}, {"id": "m3.link", "fromModule": "m2", "toModule": "m3", "mode": "auto"}, {"id": "m4.link", "fromModule": "m3", "toModule": "m4", "mode": "auto"}], "composition": [{"id": "m1", "module": "topic", "name": "选题", "order": 1, "dir": "01-选题", "link": "auto", "caps": ["找梗", "素材解剖", "时代情绪锚", "网感文案", "拆书入库", "选题报告"], "capsEnabled": ["选题报告"], "spine": ["m1.topic-report"], "plugins": [], "nodes": ["m1.topic-report"], "io": {"input": {"from": "flow-input", "shape": "一个灵感（点子/命题/素材，任一形态）"}, "output": {"file": "选题报告.md", "audience": "作者（选题决策文档，兼作编剧模块唯一输入）"}, "acceptance": {"asserts": ["AE-REPORT-DENSITY"]}}}, {"id": "m2", "module": "plot", "name": "编剧", "order": 2, "dir": "02-编剧", "link": "manual", "caps": ["结构", "主线", "人设", "分场", "世界观", "单元剧大纲", "短剧节拍", "暗线", "伏笔", "悬念", "红队评审", "编剧"], "capsEnabled": ["编剧"], "spine": ["m2.script-forge"], "plugins": [], "nodes": ["m2.script-forge"], "io": {"input": {"from": "topic", "shape": "选题报告（梗选型+竞品对标+结构手法+可用话题）"}, "output": {"file": "剧本.md", "audience": "写手（正文模块唯一输入；5W1H 结构化剧本 IR）"}, "acceptance": {"asserts": ["AE-SCRIPT-FIELDS"]}}}, {"id": "m3", "module": "prose", "name": "写作", "order": 3, "dir": "03-写作", "link": "auto", "caps": ["台词层", "场景层", "设定层", "拼装盖章", "终稿打磨", "去机味", "直写单章", "剧本成稿", "对话打磨", "文学评审", "视频提示词", "正文"], "capsEnabled": ["正文", "终稿打磨", "去机味"], "spine": ["m3.ghostwrite", "m3.novel-deai"], "plugins": [], "nodes": ["m3.ghostwrite", "m3.novel-deai"], "io": {"input": {"from": "plot", "shape": "剧本 IR（逐场行动/台词/价值/钩 + 伏笔登记）"}, "output": {"file": "终稿.md", "audience": "读者（对外正文终稿，文学化+去AI味）"}, "acceptance": {"asserts": ["AE-AI-QUOTA", "AE-AI-STRUCT", "AE-PROSE-SLOP", "AE-WNF-HOOK"]}}}, {"id": "m4", "module": "delivery", "name": "交付", "order": 4, "dir": "04-交付", "link": "auto", "caps": ["docx交付", "交付页", "批注回流"], "capsEnabled": ["docx交付"], "spine": ["m4.export-doc"], "plugins": [], "nodes": ["m4.export-doc"], "io": {"input": {"from": "prose", "shape": "正文终稿（每模块一份成熟交付）"}, "output": {"file": "export-doc.docx", "audience": "编辑/甲方（可批注 docx）"}, "acceptance": {"asserts": []}}}], "moduleDirs": {"m1": "01-选题", "m2": "02-编剧", "m3": "03-写作", "m4": "04-交付"}, "nodes": {"m1.topic-report": {"kind": "agent", "title": "选题报告师", "stage": "m1", "module": "m1", "kit": "topic", "op": "topic-report", "output": "01-选题/选题报告.md", "skill": "topic-report", "minitool": "kb_search", "asserts": ["AE-REPORT-DENSITY"], "config": {"maxChars": "@default:maxChars", "minTropeRows": "@default:minTropeRows"}, "desc": "选题模块唯一交付工具：输入灵感 → 选题报告（梗选型+竞品对标+结构解剖+可用话题）。输入职责=灵感；输出职责=选题报告单件；验收职责=AE-REPORT-DENSITY"}, "m2.script-forge": {"kind": "agent", "title": "剧本师", "stage": "m2", "module": "m2", "kit": "plot", "op": "script-forge", "output": "02-编剧/剧本.md", "skill": "script-forge", "asserts": ["AE-SCRIPT-FIELDS"], "config": {"minScenes": "@default:minScenes", "maxChars": "@default:maxChars"}, "desc": "编剧模块唯一交付工具：输入选题报告 → 结构化剧本 IR（逐场 5W1H/行动/台词/价值/钩 + 人物卡 + 伏笔登记）。输入职责=选题报告；输出职责=剧本单件；验收职责=AE-SCRIPT-FIELDS"}, "m2.link": {"kind": "gate", "gate_role": "link", "link_mode": "manual", "title": "连接 · 编剧（待人工批准）", "stage": "m2", "module": "m2"}, "m3.ghostwrite": {"kind": "agent", "title": "文学化师", "stage": "m3", "module": "m3", "kit": "prose", "op": "ghostwrite", "output": "03-写作/正文.md", "skill": "ghostwrite", "config": {"chapterMin": "@default:chapterMin", "chapterMax": "@default:chapterMax"}, "desc": "写作模块主交付工具：输入剧本 → 逐场文学化为正文（六维盖章自查/章末钩/纯净度）。输入职责=剧本；输出职责=正文单件；验收职责=既有 prose 断言表（章长/钩/纯度/台账）"}, "m3.novel-deai": {"kind": "agent", "title": "novel-deai", "stage": "m3", "module": "m3", "kit": "prose", "op": "novel-deai", "output": "03-写作/终稿.md", "skill": "novel-deai", "minitool": "check_aesthetic_asserts", "asserts": ["AE-AI-QUOTA", "AE-AI-STRUCT", "AE-PROSE-SLOP", "AE-WNF-HOOK"], "config": {"passes": "@default:passes", "innerLoops": "@default:innerLoops", "coverageLaw": "@default:coverageLaw", "metaphorBudget": "@default:metaphorBudget"}, "desc": "快餐网文终稿打磨技能——四遍法打磨（声口校准→处境校准→比喻意象→节奏去机味）+ 多轮精修内环（评审官判分→定向修订→防劣化收敛），诊断先行、覆盖律硬门槛、盲读内环验收；产出可发布终稿与全套收据。"}, "m3.link": {"kind": "gate", "gate_role": "link", "link_mode": "auto", "title": "连接 · 写作（自动批准）", "stage": "m3", "module": "m3"}, "m4.export-doc": {"kind": "core", "title": "export-doc.py", "stage": "m4", "module": "m4", "kit": "delivery", "op": "export-doc", "output": "04-交付/export-doc.docx", "script": "tools/export-doc.py", "config": {"style": "@default:style", "verify": "@default:verify", "outDir": "@default:outDir"}, "desc": "export-doc · 小纲/剧本 → Word doc 导出器（export_doc minitool 实现）"}, "m4.link": {"kind": "gate", "gate_role": "link", "link_mode": "auto", "title": "连接 · 交付（自动批准）", "stage": "m4", "module": "m4"}}, "edges": [{"id": "e-m1-link", "from": "m1.topic-report", "to": "m2.link", "role": "flow"}, {"id": "e-link-m2", "from": "m2.link", "to": "m2.script-forge", "role": "flow"}, {"id": "e-m3-ghostwrite-novel-deai", "from": "m3.ghostwrite", "to": "m3.novel-deai", "role": "flow", "via": "skill.novel-deai"}, {"id": "e-m2-link", "from": "m2.script-forge", "to": "m3.link", "role": "flow"}, {"id": "e-link-m3", "from": "m3.link", "to": "m3.ghostwrite", "role": "flow"}, {"id": "e-m3-link", "from": "m3.novel-deai", "to": "m4.link", "role": "flow"}, {"id": "e-link-m4", "from": "m4.link", "to": "m4.export-doc", "role": "flow"}], "nodeConfig": {"m1.topic-report": {"module": "m1", "output": "01-选题/选题报告.md", "skill": "topic-report", "minitool": "kb_search", "nodeConfig": {"maxChars": "@default:maxChars", "minTropeRows": "@default:minTropeRows"}}, "m2.script-forge": {"module": "m2", "output": "02-编剧/剧本.md", "skill": "script-forge", "nodeConfig": {"minScenes": "@default:minScenes", "maxChars": "@default:maxChars"}}, "m2.link": {"module": "m2", "gateRole": "link", "nodeConfig": {}}, "m3.ghostwrite": {"module": "m3", "output": "03-写作/正文.md", "skill": "ghostwrite", "nodeConfig": {"chapterMin": "@default:chapterMin", "chapterMax": "@default:chapterMax"}}, "m3.novel-deai": {"module": "m3", "output": "03-写作/终稿.md", "skill": "novel-deai", "minitool": "check_aesthetic_asserts", "nodeConfig": {"passes": "@default:passes", "innerLoops": "@default:innerLoops", "coverageLaw": "@default:coverageLaw", "metaphorBudget": "@default:metaphorBudget"}}, "m3.link": {"module": "m3", "gateRole": "link", "nodeConfig": {}}, "m4.export-doc": {"module": "m4", "output": "04-交付/export-doc.docx", "nodeConfig": {"style": "@default:style", "verify": "@default:verify", "outDir": "@default:outDir"}}, "m4.link": {"module": "m4", "gateRole": "link", "nodeConfig": {}}}}, "OVERLAY": {"format": "flow-overlay@1", "patches": []}, "OPTIMIZE": {"proposals": [], "pending": []}, "METRICS": {"format": "metrics-summary@1", "runId": "run-mu7grvzg-yrdb60", "events": 5, "byNode": {"m1.topic-report": {"nodeId": "m1.topic-report", "runs": 2, "submits": 3, "tokensIn": 0, "tokensOut": 0, "latencyMs": 0, "assertPass": 7, "assertBlock": 2, "retries": 2, "ctxOffered": 10, "ctxUsed": 5, "hitRate": 0.5, "consumedBy": 0, "cost": 14, "efficiency": 0, "verdicts": ["rejected", "rejected"], "kit": "topic", "op": "topic-report"}}, "byTool": {"topic.topic-report": {"nodeId": "topic.topic-report", "kit": "topic", "op": "topic-report", "runs": 2, "submits": 3, "tokensIn": 0, "tokensOut": 0, "latencyMs": 0, "assertPass": 7, "assertBlock": 2, "retries": 2, "ctxOffered": 10, "ctxUsed": 5, "hitRate": 0.5, "consumedBy": 0, "cost": 14, "efficiency": 0, "verdicts": [], "nodes": ["m1.topic-report"]}}, "knowledge": [{"id": "kb/trope/chongsheng-fuchou", "offered": 2, "used": 1, "hitRate": 0.5}, {"id": "kb/trope/dalian-nuezha", "offered": 2, "used": 1, "hitRate": 0.5}, {"id": "kb/market/topic-anatomy", "offered": 2, "used": 1, "hitRate": 0.5}, {"id": "kb/market/meme-rules", "offered": 2, "used": 1, "hitRate": 0.5}, {"id": "kb/aesthetic/pacing-density", "offered": 2, "used": 1, "hitRate": 0.5}], "gates": [], "window": {"from": "2026-09-18T21:21:58.472Z", "to": "2026-09-18T21:25:25.935Z"}}}</script>
+<script type="application/json" id="payload">{"DATA": {"project": "ccwd-fq3", "flow": {"id": "caocao-wudalang", "title": "曹操穿越武大郎", "version": "1.2.0", "status": "draft"}, "modules": [{"id": "m1", "module": "topic", "name": "选题", "link": "auto", "order": 1, "dir": "01-选题", "caps": ["找梗", "素材解剖", "时代情绪锚", "网感文案", "拆书入库", "选题报告"], "capsEnabled": ["选题报告"], "spine": ["m1.topic-report"], "plugins": [], "nodes": ["m1.topic-report"], "io": {"input": {"from": "flow-input", "shape": "一个灵感（点子/命题/素材，任一形态）"}, "output": {"file": "选题报告.md", "audience": "作者（选题决策文档，兼作编剧模块唯一输入）"}, "acceptance": {"asserts": ["AE-REPORT-DENSITY"]}}}, {"id": "m2", "module": "plot", "name": "编剧", "link": "manual", "order": 2, "dir": "02-编剧", "caps": ["结构", "主线", "人设", "分场", "世界观", "单元剧大纲", "短剧节拍", "暗线", "伏笔", "悬念", "红队评审", "编剧"], "capsEnabled": ["编剧"], "spine": ["m2.script-forge"], "plugins": [], "nodes": ["m2.script-forge"], "io": {"input": {"from": "topic", "shape": "选题报告（梗选型+竞品对标+结构手法+可用话题）"}, "output": {"file": "剧本.md", "audience": "写手（正文模块唯一输入；5W1H 结构化剧本 IR）"}, "acceptance": {"asserts": ["AE-SCRIPT-FIELDS"]}}}, {"id": "m3", "module": "prose", "name": "写作", "link": "auto", "order": 3, "dir": "03-写作", "caps": ["台词层", "场景层", "设定层", "拼装盖章", "终稿打磨", "去机味", "直写单章", "剧本成稿", "对话打磨", "文学评审", "视频提示词", "正文"], "capsEnabled": ["正文", "终稿打磨", "去机味"], "spine": ["m3.ghostwrite", "m3.novel-deai"], "plugins": [], "nodes": ["m3.ghostwrite", "m3.novel-deai"], "io": {"input": {"from": "plot", "shape": "剧本 IR（逐场行动/台词/价值/钩 + 伏笔登记）"}, "output": {"file": "终稿.md", "audience": "读者（对外正文终稿，文学化+去AI味）"}, "acceptance": {"asserts": ["AE-AI-QUOTA", "AE-AI-STRUCT", "AE-PROSE-SLOP", "AE-WNF-HOOK"]}}}, {"id": "m4", "module": "delivery", "name": "交付", "link": "auto", "order": 4, "dir": "04-交付", "caps": ["docx交付", "交付页", "批注回流"], "capsEnabled": ["docx交付"], "spine": ["m4.export-doc"], "plugins": [], "nodes": ["m4.export-doc"], "io": {"input": {"from": "prose", "shape": "正文终稿（每模块一份成熟交付）"}, "output": {"file": "export-doc.docx", "audience": "编辑/甲方（可批注 docx）"}, "acceptance": {"asserts": []}}}], "toolbox": {"format": "toolbox@1", "modules": {"m1": {"module": "topic", "name": "选题", "desc": "选题域：市场盘面调研取数——找梗/素材解剖/时代情绪/热点采集，产出结构化选题素材包", "caps": ["找梗", "素材解剖", "时代情绪锚", "网感文案", "拆书入库", "选题报告"], "capsEnabled": ["选题报告"], "spine": ["m1.topic-report"], "plugins": [], "groups": [{"cap": "找梗", "tools": [{"tool": "find-trope", "title": "find-trope", "slot": "end", "alsoFits": [], "requires": [], "enabled": true, "defaultEnabled": false}]}, {"cap": "素材解剖", "tools": [{"tool": "material-dissect", "title": "material-dissect", "slot": "end", "alsoFits": [], "requires": [], "enabled": true, "defaultEnabled": false}]}, {"cap": "时代情绪锚", "tools": [{"tool": "topic-zeitgeist", "title": "时代情绪锚", "slot": "after:find-trope", "alsoFits": ["end"], "requires": [], "enabled": true, "defaultEnabled": false}]}, {"cap": "网感文案", "tools": [{"tool": "internet-feel", "title": "internet-feel", "slot": "after:material-dissect", "alsoFits": ["end"], "requires": [], "enabled": true, "defaultEnabled": false}]}, {"cap": "拆书入库", "tools": [{"tool": "deconstruct-book", "title": "deconstruct-book", "slot": "end", "alsoFits": [], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "选题报告", "tools": [{"tool": "topic-report", "title": "选题报告师", "slot": "end", "alsoFits": [], "requires": [], "enabled": true, "defaultEnabled": true}]}]}, "m2": {"module": "plot", "name": "编剧", "desc": "编剧域：主线剧情、人设、世界观、暗线、伏笔悬念的编排——剧情在成文前锁定，成文层无权改戏", "caps": ["结构", "主线", "人设", "分场", "世界观", "单元剧大纲", "短剧节拍", "暗线", "伏笔", "悬念", "红队评审", "编剧"], "capsEnabled": ["编剧"], "spine": ["m2.script-forge"], "plugins": [], "groups": [{"cap": "结构", "tools": [{"tool": "structure-design", "title": "structure-design", "slot": "end", "alsoFits": [], "requires": [], "enabled": true, "defaultEnabled": true}]}, {"cap": "主线", "tools": [{"tool": "plot-choreographer", "title": "plot-choreographer", "slot": "end", "alsoFits": [], "requires": [], "enabled": true, "defaultEnabled": true}]}, {"cap": "人设", "tools": [{"tool": "novel-bible", "title": "novel-bible", "slot": "end", "alsoFits": [], "requires": [], "enabled": true, "defaultEnabled": false}]}, {"cap": "分场", "tools": [{"tool": "scene-breakdown", "title": "scene-breakdown", "slot": "end", "alsoFits": [], "requires": [], "enabled": true, "defaultEnabled": true}]}, {"cap": "世界观", "tools": [{"tool": "world-forge", "title": "world-forge", "slot": "before:structure-design", "alsoFits": [], "requires": [], "enabled": true, "defaultEnabled": false}]}, {"cap": "单元剧大纲", "tools": [{"tool": "episodic-outline", "title": "episodic-outline", "slot": "end", "alsoFits": [], "requires": ["structure-design"], "enabled": true, "defaultEnabled": false}]}, {"cap": "短剧节拍", "tools": [{"tool": "script-drama-beat", "title": "短剧节拍表", "slot": "after:scene-breakdown", "alsoFits": ["end"], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "暗线", "tools": [{"tool": "subplot-weave", "title": "暗线编织", "slot": "after:plot-choreographer", "alsoFits": [], "requires": ["plot-choreographer"], "enabled": true, "defaultEnabled": false}]}, {"cap": "伏笔", "tools": [{"tool": "foreshadow-plant", "title": "伏笔悬念插入", "slot": "before:scene-breakdown", "alsoFits": [], "requires": ["plot-choreographer"], "enabled": true, "defaultEnabled": false}]}, {"cap": "悬念", "tools": [{"tool": "foreshadow-plant", "title": "伏笔悬念插入", "slot": "before:scene-breakdown", "alsoFits": [], "requires": ["plot-choreographer"], "enabled": true, "defaultEnabled": false}]}, {"cap": "红队评审", "tools": [{"tool": "plot-redline", "title": "剧情红队·多方视角评审", "slot": "after:scene-breakdown", "alsoFits": ["after:plot-choreographer", "before:structure-design", "end"], "requires": [], "enabled": true, "defaultEnabled": false}]}, {"cap": "编剧", "tools": [{"tool": "script-forge", "title": "剧本师", "slot": "end", "alsoFits": [], "requires": [], "enabled": true, "defaultEnabled": true}]}]}, "m3": {"module": "prose", "name": "写作", "desc": "文学域：三专科层稿 + 成文师逐段六维盖章 + 终稿打磨——文学质量内置在成文流水线，剧情前置锁定后成文层无权改戏", "caps": ["台词层", "场景层", "设定层", "拼装盖章", "终稿打磨", "去机味", "直写单章", "剧本成稿", "对话打磨", "文学评审", "视频提示词", "正文"], "capsEnabled": ["正文", "终稿打磨", "去机味"], "spine": ["m3.ghostwrite", "m3.novel-deai"], "plugins": [], "groups": [{"cap": "台词层", "tools": [{"tool": "layer-voices", "title": "layer-voices", "slot": "before:ghostwrite", "alsoFits": [], "requires": [], "enabled": true, "defaultEnabled": false}]}, {"cap": "场景层", "tools": [{"tool": "layer-scenes", "title": "layer-scenes", "slot": "before:ghostwrite", "alsoFits": [], "requires": [], "enabled": true, "defaultEnabled": false}]}, {"cap": "设定层", "tools": [{"tool": "layer-canon", "title": "layer-canon", "slot": "before:ghostwrite", "alsoFits": [], "requires": [], "enabled": true, "defaultEnabled": false}]}, {"cap": "拼装盖章", "tools": [{"tool": "prose-assembler", "title": "prose-assembler", "slot": "after:layer-canon", "alsoFits": ["before:ghostwrite"], "requires": [], "enabled": true, "defaultEnabled": false}]}, {"cap": "终稿打磨", "tools": [{"tool": "novel-deai", "title": "novel-deai", "slot": "end", "alsoFits": [], "requires": [], "enabled": true, "defaultEnabled": true}]}, {"cap": "去机味", "tools": [{"tool": "novel-deai", "title": "novel-deai", "slot": "end", "alsoFits": [], "requires": [], "enabled": true, "defaultEnabled": true}]}, {"cap": "直写单章", "tools": [{"tool": "novel-chapter", "title": "novel-chapter", "slot": "end", "alsoFits": [], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "剧本成稿", "tools": [{"tool": "script-final", "title": "script-final", "slot": "end", "alsoFits": ["after:prose-assembler"], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "对话打磨", "tools": [{"tool": "dialogue-polish", "title": "dialogue-polish", "slot": "after:script-final", "alsoFits": ["after:novel-deai"], "requires": [], "enabled": true, "defaultEnabled": false}]}, {"cap": "文学评审", "tools": [{"tool": "novel-judge", "title": "novel-judge", "slot": "after:novel-deai", "alsoFits": ["after:prose-assembler", "end"], "requires": [], "enabled": true, "defaultEnabled": false}]}, {"cap": "视频提示词", "tools": [{"tool": "render-prompt-seedance", "title": "Seedance 分镜提示词", "slot": "after:script-final", "alsoFits": ["end"], "requires": [], "enabled": false, "defaultEnabled": false}]}, {"cap": "正文", "tools": [{"tool": "ghostwrite", "title": "文学化师", "slot": "end", "alsoFits": [], "requires": [], "enabled": true, "defaultEnabled": true}]}]}, "m4": {"module": "delivery", "name": "交付", "desc": "交付域：成品出库——docx 硬断言导出、交付页渲染、客户批注回流解析", "caps": ["docx交付", "交付页", "批注回流"], "capsEnabled": ["docx交付"], "spine": ["m4.export-doc"], "plugins": [], "groups": [{"cap": "docx交付", "tools": [{"tool": "export-doc", "title": "export-doc.py", "slot": "end", "alsoFits": [], "requires": [], "enabled": true, "defaultEnabled": true}]}, {"cap": "交付页", "tools": [{"tool": "render_html", "title": "交付页渲染", "slot": "end", "alsoFits": [], "requires": [], "enabled": true, "defaultEnabled": false}]}]}}}, "files": {"01-选题/选题报告.md": "---\nartifact: 1\nid: topic.topic-report\nclass: draft\nnode: m1.topic-report\nround: 1\nversion: v1\nstate: draft\nat: 2026-09-19 05:25\nby: module/topic.topic-report\nupstream:\n  - 输入/点子.md\n  - kb/trope/dalian-nuezha\n  - kb/trope/majia-diaoma\n  - kb/market/topic-anatomy\n  - kb/market/meme-rules\nreview: null\n---\n\n# 选题报告 · 《炊饼令》\n\n> 一句话：三国头号枭雄魂穿市井炊饼郎——打脸虐渣当众清算 × 马甲掉马身份反差，权谋对无赖是彻底的降维打击。\n\n## 一、梗选型（判定纪律：每结论挂数据，快照 2026-09-15）\n\n| 候选族 | 饱和度 | n | 均热度 | 判定 |\n|---|---|---|---|---|\n| 打脸虐渣 | 红海·有效 | 1510 | 18558 万 | **主梗**：有效红海必须带新变体进 |\n| 马甲掉马 | 红海·过饱和 | 750 | 9215 万 | 辅梗：只借机制（掉马即打脸） |\n| 重生复仇 | 红海·有效 | 702 | 11978 万 | 辅梗：借「先手布局精准清算」 |\n| 流放种田 | 上升期·蓝海 | 92 | 22598 万 | 避开：与方向不符 |\n\n**主梗新变体落点**：链上对标全是现代职场/家庭清算，没人做过「枭雄魂穿小贩用兵法当众清算」——人设新（枭雄 instead 赘婿）、武器新（兵法权谋 instead 证据流）、对手轴新（泼皮/县吏 instead 渣男/资本家）。辅梗相性：马甲掉马改变主梗的清算条件（对方以为在欺负武大郎，实际在惹曹操），不是只占时长。\n\n## 二、竞品对标（借鉴点 explicit）\n\n- 《离婚后，我送前夫一份PPT》：借鉴点=**清算证据流的铺垫密度**（第2章对账戏对齐其证据链节奏，用作爆发段强度标尺）\n- 《拆盲盒后，我把渣男净身出户了》：借鉴点=**受辱蓄力的低谷写法**（第1章蓄力段对齐，用作开局压抑标尺）\n- 《顾太太当众退股了》：借鉴点=**当众戏的围观群像调度**（看客反应拍，第3章县衙对质参照）\n\n## 三、素材结构解剖\n\n现象层：北宋阳谷县，任人拿捏的炊饼小贩一夜换了个人。利益层：泼皮要白吃白拿立威、县吏要灰色孝敬、同行要捂死客源、看客要热闹、武松要兄长平安。权力层：泼皮握生杀权（零成本即时）、县吏握定罪权、同行握封锁权、武松的暴力威慑强而慢、看客握可收割的舆论。结构层：**弱者的摊位是强者的猎场**——猎杀即时零成本 vs 反制慢速全额，七倍速差即爽点矿脉。逆位候选：①生杀权逆位→店规公审（金手指=权谋经验；关系轴=泼皮变被告；机制=当众清算）；②定罪权逆位→规矩反咬定规矩的人（把柄流）；③威慑慢速逆位→名声先行、人到案到。\n\n## 四、可用话题清单（梗素材表）\n\n| 素材/梗 | 传播度 | 可挂接场景 | 消费去向 |\n|---|---|---|---|\n| 宁教我负天下人 | 全民·高 | 内心 vs 嘴上反差 | 每章台词梗 |\n| 说曹操曹操到 | 俗语·高 | 解围名场面 | 第1章出场梗 |\n| 挟天子以令诸侯 | 成语·高 | 清算宣言 | 第2章台词梗 |\n| 望梅止渴 | 成语·高 | 饥饿营销 | 限量预售桥段 |\n| 煮酒论英雄 | 成语·高 | 与县令谈判 | 第2章场面梗 |\n| 三顾茅庐 | 成语·高 | 兄弟线反转 | 第3章身份线 |\n| 火烧赤壁 | 典故·高 | 烤炉阵法 | 开业大战 |\n| 短衣帮vs长衫客 | 孔乙己·中高 | 市集阶层轴 | 群像世界观 |\n| 当众掉马 | 短剧·高 | 掉马即打脸 | 每章机制位 |\n| 好感度结算 | 网文·中高 | 店规积分制 | 店规审判桥段 |\n\n风险：主梗红海拥挤，每场清算必须有权谋.only 解法；历史人物形象正面化处理。\n"}, "runstate": {"runId": "run-mu7grvzg-yrdb60", "projectId": "ccwd-fq3", "flowId": "caocao-wudalang", "flowVersion": "1.1.0", "flowHash": "4e5d4bf7", "status": "suspended", "plan": {"order": ["m1.topic-report", "m2.link", "itb-m2.script-forge", "m2.script-forge", "m3.link", "itb-m3.ghostwrite", "m3.ghostwrite", "m3.novel-deai", "m4.link", "itb-m4.export-doc", "m4.export-doc"]}, "nodes": {"m1.topic-report": {"status": "done", "round": 2, "stale": false, "committed": [], "failCount": 2, "lastArtifact": "01-选题/选题报告.md"}, "m2.script-forge": {"status": "none", "round": 0}, "m2.link": {"status": "awaiting", "round": 0}, "m3.ghostwrite": {"status": "none", "round": 0}, "m3.novel-deai": {"status": "none", "round": 0}, "m3.link": {"status": "none", "round": 0}, "m4.export-doc": {"status": "none", "round": 0}, "m4.link": {"status": "none", "round": 0}, "itb-m2.script-forge": {"status": "none", "round": 0}, "itb-m3.ghostwrite": {"status": "none", "round": 0}, "itb-m4.export-doc": {"status": "none", "round": 0}}, "gate": {"verdict": "awaiting", "node": "m2.link", "round": 0, "token": "approval:ccwd-fq3:run-mu7grvzg-yrdb60:m2.link", "at": "2026-09-18T21:25:25.941Z", "note": "连接 · 编剧（待人工批准）"}, "inputs": {"project": "ccwd-fq3", "direction": "曹操魂穿武大郎：用兵法做炊饼、以权谋治小店；当武松推门而入时，发现弟弟已非吴下阿蒙", "chapters": 3, "题材": "历史穿越 + 美食（快餐抽象向）", "需求": "曹操穿越成武大郎，从被鄙视的炊饼郎到权谋厨房之王的快餐爽文；前三章试稿", "灵感": "三国最强枭雄的灵魂困在北宋最卑微的躯壳里；用兵法做炊饼、以权谋待客官", "严肃性": "探索"}, "comments": {}, "overlayHash": "314efa96", "policy": {"kit_boundary": "always", "gate_mode": "auto", "adapt": "propose"}, "planHash": "c6ae12f8", "focus": "m2.link"}, "deliverables": [], "moduleFiles": [{"id": "m1", "name": "选题", "dir": "01-选题", "deliverable": "01-选题/选题报告.md", "audience": "作者（选题决策文档，兼作编剧模块唯一输入）", "process": []}, {"id": "m2", "name": "编剧", "dir": "02-编剧", "deliverable": null, "audience": "写手（正文模块唯一输入；5W1H 结构化剧本 IR）", "process": []}, {"id": "m3", "name": "写作", "dir": "03-写作", "deliverable": null, "audience": "读者（对外正文终稿，文学化+去AI味）", "process": []}, {"id": "m4", "name": "交付", "dir": "04-交付", "deliverable": null, "audience": "编辑/甲方（可批注 docx）", "process": []}], "moduleReports": {"m1": {"format": "module-report@1", "projectId": "ccwd-fq3", "flowId": "caocao-wudalang", "moduleId": "m1", "moduleName": "m1", "title": "选题报告师", "closedAt": "2026-09-18T21:25:25.935Z", "io": {"input": ["direction", "chapters", "题材", "需求", "灵感", "严肃性"], "output": "01-选题/选题报告.md"}, "artifacts": [{"node": "m1.topic-report", "op": "topic-report", "path": "01-选题/选题报告.md", "role": "deliverable"}], "acceptance": [{"node": "m1.topic-report", "assert": "AE-REPORT-DENSITY", "status": "pass", "detail": "梗/话题行 8、对标 6、热度数据 4 处"}], "metrics": {"submits": 1, "retries": 2, "tokensIn": 0, "tokensOut": 0, "latencyMs": 0, "ctxOffered": 10, "ctxUsed": 5, "hitRate": 0.5}, "feedback": {"annotations": 0, "proposals": 0}}}, "kits": {"base": {"domain": "base", "title": "底座", "ops": {"check_aesthetic_asserts": {"title": "美学硬断言校验", "knowledge": [], "asserts": [], "minitools": ["check_aesthetic_asserts"]}, "check_trope_combo": {"title": "梗组合相性校验", "knowledge": [], "asserts": [], "minitools": ["check_trope_combo"]}, "continuity_slice": {"title": "台账切片", "knowledge": [], "asserts": [], "minitools": ["continuity_slice"]}, "continuity_commit": {"title": "台账结算", "knowledge": [], "asserts": [], "minitools": ["continuity_commit"]}, "analyze-kakaxing": {"title": "analyze-kakaxing.py", "knowledge": [], "asserts": [], "minitools": []}, "artifact-lint": {"title": "artifact-lint.py", "knowledge": [], "asserts": [], "minitools": []}, "check-purity": {"title": "check-purity.py", "knowledge": [], "asserts": [], "minitools": []}, "flow-kit-apply": {"title": "flow-kit-apply.py", "knowledge": [], "asserts": [], "minitools": []}, "flow-lint": {"title": "flow-lint.py", "knowledge": [], "asserts": [], "minitools": []}, "flow-normalize": {"title": "flow-normalize.py", "knowledge": [], "asserts": [], "minitools": []}, "flow-verify": {"title": "flow-verify.py", "knowledge": [], "asserts": [], "minitools": []}, "kit-config-init": {"title": "kit-config-init.py", "knowledge": [], "asserts": [], "minitools": []}, "kit": {"title": "kit.py", "knowledge": [], "asserts": [], "minitools": []}, "project-pages": {"title": "project-pages.py", "knowledge": [], "asserts": [], "minitools": []}, "r5-migrate": {"title": "r5-migrate.py", "knowledge": [], "asserts": [], "minitools": []}, "render-flow": {"title": "render-flow.py", "knowledge": [], "asserts": [], "minitools": []}, "serve": {"title": "serve.py", "knowledge": [], "asserts": [], "minitools": []}, "snapshot": {"title": "snapshot.py", "knowledge": [], "asserts": [], "minitools": []}, "stage": {"title": "stage.py", "knowledge": [], "asserts": [], "minitools": []}, "validate-kb": {"title": "validate-kb.py", "knowledge": [], "asserts": [], "minitools": []}, "whereami": {"title": "whereami.py", "knowledge": [], "asserts": [], "minitools": []}, "worldbook": {"title": "worldbook.py", "knowledge": [], "asserts": [], "minitools": []}, "orchestration-mine": {"title": "编排挖掘", "knowledge": [], "asserts": [], "minitools": []}}}, "delivery": {"domain": "delivery", "title": "交付", "ops": {"export-doc": {"title": "export-doc.py", "knowledge": [], "asserts": [], "minitools": []}, "render_html": {"title": "交付页渲染", "knowledge": [], "asserts": [], "minitools": ["render_html"]}}}, "detect": {"domain": "detect", "title": "检测", "ops": {"ai-flavor-score": {"title": "本地AI味打分（L1）", "knowledge": ["kb/aesthetic/ai-detection-sources"], "asserts": [], "minitools": []}, "zhuque-check": {"title": "朱雀AI检测（L2 对照）", "knowledge": ["kb/aesthetic/ai-detection-sources"], "asserts": [], "minitools": []}, "prose-scan": {"title": "prose-scan.py", "knowledge": [], "asserts": [], "minitools": []}}}, "drama": {"domain": "drama", "title": "成剧", "ops": {"scene-breakdown": {"title": "小纲师·分镜脚本", "knowledge": ["kb/aesthetic/character", "kb/aesthetic/dialogue", "kb/aesthetic/hook-3s", "kb/aesthetic/pacing-density", "kb/aesthetic/scene-value", "kb/method/longform-engineering"], "asserts": ["AE-BEAT-FORMAT", "AE-VIS-EMPTY", "AE-HOOK-EVENT"], "minitools": []}}}, "plan": {"domain": "plan", "title": "方案", "ops": {"topic-analysis-report": {"title": "选题分析报告方法论", "knowledge": ["kb/aesthetic/oversight", "kb/market/*", "kb/structure/episodic-webnovel"], "asserts": [], "minitools": []}, "topic-proposal": {"title": "选题方案方法论", "knowledge": ["kb/aesthetic/*", "kb/benchmark/*"], "asserts": [], "minitools": []}, "topic-chief-aesthetic": {"title": "审美总编·选题方案质量观", "knowledge": [], "asserts": [], "minitools": []}, "topic-delivery-gate": {"title": "需求交付·对账清单", "knowledge": [], "asserts": [], "minitools": []}}}, "plot": {"domain": "plot", "title": "编剧", "ops": {"structure-design": {"title": "structure-design", "knowledge": ["kb/aesthetic/conflict-escalation", "kb/aesthetic/pacing-density", "kb/aesthetic/reversal", "kb/market/setting-rules", "kb/market/structure", "kb/structure/catalog"], "asserts": [], "minitools": ["kb_search", "check_trope_combo"]}, "plot-choreographer": {"title": "plot-choreographer", "knowledge": ["kb/aesthetic/conflict-escalation", "kb/aesthetic/emotion-curve", "kb/aesthetic/ending", "kb/aesthetic/pacing-density", "kb/aesthetic/reversal", "kb/aesthetic/scene-value", "kb/market/constraints"], "asserts": ["AE-CURVE-STALL", "AE-CURVE-TYPE", "AE-CUSHION", "AE-DESERT", "AE-END-MECH", "AE-REV-MIDPOINT", "AE-REV-SETUP"], "minitools": ["check_aesthetic_asserts"]}, "novel-bible": {"title": "novel-bible", "knowledge": ["kb/aesthetic/character", "kb/aesthetic/conflict-escalation", "kb/formats/webnovel-longform", "kb/trope/*"], "asserts": [], "minitools": ["kb_search", "check_trope_combo"]}, "scene-breakdown": {"title": "scene-breakdown", "knowledge": ["kb/aesthetic/character", "kb/aesthetic/dialogue", "kb/aesthetic/hook-3s", "kb/aesthetic/pacing-density", "kb/aesthetic/scene-value", "kb/method/longform-engineering"], "asserts": [], "minitools": ["check_aesthetic_asserts"]}, "world-forge": {"title": "world-forge", "knowledge": ["kb/aesthetic/character", "kb/aesthetic/conflict-escalation", "kb/continuity/worldbook", "kb/formats/webnovel-fastfood", "kb/formats/webnovel-longform", "kb/structure/episodic-webnovel", "kb/trope/*", "kb/craft/highlight-loop"], "asserts": [], "minitools": []}, "episodic-outline": {"title": "episodic-outline", "knowledge": ["kb/aesthetic/pacing-density", "kb/formats/webnovel-fastfood", "kb/structure/episodic-webnovel", "kb/craft/highlight-loop"], "asserts": [], "minitools": []}, "script-drama-beat": {"title": "短剧节拍表", "knowledge": ["kb/aesthetic/dialogue", "kb/aesthetic/hook-3s", "kb/aesthetic/pacing-density", "kb/aesthetic/platform-compliance", "kb/aesthetic/visual-poster"], "asserts": ["AE-BEAT-FORMAT", "AE-CARD-END", "AE-CONT-FORESHADOW", "AE-CONT-ITEM", "AE-CONT-KNOW", "AE-DENSITY-CALM", "AE-DENSITY-HOT", "AE-HOOK-EVENT", "AE-VIS-EMPTY"], "minitools": ["check_aesthetic_asserts"]}, "plot-redline": {"title": "剧情红队·多方视角评审", "knowledge": ["kb/aesthetic/ai-trace", "kb/aesthetic/constitution", "kb/aesthetic/perspective-review", "kb/aesthetic/platform-compliance", "kb/aesthetic/redline-scoring", "kb/aesthetic/unreasonable-highlight", "kb/structure/catalog"], "asserts": [], "minitools": ["kb_read", "kb_search", "flow_read_artifact", "check_aesthetic_asserts"]}, "subplot-weave": {"title": "暗线编织", "knowledge": ["kb/structure/episodic-webnovel", "kb/aesthetic/emotion-curve", "kb/aesthetic/reversal", "kb/craft/highlight-loop"], "asserts": [], "minitools": ["check_aesthetic_asserts"]}, "foreshadow-plant": {"title": "伏笔悬念插入", "knowledge": ["kb/continuity/state-ledger", "kb/continuity/worldbook", "kb/craft/highlight-loop"], "asserts": [], "minitools": ["continuity_commit"]}, "script-forge": {"title": "剧本师", "knowledge": ["kb/aesthetic/scene-value", "kb/aesthetic/conflict-escalation", "kb/aesthetic/reversal", "kb/aesthetic/character", "kb/craft/highlight-loop", "kb/aesthetic/pacing-density", "kb/aesthetic/hook-3s"], "asserts": ["AE-SCRIPT-FIELDS"], "minitools": []}}}, "prose": {"domain": "prose", "title": "写作", "ops": {"layer-voices": {"title": "layer-voices", "knowledge": ["kb/aesthetic/character", "kb/aesthetic/dialogue", "kb/craft/prose-constraints", "kb/craft/user-style-rules", "kb/craft/highlight-loop"], "asserts": [], "minitools": []}, "layer-scenes": {"title": "layer-scenes", "knowledge": ["kb/aesthetic/metaphor-zh", "kb/aesthetic/scene-value", "kb/craft/prose-constraints", "kb/deconstruct/style-learning", "kb/craft/user-style-rules"], "asserts": [], "minitools": []}, "layer-canon": {"title": "layer-canon", "knowledge": ["kb/aesthetic/character", "kb/continuity/state-ledger", "kb/continuity/worldbook", "kb/craft/prose-constraints", "kb/craft/user-style-rules"], "asserts": [], "minitools": []}, "prose-assembler": {"title": "prose-assembler", "knowledge": ["kb/aesthetic/ai-trace", "kb/aesthetic/slop-list", "kb/craft/prose-constraints", "kb/deconstruct/style-learning", "kb/formats/webnovel-fastfood", "kb/craft/user-style-rules", "kb/craft/highlight-loop"], "asserts": ["AE-PROSE-NOTBUT", "AE-PROSE-RHYTHM", "AE-PROSE-SLOP", "AE-PROSE-TRIPLET", "AE-WNF-HOOK"], "minitools": []}, "novel-deai": {"title": "novel-deai", "knowledge": ["kb/aesthetic/ai-trace", "kb/aesthetic/character", "kb/aesthetic/metaphor-zh", "kb/aesthetic/naturalness-zh", "kb/aesthetic/slop-list", "kb/deconstruct/style-learning", "kb/formats/webnovel-fastfood", "kb/formats/webnovel-longform", "kb/method/longform-engineering", "kb/method/revision-loop"], "asserts": ["AE-AI-QUOTA", "AE-AI-STRUCT", "AE-PROSE-SLOP", "AE-WNF-HOOK"], "minitools": ["check_aesthetic_asserts"]}, "novel-chapter": {"title": "novel-chapter", "knowledge": ["kb/aesthetic/ai-trace", "kb/aesthetic/naturalness-zh", "kb/aesthetic/scene-value", "kb/continuity/state-ledger", "kb/deconstruct/style-learning", "kb/formats/webnovel-longform", "kb/method/longform-engineering", "kb/aesthetic/sensory-detail"], "asserts": ["AE-AI-QUOTA", "AE-AI-STRUCT", "AE-COMPLIANCE", "AE-CONT-FORESHADOW", "AE-CONT-ITEM", "AE-CONT-KNOW", "AE-NAT-HIT", "AE-PROSE-NOTBUT", "AE-PROSE-RHYTHM", "AE-PROSE-SLOP", "AE-PROSE-TRIPLET", "AE-WNF-HOOK"], "minitools": ["check_aesthetic_asserts"]}, "script-final": {"title": "script-final", "knowledge": ["kb/aesthetic/ai-trace", "kb/aesthetic/character", "kb/aesthetic/dialogue", "kb/aesthetic/naturalness-zh", "kb/aesthetic/pacing-density", "kb/aesthetic/scene-value"], "asserts": [], "minitools": ["check_aesthetic_asserts"]}, "dialogue-polish": {"title": "dialogue-polish", "knowledge": ["kb/aesthetic/ai-trace", "kb/aesthetic/character", "kb/aesthetic/dialogue", "kb/aesthetic/naturalness-zh"], "asserts": [], "minitools": ["check_aesthetic_asserts"]}, "novel-judge": {"title": "novel-judge", "knowledge": ["kb/aesthetic/ai-trace", "kb/aesthetic/character", "kb/aesthetic/metaphor-zh", "kb/aesthetic/naturalness-zh", "kb/aesthetic/scene-value", "kb/method/revision-loop"], "asserts": [], "minitools": ["check_aesthetic_asserts"]}, "render-prompt-seedance": {"title": "Seedance 分镜提示词", "knowledge": ["kb/aesthetic/visual-poster", "kb/deconstruct/style-learning"], "asserts": [], "minitools": ["check_aesthetic_asserts"]}, "ghostwrite": {"title": "文学化师", "knowledge": ["kb/craft/prose-constraints", "kb/aesthetic/slop-list", "kb/aesthetic/ai-trace", "kb/aesthetic/metaphor-zh", "kb/craft/user-style-rules"], "asserts": ["AE-CH-LEN", "AE-WNF-HOOK"], "minitools": []}}}, "search": {"domain": "search", "title": "检索", "ops": {"kb_load": {"title": "知识装载", "knowledge": [], "asserts": [], "minitools": ["kb_load"]}, "kb_search": {"title": "知识检索", "knowledge": [], "asserts": [], "minitools": ["kb_search"]}, "kb_read": {"title": "知识条目读取", "knowledge": [], "asserts": [], "minitools": ["kb_read"]}, "flow_read_artifact": {"title": "产物读取", "knowledge": [], "asserts": [], "minitools": ["flow_read_artifact"]}}}, "topic": {"domain": "topic", "title": "选题", "ops": {"find-trope": {"title": "find-trope", "knowledge": ["kb/market/snapshot", "kb/market/structure", "kb/trope/*"], "asserts": [], "minitools": ["kb_search", "check_trope_combo"]}, "material-dissect": {"title": "material-dissect", "knowledge": ["kb/market/meme-rules", "kb/market/topic-anatomy"], "asserts": [], "minitools": []}, "topic-zeitgeist": {"title": "时代情绪锚", "knowledge": [], "asserts": [], "minitools": []}, "internet-feel": {"title": "internet-feel", "knowledge": ["kb/aesthetic/hook-3s", "kb/aesthetic/naturalness-zh", "kb/market/internet-feel"], "asserts": [], "minitools": ["check_aesthetic_asserts"]}, "deconstruct-book": {"title": "deconstruct-book", "knowledge": ["kb/aesthetic/character", "kb/aesthetic/pacing-density", "kb/deconstruct/protocol", "kb/deconstruct/style-learning"], "asserts": [], "minitools": ["kb_search", "check_trope_combo"]}, "topic-report": {"title": "选题报告师", "knowledge": ["kb/trope/chongsheng-fuchou", "kb/trope/dalian-nuezha", "kb/market/topic-anatomy", "kb/market/meme-rules", "kb/aesthetic/pacing-density"], "asserts": ["AE-REPORT-DENSITY"], "minitools": ["kb_search", "check_trope_combo"]}}}, "tool": {"domain": "tool", "title": "tool kit", "ops": {"kb_load": {"title": "知识装载", "knowledge": [], "asserts": [], "minitools": ["kb_load"]}, "check_aesthetic_asserts": {"title": "美学硬断言校验", "knowledge": [], "asserts": [], "minitools": ["check_aesthetic_asserts"]}, "check_trope_combo": {"title": "梗组合相性校验", "knowledge": [], "asserts": [], "minitools": ["check_trope_combo"]}, "render_html": {"title": "交付页渲染", "knowledge": [], "asserts": [], "minitools": ["render_html"]}, "docx_ingest": {"title": "批注回流解析", "knowledge": [], "asserts": [], "minitools": ["docx_ingest"]}, "continuity_slice": {"title": "台账切片", "knowledge": [], "asserts": [], "minitools": ["continuity_slice"]}, "continuity_commit": {"title": "台账结算", "knowledge": [], "asserts": [], "minitools": ["continuity_commit"]}, "kb_search": {"title": "知识检索", "knowledge": [], "asserts": [], "minitools": ["kb_search"]}, "meme_harvest": {"title": "热点素材采集", "knowledge": [], "asserts": [], "minitools": ["meme_harvest"]}, "kb_read": {"title": "知识条目读取", "knowledge": [], "asserts": [], "minitools": ["kb_read"]}, "flow_read_artifact": {"title": "产物读取", "knowledge": [], "asserts": [], "minitools": ["flow_read_artifact"]}, "continuity_check": {"title": "连续性校验", "knowledge": [], "asserts": [], "minitools": ["continuity_check"]}, "analyze-kakaxing": {"title": "analyze-kakaxing.py", "knowledge": [], "asserts": [], "minitools": []}, "artifact-lint": {"title": "artifact-lint.py", "knowledge": [], "asserts": [], "minitools": []}, "check-purity": {"title": "check-purity.py", "knowledge": [], "asserts": [], "minitools": []}, "export-doc": {"title": "export-doc.py", "knowledge": [], "asserts": [], "minitools": []}, "flow-kit-apply": {"title": "flow-kit-apply.py", "knowledge": [], "asserts": [], "minitools": []}, "flow-lint": {"title": "flow-lint.py", "knowledge": [], "asserts": [], "minitools": []}, "flow-normalize": {"title": "flow-normalize.py", "knowledge": [], "asserts": [], "minitools": []}, "flow-verify": {"title": "flow-verify.py", "knowledge": [], "asserts": [], "minitools": []}, "kit-config-init": {"title": "kit-config-init.py", "knowledge": [], "asserts": [], "minitools": []}, "kit": {"title": "kit.py", "knowledge": [], "asserts": [], "minitools": []}, "project-pages": {"title": "project-pages.py", "knowledge": [], "asserts": [], "minitools": []}, "prose-scan": {"title": "prose-scan.py", "knowledge": [], "asserts": [], "minitools": []}, "r5-migrate": {"title": "r5-migrate.py", "knowledge": [], "asserts": [], "minitools": []}, "render-flow": {"title": "render-flow.py", "knowledge": [], "asserts": [], "minitools": []}, "serve": {"title": "serve.py", "knowledge": [], "asserts": [], "minitools": []}, "snapshot": {"title": "snapshot.py", "knowledge": [], "asserts": [], "minitools": []}, "stage": {"title": "stage.py", "knowledge": [], "asserts": [], "minitools": []}, "validate-kb": {"title": "validate-kb.py", "knowledge": [], "asserts": [], "minitools": []}, "whereami": {"title": "whereami.py", "knowledge": [], "asserts": [], "minitools": []}, "worldbook": {"title": "worldbook.py", "knowledge": [], "asserts": [], "minitools": []}, "orchestration-mine": {"title": "编排挖掘", "knowledge": [], "asserts": [], "minitools": []}}}}, "kbTitles": {"kb/aesthetic/ai-trace": "AI 痕迹标准（结构级去机味）", "kb/aesthetic/assertions": "审美硬断言表（机器可查）（73 条）", "kb/aesthetic/character": "人物审美标准（三维·真相·维度）", "kb/aesthetic/conflict-escalation": "冲突升级标准（代价梯与危机选择）", "kb/aesthetic/constitution": "审美体系总纲", "kb/aesthetic/dialogue": "对白标准（对白即行动）", "kb/aesthetic/emotion-curve": "情绪曲线标准（六型判别）", "kb/aesthetic/ending": "结局标准（反推五条件与禁止项）", "kb/aesthetic/hook-3s": "开场钩子标准（3 秒公式）", "kb/aesthetic/metaphor-zh": "中文叙事比喻规范（悬浮比喻五病 + 场景内喻体）", "kb/aesthetic/naturalness-zh": "中文自然度标准（24 类去模板化清单）", "kb/aesthetic/oversight": "双专家监管标准（审美总编 × 需求交付监理）", "kb/aesthetic/pacing-density": "节奏与爆点密度标准", "kb/aesthetic/perspective-review": "视角评审协议（红方 v2：代入人，不念指标）", "kb/aesthetic/platform-compliance": "平台适配与合规标准", "kb/aesthetic/redline-scoring": "红方评分标准（对抗式打分）", "kb/aesthetic/reversal": "反转标准（类型学与铺垫合规）", "kb/aesthetic/scene-value": "场景价值转变标准", "kb/aesthetic/style-routes": "风格路线参数表（爽版 / 合理版）", "kb/aesthetic/unreasonable-highlight": "不合理亮点标准（被磨平的冒险选择）", "kb/aesthetic/visual-poster": "名场面可视化标准（海报级分镜）", "kb/benchmark/b001-cn": "对标 · 仵作状元：开局金殿断奇案", "kb/benchmark/b002-cn": "对标 · 败家状元：开局做空敌国商会", "kb/benchmark/b003-cn": "对标 · 草包状元：开局沙盘点崩十军", "kb/benchmark/b004-cn": "对标 · 天灾流放，我靠百亿空间养活瞎眼杀神", "kb/benchmark/b005-cn": "对标 · 荒漠驿站：光脑美食养战神", "kb/benchmark/b006-cn": "对标 · 深海炼金：我把人鱼养成了皇", "kb/benchmark/b007-cn": "对标 · 荒沙之上，罪妻手握机械狂潮", "kb/benchmark/b008-cn": "对标 · 流放荒岛：我契约巨兽养出海上帝王", "kb/benchmark/b009-cn": "对标 · 暴雪封关，我靠种田捂热冷酷战神", "kb/benchmark/b010-cn": "对标 · 大漠狂沙：我驯服异兽与糙汉将军", "kb/benchmark/b011-cn": "对标 · 冰原种田：发配边关养大猫", "kb/benchmark/b012-cn": "对标 · 拆盲盒后，我把渣男净身出户了", "kb/benchmark/b013-fam": "对标 · 白月光归来：前夫，牢房已满员", "kb/benchmark/b014-fam": "对标 · 离婚后，前夫跪求当我的贴身男仆", "kb/benchmark/b015-fam": "对标 · 被嫌弃的真千金手握封神配方", "kb/benchmark/b016-fam": "对标 · 扫地姑娘是百亿精算师", "kb/benchmark/b017-fam": "对标 · 废土她不等你", "kb/benchmark/b018-fam": "对标 · 全员听我心声，豪门保姆成了团宠", "kb/benchmark/b019-na": "对标 · Inferno Tower Savior", "kb/benchmark/b020-na": "对标 · Crush Depth", "kb/benchmark/b021-na": "对标 · Mayday: The Shadow Pilot", "kb/benchmark/b022-na": "对标 · Deadman Velocity", "kb/benchmark/b023-na": "对标 · Deep Abyss Master", "kb/benchmark/b024-na": "对标 · Tower Inferno: The Lone Architect", "kb/benchmark/b025-s": "对标 · I Heard The Baby Alpha Whimper", "kb/benchmark/b026-s": "对标 · The Beast Prince Refuses Any Other Nanny", "kb/benchmark/b027-s": "对标 · 给大妈爆改后我成了顶流", "kb/benchmark/b028-s": "对标 · 重回前夫假死那天，我大摆招魂席", "kb/continuity/state-ledger": "长程连续性与状态台账标准", "kb/deconstruct/protocol": "拆书总协议（六槽位与溯源纪律）", "kb/deconstruct/style-learning": "文风学习协议（情绪决定笔墨密度）", "kb/formats/webnovel-longform": "长篇网文形态标准（章末钩子与批量生成）", "kb/market/constraints": "生产约束基线（短剧/漫剧实盘值）", "kb/market/internet-feel": "网感公式标准（标题 / 卖点 / 共情点句式）", "kb/market/meme-rules": "梗密度与发散性约束（S1 网感输入源）", "kb/market/setting-rules": "设定体系约束（项目级：世界观代入成本红线）", "kb/market/snapshot": "咔咔猩市场快照（机器可读）", "kb/market/structure": "短剧市场结构标准（咔咔猩语料蒸馏）", "kb/structure/catalog": "叙事结构选型目录（第二阶段深挖用）", "kb/trope/chongsheng-fuchou": "梗族 · 重生复仇梗", "kb/trope/dalian-nuezha": "梗族 · 打脸虐渣梗", "kb/trope/liufang-zhongtian": "梗族 · 流放种田梗", "kb/trope/majia-diaoma": "梗族 · 马甲掉马梗", "kb/trope/na-billionaire": "梗族 · 豪门财富梗(NA)", "kb/trope/na-fantasy": "梗族 · 奇幻生物梗(NA)", "kb/trope/na-werewolf": "梗族 · 狼人命定梗(NA)", "kb/trope/shenhao-baofu": "梗族 · 神豪暴富梗", "kb/trope/tuanchong": "梗族 · 团宠护短梗", "kb/trope/xianhun-lianai": "梗族 · 先婚后爱梗", "kb/trope/zhenjia-qianjin": "梗族 · 真假千金梗", "kb/trope/zhuiqi-huozangchang": "梗族 · 追妻火葬场梗", "kb/trope/zhuxu-zhanshen": "梗族 · 赘婿战神梗", "kb/continuity/worldbook": "世界书体系标准（小说/剧本双变体）", "kb/formats/webnovel-fastfood": "快餐抽象网文形态标准（番茄线）", "kb/market/topic-anatomy": "题材解剖学（素材聚合与关系逆位选题法）", "kb/structure/episodic-webnovel": "单元剧网文结构标准（多故事集合体·暗线先行）", "kb/aesthetic/slop-list": "AI 味禁则清单（OpenAI 官方 8 类 + 中文映射）", "kb/method/revision-loop": "多轮精修循环协议（判分→定向修订→防劣化收敛）", "kb/method/longform-engineering": "长篇工程方法（细纲节拍/递归重提示/双层记忆/大纲贴附）", "kb/craft/prose-constraints": "成文约束总纲（六维路由——写前看什么、盖章查什么）", "kb/aesthetic/ai-detection-sources": "AI味检测口径卡（本地打分×朱雀对照·两级门·50万token纪律）", "kb/craft/user-style-rules": "用户补充·文学规则（公用 md，手动追加区——引号/加粗/箭头链红线）", "kb/craft/highlight-loop": "亮点闭环（卖点→台词范式→成文消费；AI语音梗台词范式库）", "kb/aesthetic/sensory-detail": "感官细节密度与心理距离标准", "kb/market/brief-four-questions": "命题四问确认单（开工前对题）"}, "inputs": {"project": "ccwd-fq3", "direction": "曹操魂穿武大郎：用兵法做炊饼、以权谋治小店；当武松推门而入时，发现弟弟已非吴下阿蒙", "chapters": 3, "题材": "历史穿越 + 美食（快餐抽象向）", "需求": "曹操穿越成武大郎，从被鄙视的炊饼郎到权谋厨房之王的快餐爽文；前三章试稿", "灵感": "三国最强枭雄的灵魂困在北宋最卑微的躯壳里；用兵法做炊饼、以权谋待客官", "严肃性": "探索"}, "flowInputs": {"direction": {"type": "string", "required": true, "desc": "题材方向"}, "chapters": {"type": "number", "default": 3, "desc": "试稿章数"}}, "projectConfig": null, "configTemplate": {"项目": "ccwd-fq3", "题材": "", "需求": "", "灵感": "", "严肃性": "标准", "风格": "爽", "AB测试": false, "市场预估": "", "presets": {}}, "configExists": false, "configTemplates": null, "budgetView": null, "annos": {}, "projects": [{"id": "p-wxl-001", "title": "", "flow": null, "status": "", "mtime": "09-20 23:45", "renderable": true}, {"id": "p-yaomo-001", "title": "那妖魔是姜大人·宝刹寺线短剧改编", "flow": null, "status": "", "mtime": "09-20 23:45", "renderable": true}, {"id": "p-slj-007", "title": "", "flow": null, "status": "", "mtime": "09-19 23:49", "renderable": true}, {"id": "p-slj-006", "title": "", "flow": null, "status": "", "mtime": "09-19 23:39", "renderable": true}, {"id": "p-slj-005", "title": "", "flow": null, "status": "", "mtime": "09-19 23:13", "renderable": true}, {"id": "p-slj-004", "title": "", "flow": null, "status": "", "mtime": "09-19 18:04", "renderable": true}, {"id": "p-slj-003", "title": "", "flow": null, "status": "", "mtime": "09-19 06:58", "renderable": true}, {"id": "p-slj-002", "title": "", "flow": null, "status": "", "mtime": "09-19 06:47", "renderable": true}, {"id": "p-slj-001", "title": "", "flow": null, "status": "", "mtime": "09-19 06:11", "renderable": true}, {"id": "ccwd-fq", "title": "", "flow": null, "status": "", "mtime": "09-19 05:51", "renderable": true}, {"id": "ccwd-fq3", "title": "", "flow": null, "status": "", "mtime": "09-19 05:25", "renderable": true}, {"id": "ccwd-fq2", "title": "", "flow": null, "status": "", "mtime": "09-19 04:25", "renderable": true}]}, "EFF": {"format": "effective@2", "flowId": "caocao-wudalang", "flowVersion": "1.1.0", "policy": {"link_default": "auto", "adapt": "propose"}, "overlayHash": "r6-410cc95f", "planHash": "c6ae12f8", "links": [{"id": "m2.link", "fromModule": "m1", "toModule": "m2", "mode": "manual"}, {"id": "m3.link", "fromModule": "m2", "toModule": "m3", "mode": "auto"}, {"id": "m4.link", "fromModule": "m3", "toModule": "m4", "mode": "auto"}], "composition": [{"id": "m1", "module": "topic", "name": "选题", "order": 1, "dir": "01-选题", "link": "auto", "caps": ["找梗", "素材解剖", "时代情绪锚", "网感文案", "拆书入库", "选题报告"], "capsEnabled": ["选题报告"], "spine": ["m1.topic-report"], "plugins": [], "nodes": ["m1.topic-report"], "io": {"input": {"from": "flow-input", "shape": "一个灵感（点子/命题/素材，任一形态）"}, "output": {"file": "选题报告.md", "audience": "作者（选题决策文档，兼作编剧模块唯一输入）"}, "acceptance": {"asserts": ["AE-REPORT-DENSITY"]}}}, {"id": "m2", "module": "plot", "name": "编剧", "order": 2, "dir": "02-编剧", "link": "manual", "caps": ["结构", "主线", "人设", "分场", "世界观", "单元剧大纲", "短剧节拍", "暗线", "伏笔", "悬念", "红队评审", "编剧"], "capsEnabled": ["编剧"], "spine": ["m2.script-forge"], "plugins": [], "nodes": ["m2.script-forge"], "io": {"input": {"from": "topic", "shape": "选题报告（梗选型+竞品对标+结构手法+可用话题）"}, "output": {"file": "剧本.md", "audience": "写手（正文模块唯一输入；5W1H 结构化剧本 IR）"}, "acceptance": {"asserts": ["AE-SCRIPT-FIELDS"]}}}, {"id": "m3", "module": "prose", "name": "写作", "order": 3, "dir": "03-写作", "link": "auto", "caps": ["台词层", "场景层", "设定层", "拼装盖章", "终稿打磨", "去机味", "直写单章", "剧本成稿", "对话打磨", "文学评审", "视频提示词", "正文"], "capsEnabled": ["正文", "终稿打磨", "去机味"], "spine": ["m3.ghostwrite", "m3.novel-deai"], "plugins": [], "nodes": ["m3.ghostwrite", "m3.novel-deai"], "io": {"input": {"from": "plot", "shape": "剧本 IR（逐场行动/台词/价值/钩 + 伏笔登记）"}, "output": {"file": "终稿.md", "audience": "读者（对外正文终稿，文学化+去AI味）"}, "acceptance": {"asserts": ["AE-AI-QUOTA", "AE-AI-STRUCT", "AE-PROSE-SLOP", "AE-WNF-HOOK"]}}}, {"id": "m4", "module": "delivery", "name": "交付", "order": 4, "dir": "04-交付", "link": "auto", "caps": ["docx交付", "交付页", "批注回流"], "capsEnabled": ["docx交付"], "spine": ["m4.export-doc"], "plugins": [], "nodes": ["m4.export-doc"], "io": {"input": {"from": "prose", "shape": "正文终稿（每模块一份成熟交付）"}, "output": {"file": "export-doc.docx", "audience": "编辑/甲方（可批注 docx）"}, "acceptance": {"asserts": []}}}], "moduleDirs": {"m1": "01-选题", "m2": "02-编剧", "m3": "03-写作", "m4": "04-交付"}, "nodes": {"m1.topic-report": {"kind": "agent", "title": "选题报告师", "stage": "m1", "module": "m1", "kit": "topic", "op": "topic-report", "output": "01-选题/选题报告.md", "skill": "topic-report", "minitool": "kb_search", "asserts": ["AE-REPORT-DENSITY"], "config": {"maxChars": "@default:maxChars", "minTropeRows": "@default:minTropeRows"}, "desc": "选题模块唯一交付工具：输入灵感 → 选题报告（梗选型+竞品对标+结构解剖+可用话题）。输入职责=灵感；输出职责=选题报告单件；验收职责=AE-REPORT-DENSITY"}, "m2.script-forge": {"kind": "agent", "title": "剧本师", "stage": "m2", "module": "m2", "kit": "plot", "op": "script-forge", "output": "02-编剧/剧本.md", "skill": "script-forge", "asserts": ["AE-SCRIPT-FIELDS"], "config": {"minScenes": "@default:minScenes", "maxChars": "@default:maxChars"}, "desc": "编剧模块唯一交付工具：输入选题报告 → 结构化剧本 IR（逐场 5W1H/行动/台词/价值/钩 + 人物卡 + 伏笔登记）。输入职责=选题报告；输出职责=剧本单件；验收职责=AE-SCRIPT-FIELDS"}, "m2.link": {"kind": "gate", "gate_role": "link", "link_mode": "manual", "title": "连接 · 编剧（待人工批准）", "stage": "m2", "module": "m2"}, "m3.ghostwrite": {"kind": "agent", "title": "文学化师", "stage": "m3", "module": "m3", "kit": "prose", "op": "ghostwrite", "output": "03-写作/正文.md", "skill": "ghostwrite", "config": {"chapterMin": "@default:chapterMin", "chapterMax": "@default:chapterMax"}, "desc": "写作模块主交付工具：输入剧本 → 逐场文学化为正文（六维盖章自查/章末钩/纯净度）。输入职责=剧本；输出职责=正文单件；验收职责=既有 prose 断言表（章长/钩/纯度/台账）"}, "m3.novel-deai": {"kind": "agent", "title": "novel-deai", "stage": "m3", "module": "m3", "kit": "prose", "op": "novel-deai", "output": "03-写作/终稿.md", "skill": "novel-deai", "minitool": "check_aesthetic_asserts", "asserts": ["AE-AI-QUOTA", "AE-AI-STRUCT", "AE-PROSE-SLOP", "AE-WNF-HOOK"], "config": {"passes": "@default:passes", "innerLoops": "@default:innerLoops", "coverageLaw": "@default:coverageLaw", "metaphorBudget": "@default:metaphorBudget"}, "desc": "快餐网文终稿打磨技能——四遍法打磨（声口校准→处境校准→比喻意象→节奏去机味）+ 多轮精修内环（评审官判分→定向修订→防劣化收敛），诊断先行、覆盖律硬门槛、盲读内环验收；产出可发布终稿与全套收据。"}, "m3.link": {"kind": "gate", "gate_role": "link", "link_mode": "auto", "title": "连接 · 写作（自动批准）", "stage": "m3", "module": "m3"}, "m4.export-doc": {"kind": "core", "title": "export-doc.py", "stage": "m4", "module": "m4", "kit": "delivery", "op": "export-doc", "output": "04-交付/export-doc.docx", "script": "tools/export-doc.py", "config": {"style": "@default:style", "verify": "@default:verify", "outDir": "@default:outDir"}, "desc": "export-doc · 小纲/剧本 → Word doc 导出器（export_doc minitool 实现）"}, "m4.link": {"kind": "gate", "gate_role": "link", "link_mode": "auto", "title": "连接 · 交付（自动批准）", "stage": "m4", "module": "m4"}}, "edges": [{"id": "e-m1-link", "from": "m1.topic-report", "to": "m2.link", "role": "flow"}, {"id": "e-link-m2", "from": "m2.link", "to": "m2.script-forge", "role": "flow"}, {"id": "e-m3-ghostwrite-novel-deai", "from": "m3.ghostwrite", "to": "m3.novel-deai", "role": "flow", "via": "skill.novel-deai"}, {"id": "e-m2-link", "from": "m2.script-forge", "to": "m3.link", "role": "flow"}, {"id": "e-link-m3", "from": "m3.link", "to": "m3.ghostwrite", "role": "flow"}, {"id": "e-m3-link", "from": "m3.novel-deai", "to": "m4.link", "role": "flow"}, {"id": "e-link-m4", "from": "m4.link", "to": "m4.export-doc", "role": "flow"}], "nodeConfig": {"m1.topic-report": {"module": "m1", "output": "01-选题/选题报告.md", "skill": "topic-report", "minitool": "kb_search", "nodeConfig": {"maxChars": "@default:maxChars", "minTropeRows": "@default:minTropeRows"}}, "m2.script-forge": {"module": "m2", "output": "02-编剧/剧本.md", "skill": "script-forge", "nodeConfig": {"minScenes": "@default:minScenes", "maxChars": "@default:maxChars"}}, "m2.link": {"module": "m2", "gateRole": "link", "nodeConfig": {}}, "m3.ghostwrite": {"module": "m3", "output": "03-写作/正文.md", "skill": "ghostwrite", "nodeConfig": {"chapterMin": "@default:chapterMin", "chapterMax": "@default:chapterMax"}}, "m3.novel-deai": {"module": "m3", "output": "03-写作/终稿.md", "skill": "novel-deai", "minitool": "check_aesthetic_asserts", "nodeConfig": {"passes": "@default:passes", "innerLoops": "@default:innerLoops", "coverageLaw": "@default:coverageLaw", "metaphorBudget": "@default:metaphorBudget"}}, "m3.link": {"module": "m3", "gateRole": "link", "nodeConfig": {}}, "m4.export-doc": {"module": "m4", "output": "04-交付/export-doc.docx", "nodeConfig": {"style": "@default:style", "verify": "@default:verify", "outDir": "@default:outDir"}}, "m4.link": {"module": "m4", "gateRole": "link", "nodeConfig": {}}}}, "OVERLAY": {"format": "flow-overlay@1", "patches": []}, "OPTIMIZE": {"proposals": [], "pending": []}, "METRICS": {"format": "metrics-summary@1", "runId": "run-mu7grvzg-yrdb60", "events": 5, "byNode": {"m1.topic-report": {"nodeId": "m1.topic-report", "runs": 2, "submits": 3, "tokensIn": 0, "tokensOut": 0, "latencyMs": 0, "assertPass": 7, "assertBlock": 2, "retries": 2, "ctxOffered": 10, "ctxUsed": 5, "hitRate": 0.5, "consumedBy": 0, "cost": 14, "efficiency": 0, "verdicts": ["rejected", "rejected"], "kit": "topic", "op": "topic-report"}}, "byTool": {"topic.topic-report": {"nodeId": "topic.topic-report", "kit": "topic", "op": "topic-report", "runs": 2, "submits": 3, "tokensIn": 0, "tokensOut": 0, "latencyMs": 0, "assertPass": 7, "assertBlock": 2, "retries": 2, "ctxOffered": 10, "ctxUsed": 5, "hitRate": 0.5, "consumedBy": 0, "cost": 14, "efficiency": 0, "verdicts": [], "nodes": ["m1.topic-report"]}}, "knowledge": [{"id": "kb/trope/chongsheng-fuchou", "offered": 2, "used": 1, "hitRate": 0.5}, {"id": "kb/trope/dalian-nuezha", "offered": 2, "used": 1, "hitRate": 0.5}, {"id": "kb/market/topic-anatomy", "offered": 2, "used": 1, "hitRate": 0.5}, {"id": "kb/market/meme-rules", "offered": 2, "used": 1, "hitRate": 0.5}, {"id": "kb/aesthetic/pacing-density", "offered": 2, "used": 1, "hitRate": 0.5}], "gates": [], "window": {"from": "2026-09-18T21:21:58.472Z", "to": "2026-09-18T21:25:25.935Z"}}}</script>
 <script>
 const PAYLOAD = JSON.parse(document.getElementById("payload").textContent);
 /* payload@2 五键冻结契约（contracts/page-payload.schema.json）：顶层 DATA/EFF/OVERLAY/OPTIMIZE/METRICS */
-const DATA = PAYLOAD.DATA;
-const files = DATA.files, RS = DATA.runstate;
-if (DATA.annos) RS.annos = DATA.annos;
+/* ---------- R8-OPS 前端 live 化：这几个绑定必须是**可重赋值**的 ----------
+   首屏仍吃生成时注入的 SSR payload（file:// 下也能看，不依赖后端）；但页面若由内核 HTTP 面提供，
+   文件末尾的 startLive() 会轮询 /api/projects/<id>/live，把**易变切片**（状态/产物/生效编排/提案/指标/诊断）
+   就地替换并重渲染 —— 于是内核推进（CLI / MCP / 面板）之后，页面不再是一张死快照。
+   静态切片（DATA.modules / toolbox / kbTitles / flowsIndex / deliverables）不在此列：它们由生成器算好，
+   只在换 flow / 加模块时变，那时本来就该重新生成页面。 */
+let DATA, files, RS, EFF, OVERLAY, OPTIMIZE, METRICS, flow, nodes, edges, LEGACY_CANVAS;
 /* 未迁移面板的缺失键回填（WO-07 面板重写后可删）：只补默认值，不做双名兜底 */
-DATA.snapshots = DATA.snapshots || {}; DATA.kits = DATA.kits || {}; DATA.kbTitles = DATA.kbTitles || {};
-DATA.nodeFields = DATA.nodeFields || []; DATA.flowsIndex = DATA.flowsIndex || []; DATA.skillsIndex = DATA.skillsIndex || [];
-/* 中间件按钮 tooltip 随实际产出变化：无世界书目录时明说，不挂空承诺 */
-(()=>{ const b=document.getElementById("mw-btn"); if(!b) return;
-  b.title = Object.keys(files).some(f=>f.startsWith("世界书/")) ? b.title
-    : "中间件 · 设定真相库：本流程未产出世界书目录（设定职能见过程件，如 World Bible / 编剧层的设定文件）"; })();
+function fillDataDefaults(d){
+  d.snapshots = d.snapshots || {}; d.kits = d.kits || {}; d.kbTitles = d.kbTitles || {};
+  d.nodeFields = d.nodeFields || []; d.flowsIndex = d.flowsIndex || []; d.skillsIndex = d.skillsIndex || [];
+  return d;
+}
 /* ---------- 文件多版本索引（来自快照）：diff 呈现的数据底座 ---------- */
 const fileVersions = {};
-Object.entries(DATA.snapshots || {}).forEach(([nid, lst]) => (lst || []).forEach(s => {
-  Object.entries(s.content || {}).forEach(([pth, text]) => {
-    (fileVersions[pth] = fileVersions[pth] || []).push({ label: `${nid}·r${s.round}`, text });
-  });
-}));
-Object.keys(fileVersions).forEach(k => fileVersions[k].sort((x, y) => x.label < y.label ? -1 : 1));
+function rebuildFileVersions(){
+  Object.keys(fileVersions).forEach(k => delete fileVersions[k]);
+  Object.entries(DATA.snapshots || {}).forEach(([nid, lst]) => (lst || []).forEach(s => {
+    Object.entries(s.content || {}).forEach(([pth, text]) => {
+      (fileVersions[pth] = fileVersions[pth] || []).push({ label: `${nid}·r${s.round}`, text });
+    });
+  }));
+  Object.keys(fileVersions).forEach(k => fileVersions[k].sort((x, y) => x.label < y.label ? -1 : 1));
+}
+/* 中间件按钮 tooltip 随实际产出变化：无世界书目录时明说，不挂空承诺 */
+function refreshMwTip(){
+  const b = document.getElementById("mw-btn"); if (!b) return;
+  const on = "世界书：设定/人物/势力/地理/编年/伏笔/底牌（文件即真相）——大纲与成稿之间的设定中间件";
+  const off = "中间件 · 设定真相库：本流程未产出世界书目录（设定职能见过程件，如 World Bible / 编剧层的设定文件）";
+  b.title = Object.keys(files || {}).some(f => f.startsWith("世界书/")) ? on : off;
+}
 /* ---------- 生效编排：节点与边只此一份（EFF，内核 expandFlow 单点派生落盘）---------- */
 /* 页面不重算派生（R6 §三）。存量项目（未跑 flow_effect / 未转换）EFF 为空壳 → 画布空，横幅显式说明。 */
-const EFF = PAYLOAD.EFF || null;
-const OVERLAY = PAYLOAD.OVERLAY || null;
-const OPTIMIZE = PAYLOAD.OPTIMIZE || null;
-const METRICS = PAYLOAD.METRICS || null;
-const flow = (EFF && EFF.flow) || DATA.flow || {};   // flow@3 全文（内核内嵌）；无 EFF 时退展示摘要（payload DATA.flow）
-const nodes = (EFF && EFF.nodes) || {};    // { <实例id>.<tool>: node }
-const edges = (EFF && EFF.edges) || [];    // 骨架边 + 插件自动接线（R6 无 reject/loop 边）
-const LEGACY_CANVAS = !Object.keys(nodes).length;
-document.getElementById("v").textContent = "";  // 流程名移入「工作流管理」页（顶栏降噪）
+function bindCanvas(){
+  flow = (EFF && EFF.flow) || DATA.flow || {};   // flow@3 全文（内核内嵌）；无 EFF 时退展示摘要（payload DATA.flow）
+  nodes = (EFF && EFF.nodes) || {};    // { <实例id>.<tool>: node }
+  edges = (EFF && EFF.edges) || [];    // 骨架边 + 插件自动接线（R6 无 reject/loop 边）
+  LEGACY_CANVAS = !Object.keys(nodes).length;
+  const vEl = document.getElementById("v");
+  if (vEl) vEl.textContent = "";  // 流程名移入「工作流管理」页（顶栏降噪）
+}
+function bindPayload(payload){
+  DATA = fillDataDefaults(payload.DATA);
+  files = DATA.files || {}; RS = DATA.runstate;
+  if (DATA.annos && RS) RS.annos = DATA.annos;
+  EFF = payload.EFF || null;
+  OVERLAY = payload.OVERLAY || null;
+  OPTIMIZE = payload.OPTIMIZE || null;
+  METRICS = payload.METRICS || null;
+  rebuildFileVersions(); refreshMwTip(); bindCanvas();
+}
+bindPayload(PAYLOAD);
 // 项目切换下拉：当前项目 + 目录下其他项目 + 新建入口
 const projSel = document.getElementById("proj-switch");
 (DATA.projects || []).forEach(p => {
@@ -416,7 +469,7 @@ projSel.addEventListener("change", e => {
   if (e.target.value === "__new__"){
     e.target.value = DATA.project;
     const tip = document.getElementById("ctip");
-    tip.innerHTML = "<b>新建项目</b><br>静态页无后端。请运行：<br><code>python -m core miniflow flow_init --flow <id> --project <新id></code><br><code>python -m core miniflow flow_run --flow <id> --project <新id></code><br>生成页面：<code>python tools/project-pages.py</code>";
+    tip.innerHTML = "<b>新建项目</b><br>内核 HTTP 面已在运行（<code>miniflow up</code>），可用：<br><code>miniflow flow_init --project &lt;新id&gt;</code> 生成配置模板<br><code>miniflow flow_run --flow &lt;id&gt; --project &lt;新id&gt;</code> 开跑<br>生成页面：<code>python tools/project-pages.py &lt;flow&gt; &lt;新id&gt;</code>";
     tip.style.display = "block";
     setTimeout(()=>{ tip.style.display = "none"; }, 6000);
     return;
@@ -1524,6 +1577,381 @@ async function saveApi(path, content){
   if (!j.ok) throw new Error(j.error || "保存失败");
   return "已保存 " + j.saved;
 }
+/* ---------- OS-04 初始化面板：项目输入区（读 flow.inputs）+ 定性配置区 + 模板 ----------
+ * 口径（与内核 configToInputs 对齐，不允许出现第二套真相）：
+ *  · 主区「流程输入」由 DATA.flowInputs **逐字段渲染** —— 它是 flow 声明的权威输入面（英文键：
+ *    direction/route/sources/chapters…）。缺必填在开跑前就看得见，不再靠手写 JSON。
+ *  · 次区「定性配置」是中文短手（题材/需求/灵感/严肃性/风格/AB测试/市场预估）——内核
+ *    configToInputs 由它推导 route/direction。**两区不是两套真相**：都只是 项目配置.json 的字段。
+ *  · 保存优先走内核 `PUT /api/projects/:id/config`（schema 校验 + boundWarning）；无 server 时
+ *    降级为文件写入（页面离线仍可用），并**显式告诉用户在走哪条路**（不让人以为已过校验）。
+ *  · 模板只有一种载体：项目配置.json 的字段。「官方默认」= DATA.configTemplate；
+ *    导出/导入 = 浏览器文件。**模板 ≠ 配置**：模板只是表单初值，绝不直接当 flow 参数。
+ */
+const CFG_ZH_FIELDS = [
+  {k:"题材", t:"text", d:"题材/赛道（组合进 direction 输入）"},
+  {k:"题材类型", t:"enum", options:["现实映射","模板文"], d:"现实映射=冲突来自现实关系；模板文=自足规则系统"},
+  {k:"创作目标", t:"text", d:"本项目的商业/创作目标（影响严肃性建议与打磨深度）"},
+  {k:"需求", t:"text", d:"甲方需求与硬性要求（组合进 direction）"},
+  {k:"灵感", t:"text", d:"灵感、情绪切入、结构参考（组合进 direction）"},
+  {k:"严肃性", t:"enum", options:["探索","标准","出品"], d:"探索=低成本试错；标准=默认；出品=交付级"},
+  {k:"风格", t:"enum", options:["爽","标准"], d:"爽=情绪浓度优先(route=hot)；标准=合理性优先(route=calm)"},
+  {k:"AB测试", t:"bool", d:"是否跑 A/B 对照（S3 工作量约翻倍）"},
+  {k:"市场预估", t:"text", d:"基于市场快照的人工预估笔记"},
+];
+/** 单个输入控件（纯字符串产出 ⇒ 可被 page-lint 无 DOM 断言） */
+function cfgControl(id, k, kind, val, d){
+  d = d || {};
+  const req = d.required ? ' required' : '';
+  if (kind === "boolean")
+    return `<label class="cfg-bool"><input type="checkbox" id="${id}" data-cfg-key="${escapeHtml(k)}" data-cfg-type="boolean"${val === true ? " checked" : ""}> 开</label>`;
+  if (kind === "enum"){
+    const keep = val === undefined || val === null || val === "";
+    const opts = (d.options || []).map(o => `<option value="${escapeHtml(o)}"${String(val) === String(o) ? " selected" : ""}>${escapeHtml(o)}</option>`).join("");
+    return `<select id="${id}" data-cfg-key="${escapeHtml(k)}" data-cfg-type="enum"${req}><option value=""${keep ? " selected" : ""}>（用 flow 默认）</option>${opts}</select>`;
+  }
+  if (kind === "number"){
+    const mn = d.min !== undefined ? ` min="${d.min}"` : "";
+    const mx = d.max !== undefined ? ` max="${d.max}"` : "";
+    return `<input type="number" id="${id}" data-cfg-key="${escapeHtml(k)}" data-cfg-type="number" value="${val === undefined || val === null ? "" : escapeHtml(String(val))}"${mn}${mx}${req}>`;
+  }
+  return `<input type="text" id="${id}" data-cfg-key="${escapeHtml(k)}" data-cfg-type="text" value="${val === undefined || val === null ? "" : escapeHtml(String(val))}"${req}>`;
+}
+/** 项目输入区 + 定性配置区（HTML；page-lint 直接吃这个字符串做断言） */
+function configZonesPaper(){
+  const inputs = DATA.flowInputs || {};
+  const cfg = (DATA.projectConfig && !DATA.projectConfig.__invalid) ? DATA.projectConfig : {};
+  const tpl = DATA.configTemplate || {};
+  const pick = (k, dflt) => (cfg[k] !== undefined ? cfg[k] : dflt);
+  const keys = Object.keys(inputs);
+  let h = `<div class="cfg-zone" id="cfg-zone-flow"><div class="cfg-zone-h">流程输入 <span class="msg">flow.inputs 逐字段渲染 · ${keys.length} 项 · 保存后由 flow_run 自动装载（显式入参 &gt; 本配置 &gt; flow 默认）</span></div>`;
+  h += keys.length
+    ? `<div class="cfg-grid">` + keys.map(k => {
+        const d = inputs[k] || {};
+        const req = d.required ? '<span class="req" title="必填">*</span>' : "";
+        const desc = d.desc ? `<span class="msg">${escapeHtml(d.desc)}</span>` : "";
+        const bind = d.bind ? `<span class="msg">绑 ${escapeHtml(d.bind.edge || "")}.${escapeHtml(d.bind.param || "")}</span>` : "";
+        const dflt = d.default !== undefined ? `<span class="msg">flow 默认 ${escapeHtml(JSON.stringify(d.default))}</span>` : "";
+        return `<div class="cfg-row" data-cfg-flow="1" data-cfg-required="${d.required ? 1 : 0}"><label class="k" for="cfg-f-${escapeHtml(k)}">${escapeHtml(k)}${req}</label><span class="v">${cfgControl("cfg-f-" + k, k, d.type === "project" ? "text" : (d.type || "string"), pick(k, d.default), d)}${desc}${bind}${dflt}</span></div>`;
+      }).join("") + `</div>`
+    : `<p class="msg">本 flow 未声明 <code>inputs</code>：没有必填输入，直接 flow_run 即可。</p>`;
+  h += `</div>`;
+  h += `<div class="cfg-zone" id="cfg-zone-zh"><div class="cfg-zone-h">定性配置 <span class="msg">中文短手 · 内核 configToInputs 由此推导 route/direction</span></div><div class="cfg-grid">`;
+  h += CFG_ZH_FIELDS.map(f => {
+    const val = pick(f.k, tpl[f.k]);
+    const desc = f.d ? `<span class="msg">${escapeHtml(f.d)}</span>` : "";
+    return `<div class="cfg-row" data-cfg-zh="1"><label class="k" for="cfg-z-${escapeHtml(f.k)}">${escapeHtml(f.k)}</label><span class="v">${cfgControl("cfg-z-" + f.k, f.k, f.t, val, {options:f.options})}${desc}</span></div>`;
+  }).join("");
+  h += `</div>`;
+  if (DATA.projectConfig && DATA.projectConfig.__invalid)
+    h += `<p class="cfg-warn">项目配置.json 非法，按原文带回（不静默）：${escapeHtml(DATA.projectConfig.message || "")}</p>`;
+  h += `</div>`;
+  return h;
+}
+/**
+ * OS-02 阶段 C · 阈值预算区。
+ * 旋钮声明面 = 内核 `budget.ts::DEFAULT_BUDGET`（经 effective.json 的 `budget.defs` 下发）——
+ * 页面**不自造旋钮、不重算生效值**（values/sources/issues 全是内核 resolveBudget 的产物）。
+ * 输入框语义：留空 = 用出厂默认（不写进配置）；填值 = 只覆盖该键。
+ */
+function budgetDeclared(){
+  const c = (DATA.projectConfig && !DATA.projectConfig.__invalid) ? DATA.projectConfig : {};
+  const b = c["阈值预算"];
+  return (b && typeof b === "object" && !Array.isArray(b)) ? b : {};
+}
+function budgetZonePaper(){
+  const bv = DATA.budgetView;
+  if (!bv || !bv.defs || !Object.keys(bv.defs).length)
+    return `<div class="cfg-zone" id="cfg-zone-budget"><div class="cfg-zone-h">阈值预算 <span class="msg">本页暂无阈值读模型（先 flow_run 一次：阈值面由内核派生，页面不重算）</span></div></div>`;
+  const decl = budgetDeclared();
+  const groups = [];
+  for (const d of Object.values(bv.defs)){ const g = d.group || "其它"; if (!groups.includes(g)) groups.push(g); }
+  let h = `<div class="cfg-zone" id="cfg-zone-budget"><div class="cfg-zone-h">阈值预算 <span class="msg">${Object.keys(bv.defs).length} 个旋钮 · 出厂默认 + 本项目覆盖 · assembler / aesthetic / optimize / metrics 四处都读它</span></div>`;
+  for (const g of groups){
+    h += `<div class="cfg-grp">${escapeHtml(g)}</div><div class="cfg-grid">`;
+    for (const [k, d] of Object.entries(bv.defs)){
+      if ((d.group || "其它") !== g) continue;
+      const inProj = decl[k] !== undefined;
+      const fromPolicy = !!(bv.sources && bv.sources[k] === "policy");
+      const eff = (bv.values && bv.values[k] !== undefined) ? bv.values[k] : d.value;
+      const range = `${d.min !== undefined ? d.min : "-∞"}~${d.max !== undefined ? d.max : "+∞"}${d.unit ? " " + d.unit : ""}`;
+      const badge = inProj ? "本项目已改" : (fromPolicy ? "模板/运行时已改" : "出厂 " + String(d.value));
+      h += `<div class="cfg-row" data-cfg-budget="1"><label class="k" for="cfg-b-${escapeHtml(k)}">${escapeHtml(k)}</label><span class="v">`
+        + `<input type="number" id="cfg-b-${escapeHtml(k)}" data-budget-key="${escapeHtml(k)}" data-budget-type="number" value="${inProj ? escapeHtml(String(decl[k])) : ""}" placeholder="${escapeHtml(String(d.value))}" min="${d.min !== undefined ? d.min : ""}" max="${d.max !== undefined ? d.max : ""}" step="any">`
+        + `<span class="cfg-badge${inProj || fromPolicy ? " on" : ""}">${escapeHtml(badge)}</span>`
+        + `<span class="msg">生效 ${escapeHtml(String(eff))} · 区间 ${escapeHtml(range)} · 消费方 ${escapeHtml(d.consumer || "-")}</span>`
+        + `</span></div>`
+        + `<div class="cfg-eff">${escapeHtml(d.desc || "")}${d.effect ? ` · <b>${escapeHtml(d.effect)}</b>` : ""}</div>`;
+    }
+    h += `</div>`;
+  }
+  if (bv.issues && bv.issues.length) h += `<p class="cfg-warn">阈值告警（内核原样回显，未静默）：${escapeHtml(bv.issues.join(" ｜ "))}</p>`;
+  h += `<p class="msg">留空 = 出厂默认（不写进配置）· 填值 = 只覆盖该键 · 越界/未知键内核会响亮报错。保存后需再 flow_run 一次才会体现在本页显示值。</p>`;
+  h += `</div>`;
+  return h;
+}
+/** 阈值表单 → `{旋钮: number}`（留空不进参，与 readConfigForm 同口径） */
+function readBudgetForm(){
+  const out = {};
+  document.querySelectorAll("[data-budget-key]").forEach(el => {
+    const k = el.dataset.budgetKey;
+    if (!k) return;
+    const v = el.value === undefined || el.value === null ? "" : String(el.value).trim();
+    if (v === "") return;
+    out[k] = Number(v);
+  });
+  return out;
+}
+/** 恢复出厂：只清空表单（不动盘上配置，未保存前随时可反悔） */
+function resetBudgetForm(){
+  document.querySelectorAll("[data-budget-key]").forEach(el => { el.value = ""; });
+  const m = document.getElementById("cfg-msg");
+  if (m) m.textContent = "阈值已全部留空（= 出厂默认），点「保存配置」才落盘";
+}
+function cfgZonesHtml(){ return configZonesPaper() + budgetZonePaper(); }
+function renderCfgZones(){ const z = document.getElementById("cfg-zones"); if (z) z.innerHTML = cfgZonesHtml(); }
+
+/* ==================== OS-04 余量 · 项目配置模板库 ====================
+   清单来源（两处，都是**内核算过**的）：首屏 `DATA.configTemplates`（内核落盘的读模型
+   `registry/config-templates.json`，由 project-pages.py 原样搬运）、live 时 `/live` 的
+   `configTemplates` 切片（内核**每次现扫**——模板库是用户随时会增删的东西，靠旧读模型会撒谎）。
+
+   页面**绝不自己扫模板目录**：自存模板在数据根 `templates/项目配置/<flow>/`、官方示例在仓库根
+   `demos/<flow>/`——这两个根的分辨只有内核（`this.root` vs `this.repoRoot`）知道，
+   页面/py 各扫一遍必然漂移。
+
+   增删套用一律走内核动词 `cfg_template`（schema 校验 + flow 匹配 + 用户能改的错回 4xx）。 */
+function tplLib(){
+  const t = DATA.configTemplates;
+  return (t && Array.isArray(t.entries)) ? t : null;
+}
+function tplKeysText(e){
+  const ks = e.keys || [];
+  return ks.length ? `键：${ks.join("、")}` : "（空配置）";
+}
+function tplSrcBadge(e){
+  if (e.source === "official") return `<span class="cfg-badge">官方只读</span>`;
+  if (e.source === "blank") return `<span class="cfg-badge">动作</span>`;
+  return `<span class="cfg-badge">自存</span>`;
+}
+function tplRowHtml(e){
+  const budget = e.hasBudget ? `<span class="cfg-badge on">含阈值预算</span>` : "";
+  const when = e.updatedAt ? `<span class="msg">改于 ${escapeHtml(String(e.updatedAt).slice(0,16).replace("T"," "))}</span>` : "";
+  const flowTag = `<span class="msg">flow ${escapeHtml(e.flowId || "*")}</span>`;
+  const del = e.source === "user"
+    ? `<button class="tb" data-tpl-del="${escapeHtml(e.name)}" data-tpl-flow="${escapeHtml(e.flowId || "")}">删除</button>`
+    : "";
+  return `<div class="tpl-row" data-tpl-name="${escapeHtml(e.name)}" data-tpl-source="${escapeHtml(e.source)}">`
+    + `<span class="k">${escapeHtml(e.name)}</span>`
+    + `<span class="v">${tplSrcBadge(e)}${budget}${flowTag}`
+    + `<span class="msg">${escapeHtml(tplKeysText(e))}</span>`
+    + (e.note ? `<span class="msg">${escapeHtml(e.note)}</span>` : "") + when
+    + `<button class="tb" data-tpl-apply="${escapeHtml(e.name)}" style="border-color:var(--accent);color:var(--accent)">套用</button>${del}`
+    + `</span></div>`;
+}
+function tplZoneHtml(){
+  const t = tplLib();
+  let h = `<div class="cfg-zone" id="cfg-zone-tpl"><div class="cfg-zone-h">项目配置模板库 <span class="msg">`;
+  h += t
+    ? `${t.entries.length} 项 · 当前 flow <code>${escapeHtml(t.flowId || "*")}</code> · 自存模板跨项目复用（数据根 <code>templates/项目配置/</code>）· 官方示例随仓库只读`
+    : `暂无模板读模型 —— 先 <code>flow_run</code> / <code>flow_effect</code> 一次（内核扫描后落 <code>registry/config-templates.json</code>，页面不自行扫盘）`;
+  h += `</span></div>`;
+  if (t){
+    h += t.entries.length
+      ? t.entries.map(tplRowHtml).join("")
+      : `<p class="msg">该 flow 下暂无模板：可「从零新建」套用空白配置，或把当前配置另存为模板。</p>`;
+    if (t.skipped && t.skipped.length)
+      h += `<p class="cfg-warn">坏模板（内核原样回报，未静默跳过）：${escapeHtml(t.skipped.join(" ｜ "))}</p>`;
+    h += `<p class="msg">「套用」会<strong>覆盖</strong>本项目 <code>项目配置.json</code>（项目名自动改成本项目）；跨 flow 套用默认拒绝，须显式确认。</p>`;
+  }
+  h += `<div class="act"><button class="tb" id="tpl-save-as">把当前配置另存为模板…</button>`
+    + `<button class="tb" id="tpl-refresh">刷新模板库</button>`
+    + `<span class="msg" id="tpl-msg" aria-live="polite"></span></div></div>`;
+  return h;
+}
+function bindTplZone(){
+  document.querySelectorAll("[data-tpl-apply]").forEach(b => { b.onclick = () => { void tplApply(b.dataset.tplApply); }; });
+  document.querySelectorAll("[data-tpl-del]").forEach(b => { b.onclick = () => { void tplDelete(b.dataset.tplDel, b.dataset.tplFlow); }; });
+  const s = document.getElementById("tpl-save-as"); if (s) s.onclick = () => { void tplSaveAs(); };
+  const r = document.getElementById("tpl-refresh"); if (r) r.onclick = () => { void tplRefresh(); };
+}
+function renderTplZone(){
+  const z = document.getElementById("tpl-zone");
+  if (z){ z.innerHTML = tplZoneHtml(); bindTplZone(); }
+}
+function tplMsg(text){ const m = document.getElementById("tpl-msg"); if (m) m.textContent = text; }
+/** 模板库动词调用（唯一入口；错误消息原样回显内核 message，不吞） */
+async function tplVerb(body){
+  if (!LIVE.on){ tplMsg("模板库需要内核 HTTP 面（miniflow up）—— file:// 快照下不可用"); return null; }
+  try{
+    const r = await fetch("/api/verbs/cfg_template",
+      {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body)});
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.message || j.error || ("HTTP " + r.status));
+    return j;
+  }catch(err){ tplMsg("失败：" + (err && err.message ? err.message : err)); return null; }
+}
+/** 刷新清单：list 结果就地回填 DATA.configTemplates（同一份读模型，不另立字段） */
+async function tplRefresh(){
+  const j = await tplVerb({action:"list"});
+  if (!j) return;
+  DATA.configTemplates = { flowId: j.flowId, entries: j.entries || [], skipped: j.skipped || [] };
+  renderTplZone();
+  tplMsg(`已刷新：${(j.entries || []).length} 项`);
+}
+async function tplSaveAs(){
+  const dflt = (DATA.project || "我的") + "-配置";
+  const name = prompt("把当前项目的 项目配置.json 另存为模板\n\n模板名（中英文/数字/_/-/./·，1–40 字；文件名即模板名，不静默改名）：", dflt);
+  if (name === null) return;
+  const nm = String(name).trim();
+  if (!nm) { tplMsg("模板名为空，已取消"); return; }
+  // 先按「不覆盖」提交；内核回 CONFIG_EXISTS 时才问人——不做「先问再试」的双重确认
+  let j = await tplVerb({action:"save", project: DATA.project, name: nm});
+  if (!j){
+    const cur = document.getElementById("tpl-msg");
+    const dup = cur && /已存在/.test(cur.textContent || "");
+    if (!dup) return;
+    if (!confirm(`模板「${nm}」已存在，覆盖它？`)) return;
+    j = await tplVerb({action:"save", project: DATA.project, name: nm, overwrite: true});
+    if (!j) return;
+  }
+  await tplRefresh();
+  tplMsg(`已存为模板「${nm}」（flow ${j.flowId}${j.overwritten ? " · 覆盖了旧模板" : ""}）`);
+}
+async function tplApply(name){
+  if (!confirm(`套用模板「${name}」到项目「${DATA.project}」？\n\n将覆盖本项目 项目配置.json（项目名自动改成本项目）。未保存的表单改动会丢失。`)) return;
+  let j = await tplVerb({action:"apply", project: DATA.project, name, flow: (DATA.flow && DATA.flow.id) || undefined});
+  if (!j){
+    const cur = document.getElementById("tpl-msg");
+    const cross = cur && /其它 flow|跨 flow/.test(cur.textContent || "");
+    if (!cross) return;
+    if (!confirm("该模板属于其它 flow。跨 flow 套用的输入面/阈值未必兼容，确认强行套用？")) return;
+    j = await tplVerb({action:"apply", project: DATA.project, name, flow: (DATA.flow && DATA.flow.id) || undefined, force: true});
+    if (!j) return;
+  }
+  // 套用改了盘上 项目配置.json ⇒ 表单必须跟着走，否则页面显示的是旧值（「静默失效」）
+  const cfg = await fetch("/api/projects/" + encodeURIComponent(DATA.project) + "/config", {cache:"no-store"})
+    .then(r => r.ok ? r.json() : null).catch(() => null);
+  if (cfg && !cfg.__invalid) DATA.projectConfig = cfg;
+  renderCfgZones(); syncCfgJson();
+  await tplRefresh();
+  tplMsg(`已套用「${name}」（来源 ${j.source}）。${j.hint || ""}`);
+}
+async function tplDelete(name, flow){
+  if (!confirm(`删除自存模板「${name}」？此操作删盘上文件，不可撤销。`)) return;
+  const j = await tplVerb({action:"delete", name, flow: flow || undefined});
+  if (!j) return;
+  await tplRefresh();
+  tplMsg(`已删除模板「${name}」（${(j.removed || []).length} 个文件）`);
+}
+/** 表单 → 对象。空串一律**不进参**（= 不表态，让内核回退 flow 默认） */
+function readConfigForm(){
+  const out = {};
+  document.querySelectorAll("[data-cfg-key]").forEach(el => {
+    const key = el.dataset.cfgKey, kind = el.dataset.cfgType;
+    if (!key) return;
+    if (kind === "boolean"){ out[key] = !!el.checked; return; }
+    const v = el.value === undefined || el.value === null ? "" : String(el.value).trim();
+    if (v === "") return;
+    out[key] = kind === "number" ? Number(v) : v;
+  });
+  return out;
+}
+/** 必填缺项（开跑前就该看见，而不是等 flow_run 报错） */
+function cfgMissingRequired(obj){
+  const miss = [];
+  for (const [k, d] of Object.entries(DATA.flowInputs || {})){
+    if ((d && d.required) && (obj[k] === undefined || obj[k] === "")) miss.push(k);
+  }
+  return miss;
+}
+function syncCfgJson(){
+  const ta = document.getElementById("cfg-ta");
+  if (!ta) return;
+  const obj = (DATA.projectConfig && !DATA.projectConfig.__invalid) ? DATA.projectConfig : (DATA.configTemplate || {});
+  ta.value = JSON.stringify(obj, null, 2);
+}
+/** 统一保存路径：内核校验优先，离线降级为文件写并**显式说明** */
+async function saveConfigObject(obj, msgEl){
+  const msg = msgEl || document.getElementById("cfg-msg");
+  obj = { ...obj, "项目": DATA.project };            // 项目名以路径为准（与内核同口径）
+  if (LIVE.on){
+    try{
+      const r = await fetch("/api/projects/" + encodeURIComponent(DATA.project) + "/config",
+        {method:"PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify(obj)});
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.message || j.error || ("HTTP " + r.status));
+      DATA.projectConfig = obj; syncCfgJson();
+      if (msg) msg.innerHTML = `<span class="cfg-ok">已保存（内核 schema 校验通过）</span>` + (j.boundWarning ? " · " + escapeHtml(j.boundWarning) : "");
+      return true;
+    }catch(err){
+      if (msg) msg.textContent = "保存失败（内核）：" + err.message;
+      return false;
+    }
+  }
+  try{
+    await saveApi(`projects/${DATA.project}/项目配置.json`, JSON.stringify(obj, null, 2));
+    DATA.projectConfig = obj; syncCfgJson();
+    if (msg) msg.textContent = "已保存（离线直写文件 · 未过内核校验；miniflow up 后可校验）";
+    return true;
+  }catch(err){ if (msg) msg.textContent = "失败：" + err.message; return false; }
+}
+async function saveConfigFromForm(){
+  const obj = readConfigForm();
+  // OS-02 阶段 C：阈值预算作为**嵌套对象**一并落盘（留空则整键不写 = 全走出厂默认）
+  const b = readBudgetForm();
+  if (Object.keys(b).length) obj["阈值预算"] = b; else delete obj["阈值预算"];
+  const miss = cfgMissingRequired(obj);
+  if (miss.length){
+    const m = document.getElementById("cfg-msg");
+    if (m) m.innerHTML = `<span class="cfg-warn">缺必填输入：${escapeHtml(miss.join("、"))}</span> · 已按现状保存，flow_run 会拦（必填校验在内核）`;
+  }
+  return saveConfigObject(obj);
+}
+function loadOfficialConfig(){
+  if (!confirm("载入官方默认（本 flow 的出厂配置模板）？当前表单内容（含阈值预算覆盖）将被清空，未保存前不影响盘上配置。")) return;
+  DATA.projectConfig = { ...(DATA.configTemplate || {}) };
+  renderCfgZones();
+  syncCfgJson();
+  const m = document.getElementById("cfg-msg");
+  if (m) m.textContent = "已载入官方默认（尚未保存）";
+}
+function exportConfig(){
+  const obj = { ...readConfigForm(), "项目": DATA.project };
+  const b = readBudgetForm();
+  if (Object.keys(b).length) obj["阈值预算"] = b; else delete obj["阈值预算"];
+  const blob = new Blob([JSON.stringify(obj, null, 2) + "\n"], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `项目配置-${DATA.project}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+function importConfig(){
+  const inp = document.createElement("input");
+  inp.type = "file"; inp.accept = ".json,application/json";
+  inp.onchange = () => {
+    const f = inp.files && inp.files[0];
+    if (!f) return;
+    const fr = new FileReader();
+    fr.onload = () => {
+      try{
+        const obj = JSON.parse(String(fr.result));
+        if (!obj || typeof obj !== "object" || Array.isArray(obj)) throw new Error("顶层必须是对象");
+        DATA.projectConfig = obj;
+        renderCfgZones();
+        syncCfgJson();
+        const m = document.getElementById("cfg-msg");
+        if (m) m.textContent = "已导入（尚未保存；点「保存配置」落盘）";
+      }catch(err){
+        const m = document.getElementById("cfg-msg");
+        if (m) m.textContent = "导入失败：" + err.message;
+      }
+    };
+    fr.readAsText(f, "utf-8");
+  };
+  inp.click();
+}
 async function importDemo(flowId){
   if (!confirm("从官方 Demo 创建新项目？\n\n将复制官方示例（项目配置 + 输入素材已就绪，含说明.md）到 projects/demo-" + flowId + " ，并直接打开其工作台。")) return;
   try{
@@ -1551,9 +1979,23 @@ function openWfMgmt(tab){
   let h = `<div class="shelf-row" id="open-store" style="border-color:var(--accent)"><span class="no">店</span><span class="nm">流商店 · ${flows.length} 条生产线 <span class="msg">卡片浏览 / 搜索 / 分类 / 详情</span></span><span class="go">进入商店 →</span></div>`;
   h += `<div class="paper"><div class="doc-h"><span>流配置</span><span>${DATA.project}</span></div><div class="md">
     <div class="kv"><span class="k">流程 id</span><span class="v"><code>${flow.id}</code></span><span class="k">版本</span><span class="v">v${flow.version}</span></div>
-    <p class="msg">项目配置在开跑前定死题材/需求/严肃性/风格（flow_init 契约，flow_run 自动装载）。</p>
-    <textarea id="cfg-ta" style="min-height:190px">${JSON.stringify(DATA.projectConfig || {_说明: "填写 题材/需求/灵感/严肃性/风格/AB测试 后保存，flow_run 自动装载"}, null, 2).replace(/&/g,"&amp;").replace(/</g,"&lt;")}</textarea>
-    <div class="act"><button class="tb" id="cfg-save" style="border-color:var(--accent);color:var(--accent);font-weight:700">保存配置</button><span class="msg" id="cfg-msg" aria-live="polite"></span></div></div>`;
+    <p class="msg">初始化面板（OS-04 + OS-02 C）：项目输入 + 定性配置 + 阈值预算 → 落 <code>项目配置.json</code>（flow_init 契约，flow_run 自动装载）。
+      保存优先走内核 <code>PUT /api/projects/&lt;id&gt;/config</code>（schema 校验 + 绑定提示）；<code>miniflow up</code> 未运行时降级为直写文件并会说明。
+      阈值预算键名/区间白名单 = <code>core/src/budget.ts::DEFAULT_BUDGET</code>，生效值由内核 <code>resolveBudget</code> 派生后写入 <code>registry/effective.json</code>。</p>
+    <div id="cfg-zones">${cfgZonesHtml()}</div>
+    <div id="tpl-zone">${tplZoneHtml()}</div>
+    <div class="act">
+      <button class="tb" id="cfg-save" style="border-color:var(--accent);color:var(--accent);font-weight:700">保存配置</button>
+      <button class="tb" id="cfg-official">载入官方默认</button>
+      <button class="tb" id="cfg-budget-reset">阈值恢复出厂</button>
+      <button class="tb" id="cfg-export">导出 JSON（存为模板）</button>
+      <button class="tb" id="cfg-import">导入模板…</button>
+      <span class="msg" id="cfg-msg" aria-live="polite"></span>
+    </div>
+    <details id="cfg-adv"><summary class="msg">高级 · 原始 JSON（逃生口：直接编辑并保存，同样过内核校验）</summary>
+      <textarea id="cfg-ta" style="min-height:190px"></textarea>
+      <div class="act"><button class="tb" id="cfg-save-raw">保存原始 JSON</button><span class="msg" id="cfg-raw-msg" aria-live="polite"></span></div>
+    </details></div></div>`;
   h += `<div class="shelf-cap">提示词 · 技能库（可查看可编辑） · ${skills.length}</div>`;
   h += skills.map(s => `<div class="shelf-row" data-skill="${s.id}"><span class="no">术</span><span class="nm">${s.name} <span class="msg">(skills/${s.id}.md)</span></span><span class="go">查看/编辑 →</span></div>`).join("");
   dBody.innerHTML = h;
@@ -1561,13 +2003,21 @@ function openWfMgmt(tab){
   if (EFF || OVERLAY || OPTIMIZE) dBody.insertAdjacentHTML("beforeend", orchestrationPaper());
   const ostore=dBody.querySelector("#open-store"); if (ostore) ostore.addEventListener("click", openFlowStore);
   dBody.querySelectorAll(".shelf-row[data-skill]").forEach(r=>r.addEventListener("click",()=>openSkillEditor(r.dataset.skill)));
-  document.getElementById("cfg-save").onclick = async ()=>{
+  document.getElementById("cfg-save").onclick = () => { void saveConfigFromForm(); };
+  document.getElementById("cfg-official").onclick = loadOfficialConfig;
+  document.getElementById("cfg-budget-reset").onclick = resetBudgetForm;
+  document.getElementById("cfg-export").onclick = exportConfig;
+  document.getElementById("cfg-import").onclick = importConfig;
+  bindTplZone();
+  document.getElementById("cfg-save-raw").onclick = async ()=>{
+    const m = document.getElementById("cfg-raw-msg");
     try{
       const v = JSON.parse(document.getElementById("cfg-ta").value);
-      await saveApi(`projects/${DATA.project}/项目配置.json`, JSON.stringify(v, null, 2));
-      document.getElementById("cfg-msg").textContent = "已保存（flow_run 自动装载）";
-    }catch(err){ document.getElementById("cfg-msg").textContent = "失败: " + err.message; }
+      if (!v || typeof v !== "object" || Array.isArray(v)) throw new Error("顶层必须是对象");
+      if (await saveConfigObject(v, m)) renderCfgZones();
+    }catch(err){ if (m) m.textContent = "失败：" + err.message; }
   };
+  syncCfgJson();
   flashDoc(); dBody.scrollTop = 0;
 }
 let skillEditId = null;
@@ -2125,7 +2575,7 @@ function placeBubble(key, a, markEl, note){
   const qFlat=a.quote.replace(/\s+/g," ");
   const b=document.createElement("div");
   b.className="anno-bubble"+(note?" unresolved":"");
-  b.innerHTML=`<div class="ab-q">「${qFlat.slice(0,36)}${qFlat.length>36?"…":""}」</div><div class="ab-t">${a.text}</div>${note?`<div class="msg">${note}</div>`:""}<div class="ab-x" title="删除批注">✕</div>`;
+  b.innerHTML=`<div class="ab-q">「${qFlat.slice(0,36)}${qFlat.length>36?"…":""}」</div><div class="ab-t">${a.by?`<b style="color:#8a6b2a">【${escapeHtml(a.by)}】</b>`:""}${escapeHtml(a.text)}</div>${note?`<div class="msg">${note}</div>`:""}<div class="ab-x" title="删除批注">✕</div>`;
   let top = markEl ? markEl.offsetTop : 40;
   const bubbles=[...rail.querySelectorAll(".anno-bubble")];
   const last=bubbles[bubbles.length-1];
@@ -2392,20 +2842,37 @@ document.addEventListener("mouseup", e=>{
   pop.style.display="block";
   document.getElementById("anno-input").focus();
 });
-function submitAnno(){
+function annoBy(){
+  let n = null;
+  try{ n = localStorage.getItem("kit_anno_name"); }catch(e){}
+  if (!n){
+    n = ((window.prompt("批注署名（多人批注会显示在气泡上；游客可直接确定）","游客") || "").trim()) || "游客";
+    try{ localStorage.setItem("kit_anno_name", n); }catch(e){}
+  }
+  return n;
+}
+async function submitAnno(){
   const pop=document.getElementById("anno-pop");
   const text=document.getElementById("anno-input").value.trim();
   const quote=pendingQuote || (pop.dataset.quote||"");
   const key=curAnnoKey();
   pop.style.display="none";
   if (!text || !quote || !key || !pendingMark){ unwrapPending(); return; }
-  const a={id:"a"+Date.now().toString(36), quote, text, ts:new Date().toLocaleString()};
+  const a={id:"a"+Date.now().toString(36)+Math.random().toString(36).slice(2,5), quote, text, by:annoBy(), ts:new Date().toLocaleString()};
   annoList(key).push(a);
   pendingMark.classList.remove("draft");
   pendingMark.dataset.aid=a.id;
   pendingMark.title=a.text;
   placeBubble(key, a, pendingMark);
   pendingMark=null; pendingQuote="";
+  // 多人批注：优先服务端单条追加（读改写合并，防整文件互冲）；失败回退整文件写
+  try{
+    if (DATA.project && location.protocol.startsWith("http")){
+      const r = await fetch("/_kit/anno", {method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({project: DATA.project, key, anno: a})});
+      if (r.ok) return;
+    }
+  }catch(err){}
   persistState();
 }
 document.addEventListener("click", e=>{
@@ -2461,6 +2928,98 @@ autoLayout();
 renderEffectiveBanner();
 fitStage();   // 默认落在第一个未完成阶段：全屏下节点太小难以点中，全屏只作总览
 openShelf();
+
+/* ==================== R8-OPS 前端 live 化 ====================
+   页面不再是一张死快照：由内核 HTTP 面（miniflow up）提供时，轮询 /api/projects/<id>/live，
+   把易变切片就地换上并重渲染。file:// 打开时明确显示「快照」，不假装有后端。
+   两个指纹分工：`revision` 决定要不要重渲染；`filesRevision` 决定要不要回来取产物正文（可能上 MB）。 */
+/* 注意：page-lint 会在**没有 location/fetch 的裸 VM** 里求值本脚本，所以这里必须防御式探测，
+   不能在顶层直接读 location（否则门禁直接 ReferenceError 崩掉）。 */
+const LIVE = {
+  on: (typeof location !== "undefined") && /^https?:$/.test(location.protocol || ""),
+  rev: null, filesRev: null, timer: null,
+};
+function livePill(text, color, title){
+  const el = document.getElementById("live-pill"); if (!el) return;
+  el.textContent = text; el.style.color = color; if (title) el.title = title;
+}
+function liveApi(q){ return "/api/projects/" + encodeURIComponent(DATA.project) + "/live" + (q || ""); }
+/* 诊断条 + 结构变化提示（两者都是「本页可能不可信」的显式声明，不是装饰） */
+/* R8 选择面：决策三问回显——选了哪个 / 凭什么（by+evidence）/ 有哪些坏决策不可用。 */
+function renderDecisionStrip(d){
+  const el = document.getElementById("decision-strip"); if (!el) return;
+  const list = (d && d.decisions) || [], issues = (d && d.issues) || [];
+  if (!list.length && !issues.length){ el.style.display = "none"; el.innerHTML = ""; return; }
+  const bits = list.map(x => "决策 <b>" + x.key + "</b> → " + x.picked.map(t => '<span class="chip">' + t + '</span>').join("") +
+    (x.excluded_tags && x.excluded_tags.length ? "（排除 " + x.excluded_tags.join("、") + "）" : "") +
+    "　<span style='color:var(--ink-3);font-size:calc(10.5px*var(--fs,1))'>by " + x.by + " · 依据 " + x.evidence + "</span>");
+  if (issues.length) bits.push("<b>" + issues.length + "</b> 条决策不可用：" + issues.join("；"));
+  el.innerHTML = bits.map(b => '<div class="banner" style="border-left-color:#648ab8">' + b + '</div>').join("");
+  el.style.display = "";
+}
+function renderDiagStrip(d, structural){
+  const el = document.getElementById("diag-strip"); if (!el) return;  const bits = [];
+  if (structural) bits.push("<b>生效编排已变</b>（overlayHash / planHash 变了）：画布已按新编排重绘；模块的增删需重新生成页面");
+  if (d && d.count > 0) bits.push("诊断 <b>" + d.count + "</b> 条（" + Object.entries(d.byKind || {}).map(([k, v]) => k + "×" + v).join("、") + "）—— <b>本项目某些结论可能不可信</b>");
+  if (!bits.length){ el.style.display = "none"; el.innerHTML = ""; return; }
+  el.innerHTML = bits.map(b => '<div class="banner" style="border-left-color:#b8a464">' + b + '</div>').join("");
+  el.style.display = "";
+}
+/* 把 /live 的易变切片换进页面。静态切片（DATA.modules/toolbox/kbTitles…）保持首屏注入不动。 */
+function applyLive(live){
+  const prevOverlayHash = EFF && EFF.overlayHash, prevPlanHash = EFF && EFF.planHash;
+  if (live.state){ RS = live.state; if (DATA.annos) RS.annos = DATA.annos; }
+  if (live.files){ files = live.files; DATA.files = live.files; }
+  if (live.snapshots){ DATA.snapshots = live.snapshots; rebuildFileVersions(); }
+  if (live.eff) EFF = live.eff;
+  if (live.overlay !== undefined) OVERLAY = live.overlay;
+  if (live.optimize !== undefined) OPTIMIZE = live.optimize;
+  if (live.metrics !== undefined) METRICS = live.metrics;
+  // OS-04 余量：模板库由内核每次现扫并入 revision（配置面板可能正开着）⇒ 就地回填 + 重渲染。
+  // 不这样做的话：用户在别处存了模板，本页会一直显示上一版清单——那就是面板在撒谎。
+  if (live.configTemplates !== undefined){ DATA.configTemplates = live.configTemplates; renderTplZone(); }
+  const structural = !!(EFF && (EFF.overlayHash !== prevOverlayHash || EFF.planHash !== prevPlanHash));
+  refreshMwTip();
+  bindCanvas();
+  // 选中的节点对象属于旧 EFF：先按 id 重指（找不到就置空），再重画——绝不保留悬空引用
+  const keepId = sel && sel.id;
+  sel = (keepId && nodes[keepId]) ? nodes[keepId] : null;
+  lastSel = sel;
+  autoLayout();                 // 内部会 render()
+  renderEffectiveBanner();
+  renderDiagStrip(live.diagnostics, structural);
+  renderDecisionStrip(live.decisions);
+  if (sel){ render(); openNodeDoc(sel); }        // 右栏内容跟着刷新
+  else if (keepId){ docReset(); }                // 选中的节点没了
+}
+async function pollLive(){
+  if (!LIVE.on) return;
+  try {
+    const r = await fetch(liveApi(), { cache: "no-store" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const live = await r.json();
+    if (live.revision === LIVE.rev){ livePill("● 实时", "#5a8a5e", "与内核实时连接（内容无变化）"); return; }
+    if (live.filesRevision !== LIVE.filesRev){
+      const rf = await fetch(liveApi("?files=1"), { cache: "no-store" });
+      if (rf.ok){ const full = await rf.json(); live.files = full.files; live.snapshots = full.snapshots; LIVE.filesRev = full.filesRevision; }
+    }
+    LIVE.rev = live.revision;
+    applyLive(live);
+    livePill("● 已同步", "#5a8a5e", "刚刚从内核刷新（rev " + live.revision + "）");
+  } catch (e) {
+    livePill("● 离线", "#a5433a", "连不上内核（" + String(e) + "）—— 当前页面是生成时的快照");
+  }
+}
+function startLive(){
+  if (!LIVE.on){
+    livePill("● 快照", "#8a8375", "以 file:// 打开：无后端。用 miniflow up 起服务即可实时同步");
+    return;
+  }
+  livePill("● 连接中…", "#8a8375", "正在连接内核");
+  pollLive();
+  LIVE.timer = setInterval(pollLive, 4000);
+}
+startLive();
 document.getElementById("stage").addEventListener("click", e=>{ if(e.target.id==="stage"){ hideTip(); } });
 /* md 内链接：指向项目内文件的 → 右栏打开；外链 → 新窗口 */
 document.addEventListener("click", e=>{

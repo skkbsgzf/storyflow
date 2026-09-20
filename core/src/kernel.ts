@@ -3,6 +3,7 @@ import path from "node:path";
 import type { FlowDescriptor, RunState, TaskPackage, Validation } from "./types.js";
 import { ROOT, assertSchema } from "./schema.js";
 import { atomicWriteText, LockDir } from "./fsio.js";
+import { listDecisions } from "./decisions.js";
 import { gateToken, nowIso } from "./ids.js";
 import { compilePlan, PlanCycleError, upstreamOf } from "./plan.js";
 import { resolveInputs, evalWhen, isBackEdge, condContextOf, pendingInstancesOf, type CondContext } from "./cond.js";
@@ -2005,6 +2006,8 @@ export class Kernel {
     const optimize = readJson(path.join("registry", "optimize.json"));
     const metrics = readJson(path.join("registry", "metrics-summary.json"));
     const diagnostics = summarizeDiags(projectDir);
+    // R8 选择面：决策事实是运行中数据，随 live 切片现读现回（坏条目进 issues，不静默）
+    const decisions = listDecisions(projectDir);
 
     const s = state as { status?: string; gate?: { verdict?: string; node?: string }; nodes?: Record<string, { status?: string; round?: number; verdict?: string }> } | null;
 
@@ -2034,6 +2037,7 @@ export class Kernel {
       eff?.planHash ?? null,
       (metrics as { events?: number } | null)?.events ?? null,
       diagnostics.count,
+      decisions.decisions.map((d) => [d.key, d.picked, d.by, d.at]),
       tplFingerprint,
     ]);
 
@@ -2058,6 +2062,7 @@ export class Kernel {
       optimize,
       metrics,
       diagnostics,
+      decisions,
       configTemplates,
       revision,
       filesRevision,
@@ -2129,6 +2134,8 @@ export class Kernel {
       snapshots,
       // R8-OPS：旁路失败的可见面。页面据此显示「本项目有 N 条诊断」——能力必须有家的第③环（UI 可见）。
       diagnostics: summarizeDiags(projectDir),
+      // R8 选择面：决策三问（选了哪个/凭什么/排除了啥）的 UI 可见环
+      decisions: listDecisions(projectDir),
     };
   }
 

@@ -39,6 +39,8 @@ const SCHEMA_IDS = [
   "kit",
   "agent-profile",
   "project-config",
+  "decision",
+  "catalog-entry",
 ] as const;
 export type SchemaId = (typeof SCHEMA_IDS)[number];
 

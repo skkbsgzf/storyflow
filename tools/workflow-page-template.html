@@ -341,6 +341,7 @@ textarea{width:100%;min-height:340px;background:var(--bg-ctl);color:var(--ink);b
 </header>
   <div id="eff-banner" style="display:none"></div>
   <div id="diag-strip" style="display:none"></div>
+  <div id="decision-strip" style="display:none"></div>
   <div id="stage"><div id="world"><svg id="edges"></svg><div id="nodes"></div></div>
     <div id="ctip"></div>
   </div>
@@ -2574,7 +2575,7 @@ function placeBubble(key, a, markEl, note){
   const qFlat=a.quote.replace(/\s+/g," ");
   const b=document.createElement("div");
   b.className="anno-bubble"+(note?" unresolved":"");
-  b.innerHTML=`<div class="ab-q">「${qFlat.slice(0,36)}${qFlat.length>36?"…":""}」</div><div class="ab-t">${a.text}</div>${note?`<div class="msg">${note}</div>`:""}<div class="ab-x" title="删除批注">✕</div>`;
+  b.innerHTML=`<div class="ab-q">「${qFlat.slice(0,36)}${qFlat.length>36?"…":""}」</div><div class="ab-t">${a.by?`<b style="color:#8a6b2a">【${escapeHtml(a.by)}】</b>`:""}${escapeHtml(a.text)}</div>${note?`<div class="msg">${note}</div>`:""}<div class="ab-x" title="删除批注">✕</div>`;
   let top = markEl ? markEl.offsetTop : 40;
   const bubbles=[...rail.querySelectorAll(".anno-bubble")];
   const last=bubbles[bubbles.length-1];
@@ -2841,20 +2842,37 @@ document.addEventListener("mouseup", e=>{
   pop.style.display="block";
   document.getElementById("anno-input").focus();
 });
-function submitAnno(){
+function annoBy(){
+  let n = null;
+  try{ n = localStorage.getItem("kit_anno_name"); }catch(e){}
+  if (!n){
+    n = ((window.prompt("批注署名（多人批注会显示在气泡上；游客可直接确定）","游客") || "").trim()) || "游客";
+    try{ localStorage.setItem("kit_anno_name", n); }catch(e){}
+  }
+  return n;
+}
+async function submitAnno(){
   const pop=document.getElementById("anno-pop");
   const text=document.getElementById("anno-input").value.trim();
   const quote=pendingQuote || (pop.dataset.quote||"");
   const key=curAnnoKey();
   pop.style.display="none";
   if (!text || !quote || !key || !pendingMark){ unwrapPending(); return; }
-  const a={id:"a"+Date.now().toString(36), quote, text, ts:new Date().toLocaleString()};
+  const a={id:"a"+Date.now().toString(36)+Math.random().toString(36).slice(2,5), quote, text, by:annoBy(), ts:new Date().toLocaleString()};
   annoList(key).push(a);
   pendingMark.classList.remove("draft");
   pendingMark.dataset.aid=a.id;
   pendingMark.title=a.text;
   placeBubble(key, a, pendingMark);
   pendingMark=null; pendingQuote="";
+  // 多人批注：优先服务端单条追加（读改写合并，防整文件互冲）；失败回退整文件写
+  try{
+    if (DATA.project && location.protocol.startsWith("http")){
+      const r = await fetch("/_kit/anno", {method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({project: DATA.project, key, anno: a})});
+      if (r.ok) return;
+    }
+  }catch(err){}
   persistState();
 }
 document.addEventListener("click", e=>{
@@ -2927,9 +2945,20 @@ function livePill(text, color, title){
 }
 function liveApi(q){ return "/api/projects/" + encodeURIComponent(DATA.project) + "/live" + (q || ""); }
 /* 诊断条 + 结构变化提示（两者都是「本页可能不可信」的显式声明，不是装饰） */
+/* R8 选择面：决策三问回显——选了哪个 / 凭什么（by+evidence）/ 有哪些坏决策不可用。 */
+function renderDecisionStrip(d){
+  const el = document.getElementById("decision-strip"); if (!el) return;
+  const list = (d && d.decisions) || [], issues = (d && d.issues) || [];
+  if (!list.length && !issues.length){ el.style.display = "none"; el.innerHTML = ""; return; }
+  const bits = list.map(x => "决策 <b>" + x.key + "</b> → " + x.picked.map(t => '<span class="chip">' + t + '</span>').join("") +
+    (x.excluded_tags && x.excluded_tags.length ? "（排除 " + x.excluded_tags.join("、") + "）" : "") +
+    "　<span style='color:var(--ink-3);font-size:calc(10.5px*var(--fs,1))'>by " + x.by + " · 依据 " + x.evidence + "</span>");
+  if (issues.length) bits.push("<b>" + issues.length + "</b> 条决策不可用：" + issues.join("；"));
+  el.innerHTML = bits.map(b => '<div class="banner" style="border-left-color:#648ab8">' + b + '</div>').join("");
+  el.style.display = "";
+}
 function renderDiagStrip(d, structural){
-  const el = document.getElementById("diag-strip"); if (!el) return;
-  const bits = [];
+  const el = document.getElementById("diag-strip"); if (!el) return;  const bits = [];
   if (structural) bits.push("<b>生效编排已变</b>（overlayHash / planHash 变了）：画布已按新编排重绘；模块的增删需重新生成页面");
   if (d && d.count > 0) bits.push("诊断 <b>" + d.count + "</b> 条（" + Object.entries(d.byKind || {}).map(([k, v]) => k + "×" + v).join("、") + "）—— <b>本项目某些结论可能不可信</b>");
   if (!bits.length){ el.style.display = "none"; el.innerHTML = ""; return; }
@@ -2959,6 +2988,7 @@ function applyLive(live){
   autoLayout();                 // 内部会 render()
   renderEffectiveBanner();
   renderDiagStrip(live.diagnostics, structural);
+  renderDecisionStrip(live.decisions);
   if (sel){ render(); openNodeDoc(sel); }        // 右栏内容跟着刷新
   else if (keepId){ docReset(); }                // 选中的节点没了
 }

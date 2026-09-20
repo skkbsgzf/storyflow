@@ -1,8 +1,14 @@
 import { describe, expect, it } from "vitest";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { resolveInputs } from "../src/cond.js";
+import { Kernel } from "../src/kernel.js";
+import { buildHttpApp } from "../src/http.js";
+import { VERB_BY_NAME } from "../src/verbs.js";
+import { verbToolSpecs } from "../src/mcp.js";
+import { setDecision, listDecisions } from "../src/decisions.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -43,5 +49,79 @@ describe("R8 S1 · 契约就位（decision@1 / catalog-entry@1）", () => {
     expect(s.additionalProperties).toBe(false);
     expect(s.properties).not.toHaveProperty("default");
     for (const k of ["id", "kind", "tags"]) expect(s.required).toContain(k);
+  });
+});
+
+describe("R8 S2 · set_decision/list_decisions：决策事实三面可达", () => {
+  function seedKernel() {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "miniflow-r8d-"));
+    fs.mkdirSync(path.join(root, "projects"), { recursive: true });
+    const kernel = new Kernel({ root, repoRoot: root, flowsDir: path.join(root, "flows") });
+    return { root, kernel };
+  }
+  const okInput = {
+    key: "genre",
+    picked: ["年代言情"],
+    by: "m1.topic-report",
+    evidence: "01-选题/选题报告.md#§2 类型判定",
+  };
+
+  it("run 路径：落 decisions/<key>.json，list 读回一致，journal 留痕", async () => {
+    const { root, kernel } = seedKernel();
+    const projectDir = kernel.projectDir("p-r8d");
+    fs.mkdirSync(projectDir, { recursive: true });
+    const d = await VERB_BY_NAME.set_decision.run(kernel, { project: "p-r8d", ...okInput });
+    expect(JSON.parse(fs.readFileSync(path.join(projectDir, "decisions", "genre.json"), "utf-8")).picked).toEqual(["年代言情"]);
+    const listed = VERB_BY_NAME.list_decisions.run(kernel, { project: "p-r8d" }) as { decisions: unknown[]; issues: string[] };
+    expect(listed.decisions).toHaveLength(1);
+    expect(listed.issues).toEqual([]);
+    const j = fs.readFileSync(path.join(projectDir, "journal.jsonl"), "utf-8");
+    expect(j).toContain("决策落盘 decision:genre");
+    expect(root).toBeTruthy();
+  });
+
+  it("无来源即拒：缺 evidence 不落盘、报 400 类 DecisionError", async () => {
+    const { kernel } = seedKernel();
+    fs.mkdirSync(kernel.projectDir("p-r8d2"), { recursive: true });
+    expect(() =>
+      VERB_BY_NAME.set_decision.run(kernel, { project: "p-r8d2", key: "style", picked: ["张爱玲"], by: "user" }),
+    ).toThrow(/DECISION_INVALID|evidence/);
+    expect(fs.existsSync(path.join(kernel.projectDir("p-r8d2"), "decisions"))).toBe(false);
+  });
+
+  it("三面同源：HTTP 按表分派可达 + MCP spec 含两动词（表即面）", async () => {
+    const { kernel } = seedKernel();
+    fs.mkdirSync(kernel.projectDir("p-r8d3"), { recursive: true });
+    const app = buildHttpApp(kernel);
+    await app.ready();
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/verbs/set_decision",
+      payload: { project: "p-r8d3", ...okInput },
+    });
+    expect(res.statusCode).toBe(200);
+    const names = verbToolSpecs().map((t: { name: string }) => t.name);
+    expect(names).toContain("set_decision");
+    expect(names).toContain("list_decisions");
+  });
+
+  it("live 切片带回 decisions（页面决策三问的数据源）", () => {
+    const { root, kernel } = seedKernel();
+    const projectDir = kernel.projectDir("p-r8d4");
+    fs.mkdirSync(projectDir, { recursive: true });
+    setDecision(projectDir, okInput as never);
+    const live = kernel.viewLive("p-r8d4") as { decisions: { decisions: { key: string }[]; issues: string[] } };
+    expect(live.decisions.decisions[0].key).toBe("genre");
+  });
+
+  it("坏决策不静默：key 与文件名不符 / 缺 by 都进 issues", () => {
+    const { root } = seedKernel();
+    const dir = path.join(root, "projects", "p-r8d5", "decisions");
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, "genre.json"), JSON.stringify({ format: "decision@1", key: "style", by: "x", at: "t", picked: ["a"], evidence: "e" }), "utf-8");
+    fs.writeFileSync(path.join(dir, "route.json"), "not-json", "utf-8");
+    const r = listDecisions(path.join(root, "projects", "p-r8d5"));
+    expect(r.decisions).toHaveLength(0);
+    expect(r.issues).toHaveLength(2);
   });
 });

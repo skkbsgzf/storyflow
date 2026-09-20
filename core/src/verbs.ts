@@ -19,6 +19,9 @@ import { deriveProjectName } from "./kernel.js";
 import type { Kernel } from "./kernel.js";
 import { skillPatch } from "./skills.js";
 import { cfgTemplate, CfgTemplateError } from "./cfg-template.js";
+import { setDecision, listDecisions, DecisionError } from "./decisions.js";
+import { journalAppend } from "./journal.js";
+import { loadState } from "./state.js";
 import { KernelError } from "./kernel.js";
 
 export type VerbParamType = "string" | "number" | "boolean" | "record" | "string[]";
@@ -94,6 +97,7 @@ function writeConfigTemplate(kernel: Kernel, projectId: string): Record<string, 
 
 const G_KERNEL = "内核动词（七动词）";
 const G_ORCH = "生成式编排（R5）";
+const G_CHOICE = "选择面（R8）";
 
 /** 三面唯一的动词台账。新增动词只改这里 —— MCP/HTTP/CLI 自动跟上。 */
 export const VERBS: VerbDef[] = [
@@ -380,6 +384,63 @@ export const VERBS: VerbDef[] = [
       const patches = Array.isArray(raw) ? raw : raw?.patches;
       return { project: flags.project, patches, approve: flags.approve, actor: flags.actor, reason: flags.reason, replan: flags.replan };
     },
+  },
+  {
+    name: "set_decision",
+    description:
+      "落一条决策事实（decision@1 → <项目>/decisions/<key>.json）。选择面的唯一写入口：by/evidence 必填，无来源的决策=猜即拒（R8 铁律 3）",
+    group: G_CHOICE,
+    params: [
+      { name: "project", type: "string", required: true, desc: "项目 id" },
+      { name: "key", type: "string", required: true, desc: "决策键（genre/style/structure/route…，文件名即键）" },
+      { name: "picked", type: "string[]", required: true, desc: "选中标签（逗号分隔，与 catalog.tags 求交）" },
+      { name: "by", type: "string", required: true, desc: "谁做的决策：产出判断的节点 id 或 user" },
+      { name: "evidence", type: "string", required: true, desc: "依据哪份产物（如 01-选题/选题报告.md#§2）" },
+      { name: "excludedTags", flag: "excluded-tags", type: "string[]", desc: "反向排除的标签（逗号分隔，可选）" },
+      { name: "confidence", type: "number", desc: "置信度 0-1（可选）" },
+      { name: "actor", type: "string", desc: "journal 记录者（缺省 user）" },
+    ],
+    run: (kernel, a) => {
+      const split = (v: unknown): string[] | undefined =>
+        Array.isArray(v)
+          ? v.map(String).filter(Boolean)
+          : S(v)
+            ? String(v).split(",").map((x) => x.trim()).filter(Boolean)
+            : undefined;
+      const projectDir = kernel.projectDir(String(a.project));
+      let d;
+      try {
+        d = setDecision(projectDir, {
+          key: String(a.key),
+          picked: split(a.picked) ?? [],
+          by: String(a.by ?? ""),
+          evidence: String(a.evidence ?? ""),
+          excluded_tags: split(a.excludedTags),
+          confidence: N(a.confidence),
+        });
+      } catch (e) {
+        // 决策入参错是用户手误，须带 4xx 原样出去（同 cfg_template 惯例），不许报 500
+        if (e instanceof DecisionError) throw new KernelError(e.code, 400, e.message);
+        throw e;
+      }
+      try {
+        const st = loadState(projectDir);
+        journalAppend(projectDir, st?.runId ?? "-", "note", {
+          actor: S(a.actor) ?? "user",
+          detail: `决策落盘 decision:${d.key} ← picked[${d.picked.join(",")}]${d.excluded_tags?.length ? ` 排除[${d.excluded_tags.join(",")}]` : ""}（by=${d.by}，evidence=${d.evidence}）`,
+        });
+      } catch {
+        /* journal 失败不吞决策——决策已原子落盘，审计缺痕单独可见 */
+      }
+      return d;
+    },
+  },
+  {
+    name: "list_decisions",
+    description: "读项目全部决策事实（坏条目进 issues 不静默）——回答「这一步凭什么这么选」",
+    group: G_CHOICE,
+    params: [{ name: "project", type: "string", required: true, desc: "项目 id" }],
+    run: (kernel, a) => listDecisions(kernel.projectDir(String(a.project))),
   },
 ];
 
