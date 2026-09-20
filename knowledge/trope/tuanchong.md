@@ -1,39 +1,44 @@
 ---
 {
- "id": "kb/trope/tuanchong",
- "type": "trope",
- "title": "梗族 · 团宠护短梗",
- "version": "2026-09-15",
- "status": "active",
- "applies_to": [
-  "short-drama",
-  "comic-drama"
- ],
- "saturation": "退潮期·慎入",
- "corpus_count": 63,
- "avg_heat_w": 2703,
- "keywords": {
-  "宠": 52,
-  "护短": 32,
-  "打脸": 35
- },
- "provenance": {
-  "source": "import",
-  "refs": [
-   "dataset:kakaxing/scriptrawstone@2026-09-15",
-   "tool:tools/distill-kakaxing.mjs"
-  ]
- },
- "updated": "2026-09-15",
- "bind": {
-  "skills": [
-   "find-trope"
+  "id": "kb/trope/tuanchong",
+  "type": "trope",
+  "title": "梗族 · 团宠护短梗",
+  "version": "2026-09-15",
+  "status": "active",
+  "applies_to": [
+    "short-drama",
+    "comic-drama"
   ],
-  "minitools": [
-   "kb_search",
-   "check_trope_combo"
+  "saturation": "退潮期·慎入",
+  "corpus_count": 63,
+  "avg_heat_w": 2703,
+  "keywords": {
+    "宠": 52,
+    "护短": 32,
+    "打脸": 35
+  },
+  "provenance": {
+    "source": "import",
+    "refs": [
+      "dataset:kakaxing/scriptrawstone@2026-09-15",
+      "tool:tools/distill-kakaxing.mjs"
+    ]
+  },
+  "updated": "2026-09-15",
+  "bind": {
+    "skills": [
+      "find-trope"
+    ],
+    "minitools": [
+      "kb_search",
+      "check_trope_combo"
+    ]
+  },
+  "tags": [
+    "团宠",
+    "萌宝",
+    "家庭亲情"
   ]
- }
 }
 ---
 # 梗族 · 团宠护短梗

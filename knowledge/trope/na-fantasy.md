@@ -1,38 +1,43 @@
 ---
 {
- "id": "kb/trope/na-fantasy",
- "type": "trope",
- "title": "梗族 · 奇幻生物梗(NA)",
- "version": "2026-09-15",
- "status": "active",
- "applies_to": [
-  "short-drama",
-  "comic-drama"
- ],
- "saturation": "退潮期·慎入",
- "corpus_count": 161,
- "avg_heat_w": 234,
- "keywords": {
-  "奇幻": 91,
-  "羁绊": 13
- },
- "provenance": {
-  "source": "import",
-  "refs": [
-   "dataset:kakaxing/scriptrawstone@2026-09-15",
-   "tool:tools/distill-kakaxing.mjs"
-  ]
- },
- "updated": "2026-09-15",
- "bind": {
-  "skills": [
-   "find-trope"
+  "id": "kb/trope/na-fantasy",
+  "type": "trope",
+  "title": "梗族 · 奇幻生物梗(NA)",
+  "version": "2026-09-15",
+  "status": "active",
+  "applies_to": [
+    "short-drama",
+    "comic-drama"
   ],
-  "minitools": [
-   "kb_search",
-   "check_trope_combo"
+  "saturation": "退潮期·慎入",
+  "corpus_count": 161,
+  "avg_heat_w": 234,
+  "keywords": {
+    "奇幻": 91,
+    "羁绊": 13
+  },
+  "provenance": {
+    "source": "import",
+    "refs": [
+      "dataset:kakaxing/scriptrawstone@2026-09-15",
+      "tool:tools/distill-kakaxing.mjs"
+    ]
+  },
+  "updated": "2026-09-15",
+  "bind": {
+    "skills": [
+      "find-trope"
+    ],
+    "minitools": [
+      "kb_search",
+      "check_trope_combo"
+    ]
+  },
+  "tags": [
+    "北美",
+    "奇幻",
+    "魔法"
   ]
- }
 }
 ---
 # 梗族 · 奇幻生物梗(NA)

@@ -1,38 +1,43 @@
 ---
 {
- "id": "kb/trope/zhuiqi-huozangchang",
- "type": "trope",
- "title": "梗族 · 追妻火葬场梗",
- "version": "2026-09-15",
- "status": "active",
- "applies_to": [
-  "short-drama",
-  "comic-drama"
- ],
- "saturation": "上升期·蓝海偏好",
- "corpus_count": 132,
- "avg_heat_w": 14218,
- "keywords": {
-  "追妻": 101,
-  "复仇": 8
- },
- "provenance": {
-  "source": "import",
-  "refs": [
-   "dataset:kakaxing/scriptrawstone@2026-09-15",
-   "tool:tools/distill-kakaxing.mjs"
-  ]
- },
- "updated": "2026-09-15",
- "bind": {
-  "skills": [
-   "find-trope"
+  "id": "kb/trope/zhuiqi-huozangchang",
+  "type": "trope",
+  "title": "梗族 · 追妻火葬场梗",
+  "version": "2026-09-15",
+  "status": "active",
+  "applies_to": [
+    "short-drama",
+    "comic-drama"
   ],
-  "minitools": [
-   "kb_search",
-   "check_trope_combo"
+  "saturation": "上升期·蓝海偏好",
+  "corpus_count": 132,
+  "avg_heat_w": 14218,
+  "keywords": {
+    "追妻": 101,
+    "复仇": 8
+  },
+  "provenance": {
+    "source": "import",
+    "refs": [
+      "dataset:kakaxing/scriptrawstone@2026-09-15",
+      "tool:tools/distill-kakaxing.mjs"
+    ]
+  },
+  "updated": "2026-09-15",
+  "bind": {
+    "skills": [
+      "find-trope"
+    ],
+    "minitools": [
+      "kb_search",
+      "check_trope_combo"
+    ]
+  },
+  "tags": [
+    "追妻火葬场",
+    "悔过",
+    "情感虐恋"
   ]
- }
 }
 ---
 # 梗族 · 追妻火葬场梗

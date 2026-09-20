@@ -1,39 +1,44 @@
 ---
 {
- "id": "kb/trope/dalian-nuezha",
- "type": "trope",
- "title": "梗族 · 打脸虐渣梗",
- "version": "2026-09-15",
- "status": "active",
- "applies_to": [
-  "short-drama",
-  "comic-drama"
- ],
- "saturation": "红海·有效",
- "corpus_count": 1510,
- "avg_heat_w": 18558,
- "keywords": {
-  "打脸": 574,
-  "当众": 631,
-  "反杀": 100
- },
- "provenance": {
-  "source": "import",
-  "refs": [
-   "dataset:kakaxing/scriptrawstone@2026-09-15",
-   "tool:tools/distill-kakaxing.mjs"
-  ]
- },
- "updated": "2026-09-15",
- "bind": {
-  "skills": [
-   "find-trope"
+  "id": "kb/trope/dalian-nuezha",
+  "type": "trope",
+  "title": "梗族 · 打脸虐渣梗",
+  "version": "2026-09-15",
+  "status": "active",
+  "applies_to": [
+    "short-drama",
+    "comic-drama"
   ],
-  "minitools": [
-   "kb_search",
-   "check_trope_combo"
+  "saturation": "红海·有效",
+  "corpus_count": 1510,
+  "avg_heat_w": 18558,
+  "keywords": {
+    "打脸": 574,
+    "当众": 631,
+    "反杀": 100
+  },
+  "provenance": {
+    "source": "import",
+    "refs": [
+      "dataset:kakaxing/scriptrawstone@2026-09-15",
+      "tool:tools/distill-kakaxing.mjs"
+    ]
+  },
+  "updated": "2026-09-15",
+  "bind": {
+    "skills": [
+      "find-trope"
+    ],
+    "minitools": [
+      "kb_search",
+      "check_trope_combo"
+    ]
+  },
+  "tags": [
+    "大女主",
+    "赘婿逆袭",
+    "都市"
   ]
- }
 }
 ---
 # 梗族 · 打脸虐渣梗

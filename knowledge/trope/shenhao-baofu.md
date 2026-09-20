@@ -1,38 +1,43 @@
 ---
 {
- "id": "kb/trope/shenhao-baofu",
- "type": "trope",
- "title": "梗族 · 神豪暴富梗",
- "version": "2026-09-15",
- "status": "active",
- "applies_to": [
-  "short-drama",
-  "comic-drama"
- ],
- "saturation": "上升期·蓝海偏好",
- "corpus_count": 380,
- "avg_heat_w": 18987,
- "keywords": {
-  "身份": 85,
-  "当众": 162
- },
- "provenance": {
-  "source": "import",
-  "refs": [
-   "dataset:kakaxing/scriptrawstone@2026-09-15",
-   "tool:tools/distill-kakaxing.mjs"
-  ]
- },
- "updated": "2026-09-15",
- "bind": {
-  "skills": [
-   "find-trope"
+  "id": "kb/trope/shenhao-baofu",
+  "type": "trope",
+  "title": "梗族 · 神豪暴富梗",
+  "version": "2026-09-15",
+  "status": "active",
+  "applies_to": [
+    "short-drama",
+    "comic-drama"
   ],
-  "minitools": [
-   "kb_search",
-   "check_trope_combo"
+  "saturation": "上升期·蓝海偏好",
+  "corpus_count": 380,
+  "avg_heat_w": 18987,
+  "keywords": {
+    "身份": 85,
+    "当众": 162
+  },
+  "provenance": {
+    "source": "import",
+    "refs": [
+      "dataset:kakaxing/scriptrawstone@2026-09-15",
+      "tool:tools/distill-kakaxing.mjs"
+    ]
+  },
+  "updated": "2026-09-15",
+  "bind": {
+    "skills": [
+      "find-trope"
+    ],
+    "minitools": [
+      "kb_search",
+      "check_trope_combo"
+    ]
+  },
+  "tags": [
+    "神豪",
+    "暴富",
+    "都市爽文"
   ]
- }
 }
 ---
 # 梗族 · 神豪暴富梗

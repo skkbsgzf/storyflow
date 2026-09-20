@@ -1,7 +1,7 @@
 {
   "kb": "miniflow-knowledge",
   "version": "2026-09-15",
-  "updated": "2026-09-19",
+  "updated": "2026-09-21",
   "note": "知识库索引。md 条目由 frontmatter 汇总；generated 条目（trope/benchmark/market）随数据快照滚动重建（tools/distill-kakaxing.mjs）。",
   "types": {
     "aesthetic-standard": "审美判定标准（什么叫好：维度、条款、阈值）",
@@ -20,6 +20,16 @@
   },
   "entries": [
     {
+      "id": "kb/aesthetic/ai-detection-sources",
+      "type": "detection-playbook",
+      "title": "AI味检测口径卡（本地打分×朱雀对照·两级门·50万token纪律）",
+      "dimension": "aesthetic",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/ai-detection-sources.md"
+    },
+    {
       "id": "kb/aesthetic/ai-trace",
       "type": "aesthetic-standard",
       "title": "AI 痕迹标准（结构级去机味）",
@@ -27,7 +37,15 @@
       "routes": [
         "all"
       ],
-      "file": "aesthetic/ai-trace.md"
+      "file": "aesthetic/ai-trace.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "long-form",
+        "short-drama",
+        "comic-drama"
+      ]
     },
     {
       "id": "kb/aesthetic/assertions",
@@ -37,7 +55,10 @@
       "routes": [
         "all"
       ],
-      "file": "aesthetic/assertions.json"
+      "file": "aesthetic/assertions.json",
+      "tags": [
+        "all"
+      ]
     },
     {
       "id": "kb/aesthetic/character",
@@ -47,7 +68,15 @@
       "routes": [
         "all"
       ],
-      "file": "aesthetic/character.md"
+      "file": "aesthetic/character.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama",
+        "long-form"
+      ]
     },
     {
       "id": "kb/aesthetic/conflict-escalation",
@@ -57,7 +86,15 @@
       "routes": [
         "all"
       ],
-      "file": "aesthetic/conflict-escalation.md"
+      "file": "aesthetic/conflict-escalation.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama",
+        "long-form"
+      ]
     },
     {
       "id": "kb/aesthetic/constitution",
@@ -67,7 +104,15 @@
       "routes": [
         "all"
       ],
-      "file": "aesthetic/constitution.md"
+      "file": "aesthetic/constitution.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama",
+        "long-form"
+      ]
     },
     {
       "id": "kb/aesthetic/dialogue",
@@ -77,7 +122,15 @@
       "routes": [
         "all"
       ],
-      "file": "aesthetic/dialogue.md"
+      "file": "aesthetic/dialogue.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama",
+        "long-form"
+      ]
     },
     {
       "id": "kb/aesthetic/emotion-curve",
@@ -87,7 +140,15 @@
       "routes": [
         "all"
       ],
-      "file": "aesthetic/emotion-curve.md"
+      "file": "aesthetic/emotion-curve.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama",
+        "long-form"
+      ]
     },
     {
       "id": "kb/aesthetic/ending",
@@ -97,7 +158,15 @@
       "routes": [
         "all"
       ],
-      "file": "aesthetic/ending.md"
+      "file": "aesthetic/ending.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama",
+        "long-form"
+      ]
     },
     {
       "id": "kb/aesthetic/hook-3s",
@@ -107,7 +176,14 @@
       "routes": [
         "all"
       ],
-      "file": "aesthetic/hook-3s.md"
+      "file": "aesthetic/hook-3s.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama"
+      ]
     },
     {
       "id": "kb/aesthetic/metaphor-zh",
@@ -117,7 +193,15 @@
       "routes": [
         "all"
       ],
-      "file": "aesthetic/metaphor-zh.md"
+      "file": "aesthetic/metaphor-zh.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "long-form",
+        "short-drama",
+        "comic-drama"
+      ]
     },
     {
       "id": "kb/aesthetic/naturalness-zh",
@@ -127,7 +211,15 @@
       "routes": [
         "all"
       ],
-      "file": "aesthetic/naturalness-zh.md"
+      "file": "aesthetic/naturalness-zh.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama",
+        "long-form"
+      ]
     },
     {
       "id": "kb/aesthetic/oversight",
@@ -137,7 +229,14 @@
       "routes": [
         "all"
       ],
-      "file": "aesthetic/oversight.md"
+      "file": "aesthetic/oversight.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama"
+      ]
     },
     {
       "id": "kb/aesthetic/pacing-density",
@@ -147,7 +246,14 @@
       "routes": [
         "all"
       ],
-      "file": "aesthetic/pacing-density.md"
+      "file": "aesthetic/pacing-density.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama"
+      ]
     },
     {
       "id": "kb/aesthetic/perspective-review",
@@ -157,7 +263,15 @@
       "routes": [
         "all"
       ],
-      "file": "aesthetic/perspective-review.md"
+      "file": "aesthetic/perspective-review.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama",
+        "long-form"
+      ]
     },
     {
       "id": "kb/aesthetic/platform-compliance",
@@ -167,7 +281,14 @@
       "routes": [
         "all"
       ],
-      "file": "aesthetic/platform-compliance.md"
+      "file": "aesthetic/platform-compliance.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama"
+      ]
     },
     {
       "id": "kb/aesthetic/redline-scoring",
@@ -177,7 +298,15 @@
       "routes": [
         "all"
       ],
-      "file": "aesthetic/redline-scoring.md"
+      "file": "aesthetic/redline-scoring.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama",
+        "long-form"
+      ]
     },
     {
       "id": "kb/aesthetic/reversal",
@@ -187,7 +316,15 @@
       "routes": [
         "all"
       ],
-      "file": "aesthetic/reversal.md"
+      "file": "aesthetic/reversal.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama",
+        "long-form"
+      ]
     },
     {
       "id": "kb/aesthetic/scene-value",
@@ -197,7 +334,50 @@
       "routes": [
         "all"
       ],
-      "file": "aesthetic/scene-value.md"
+      "file": "aesthetic/scene-value.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama",
+        "long-form"
+      ]
+    },
+    {
+      "id": "kb/aesthetic/sensory-detail",
+      "type": "aesthetic-standard",
+      "title": "感官细节密度与心理距离标准",
+      "dimension": "sensory",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/sensory-detail.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "long-form",
+        "short-drama"
+      ]
+    },
+    {
+      "id": "kb/aesthetic/slop-list",
+      "type": "aesthetic-standard",
+      "title": "AI 味禁则清单（OpenAI 官方 8 类 + 中文映射）",
+      "dimension": "ai-trace",
+      "routes": [
+        "all"
+      ],
+      "file": "aesthetic/slop-list.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "long-form",
+        "short-drama",
+        "comic-drama"
+      ]
     },
     {
       "id": "kb/aesthetic/style-routes",
@@ -208,7 +388,15 @@
         "hot",
         "calm"
       ],
-      "file": "aesthetic/style-routes.md"
+      "file": "aesthetic/style-routes.md",
+      "tags": [
+        "hot",
+        "calm"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama"
+      ]
     },
     {
       "id": "kb/aesthetic/unreasonable-highlight",
@@ -218,7 +406,15 @@
       "routes": [
         "all"
       ],
-      "file": "aesthetic/unreasonable-highlight.md"
+      "file": "aesthetic/unreasonable-highlight.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama",
+        "long-form"
+      ]
     },
     {
       "id": "kb/aesthetic/visual-poster",
@@ -228,7 +424,14 @@
       "routes": [
         "all"
       ],
-      "file": "aesthetic/visual-poster.md"
+      "file": "aesthetic/visual-poster.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama"
+      ]
     },
     {
       "id": "kb/benchmark/b001-cn",
@@ -434,220 +637,13 @@
       "routes": [
         "all"
       ],
-      "file": "continuity/state-ledger.md"
-    },
-    {
-      "id": "kb/deconstruct/protocol",
-      "type": "deconstruct-protocol",
-      "title": "拆书总协议（六槽位与溯源纪律）",
-      "dimension": "protocol",
-      "routes": [
+      "file": "continuity/state-ledger.md",
+      "tags": [
         "all"
       ],
-      "file": "deconstruct/protocol.md"
-    },
-    {
-      "id": "kb/deconstruct/style-learning",
-      "type": "deconstruct-protocol",
-      "title": "文风学习协议（情绪决定笔墨密度）",
-      "dimension": "style",
-      "routes": [
-        "all"
-      ],
-      "file": "deconstruct/style-learning.md"
-    },
-    {
-      "id": "kb/formats/webnovel-longform",
-      "type": "format-standard",
-      "title": "长篇网文形态标准（章末钩子与批量生成）",
-      "dimension": "format",
-      "routes": [
-        "all"
-      ],
-      "file": "formats/webnovel-longform.md"
-    },
-    {
-      "id": "kb/market/constraints",
-      "type": "market-standard",
-      "title": "生产约束基线（短剧/漫剧实盘值）",
-      "routes": [
-        "all"
-      ],
-      "file": "market/constraints.md"
-    },
-    {
-      "id": "kb/market/internet-feel",
-      "type": "market-standard",
-      "title": "网感公式标准（标题 / 卖点 / 共情点句式）",
-      "routes": [
-        "all"
-      ],
-      "file": "market/internet-feel-formulas.md"
-    },
-    {
-      "id": "kb/market/meme-rules",
-      "type": "market-standard",
-      "title": "梗密度与发散性约束（S1 网感输入源）",
-      "dimension": "meme",
-      "routes": [
-        "all"
-      ],
-      "file": "market/meme-rules.md"
-    },
-    {
-      "id": "kb/market/setting-rules",
-      "type": "market-standard",
-      "title": "设定体系约束（项目级：世界观代入成本红线）",
-      "dimension": "setting",
-      "routes": [
-        "all"
-      ],
-      "file": "market/setting-rules.md"
-    },
-    {
-      "id": "kb/market/snapshot",
-      "type": "market-snapshot",
-      "title": "咔咔猩市场快照（机器可读）",
-      "routes": [
-        "all"
-      ],
-      "file": "market/snapshot.json"
-    },
-    {
-      "id": "kb/market/structure",
-      "type": "market-standard",
-      "title": "短剧市场结构标准（咔咔猩语料蒸馏）",
-      "routes": [
-        "all"
-      ],
-      "file": "market/market-structure.md"
-    },
-    {
-      "id": "kb/structure/catalog",
-      "type": "structure-catalog",
-      "title": "叙事结构选型目录（第二阶段深挖用）",
-      "dimension": "structure",
-      "routes": [
-        "all"
-      ],
-      "file": "structure/catalog.md"
-    },
-    {
-      "id": "kb/trope/chongsheng-fuchou",
-      "type": "trope",
-      "title": "梗族 · 重生复仇梗",
-      "saturation": "红海·有效",
-      "corpus_count": 702,
-      "avg_heat_w": 11978,
-      "file": "trope/chongsheng-fuchou.md"
-    },
-    {
-      "id": "kb/trope/dalian-nuezha",
-      "type": "trope",
-      "title": "梗族 · 打脸虐渣梗",
-      "saturation": "红海·有效",
-      "corpus_count": 1510,
-      "avg_heat_w": 18558,
-      "file": "trope/dalian-nuezha.md"
-    },
-    {
-      "id": "kb/trope/liufang-zhongtian",
-      "type": "trope",
-      "title": "梗族 · 流放种田梗",
-      "saturation": "上升期·蓝海偏好",
-      "corpus_count": 92,
-      "avg_heat_w": 22598,
-      "file": "trope/liufang-zhongtian.md"
-    },
-    {
-      "id": "kb/trope/majia-diaoma",
-      "type": "trope",
-      "title": "梗族 · 马甲掉马梗",
-      "saturation": "红海·过饱和",
-      "corpus_count": 750,
-      "avg_heat_w": 9215,
-      "file": "trope/majia-diaoma.md"
-    },
-    {
-      "id": "kb/trope/na-billionaire",
-      "type": "trope",
-      "title": "梗族 · 豪门财富梗(NA)",
-      "saturation": "红海·过饱和",
-      "corpus_count": 895,
-      "avg_heat_w": 228,
-      "file": "trope/na-billionaire.md"
-    },
-    {
-      "id": "kb/trope/na-fantasy",
-      "type": "trope",
-      "title": "梗族 · 奇幻生物梗(NA)",
-      "saturation": "退潮期·慎入",
-      "corpus_count": 161,
-      "avg_heat_w": 234,
-      "file": "trope/na-fantasy.md"
-    },
-    {
-      "id": "kb/trope/na-werewolf",
-      "type": "trope",
-      "title": "梗族 · 狼人命定梗(NA)",
-      "saturation": "退潮期·慎入",
-      "corpus_count": 359,
-      "avg_heat_w": 167,
-      "file": "trope/na-werewolf.md"
-    },
-    {
-      "id": "kb/trope/shenhao-baofu",
-      "type": "trope",
-      "title": "梗族 · 神豪暴富梗",
-      "saturation": "上升期·蓝海偏好",
-      "corpus_count": 380,
-      "avg_heat_w": 18987,
-      "file": "trope/shenhao-baofu.md"
-    },
-    {
-      "id": "kb/trope/tuanchong",
-      "type": "trope",
-      "title": "梗族 · 团宠护短梗",
-      "saturation": "退潮期·慎入",
-      "corpus_count": 63,
-      "avg_heat_w": 2703,
-      "file": "trope/tuanchong.md"
-    },
-    {
-      "id": "kb/trope/xianhun-lianai",
-      "type": "trope",
-      "title": "梗族 · 先婚后爱梗",
-      "saturation": "稳定·主流",
-      "corpus_count": 387,
-      "avg_heat_w": 10092,
-      "file": "trope/xianhun-lianai.md"
-    },
-    {
-      "id": "kb/trope/zhenjia-qianjin",
-      "type": "trope",
-      "title": "梗族 · 真假千金梗",
-      "saturation": "退潮期·慎入",
-      "corpus_count": 83,
-      "avg_heat_w": 7938,
-      "file": "trope/zhenjia-qianjin.md"
-    },
-    {
-      "id": "kb/trope/zhuiqi-huozangchang",
-      "type": "trope",
-      "title": "梗族 · 追妻火葬场梗",
-      "saturation": "上升期·蓝海偏好",
-      "corpus_count": 132,
-      "avg_heat_w": 14218,
-      "file": "trope/zhuiqi-huozangchang.md"
-    },
-    {
-      "id": "kb/trope/zhuxu-zhanshen",
-      "type": "trope",
-      "title": "梗族 · 赘婿战神梗",
-      "saturation": "稳定·主流",
-      "corpus_count": 192,
-      "avg_heat_w": 10684,
-      "file": "trope/zhuxu-zhanshen.md"
+      "applies_to": [
+        "long-form"
+      ]
     },
     {
       "id": "kb/continuity/worldbook",
@@ -657,97 +653,15 @@
       "routes": [
         "all"
       ],
-      "file": "continuity/worldbook.md"
-    },
-    {
-      "id": "kb/formats/webnovel-fastfood",
-      "type": "format-standard",
-      "title": "快餐抽象网文形态标准（番茄线）",
-      "dimension": "format",
-      "routes": [
-        "long-form"
-      ],
-      "file": "formats/webnovel-fastfood.md"
-    },
-    {
-      "id": "kb/market/topic-anatomy",
-      "type": "market-standard",
-      "title": "题材解剖学（素材聚合与关系逆位选题法）",
-      "dimension": "market",
-      "routes": [
+      "file": "continuity/worldbook.md",
+      "tags": [
         "all"
       ],
-      "file": "market/topic-anatomy.md"
-    },
-    {
-      "id": "kb/structure/episodic-webnovel",
-      "type": "structure-catalog",
-      "title": "单元剧网文结构标准（多故事集合体·暗线先行）",
-      "dimension": "structure",
-      "routes": [
-        "long-form"
-      ],
-      "file": "structure/episodic-webnovel.md"
-    },
-    {
-      "id": "kb/aesthetic/slop-list",
-      "type": "aesthetic-standard",
-      "title": "AI 味禁则清单（OpenAI 官方 8 类 + 中文映射）",
-      "dimension": "ai-trace",
-      "routes": [
-        "all"
-      ],
-      "file": "aesthetic/slop-list.md"
-    },
-    {
-      "id": "kb/method/revision-loop",
-      "type": "deconstruct-protocol",
-      "title": "多轮精修循环协议（判分→定向修订→防劣化收敛）",
-      "dimension": "method",
-      "routes": [
-        "all"
-      ],
-      "file": "method/revision-loop.md"
-    },
-    {
-      "id": "kb/method/longform-engineering",
-      "type": "deconstruct-protocol",
-      "title": "长篇工程方法（细纲节拍/递归重提示/双层记忆/大纲贴附）",
-      "dimension": "method",
-      "routes": [
-        "all"
-      ],
-      "file": "method/longform-engineering.md"
-    },
-    {
-      "id": "kb/craft/prose-constraints",
-      "type": "craft-standard",
-      "title": "成文约束总纲（六维路由——写前看什么、盖章查什么）",
-      "dimension": "craft",
-      "routes": [
-        "all"
-      ],
-      "file": "craft/prose-constraints.md"
-    },
-    {
-      "id": "kb/aesthetic/ai-detection-sources",
-      "type": "detection-playbook",
-      "title": "AI味检测口径卡（本地打分×朱雀对照·两级门·50万token纪律）",
-      "dimension": "aesthetic",
-      "routes": [
-        "all"
-      ],
-      "file": "aesthetic/ai-detection-sources.md"
-    },
-    {
-      "id": "kb/craft/user-style-rules",
-      "type": "user-style-rules",
-      "title": "用户补充·文学规则（公用 md，手动追加区——引号/加粗/箭头链红线）",
-      "dimension": "craft",
-      "routes": [
-        "all"
-      ],
-      "file": "craft/user-style-rules.md"
+      "applies_to": [
+        "long-form",
+        "short-drama",
+        "comic-drama"
+      ]
     },
     {
       "id": "kb/craft/highlight-loop",
@@ -760,14 +674,99 @@
       "file": "craft/highlight-loop.md"
     },
     {
-      "id": "kb/aesthetic/sensory-detail",
-      "type": "aesthetic-standard",
-      "title": "感官细节密度与心理距离标准",
-      "dimension": "sensory",
+      "id": "kb/craft/prose-constraints",
+      "type": "craft-standard",
+      "title": "成文约束总纲（六维路由——写前看什么、盖章查什么）",
+      "dimension": "craft",
       "routes": [
         "all"
       ],
-      "file": "aesthetic/sensory-detail.md"
+      "file": "craft/prose-constraints.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "long-form",
+        "short-drama",
+        "comic-drama"
+      ]
+    },
+    {
+      "id": "kb/craft/user-style-rules",
+      "type": "user-style-rules",
+      "title": "用户补充·文学规则（公用 md，手动追加区——引号/加粗/箭头链红线）",
+      "dimension": "craft",
+      "routes": [
+        "all"
+      ],
+      "file": "craft/user-style-rules.md"
+    },
+    {
+      "id": "kb/deconstruct/protocol",
+      "type": "deconstruct-protocol",
+      "title": "拆书总协议（六槽位与溯源纪律）",
+      "dimension": "protocol",
+      "routes": [
+        "all"
+      ],
+      "file": "deconstruct/protocol.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama",
+        "long-form"
+      ]
+    },
+    {
+      "id": "kb/deconstruct/style-learning",
+      "type": "deconstruct-protocol",
+      "title": "文风学习协议（情绪决定笔墨密度）",
+      "dimension": "style",
+      "routes": [
+        "all"
+      ],
+      "file": "deconstruct/style-learning.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "long-form",
+        "short-drama"
+      ]
+    },
+    {
+      "id": "kb/formats/webnovel-fastfood",
+      "type": "format-standard",
+      "title": "快餐抽象网文形态标准（番茄线）",
+      "dimension": "format",
+      "routes": [
+        "long-form"
+      ],
+      "file": "formats/webnovel-fastfood.md",
+      "tags": [
+        "hot"
+      ],
+      "applies_to": [
+        "long-form"
+      ]
+    },
+    {
+      "id": "kb/formats/webnovel-longform",
+      "type": "format-standard",
+      "title": "长篇网文形态标准（章末钩子与批量生成）",
+      "dimension": "format",
+      "routes": [
+        "all"
+      ],
+      "file": "formats/webnovel-longform.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "long-form"
+      ]
     },
     {
       "id": "kb/market/brief-four-questions",
@@ -776,7 +775,543 @@
       "routes": [
         "all"
       ],
-      "file": "market/brief-four-questions.md"
+      "file": "market/brief-four-questions.md",
+      "tags": [
+        "all"
+      ]
+    },
+    {
+      "id": "kb/market/constraints",
+      "type": "market-standard",
+      "title": "生产约束基线（短剧/漫剧实盘值）",
+      "routes": [
+        "all"
+      ],
+      "file": "market/constraints.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama"
+      ]
+    },
+    {
+      "id": "kb/market/internet-feel",
+      "type": "market-standard",
+      "title": "网感公式标准（标题 / 卖点 / 共情点句式）",
+      "routes": [
+        "all"
+      ],
+      "file": "market/internet-feel-formulas.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama"
+      ]
+    },
+    {
+      "id": "kb/market/meme-rules",
+      "type": "market-standard",
+      "title": "梗密度与发散性约束（S1 网感输入源）",
+      "dimension": "meme",
+      "routes": [
+        "all"
+      ],
+      "file": "market/meme-rules.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama",
+        "long-form"
+      ]
+    },
+    {
+      "id": "kb/market/setting-rules",
+      "type": "market-standard",
+      "title": "设定体系约束（项目级：世界观代入成本红线）",
+      "dimension": "setting",
+      "routes": [
+        "all"
+      ],
+      "file": "market/setting-rules.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama",
+        "long-form"
+      ]
+    },
+    {
+      "id": "kb/market/snapshot",
+      "type": "market-snapshot",
+      "title": "咔咔猩市场快照（机器可读）",
+      "routes": [
+        "all"
+      ],
+      "file": "market/snapshot.json",
+      "tags": [
+        "all"
+      ]
+    },
+    {
+      "id": "kb/market/structure",
+      "type": "market-standard",
+      "title": "短剧市场结构标准（咔咔猩语料蒸馏）",
+      "routes": [
+        "all"
+      ],
+      "file": "market/market-structure.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama"
+      ]
+    },
+    {
+      "id": "kb/market/topic-anatomy",
+      "type": "market-standard",
+      "title": "题材解剖学（素材聚合与关系逆位选题法）",
+      "dimension": "market",
+      "routes": [
+        "all"
+      ],
+      "file": "market/topic-anatomy.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "long-form"
+      ]
+    },
+    {
+      "id": "kb/method/longform-engineering",
+      "type": "deconstruct-protocol",
+      "title": "长篇工程方法（细纲节拍/递归重提示/双层记忆/大纲贴附）",
+      "dimension": "method",
+      "routes": [
+        "all"
+      ],
+      "file": "method/longform-engineering.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "long-form"
+      ]
+    },
+    {
+      "id": "kb/method/revision-loop",
+      "type": "deconstruct-protocol",
+      "title": "多轮精修循环协议（判分→定向修订→防劣化收敛）",
+      "dimension": "method",
+      "routes": [
+        "all"
+      ],
+      "file": "method/revision-loop.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "long-form",
+        "short-drama",
+        "comic-drama"
+      ]
+    },
+    {
+      "id": "kb/structure/ascent",
+      "type": "structure-archetype",
+      "title": "结构母型 · 逆袭/升级（欲望递进）",
+      "dimension": "structure",
+      "routes": null,
+      "tags": [
+        "逆袭",
+        "升级",
+        "神豪",
+        "赘婿",
+        "系统流"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama",
+        "long-form"
+      ],
+      "file": "structure/ascent.md"
+    },
+    {
+      "id": "kb/structure/barbell-return",
+      "type": "structure-archetype",
+      "title": "结构母型 · 倒钩回归（宿命回环）",
+      "dimension": "structure",
+      "routes": null,
+      "tags": [
+        "倒钩",
+        "宿命",
+        "回环",
+        "深沉档",
+        "长线IP"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama",
+        "long-form"
+      ],
+      "file": "structure/barbell-return.md"
+    },
+    {
+      "id": "kb/structure/catalog",
+      "type": "structure-catalog",
+      "title": "叙事结构选型目录（第二阶段深挖用）",
+      "dimension": "structure",
+      "routes": [
+        "all"
+      ],
+      "file": "structure/catalog.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama",
+        "long-form"
+      ]
+    },
+    {
+      "id": "kb/structure/dual-line",
+      "type": "structure-archetype",
+      "title": "结构母型 · 双线交叉（明暗双线）",
+      "dimension": "structure",
+      "routes": null,
+      "tags": [
+        "双线",
+        "悬疑",
+        "商战",
+        "身份错位"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama",
+        "long-form"
+      ],
+      "file": "structure/dual-line.md"
+    },
+    {
+      "id": "kb/structure/episodic-fate",
+      "type": "structure-archetype",
+      "title": "结构母型 · 单元宿命（重复结构带变量）",
+      "dimension": "structure",
+      "routes": null,
+      "tags": [
+        "单元剧",
+        "系统流",
+        "模拟器",
+        "无限流",
+        "循环"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama",
+        "long-form"
+      ],
+      "file": "structure/episodic-fate.md"
+    },
+    {
+      "id": "kb/structure/episodic-webnovel",
+      "type": "structure-catalog",
+      "title": "单元剧网文结构标准（多故事集合体·暗线先行）",
+      "dimension": "structure",
+      "routes": [
+        "long-form"
+      ],
+      "file": "structure/episodic-webnovel.md",
+      "tags": [
+        "all"
+      ],
+      "applies_to": [
+        "long-form"
+      ]
+    },
+    {
+      "id": "kb/structure/revenge",
+      "type": "structure-archetype",
+      "title": "结构母型 · 复仇（背叛→蛰伏→清账）",
+      "dimension": "structure",
+      "routes": null,
+      "tags": [
+        "复仇",
+        "清账",
+        "熟龄复仇",
+        "赘婿",
+        "重生"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama",
+        "long-form"
+      ],
+      "file": "structure/revenge.md"
+    },
+    {
+      "id": "kb/structure/save-the-cat",
+      "type": "structure-archetype",
+      "title": "结构母型 · 救猫咪（15 节拍）",
+      "dimension": "structure",
+      "routes": null,
+      "tags": [
+        "救猫咪",
+        "情感",
+        "成长",
+        "家庭"
+      ],
+      "applies_to": [
+        "short-drama",
+        "comic-drama",
+        "long-form"
+      ],
+      "file": "structure/save-the-cat.md"
+    },
+    {
+      "id": "kb/trope/chongsheng-fuchou",
+      "type": "trope",
+      "title": "梗族 · 重生复仇梗",
+      "saturation": "红海·有效",
+      "corpus_count": 702,
+      "avg_heat_w": 11978,
+      "file": "trope/chongsheng-fuchou.md",
+      "applies_to": [
+        "short-drama",
+        "comic-drama"
+      ],
+      "tags": [
+        "重生",
+        "复仇",
+        "年代"
+      ]
+    },
+    {
+      "id": "kb/trope/dalian-nuezha",
+      "type": "trope",
+      "title": "梗族 · 打脸虐渣梗",
+      "saturation": "红海·有效",
+      "corpus_count": 1510,
+      "avg_heat_w": 18558,
+      "file": "trope/dalian-nuezha.md",
+      "applies_to": [
+        "short-drama",
+        "comic-drama"
+      ],
+      "tags": [
+        "大女主",
+        "赘婿逆袭",
+        "都市"
+      ]
+    },
+    {
+      "id": "kb/trope/liufang-zhongtian",
+      "type": "trope",
+      "title": "梗族 · 流放种田梗",
+      "saturation": "上升期·蓝海偏好",
+      "corpus_count": 92,
+      "avg_heat_w": 22598,
+      "file": "trope/liufang-zhongtian.md",
+      "applies_to": [
+        "short-drama",
+        "comic-drama"
+      ],
+      "tags": [
+        "追妻火葬场",
+        "悔婚",
+        "都市情感"
+      ]
+    },
+    {
+      "id": "kb/trope/majia-diaoma",
+      "type": "trope",
+      "title": "梗族 · 马甲掉马梗",
+      "saturation": "红海·过饱和",
+      "corpus_count": 750,
+      "avg_heat_w": 9215,
+      "file": "trope/majia-diaoma.md",
+      "applies_to": [
+        "short-drama",
+        "comic-drama"
+      ],
+      "tags": [
+        "身份错位",
+        "马甲",
+        "逆袭"
+      ]
+    },
+    {
+      "id": "kb/trope/na-billionaire",
+      "type": "trope",
+      "title": "梗族 · 豪门财富梗(NA)",
+      "saturation": "红海·过饱和",
+      "corpus_count": 895,
+      "avg_heat_w": 228,
+      "file": "trope/na-billionaire.md",
+      "applies_to": [
+        "short-drama",
+        "comic-drama"
+      ],
+      "tags": [
+        "北美",
+        "亿万富翁",
+        "契约婚姻"
+      ]
+    },
+    {
+      "id": "kb/trope/na-fantasy",
+      "type": "trope",
+      "title": "梗族 · 奇幻生物梗(NA)",
+      "saturation": "退潮期·慎入",
+      "corpus_count": 161,
+      "avg_heat_w": 234,
+      "file": "trope/na-fantasy.md",
+      "applies_to": [
+        "short-drama",
+        "comic-drama"
+      ],
+      "tags": [
+        "北美",
+        "奇幻",
+        "魔法"
+      ]
+    },
+    {
+      "id": "kb/trope/na-werewolf",
+      "type": "trope",
+      "title": "梗族 · 狼人命定梗(NA)",
+      "saturation": "退潮期·慎入",
+      "corpus_count": 359,
+      "avg_heat_w": 167,
+      "file": "trope/na-werewolf.md",
+      "applies_to": [
+        "short-drama",
+        "comic-drama"
+      ],
+      "tags": [
+        "北美",
+        "狼人",
+        "命定之恋"
+      ]
+    },
+    {
+      "id": "kb/trope/shenhao-baofu",
+      "type": "trope",
+      "title": "梗族 · 神豪暴富梗",
+      "saturation": "上升期·蓝海偏好",
+      "corpus_count": 380,
+      "avg_heat_w": 18987,
+      "file": "trope/shenhao-baofu.md",
+      "applies_to": [
+        "short-drama",
+        "comic-drama"
+      ],
+      "tags": [
+        "神豪",
+        "暴富",
+        "都市爽文"
+      ]
+    },
+    {
+      "id": "kb/trope/tuanchong",
+      "type": "trope",
+      "title": "梗族 · 团宠护短梗",
+      "saturation": "退潮期·慎入",
+      "corpus_count": 63,
+      "avg_heat_w": 2703,
+      "file": "trope/tuanchong.md",
+      "applies_to": [
+        "short-drama",
+        "comic-drama"
+      ],
+      "tags": [
+        "团宠",
+        "萌宝",
+        "家庭亲情"
+      ]
+    },
+    {
+      "id": "kb/trope/xianhun-lianai",
+      "type": "trope",
+      "title": "梗族 · 先婚后爱梗",
+      "saturation": "稳定·主流",
+      "corpus_count": 387,
+      "avg_heat_w": 10092,
+      "file": "trope/xianhun-lianai.md",
+      "applies_to": [
+        "short-drama",
+        "comic-drama"
+      ],
+      "tags": [
+        "仙侠",
+        "修仙",
+        "跨世之恋"
+      ]
+    },
+    {
+      "id": "kb/trope/zhenjia-qianjin",
+      "type": "trope",
+      "title": "梗族 · 真假千金梗",
+      "saturation": "退潮期·慎入",
+      "corpus_count": 83,
+      "avg_heat_w": 7938,
+      "file": "trope/zhenjia-qianjin.md",
+      "applies_to": [
+        "short-drama",
+        "comic-drama"
+      ],
+      "tags": [
+        "真假千金",
+        "身份错位",
+        "豪门"
+      ]
+    },
+    {
+      "id": "kb/trope/zhuiqi-huozangchang",
+      "type": "trope",
+      "title": "梗族 · 追妻火葬场梗",
+      "saturation": "上升期·蓝海偏好",
+      "corpus_count": 132,
+      "avg_heat_w": 14218,
+      "file": "trope/zhuiqi-huozangchang.md",
+      "applies_to": [
+        "short-drama",
+        "comic-drama"
+      ],
+      "tags": [
+        "追妻火葬场",
+        "悔过",
+        "情感虐恋"
+      ]
+    },
+    {
+      "id": "kb/trope/zhuxu-zhanshen",
+      "type": "trope",
+      "title": "梗族 · 赘婿战神梗",
+      "saturation": "稳定·主流",
+      "corpus_count": 192,
+      "avg_heat_w": 10684,
+      "file": "trope/zhuxu-zhanshen.md",
+      "applies_to": [
+        "short-drama",
+        "comic-drama"
+      ],
+      "tags": [
+        "主神游戏",
+        "系统流",
+        "无限流"
+      ]
     }
   ]
 }

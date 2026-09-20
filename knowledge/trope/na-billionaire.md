@@ -1,38 +1,43 @@
 ---
 {
- "id": "kb/trope/na-billionaire",
- "type": "trope",
- "title": "梗族 · 豪门财富梗(NA)",
- "version": "2026-09-15",
- "status": "active",
- "applies_to": [
-  "short-drama",
-  "comic-drama"
- ],
- "saturation": "红海·过饱和",
- "corpus_count": 895,
- "avg_heat_w": 228,
- "keywords": {
-  "阶层": 47,
-  "反制": 2
- },
- "provenance": {
-  "source": "import",
-  "refs": [
-   "dataset:kakaxing/scriptrawstone@2026-09-15",
-   "tool:tools/distill-kakaxing.mjs"
-  ]
- },
- "updated": "2026-09-15",
- "bind": {
-  "skills": [
-   "find-trope"
+  "id": "kb/trope/na-billionaire",
+  "type": "trope",
+  "title": "梗族 · 豪门财富梗(NA)",
+  "version": "2026-09-15",
+  "status": "active",
+  "applies_to": [
+    "short-drama",
+    "comic-drama"
   ],
-  "minitools": [
-   "kb_search",
-   "check_trope_combo"
+  "saturation": "红海·过饱和",
+  "corpus_count": 895,
+  "avg_heat_w": 228,
+  "keywords": {
+    "阶层": 47,
+    "反制": 2
+  },
+  "provenance": {
+    "source": "import",
+    "refs": [
+      "dataset:kakaxing/scriptrawstone@2026-09-15",
+      "tool:tools/distill-kakaxing.mjs"
+    ]
+  },
+  "updated": "2026-09-15",
+  "bind": {
+    "skills": [
+      "find-trope"
+    ],
+    "minitools": [
+      "kb_search",
+      "check_trope_combo"
+    ]
+  },
+  "tags": [
+    "北美",
+    "亿万富翁",
+    "契约婚姻"
   ]
- }
 }
 ---
 # 梗族 · 豪门财富梗(NA)

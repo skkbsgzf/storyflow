@@ -358,7 +358,9 @@ function buildIndex() {
         if (!m) continue;
         try {
           const fm = JSON.parse(m[1]);
-          entries.push({ id: fm.id, type: fm.type, title: fm.title, dimension: fm.dimension, routes: fm.routes, saturation: fm.saturation, corpus_count: fm.corpus_count, avg_heat_w: fm.avg_heat_w, market: fm.market, file: rel });
+          // R8 S4：索引必须搬运生产者写好的轴——此前 applies_to 在源 md 里有、索引里 0 次（断点③）；
+          // tags 是新唯一标签轴（routes 兼容搬运，不做静默改写）。缺失照缺，不伪造 ["all"]。
+          entries.push({ id: fm.id, type: fm.type, title: fm.title, dimension: fm.dimension, routes: fm.routes, tags: fm.tags, applies_to: fm.applies_to, saturation: fm.saturation, corpus_count: fm.corpus_count, avg_heat_w: fm.avg_heat_w, market: fm.market, file: rel });
         } catch { /* frontmatter 损坏不进索引 */ }
       }
     }
@@ -369,12 +371,12 @@ function buildIndex() {
   // 断言表特列
   try {
     const a = JSON.parse(readFileSync(join(KB, "aesthetic/assertions.json"), "utf8"));
-    entries.push({ id: a.id, type: a.type, title: `${a.title}（${a.asserts.length} 条）`, dimension: "assertions", routes: ["all"], file: "aesthetic/assertions.json" });
+    entries.push({ id: a.id, type: a.type, title: `${a.title}（${a.asserts.length} 条）`, dimension: "assertions", routes: ["all"], tags: ["all"], file: "aesthetic/assertions.json" });
   } catch { /* 断言表缺失 */ }
   // 市场快照特列（generated json，无 md frontmatter）
   try {
     const s = JSON.parse(readFileSync(join(KB, "market/snapshot.json"), "utf8"));
-    entries.push({ id: s.id, type: s.type, title: s.title, routes: ["all"], file: "market/snapshot.json" });
+    entries.push({ id: s.id, type: s.type, title: s.title, routes: ["all"], tags: ["all"], file: "market/snapshot.json" });
   } catch { /* 快照缺失 */ }
   entries.sort((a, b) => a.id.localeCompare(b.id));
   const idx = {

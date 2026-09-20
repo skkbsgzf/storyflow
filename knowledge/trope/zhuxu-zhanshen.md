@@ -1,39 +1,44 @@
 ---
 {
- "id": "kb/trope/zhuxu-zhanshen",
- "type": "trope",
- "title": "梗族 · 赘婿战神梗",
- "version": "2026-09-15",
- "status": "active",
- "applies_to": [
-  "short-drama",
-  "comic-drama"
- ],
- "saturation": "稳定·主流",
- "corpus_count": 192,
- "avg_heat_w": 10684,
- "keywords": {
-  "打脸": 47,
-  "当众": 101,
-  "强者回归": 9
- },
- "provenance": {
-  "source": "import",
-  "refs": [
-   "dataset:kakaxing/scriptrawstone@2026-09-15",
-   "tool:tools/distill-kakaxing.mjs"
-  ]
- },
- "updated": "2026-09-15",
- "bind": {
-  "skills": [
-   "find-trope"
+  "id": "kb/trope/zhuxu-zhanshen",
+  "type": "trope",
+  "title": "梗族 · 赘婿战神梗",
+  "version": "2026-09-15",
+  "status": "active",
+  "applies_to": [
+    "short-drama",
+    "comic-drama"
   ],
-  "minitools": [
-   "kb_search",
-   "check_trope_combo"
+  "saturation": "稳定·主流",
+  "corpus_count": 192,
+  "avg_heat_w": 10684,
+  "keywords": {
+    "打脸": 47,
+    "当众": 101,
+    "强者回归": 9
+  },
+  "provenance": {
+    "source": "import",
+    "refs": [
+      "dataset:kakaxing/scriptrawstone@2026-09-15",
+      "tool:tools/distill-kakaxing.mjs"
+    ]
+  },
+  "updated": "2026-09-15",
+  "bind": {
+    "skills": [
+      "find-trope"
+    ],
+    "minitools": [
+      "kb_search",
+      "check_trope_combo"
+    ]
+  },
+  "tags": [
+    "主神游戏",
+    "系统流",
+    "无限流"
   ]
- }
 }
 ---
 # 梗族 · 赘婿战神梗

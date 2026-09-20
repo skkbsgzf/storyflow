@@ -1,39 +1,44 @@
 ---
 {
- "id": "kb/trope/zhenjia-qianjin",
- "type": "trope",
- "title": "梗族 · 真假千金梗",
- "version": "2026-09-15",
- "status": "active",
- "applies_to": [
-  "short-drama",
-  "comic-drama"
- ],
- "saturation": "退潮期·慎入",
- "corpus_count": 83,
- "avg_heat_w": 7938,
- "keywords": {
-  "身份": 29,
-  "打脸": 37,
-  "认亲": 7
- },
- "provenance": {
-  "source": "import",
-  "refs": [
-   "dataset:kakaxing/scriptrawstone@2026-09-15",
-   "tool:tools/distill-kakaxing.mjs"
-  ]
- },
- "updated": "2026-09-15",
- "bind": {
-  "skills": [
-   "find-trope"
+  "id": "kb/trope/zhenjia-qianjin",
+  "type": "trope",
+  "title": "梗族 · 真假千金梗",
+  "version": "2026-09-15",
+  "status": "active",
+  "applies_to": [
+    "short-drama",
+    "comic-drama"
   ],
-  "minitools": [
-   "kb_search",
-   "check_trope_combo"
+  "saturation": "退潮期·慎入",
+  "corpus_count": 83,
+  "avg_heat_w": 7938,
+  "keywords": {
+    "身份": 29,
+    "打脸": 37,
+    "认亲": 7
+  },
+  "provenance": {
+    "source": "import",
+    "refs": [
+      "dataset:kakaxing/scriptrawstone@2026-09-15",
+      "tool:tools/distill-kakaxing.mjs"
+    ]
+  },
+  "updated": "2026-09-15",
+  "bind": {
+    "skills": [
+      "find-trope"
+    ],
+    "minitools": [
+      "kb_search",
+      "check_trope_combo"
+    ]
+  },
+  "tags": [
+    "真假千金",
+    "身份错位",
+    "豪门"
   ]
- }
 }
 ---
 # 梗族 · 真假千金梗

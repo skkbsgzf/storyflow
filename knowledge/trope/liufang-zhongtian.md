@@ -1,39 +1,44 @@
 ---
 {
- "id": "kb/trope/liufang-zhongtian",
- "type": "trope",
- "title": "梗族 · 流放种田梗",
- "version": "2026-09-15",
- "status": "active",
- "applies_to": [
-  "short-drama",
-  "comic-drama"
- ],
- "saturation": "上升期·蓝海偏好",
- "corpus_count": 92,
- "avg_heat_w": 22598,
- "keywords": {
-  "空间": 18,
-  "系统": 15,
-  "种田": 45
- },
- "provenance": {
-  "source": "import",
-  "refs": [
-   "dataset:kakaxing/scriptrawstone@2026-09-15",
-   "tool:tools/distill-kakaxing.mjs"
-  ]
- },
- "updated": "2026-09-15",
- "bind": {
-  "skills": [
-   "find-trope"
+  "id": "kb/trope/liufang-zhongtian",
+  "type": "trope",
+  "title": "梗族 · 流放种田梗",
+  "version": "2026-09-15",
+  "status": "active",
+  "applies_to": [
+    "short-drama",
+    "comic-drama"
   ],
-  "minitools": [
-   "kb_search",
-   "check_trope_combo"
+  "saturation": "上升期·蓝海偏好",
+  "corpus_count": 92,
+  "avg_heat_w": 22598,
+  "keywords": {
+    "空间": 18,
+    "系统": 15,
+    "种田": 45
+  },
+  "provenance": {
+    "source": "import",
+    "refs": [
+      "dataset:kakaxing/scriptrawstone@2026-09-15",
+      "tool:tools/distill-kakaxing.mjs"
+    ]
+  },
+  "updated": "2026-09-15",
+  "bind": {
+    "skills": [
+      "find-trope"
+    ],
+    "minitools": [
+      "kb_search",
+      "check_trope_combo"
+    ]
+  },
+  "tags": [
+    "追妻火葬场",
+    "悔婚",
+    "都市情感"
   ]
- }
 }
 ---
 # 梗族 · 流放种田梗

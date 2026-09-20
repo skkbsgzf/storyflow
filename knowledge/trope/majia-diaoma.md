@@ -1,39 +1,44 @@
 ---
 {
- "id": "kb/trope/majia-diaoma",
- "type": "trope",
- "title": "梗族 · 马甲掉马梗",
- "version": "2026-09-15",
- "status": "active",
- "applies_to": [
-  "short-drama",
-  "comic-drama"
- ],
- "saturation": "红海·过饱和",
- "corpus_count": 750,
- "avg_heat_w": 9215,
- "keywords": {
-  "身份": 410,
-  "当众": 309,
-  "揭穿": 48
- },
- "provenance": {
-  "source": "import",
-  "refs": [
-   "dataset:kakaxing/scriptrawstone@2026-09-15",
-   "tool:tools/distill-kakaxing.mjs"
-  ]
- },
- "updated": "2026-09-15",
- "bind": {
-  "skills": [
-   "find-trope"
+  "id": "kb/trope/majia-diaoma",
+  "type": "trope",
+  "title": "梗族 · 马甲掉马梗",
+  "version": "2026-09-15",
+  "status": "active",
+  "applies_to": [
+    "short-drama",
+    "comic-drama"
   ],
-  "minitools": [
-   "kb_search",
-   "check_trope_combo"
+  "saturation": "红海·过饱和",
+  "corpus_count": 750,
+  "avg_heat_w": 9215,
+  "keywords": {
+    "身份": 410,
+    "当众": 309,
+    "揭穿": 48
+  },
+  "provenance": {
+    "source": "import",
+    "refs": [
+      "dataset:kakaxing/scriptrawstone@2026-09-15",
+      "tool:tools/distill-kakaxing.mjs"
+    ]
+  },
+  "updated": "2026-09-15",
+  "bind": {
+    "skills": [
+      "find-trope"
+    ],
+    "minitools": [
+      "kb_search",
+      "check_trope_combo"
+    ]
+  },
+  "tags": [
+    "身份错位",
+    "马甲",
+    "逆袭"
   ]
- }
 }
 ---
 # 梗族 · 马甲掉马梗

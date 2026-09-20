@@ -1,39 +1,44 @@
 ---
 {
- "id": "kb/trope/chongsheng-fuchou",
- "type": "trope",
- "title": "梗族 · 重生复仇梗",
- "version": "2026-09-15",
- "status": "active",
- "applies_to": [
-  "short-drama",
-  "comic-drama"
- ],
- "saturation": "红海·有效",
- "corpus_count": 702,
- "avg_heat_w": 11978,
- "keywords": {
-  "复仇": 267,
-  "打脸": 146,
-  "先手": 0
- },
- "provenance": {
-  "source": "import",
-  "refs": [
-   "dataset:kakaxing/scriptrawstone@2026-09-15",
-   "tool:tools/distill-kakaxing.mjs"
-  ]
- },
- "updated": "2026-09-15",
- "bind": {
-  "skills": [
-   "find-trope"
+  "id": "kb/trope/chongsheng-fuchou",
+  "type": "trope",
+  "title": "梗族 · 重生复仇梗",
+  "version": "2026-09-15",
+  "status": "active",
+  "applies_to": [
+    "short-drama",
+    "comic-drama"
   ],
-  "minitools": [
-   "kb_search",
-   "check_trope_combo"
+  "saturation": "红海·有效",
+  "corpus_count": 702,
+  "avg_heat_w": 11978,
+  "keywords": {
+    "复仇": 267,
+    "打脸": 146,
+    "先手": 0
+  },
+  "provenance": {
+    "source": "import",
+    "refs": [
+      "dataset:kakaxing/scriptrawstone@2026-09-15",
+      "tool:tools/distill-kakaxing.mjs"
+    ]
+  },
+  "updated": "2026-09-15",
+  "bind": {
+    "skills": [
+      "find-trope"
+    ],
+    "minitools": [
+      "kb_search",
+      "check_trope_combo"
+    ]
+  },
+  "tags": [
+    "重生",
+    "复仇",
+    "年代"
   ]
- }
 }
 ---
 # 梗族 · 重生复仇梗

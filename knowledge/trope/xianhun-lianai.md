@@ -1,38 +1,43 @@
 ---
 {
- "id": "kb/trope/xianhun-lianai",
- "type": "trope",
- "title": "梗族 · 先婚后爱梗",
- "version": "2026-09-15",
- "status": "active",
- "applies_to": [
-  "short-drama",
-  "comic-drama"
- ],
- "saturation": "稳定·主流",
- "corpus_count": 387,
- "avg_heat_w": 10092,
- "keywords": {
-  "宠": 184,
-  "身份": 81
- },
- "provenance": {
-  "source": "import",
-  "refs": [
-   "dataset:kakaxing/scriptrawstone@2026-09-15",
-   "tool:tools/distill-kakaxing.mjs"
-  ]
- },
- "updated": "2026-09-15",
- "bind": {
-  "skills": [
-   "find-trope"
+  "id": "kb/trope/xianhun-lianai",
+  "type": "trope",
+  "title": "梗族 · 先婚后爱梗",
+  "version": "2026-09-15",
+  "status": "active",
+  "applies_to": [
+    "short-drama",
+    "comic-drama"
   ],
-  "minitools": [
-   "kb_search",
-   "check_trope_combo"
+  "saturation": "稳定·主流",
+  "corpus_count": 387,
+  "avg_heat_w": 10092,
+  "keywords": {
+    "宠": 184,
+    "身份": 81
+  },
+  "provenance": {
+    "source": "import",
+    "refs": [
+      "dataset:kakaxing/scriptrawstone@2026-09-15",
+      "tool:tools/distill-kakaxing.mjs"
+    ]
+  },
+  "updated": "2026-09-15",
+  "bind": {
+    "skills": [
+      "find-trope"
+    ],
+    "minitools": [
+      "kb_search",
+      "check_trope_combo"
+    ]
+  },
+  "tags": [
+    "仙侠",
+    "修仙",
+    "跨世之恋"
   ]
- }
 }
 ---
 # 梗族 · 先婚后爱梗
