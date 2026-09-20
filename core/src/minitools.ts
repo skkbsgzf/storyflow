@@ -425,7 +425,10 @@ export function outputPathOf(
 }
 
 export function artifactPathOf(flow: FlowDescriptor, nodeId: string): string | undefined {
-  const node = flow.graph.nodes[nodeId];
+  // 注意：`FlowDescriptor.graph` 在类型上是必填，但 **flow@3 的原始描述符里没有 graph**
+  // （节点由 modules 派生，只有 effective@2 才有）。此处必须防御——否则一处 `.graph.nodes`
+  // 就能让消费方（如 viewWorkbenchPayload）对整个 flow@3 项目 500 崩。
+  const node = flow.graph?.nodes?.[nodeId];
   if (!node) return undefined;
   const declared = flow.outputs?.find((o) => o.node === nodeId);
   return nodeOutput(node) ?? declared?.path ?? declared?.file;

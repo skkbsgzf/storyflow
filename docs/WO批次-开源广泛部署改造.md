@@ -480,6 +480,7 @@ du -sh projects src/kakaxing-Json/data
 | **OS-02 阶段 A（可中断 / 可恢复）** | ✅ 已落地 | 等待态显式化（`blocked` 独立于 `failed`）；`flow_resume` 接 `failed`/`blocked`；连接件驳回封顶 `maxRounds`；出厂 `kit_boundary: always→auto`（含 N5 修复）；`overlayHash` 首装漂移即重编译；`awaitTimeoutMs` → `stalledAt`。见下「OS-02 阶段 A 明细」 | 2026-09-20 |
 | **R8-OPS 第 0 批 · 失败外显（诊断通道）** | ✅ 已落地 | 新增 `contracts/diagnostics.schema.json` + `core/src/diag.ts`（`recordDiag`/`readDiags`/`summarizeDiags`，**永不抛异常**）；改造 8 处「吞掉会改变结论」的 `catch`；`flow_effect` 与 `/api/diagnostics` 暴露汇总。见下「R8-OPS 第 0 批明细」 | 2026-09-20 |
 | **R8-OPS 第 0 批 · server 合一 + `miniflow up`** | ✅ 已落地 | 新增 `core/src/static.ts`（白名单静态面）+ `core/src/compat.ts`（serve.py 八个 legacy 端点并入内核面）；`cli.ts` 新增 `up`（端口占用自动顺延）。**同进程单端口同时提供 内核 API + legacy 端点 + 页面**。见下明细 | 2026-09-20 |
+| **R8-OPS 第 1 批 · 前端 live 化（快照 → 轮询）** | ✅ 已落地 | 新增 `kernel.viewLive()`（含 `fingerprint`/`revision`/`filesRevision`）+ `GET /api/projects/:id/live(?files=1)`；页面模板由「SSR 快照」改为**静态切片 SSR + 易变切片轮询**；**顺带修 flow@3 `workbench-payload` 500**（`flow.graph` 缺失，第 4 处 N 类 latent）。见下明细 | 2026-09-20 |
 | OS-02 阶段 C（默认值回调）/ 阶段 D（死配置 `iterate`） | ⏳ 待开工 | 含 N2（`adapt:"off"` 未实现，需拍板）、N4（`set-link` 契约，需拍板）、§三勘误 2（`model_tier` 默认 `high`）、§二 C/D 两表 | — |
 | OS-00 数据剥离执行 / OS-04 / OS-05 / OS-06 / OS-07 | ⏳ 待开工 | 数据剥离需先拍板 附 D #2/#3/#5 | — |
 
@@ -645,8 +646,7 @@ du -sh projects src/kakaxing-Json/data
 
 ### 第 0 批明确未做（下一批候选）
 
-- **前端 live 化**（把页面 `fetch` 从 serve.py 路径改为内核端点 / 轮询 `/api/projects/:id/state`）——
-  本批只做到「同一份页面在单进程内能跑」，**没有改页面**。
+- ~~**前端 live 化**（把页面 `fetch` 从 serve.py 路径改为内核端点 / 轮询 `/api/projects/:id/state`）~~ —— **第 1 批已完成**。
 - **初始化面板（OS-04）**：项目地址 + 配置模板（自存/导入官方/从零新建）。数据模型已在
   `contracts/project-config.schema.json`，缺的是表单与模板库。
 - **`mcp.ts` 补动词**：仍只 7 个（缺 `flow_init`/`effect`/`mine`/`skill_patch`/`optimize`/`overlay`）——
@@ -654,3 +654,90 @@ du -sh projects src/kakaxing-Json/data
 - **`tools/serve.py` 的退场**：目前与 `up` 并存（隧道能力暂只在 serve.py 侧，`/_kit/tunnel.json`
   已显式声明未启用）。
 - **pi agent 适配**：MCP SDK 自带 `streamableHttp`，可留待 OS-07 之后。
+
+---
+
+## R8-OPS · 第 1 批：前端 live 化（快照 → 轮询）
+
+### 为什么先做这个（执行顺序 1 → 3 → 2）
+
+用户拍板的方向里，第 1 批是「前端真正活起来」——**只有当前端能实时反映内核状态，才能看出初始化面板（OS-04）该长什么样**。
+第 0 批解决了「同进程能跑」，但页面仍是 `__PAYLOAD__` 注入的**构建时快照**：
+`tools/project-pages.py` 生成一次，之后内核里发生什么都不再更新（要刷新只能重跑 python）。
+本批把「易变切片」改为**轮询内核端点**，静态切片（`modules`/`toolbox`/`kbTitles`——它们由 python 侧计算、内核不算）**保持 SSR**。
+
+### 1A · 内核侧：`viewLive` 读模型 + `/live` 端点
+
+| 文件 | 改动 |
+|---|---|
+| `core/src/kernel.ts` | 新增 `fingerprint(...)`（djb2，稳定序）+ `viewLive(projectId, {files?})`：一次返回 `state`/`eff`/`overlay`/`optimize`/`metrics`/`diagnostics` + 两个指纹。**`revision`** 由「状态 / 门裁决 / 逐节点 round·verdict / `overlayHash` / `planHash` / metrics 事件数 / 诊断条数」合成；**`filesRevision`** 由「产物清单的 路径+size+mtimeMs」合成。**两个指纹分开**：状态没动但文件变了（或反之）都能被单独识别，避免无差别重绘 |
+| `core/src/http.ts` | 新增 `GET /api/projects/:id/live`（`?files=1` 时附带 `files`/`snapshots`，走已有 `viewWorkbenchPayload`）。默认不返回文件内容——**轮询要便宜**，文件内容只在需要重绘产物面板时才拉 |
+| `core/test`（既有） | 复用第 0 批的 `r8-server.test.ts` 契约；本批无新增测试文件（live 语义由**真实进程 curl + 指纹变化**验证，见下冒烟） |
+
+### 1B · 前端侧：静态切片 SSR + 易变切片轮询
+
+`tools/workflow-page-template.html`：
+
+- `const DATA, files, RS, EFF, OVERLAY, OPTIMIZE, METRICS, flow, nodes, edges, LEGACY_CANVAS` → **`let`**（原本是常量，轮询无法替换）；
+  新增 `bindPayload(PAYLOAD)`（加载时调用一次，行为与原 SSR 一致——**无 server 时页面照旧可用**）、`fillDataDefaults()`、`rebuildFileVersions()`、`refreshMwTip()`、`bindCanvas()`。
+- 新增 `startLive()` / `pollLive()` / `applyLive()` / `liveApi()` / `livePill()` / `renderDiagStrip()`：
+  轮询 `/live`，比较 `revision`/`filesRevision` 后才应用；应用后重跑 `autoLayout()` + `renderEffectiveBanner()` + `renderDiagStrip()`，并按 **id** 复位 `sel`（**不按索引**——否则列表一变动选中项就漂）。
+- 头部新增两个 UI 钩子：**`#live-pill`**（默认 `● 快照`，轮询成功转 `● 实时` / 失败转 `● 离线`）+ **`#diag-strip`**（把 `diagnostics` 汇总成一条可点开的失败带——**0A 诊断通道的可见面**）。
+- **防御 `location`**：`LIVE.on = (typeof location !== "undefined") && /^https?:$/.test(location.protocol||"")`。
+  `page-lint.mjs` 在**无 `location` 的裸 VM** 里求值页面脚本，缺此守卫直接 500。
+- 文案修正：`proj-switch` 标题与「新建项目」提示由 `serve.py` 改为 **`miniflow up`**（旧的启动方式已废）。
+
+### 1C · 顺带修掉的存量缺陷（被 `/live` 首次暴露）
+
+> **flow@3 的 flow.json 没有 `graph`**（节点由内核 `expandFlow3` 派生）；而 `FlowDescriptor.graph` 是**类型必填**。
+> 因此任何读 `flow.graph.nodes` 的消费方在 flow@3 项目上必 500。这是**第 4 处**同源 latent（前 3 处：`artifactPathOf` 之外的工具链读图、`plan.ts` 计划截断、`minitools` 快照）。
+
+| 文件 | 改动 |
+|---|---|
+| `core/src/minitools.ts` | `artifactPathOf`：`const node = flow.graph?.nodes?.[nodeId]; if (!node) return undefined;` |
+| `core/src/kernel.ts` | `viewWorkbenchPayload`：① `loadFlow` 匹配循环在无 `graph.nodes` 时**回退用 `modules.length`**；② 快照循环在 `flow.graph.nodes` 缺失时**改读 `effRaw.nodes`**。并删掉此前实验中未定型的 `loadFlowSafe` |
+
+**前后对照（实测）**：`GET /api/projects/p-wxl-001/workbench-payload` 由 **500 `Cannot read properties of undefined (reading 'nodes')`** → **200**。
+
+### 第 1 批冒烟实测（真进程 `miniflow up --port 8421` + curl）
+
+| 请求 | 结果 |
+|---|---|
+| `GET /` | **200** |
+| `GET /projects/p-wxl-001/workflow.html` | **200** |
+| `GET /api/projects/p-wxl-001/live` | **200**，keys = `project,state,eff,overlay,optimize,metrics,diagnostics,revision,filesRevision`（**无 `files`**，默认轻量） |
+| `GET /api/projects/p-wxl-001/live?files=1` | **200**，额外交回 `files`（23 项）/`snapshots`（23 项） |
+| `GET /api/projects/p-wxl-001/workbench-payload` | **200**（修前 500） |
+
+**「活性」证明（不改内容，只改 mtime / 注入诊断）**
+
+| 动作 | `revision` | `filesRevision` | 结论 |
+|---|---|---|---|
+| 起始 | `1ywg019` | `1yex6d9` | — |
+| `touch` 一个产物 md（仅 mtime） | `1ywg019`（不动） | **`aitmis`**（变化） | **只动文件 → 只有 filesRevision 变** |
+| 追加 1 行 `diagnostics.jsonl` | **`1ywg026`**（变化） | `aitmis`（不动） | **只动状态 → 只有 revision 变，且 `diagnostics.count` 0→1** |
+
+⇒ 两张指纹**正交**，轮询能精确判断「该重绘什么」，不产生无谓重绘。诊断注入行与 mtime 均已还原。
+
+### 第 1 批门禁实测（2026-09-20）
+
+| 门 | 结果 |
+|---|---|
+| `cd core && tsc --noEmit` | **OK** |
+| `vitest` | **183 passed / 0 failed（19 files）** —— 与第 0 批同数，**本批零回归** |
+| `module-lint.py` | **0 errors** / 36 warnings（同前） |
+| `kit-lint.py` | **0 errors** / 21 warnings（同前） |
+| `flow-lint.py` | **21 errors** / 1 warning —— 全部为 7 个未迁移 flow@2 存量红档 |
+| `artifact-lint.py` | **0 errors** / 168 warnings（同前） |
+| `validate-kb.py` | **1 FAIL**（N7 存量） |
+| `page-lint.mjs projects/p-wxl-001/workflow.html` | **39/39 passed** |
+| `page-lint.mjs projects/p-slj-001 · projects/ccwd-fq` | **39/39 passed**（存量页亦不回归） |
+
+### 第 1 批明确未做
+
+- **其余项目的页面未重生成**：模板变了，但 `ccwd-fq2/fq3`、`p-slj-001/004~007` 等页面正被**并发写入者**改动（mtime 早于本批模板改动），
+  **不在本批写权内**；它们仍可正常工作（新代码全是**追加**，老页面即「无轮询的静态页」）。等并发写入者落定后统一重生成。
+- **`p-wxl-001/` 整目录未提交**：该项目由**另一 run** 于 08:49 建，整目录未跟踪（2.0M/95 文件），
+  与第 0 批 `core/projects/zzz-dummy-archive` 同理——**不替别的写入者提交其项目数据**。本批只提交「模板 + 内核代码」。
+- **SSE / WebSocket**：仍为轮询（用户拍板的「先轮询」）；订阅式留待需要时再上。
+- **`mcp.ts` 补动词**（下一步，步骤 3）与 **OS-04 初始化面板**（步骤 2）。

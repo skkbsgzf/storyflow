@@ -302,8 +302,10 @@ textarea{width:100%;min-height:340px;background:var(--bg-ctl);color:var(--ink);b
 <div id="canvas-col">
 <header>
   <span class="brand">StoryFlow</span>
-  <select id="proj-switch" class="tb" title="切换项目（生成时快照）"></select>
-  <span class="ver" id="v"></span><span class="sp"></span>
+  <select id="proj-switch" class="tb" title="切换项目"></select>
+  <span class="ver" id="v"></span>
+  <span class="msg" id="live-pill" style="white-space:nowrap">● 快照</span>
+  <span class="sp"></span>
   <button class="tb" onclick="importFlowHint()" title="流商店：浏览 / 搜索全部生产线，一键导入到当前项目">⇪ 导入新流</button>
   <button class="tb" onclick="openDeliverables()" title="产物管理：模块交付件 / 过程件内幕 / 旧目录交付">📦 产物管理</button>
   <button class="tb" id="mw-btn" onclick="openWorldbook()" title="世界书：设定/人物/势力/地理/编年/伏笔/底牌（文件即真相）——大纲与成稿之间的设定中间件">▦ 中间件</button>
@@ -312,6 +314,7 @@ textarea{width:100%;min-height:340px;background:var(--bg-ctl);color:var(--ink);b
   <a class="tb" id="dl-link" href="#" style="display:none">交付产物页 →</a>
 </header>
   <div id="eff-banner" style="display:none"></div>
+  <div id="diag-strip" style="display:none"></div>
   <div id="stage"><div id="world"><svg id="edges"></svg><div id="nodes"></div></div>
     <div id="ctip"></div>
   </div>
@@ -364,35 +367,58 @@ textarea{width:100%;min-height:340px;background:var(--bg-ctl);color:var(--ink);b
 <script>
 const PAYLOAD = JSON.parse(document.getElementById("payload").textContent);
 /* payload@2 五键冻结契约（contracts/page-payload.schema.json）：顶层 DATA/EFF/OVERLAY/OPTIMIZE/METRICS */
-const DATA = PAYLOAD.DATA;
-const files = DATA.files, RS = DATA.runstate;
-if (DATA.annos) RS.annos = DATA.annos;
+/* ---------- R8-OPS 前端 live 化：这几个绑定必须是**可重赋值**的 ----------
+   首屏仍吃生成时注入的 SSR payload（file:// 下也能看，不依赖后端）；但页面若由内核 HTTP 面提供，
+   文件末尾的 startLive() 会轮询 /api/projects/<id>/live，把**易变切片**（状态/产物/生效编排/提案/指标/诊断）
+   就地替换并重渲染 —— 于是内核推进（CLI / MCP / 面板）之后，页面不再是一张死快照。
+   静态切片（DATA.modules / toolbox / kbTitles / flowsIndex / deliverables）不在此列：它们由生成器算好，
+   只在换 flow / 加模块时变，那时本来就该重新生成页面。 */
+let DATA, files, RS, EFF, OVERLAY, OPTIMIZE, METRICS, flow, nodes, edges, LEGACY_CANVAS;
 /* 未迁移面板的缺失键回填（WO-07 面板重写后可删）：只补默认值，不做双名兜底 */
-DATA.snapshots = DATA.snapshots || {}; DATA.kits = DATA.kits || {}; DATA.kbTitles = DATA.kbTitles || {};
-DATA.nodeFields = DATA.nodeFields || []; DATA.flowsIndex = DATA.flowsIndex || []; DATA.skillsIndex = DATA.skillsIndex || [];
-/* 中间件按钮 tooltip 随实际产出变化：无世界书目录时明说，不挂空承诺 */
-(()=>{ const b=document.getElementById("mw-btn"); if(!b) return;
-  b.title = Object.keys(files).some(f=>f.startsWith("世界书/")) ? b.title
-    : "中间件 · 设定真相库：本流程未产出世界书目录（设定职能见过程件，如 World Bible / 编剧层的设定文件）"; })();
+function fillDataDefaults(d){
+  d.snapshots = d.snapshots || {}; d.kits = d.kits || {}; d.kbTitles = d.kbTitles || {};
+  d.nodeFields = d.nodeFields || []; d.flowsIndex = d.flowsIndex || []; d.skillsIndex = d.skillsIndex || [];
+  return d;
+}
 /* ---------- 文件多版本索引（来自快照）：diff 呈现的数据底座 ---------- */
 const fileVersions = {};
-Object.entries(DATA.snapshots || {}).forEach(([nid, lst]) => (lst || []).forEach(s => {
-  Object.entries(s.content || {}).forEach(([pth, text]) => {
-    (fileVersions[pth] = fileVersions[pth] || []).push({ label: `${nid}·r${s.round}`, text });
-  });
-}));
-Object.keys(fileVersions).forEach(k => fileVersions[k].sort((x, y) => x.label < y.label ? -1 : 1));
+function rebuildFileVersions(){
+  Object.keys(fileVersions).forEach(k => delete fileVersions[k]);
+  Object.entries(DATA.snapshots || {}).forEach(([nid, lst]) => (lst || []).forEach(s => {
+    Object.entries(s.content || {}).forEach(([pth, text]) => {
+      (fileVersions[pth] = fileVersions[pth] || []).push({ label: `${nid}·r${s.round}`, text });
+    });
+  }));
+  Object.keys(fileVersions).forEach(k => fileVersions[k].sort((x, y) => x.label < y.label ? -1 : 1));
+}
+/* 中间件按钮 tooltip 随实际产出变化：无世界书目录时明说，不挂空承诺 */
+function refreshMwTip(){
+  const b = document.getElementById("mw-btn"); if (!b) return;
+  const on = "世界书：设定/人物/势力/地理/编年/伏笔/底牌（文件即真相）——大纲与成稿之间的设定中间件";
+  const off = "中间件 · 设定真相库：本流程未产出世界书目录（设定职能见过程件，如 World Bible / 编剧层的设定文件）";
+  b.title = Object.keys(files || {}).some(f => f.startsWith("世界书/")) ? on : off;
+}
 /* ---------- 生效编排：节点与边只此一份（EFF，内核 expandFlow 单点派生落盘）---------- */
 /* 页面不重算派生（R6 §三）。存量项目（未跑 flow_effect / 未转换）EFF 为空壳 → 画布空，横幅显式说明。 */
-const EFF = PAYLOAD.EFF || null;
-const OVERLAY = PAYLOAD.OVERLAY || null;
-const OPTIMIZE = PAYLOAD.OPTIMIZE || null;
-const METRICS = PAYLOAD.METRICS || null;
-const flow = (EFF && EFF.flow) || DATA.flow || {};   // flow@3 全文（内核内嵌）；无 EFF 时退展示摘要（payload DATA.flow）
-const nodes = (EFF && EFF.nodes) || {};    // { <实例id>.<tool>: node }
-const edges = (EFF && EFF.edges) || [];    // 骨架边 + 插件自动接线（R6 无 reject/loop 边）
-const LEGACY_CANVAS = !Object.keys(nodes).length;
-document.getElementById("v").textContent = "";  // 流程名移入「工作流管理」页（顶栏降噪）
+function bindCanvas(){
+  flow = (EFF && EFF.flow) || DATA.flow || {};   // flow@3 全文（内核内嵌）；无 EFF 时退展示摘要（payload DATA.flow）
+  nodes = (EFF && EFF.nodes) || {};    // { <实例id>.<tool>: node }
+  edges = (EFF && EFF.edges) || [];    // 骨架边 + 插件自动接线（R6 无 reject/loop 边）
+  LEGACY_CANVAS = !Object.keys(nodes).length;
+  const vEl = document.getElementById("v");
+  if (vEl) vEl.textContent = "";  // 流程名移入「工作流管理」页（顶栏降噪）
+}
+function bindPayload(payload){
+  DATA = fillDataDefaults(payload.DATA);
+  files = DATA.files || {}; RS = DATA.runstate;
+  if (DATA.annos && RS) RS.annos = DATA.annos;
+  EFF = payload.EFF || null;
+  OVERLAY = payload.OVERLAY || null;
+  OPTIMIZE = payload.OPTIMIZE || null;
+  METRICS = payload.METRICS || null;
+  rebuildFileVersions(); refreshMwTip(); bindCanvas();
+}
+bindPayload(PAYLOAD);
 // 项目切换下拉：当前项目 + 目录下其他项目 + 新建入口
 const projSel = document.getElementById("proj-switch");
 (DATA.projects || []).forEach(p => {
@@ -416,7 +442,7 @@ projSel.addEventListener("change", e => {
   if (e.target.value === "__new__"){
     e.target.value = DATA.project;
     const tip = document.getElementById("ctip");
-    tip.innerHTML = "<b>新建项目</b><br>静态页无后端。请运行：<br><code>python -m core miniflow flow_init --flow <id> --project <新id></code><br><code>python -m core miniflow flow_run --flow <id> --project <新id></code><br>生成页面：<code>python tools/project-pages.py</code>";
+    tip.innerHTML = "<b>新建项目</b><br>内核 HTTP 面已在运行（<code>miniflow up</code>），可用：<br><code>miniflow flow_init --project &lt;新id&gt;</code> 生成配置模板<br><code>miniflow flow_run --flow &lt;id&gt; --project &lt;新id&gt;</code> 开跑<br>生成页面：<code>python tools/project-pages.py &lt;flow&gt; &lt;新id&gt;</code>";
     tip.style.display = "block";
     setTimeout(()=>{ tip.style.display = "none"; }, 6000);
     return;
@@ -2461,6 +2487,83 @@ autoLayout();
 renderEffectiveBanner();
 fitStage();   // 默认落在第一个未完成阶段：全屏下节点太小难以点中，全屏只作总览
 openShelf();
+
+/* ==================== R8-OPS 前端 live 化 ====================
+   页面不再是一张死快照：由内核 HTTP 面（miniflow up）提供时，轮询 /api/projects/<id>/live，
+   把易变切片就地换上并重渲染。file:// 打开时明确显示「快照」，不假装有后端。
+   两个指纹分工：`revision` 决定要不要重渲染；`filesRevision` 决定要不要回来取产物正文（可能上 MB）。 */
+/* 注意：page-lint 会在**没有 location/fetch 的裸 VM** 里求值本脚本，所以这里必须防御式探测，
+   不能在顶层直接读 location（否则门禁直接 ReferenceError 崩掉）。 */
+const LIVE = {
+  on: (typeof location !== "undefined") && /^https?:$/.test(location.protocol || ""),
+  rev: null, filesRev: null, timer: null,
+};
+function livePill(text, color, title){
+  const el = document.getElementById("live-pill"); if (!el) return;
+  el.textContent = text; el.style.color = color; if (title) el.title = title;
+}
+function liveApi(q){ return "/api/projects/" + encodeURIComponent(DATA.project) + "/live" + (q || ""); }
+/* 诊断条 + 结构变化提示（两者都是「本页可能不可信」的显式声明，不是装饰） */
+function renderDiagStrip(d, structural){
+  const el = document.getElementById("diag-strip"); if (!el) return;
+  const bits = [];
+  if (structural) bits.push("<b>生效编排已变</b>（overlayHash / planHash 变了）：画布已按新编排重绘；模块的增删需重新生成页面");
+  if (d && d.count > 0) bits.push("诊断 <b>" + d.count + "</b> 条（" + Object.entries(d.byKind || {}).map(([k, v]) => k + "×" + v).join("、") + "）—— <b>本项目某些结论可能不可信</b>");
+  if (!bits.length){ el.style.display = "none"; el.innerHTML = ""; return; }
+  el.innerHTML = bits.map(b => '<div class="banner" style="border-left-color:#b8a464">' + b + '</div>').join("");
+  el.style.display = "";
+}
+/* 把 /live 的易变切片换进页面。静态切片（DATA.modules/toolbox/kbTitles…）保持首屏注入不动。 */
+function applyLive(live){
+  const prevOverlayHash = EFF && EFF.overlayHash, prevPlanHash = EFF && EFF.planHash;
+  if (live.state){ RS = live.state; if (DATA.annos) RS.annos = DATA.annos; }
+  if (live.files){ files = live.files; DATA.files = live.files; }
+  if (live.snapshots){ DATA.snapshots = live.snapshots; rebuildFileVersions(); }
+  if (live.eff) EFF = live.eff;
+  if (live.overlay !== undefined) OVERLAY = live.overlay;
+  if (live.optimize !== undefined) OPTIMIZE = live.optimize;
+  if (live.metrics !== undefined) METRICS = live.metrics;
+  const structural = !!(EFF && (EFF.overlayHash !== prevOverlayHash || EFF.planHash !== prevPlanHash));
+  refreshMwTip();
+  bindCanvas();
+  // 选中的节点对象属于旧 EFF：先按 id 重指（找不到就置空），再重画——绝不保留悬空引用
+  const keepId = sel && sel.id;
+  sel = (keepId && nodes[keepId]) ? nodes[keepId] : null;
+  lastSel = sel;
+  autoLayout();                 // 内部会 render()
+  renderEffectiveBanner();
+  renderDiagStrip(live.diagnostics, structural);
+  if (sel){ render(); openNodeDoc(sel); }        // 右栏内容跟着刷新
+  else if (keepId){ docReset(); }                // 选中的节点没了
+}
+async function pollLive(){
+  if (!LIVE.on) return;
+  try {
+    const r = await fetch(liveApi(), { cache: "no-store" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const live = await r.json();
+    if (live.revision === LIVE.rev){ livePill("● 实时", "#5a8a5e", "与内核实时连接（内容无变化）"); return; }
+    if (live.filesRevision !== LIVE.filesRev){
+      const rf = await fetch(liveApi("?files=1"), { cache: "no-store" });
+      if (rf.ok){ const full = await rf.json(); live.files = full.files; live.snapshots = full.snapshots; LIVE.filesRev = full.filesRevision; }
+    }
+    LIVE.rev = live.revision;
+    applyLive(live);
+    livePill("● 已同步", "#5a8a5e", "刚刚从内核刷新（rev " + live.revision + "）");
+  } catch (e) {
+    livePill("● 离线", "#a5433a", "连不上内核（" + String(e) + "）—— 当前页面是生成时的快照");
+  }
+}
+function startLive(){
+  if (!LIVE.on){
+    livePill("● 快照", "#8a8375", "以 file:// 打开：无后端。用 miniflow up 起服务即可实时同步");
+    return;
+  }
+  livePill("● 连接中…", "#8a8375", "正在连接内核");
+  pollLive();
+  LIVE.timer = setInterval(pollLive, 4000);
+}
+startLive();
 document.getElementById("stage").addEventListener("click", e=>{ if(e.target.id==="stage"){ hideTip(); } });
 /* md 内链接：指向项目内文件的 → 右栏打开；外链 → 新窗口 */
 document.addEventListener("click", e=>{

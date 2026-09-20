@@ -93,6 +93,15 @@ export function buildHttpApp(kernel: Kernel) {
 
   app.get("/api/diagnostics", async () => kernel.viewDiagnostics());
 
+  // R8-OPS 前端 live 化：页面轮询的**实时切片**（状态/生效编排/overlay/提案/指标/诊断），
+  // 带 `revision` 与 `filesRevision` 两个指纹——页面据此决定要不要重渲染、要不要来取产物正文。
+  // `?files=1` 才回产物正文（可能上 MB），避免每轮轮询搬大包。
+  app.get("/api/projects/:id/live", async (req) => {
+    const { id } = req.params as { id: string };
+    const { files } = req.query as { files?: string };
+    return kernel.viewLive(id, { files: files === "1" || files === "true" });
+  });
+
   app.get("/api/projects/:id/snapshots/:node", async (req) => {
     const { id, node } = req.params as { id: string; node: string };
     return kernel.viewSnapshots(id, node);

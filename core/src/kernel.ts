@@ -101,6 +101,17 @@ export interface KernelOptions {
   flowsDir?: string;
 }
 
+/**
+ * 轻量稳定指纹（djb2）——只用于「变没变」的判定，**不是**安全哈希。
+ * 页面轮询靠它决定要不要重新渲染，所以必须对同样的输入给出同样的值（键序确定：调用方自己拼数组）。
+ */
+function fingerprint(parts: unknown[]): string {
+  const s = JSON.stringify(parts);
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
+}
+
 export class Kernel {
   /** 数据根：projects/ 所在处（每个测试/宿主可有自己的数据根）。 */
   readonly root: string;
@@ -1882,6 +1893,78 @@ export class Kernel {
     return out;
   }
 
+  /**
+   * R8-OPS 实时切片（前端 live 化）：页面轮询用。**只给易变部分**。
+   *
+   * 分工（这是本条的关键设计判断，不是省略）：
+   *   · 易变 = 运行状态 / 生效编排 / overlay / 提案 / 指标 / 诊断 / 产物正文 —— 内核每次现读 `registry/*.json` 与 `state.json`；
+   *   · 静态 = `DATA.modules` / `toolbox` / `kbTitles` / `flowsIndex` / `skillsIndex` / `deliverables`
+   *     —— 由生成器（`tools/project-pages.py`，Python）在构建时算好。**不在这里用 TS 重算一遍**，
+   *     否则就是本仓最忌讳的「两套实现 + 漂移」。这些切片只在换 flow / 加模块时变，那时本来就该重生成页面。
+   *
+   * 于是有一个诚实的边界：**编排结构变了（EFF.overlayHash / planHash 变）→ 页面显示"结构已变，请重生成页面"**，
+   * 而不是假装同步。运行状态与产物则实时收敛。
+   *
+   * `files=true` 才回产物正文（可能上 MB）：页面先用 `filesRevision` 判断要不要来取，避免每轮轮询都搬大包。
+   */
+  viewLive(projectId: string, opts: { files?: boolean } = {}) {
+    const projectDir = this.projectDir(projectId);
+    const readJson = (rel: string): unknown => {
+      try {
+        return JSON.parse(fs.readFileSync(path.join(projectDir, rel), "utf-8"));
+      } catch {
+        return null;
+      }
+    };
+    const state = loadState(projectDir) ?? readJson("run-state.json");
+    const eff = readJson(path.join("registry", "effective.json")) as { overlayHash?: string; planHash?: string } | null;
+    const overlay = readJson(path.join("registry", "overlay.json"));
+    const optimize = readJson(path.join("registry", "optimize.json"));
+    const metrics = readJson(path.join("registry", "metrics-summary.json"));
+    const diagnostics = summarizeDiags(projectDir);
+
+    const s = state as { status?: string; gate?: { verdict?: string; node?: string }; nodes?: Record<string, { status?: string; round?: number; verdict?: string }> } | null;
+    const revision = fingerprint([
+      s?.status ?? null,
+      s?.gate?.verdict ?? null,
+      s?.gate?.node ?? null,
+      Object.entries(s?.nodes ?? {}).map(([k, v]) => [k, v.status ?? null, v.round ?? 0, v.verdict ?? null]),
+      eff?.overlayHash ?? null,
+      eff?.planHash ?? null,
+      (metrics as { events?: number } | null)?.events ?? null,
+      diagnostics.count,
+    ]);
+
+    // 产物指纹：只取「路径 + 大小 + mtime」，不读正文——重活留给 files=true 那一次
+    const artifacts = listArtifacts(projectDir, { latest: true });
+    const filesRevision = fingerprint(
+      artifacts.map((a) => {
+        try {
+          const st = fs.statSync(path.join(projectDir, a.path));
+          return [a.path, st.size, Math.round(st.mtimeMs)];
+        } catch {
+          return [a.path, -1, -1];
+        }
+      }),
+    );
+
+    const base = {
+      project: projectId,
+      state,
+      eff,
+      overlay,
+      optimize,
+      metrics,
+      diagnostics,
+      revision,
+      filesRevision,
+    };
+    if (!opts.files) return base;
+
+    const wb = this.viewWorkbenchPayload(projectId);
+    return { ...base, files: wb.files, snapshots: wb.snapshots };
+  }
+
   /** 兼容桥：旧 workflow.html 的 DATA payload 同构形状。 */
   viewWorkbenchPayload(projectId: string) {
     const projectDir = this.projectDir(projectId);
@@ -1892,7 +1975,12 @@ export class Kernel {
       for (const d of fs.existsSync(this.flowsDir) ? fs.readdirSync(this.flowsDir) : []) {
         try {
           const f = this.loadFlow(d);
-          if (Object.keys(f.graph.nodes).length) { flowId = d; break; }
+          // flow@3 的原始描述符没有 graph（节点由 modules 派生）⇒ 用 modules 长度兜底。
+          // 不作兜底的话这里会**静默跳过全部 flow@3**，落到"没有 flow"——又一处「以为有，其实没有」。
+          const g = (f as unknown as { graph?: { nodes?: Record<string, unknown> } }).graph;
+          const m = (f as unknown as { modules?: unknown[] }).modules;
+          const count = g?.nodes ? Object.keys(g.nodes).length : (m?.length ?? 0);
+          if (count) { flowId = d; break; }
         } catch { /* skip */ }
       }
     }
@@ -1912,7 +2000,21 @@ export class Kernel {
       if (total > 2_000_000) break;
     }
     const snapshots: Record<string, unknown[]> = {};
-    for (const nodeId of Object.keys(flow?.graph.nodes ?? {})) {
+    // 节点集：flow@2 走原始 graph；flow@3 原始描述符没有 graph ⇒ 补上内核落盘的 effective@2 节点。
+    // （此前直接读 `flow?.graph.nodes`：flow@3 项目一进本函数就 500 —— 已实测 p-wxl-001。）
+    const effRaw = (() => {
+      try {
+        return JSON.parse(fs.readFileSync(path.join(projectDir, "registry", "effective.json"), "utf-8")) as { nodes?: Record<string, unknown> };
+      } catch {
+        return null;
+      }
+    })();
+    const gRaw = (flow as unknown as { graph?: { nodes?: Record<string, unknown> } } | undefined)?.graph;
+    const snapshotNodes = new Set<string>([
+      ...Object.keys(gRaw?.nodes ?? {}),
+      ...Object.keys(effRaw?.nodes ?? {}),
+    ]);
+    for (const nodeId of snapshotNodes) {
       const snaps = readSnapshots(projectDir, nodeId);
       if (snaps.length) snapshots[nodeId] = snaps;
     }
