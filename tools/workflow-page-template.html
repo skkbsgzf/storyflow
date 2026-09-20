@@ -288,6 +288,20 @@ textarea{width:100%;min-height:340px;background:var(--bg-ctl);color:var(--ink);b
 .sd-skills{display:flex;flex-wrap:wrap;gap:7px}
 .sd-skill{border:1px dashed var(--line);border-radius:999px;padding:3px 11px;font-size:calc(11.5px*var(--fs,1));color:var(--ink-2);font-family:Consolas,monospace}
 .st-empty{max-width:1200px;margin:70px auto;text-align:center;color:var(--ink-3);font-size:calc(13px*var(--fs,1))}
+/* OS-04 初始化面板：项目输入区 / 定性配置区 */
+.cfg-zone{border:1px solid var(--line-paper);border-radius:var(--r-m);padding:12px 14px;margin:12px 0;background:var(--bg-cmt)}
+.cfg-zone-h{font-size:calc(12.5px*var(--fs,1));color:var(--ink-2);letter-spacing:1px;margin-bottom:10px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.cfg-grid{display:grid;grid-template-columns:1fr;gap:8px}
+.cfg-row{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:6px 14px;align-items:baseline;font-size:calc(12.5px*var(--fs,1))}
+.cfg-row .k{color:var(--ink-3);font-family:Consolas,'Microsoft YaHei',monospace}
+.cfg-row .k .req{color:#a5433a;font-weight:700;margin-left:3px}
+.cfg-row .v{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-width:0}
+.cfg-row input[type=text],.cfg-row input[type=number],.cfg-row select{background:var(--bg-paper);border:1px solid var(--line);border-radius:var(--r-s);color:var(--ink);padding:4px 8px;font-size:calc(12.5px*var(--fs,1));min-width:120px;max-width:100%}
+.cfg-row input[type=text]{flex:1;min-width:220px}
+.cfg-row input.cfg-bad{border-color:#a5433a}
+.cfg-bool{display:inline-flex;gap:6px;align-items:center;color:var(--ink-2)}
+.cfg-warn{margin:8px 0 0;font-size:calc(11.5px*var(--fs,1));color:#a5433a}
+.cfg-ok{color:var(--acc-ok,#3a7a43)}
 </style>
 </head>
 <body>
@@ -1550,6 +1564,182 @@ async function saveApi(path, content){
   if (!j.ok) throw new Error(j.error || "保存失败");
   return "已保存 " + j.saved;
 }
+/* ---------- OS-04 初始化面板：项目输入区（读 flow.inputs）+ 定性配置区 + 模板 ----------
+ * 口径（与内核 configToInputs 对齐，不允许出现第二套真相）：
+ *  · 主区「流程输入」由 DATA.flowInputs **逐字段渲染** —— 它是 flow 声明的权威输入面（英文键：
+ *    direction/route/sources/chapters…）。缺必填在开跑前就看得见，不再靠手写 JSON。
+ *  · 次区「定性配置」是中文短手（题材/需求/灵感/严肃性/风格/AB测试/市场预估）——内核
+ *    configToInputs 由它推导 route/direction。**两区不是两套真相**：都只是 项目配置.json 的字段。
+ *  · 保存优先走内核 `PUT /api/projects/:id/config`（schema 校验 + boundWarning）；无 server 时
+ *    降级为文件写入（页面离线仍可用），并**显式告诉用户在走哪条路**（不让人以为已过校验）。
+ *  · 模板只有一种载体：项目配置.json 的字段。「官方默认」= DATA.configTemplate；
+ *    导出/导入 = 浏览器文件。**模板 ≠ 配置**：模板只是表单初值，绝不直接当 flow 参数。
+ */
+const CFG_ZH_FIELDS = [
+  {k:"题材", t:"text", d:"题材/赛道（组合进 direction 输入）"},
+  {k:"题材类型", t:"enum", options:["现实映射","模板文"], d:"现实映射=冲突来自现实关系；模板文=自足规则系统"},
+  {k:"创作目标", t:"text", d:"本项目的商业/创作目标（影响严肃性建议与打磨深度）"},
+  {k:"需求", t:"text", d:"甲方需求与硬性要求（组合进 direction）"},
+  {k:"灵感", t:"text", d:"灵感、情绪切入、结构参考（组合进 direction）"},
+  {k:"严肃性", t:"enum", options:["探索","标准","出品"], d:"探索=低成本试错；标准=默认；出品=交付级"},
+  {k:"风格", t:"enum", options:["爽","标准"], d:"爽=情绪浓度优先(route=hot)；标准=合理性优先(route=calm)"},
+  {k:"AB测试", t:"bool", d:"是否跑 A/B 对照（S3 工作量约翻倍）"},
+  {k:"市场预估", t:"text", d:"基于市场快照的人工预估笔记"},
+];
+/** 单个输入控件（纯字符串产出 ⇒ 可被 page-lint 无 DOM 断言） */
+function cfgControl(id, k, kind, val, d){
+  d = d || {};
+  const req = d.required ? ' required' : '';
+  if (kind === "boolean")
+    return `<label class="cfg-bool"><input type="checkbox" id="${id}" data-cfg-key="${escapeHtml(k)}" data-cfg-type="boolean"${val === true ? " checked" : ""}> 开</label>`;
+  if (kind === "enum"){
+    const keep = val === undefined || val === null || val === "";
+    const opts = (d.options || []).map(o => `<option value="${escapeHtml(o)}"${String(val) === String(o) ? " selected" : ""}>${escapeHtml(o)}</option>`).join("");
+    return `<select id="${id}" data-cfg-key="${escapeHtml(k)}" data-cfg-type="enum"${req}><option value=""${keep ? " selected" : ""}>（用 flow 默认）</option>${opts}</select>`;
+  }
+  if (kind === "number"){
+    const mn = d.min !== undefined ? ` min="${d.min}"` : "";
+    const mx = d.max !== undefined ? ` max="${d.max}"` : "";
+    return `<input type="number" id="${id}" data-cfg-key="${escapeHtml(k)}" data-cfg-type="number" value="${val === undefined || val === null ? "" : escapeHtml(String(val))}"${mn}${mx}${req}>`;
+  }
+  return `<input type="text" id="${id}" data-cfg-key="${escapeHtml(k)}" data-cfg-type="text" value="${val === undefined || val === null ? "" : escapeHtml(String(val))}"${req}>`;
+}
+/** 项目输入区 + 定性配置区（HTML；page-lint 直接吃这个字符串做断言） */
+function configZonesPaper(){
+  const inputs = DATA.flowInputs || {};
+  const cfg = (DATA.projectConfig && !DATA.projectConfig.__invalid) ? DATA.projectConfig : {};
+  const tpl = DATA.configTemplate || {};
+  const pick = (k, dflt) => (cfg[k] !== undefined ? cfg[k] : dflt);
+  const keys = Object.keys(inputs);
+  let h = `<div class="cfg-zone" id="cfg-zone-flow"><div class="cfg-zone-h">流程输入 <span class="msg">flow.inputs 逐字段渲染 · ${keys.length} 项 · 保存后由 flow_run 自动装载（显式入参 &gt; 本配置 &gt; flow 默认）</span></div>`;
+  h += keys.length
+    ? `<div class="cfg-grid">` + keys.map(k => {
+        const d = inputs[k] || {};
+        const req = d.required ? '<span class="req" title="必填">*</span>' : "";
+        const desc = d.desc ? `<span class="msg">${escapeHtml(d.desc)}</span>` : "";
+        const bind = d.bind ? `<span class="msg">绑 ${escapeHtml(d.bind.edge || "")}.${escapeHtml(d.bind.param || "")}</span>` : "";
+        const dflt = d.default !== undefined ? `<span class="msg">flow 默认 ${escapeHtml(JSON.stringify(d.default))}</span>` : "";
+        return `<div class="cfg-row" data-cfg-flow="1" data-cfg-required="${d.required ? 1 : 0}"><label class="k" for="cfg-f-${escapeHtml(k)}">${escapeHtml(k)}${req}</label><span class="v">${cfgControl("cfg-f-" + k, k, d.type === "project" ? "text" : (d.type || "string"), pick(k, d.default), d)}${desc}${bind}${dflt}</span></div>`;
+      }).join("") + `</div>`
+    : `<p class="msg">本 flow 未声明 <code>inputs</code>：没有必填输入，直接 flow_run 即可。</p>`;
+  h += `</div>`;
+  h += `<div class="cfg-zone" id="cfg-zone-zh"><div class="cfg-zone-h">定性配置 <span class="msg">中文短手 · 内核 configToInputs 由此推导 route/direction</span></div><div class="cfg-grid">`;
+  h += CFG_ZH_FIELDS.map(f => {
+    const val = pick(f.k, tpl[f.k]);
+    const desc = f.d ? `<span class="msg">${escapeHtml(f.d)}</span>` : "";
+    return `<div class="cfg-row" data-cfg-zh="1"><label class="k" for="cfg-z-${escapeHtml(f.k)}">${escapeHtml(f.k)}</label><span class="v">${cfgControl("cfg-z-" + f.k, f.k, f.t, val, {options:f.options})}${desc}</span></div>`;
+  }).join("");
+  h += `</div>`;
+  if (DATA.projectConfig && DATA.projectConfig.__invalid)
+    h += `<p class="cfg-warn">项目配置.json 非法，按原文带回（不静默）：${escapeHtml(DATA.projectConfig.message || "")}</p>`;
+  h += `</div>`;
+  return h;
+}
+/** 表单 → 对象。空串一律**不进参**（= 不表态，让内核回退 flow 默认） */
+function readConfigForm(){
+  const out = {};
+  document.querySelectorAll("[data-cfg-key]").forEach(el => {
+    const key = el.dataset.cfgKey, kind = el.dataset.cfgType;
+    if (!key) return;
+    if (kind === "boolean"){ out[key] = !!el.checked; return; }
+    const v = el.value === undefined || el.value === null ? "" : String(el.value).trim();
+    if (v === "") return;
+    out[key] = kind === "number" ? Number(v) : v;
+  });
+  return out;
+}
+/** 必填缺项（开跑前就该看见，而不是等 flow_run 报错） */
+function cfgMissingRequired(obj){
+  const miss = [];
+  for (const [k, d] of Object.entries(DATA.flowInputs || {})){
+    if ((d && d.required) && (obj[k] === undefined || obj[k] === "")) miss.push(k);
+  }
+  return miss;
+}
+function syncCfgJson(){
+  const ta = document.getElementById("cfg-ta");
+  if (!ta) return;
+  const obj = (DATA.projectConfig && !DATA.projectConfig.__invalid) ? DATA.projectConfig : (DATA.configTemplate || {});
+  ta.value = JSON.stringify(obj, null, 2);
+}
+/** 统一保存路径：内核校验优先，离线降级为文件写并**显式说明** */
+async function saveConfigObject(obj, msgEl){
+  const msg = msgEl || document.getElementById("cfg-msg");
+  obj = { ...obj, "项目": DATA.project };            // 项目名以路径为准（与内核同口径）
+  if (LIVE.on){
+    try{
+      const r = await fetch("/api/projects/" + encodeURIComponent(DATA.project) + "/config",
+        {method:"PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify(obj)});
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.message || j.error || ("HTTP " + r.status));
+      DATA.projectConfig = obj; syncCfgJson();
+      if (msg) msg.innerHTML = `<span class="cfg-ok">已保存（内核 schema 校验通过）</span>` + (j.boundWarning ? " · " + escapeHtml(j.boundWarning) : "");
+      return true;
+    }catch(err){
+      if (msg) msg.textContent = "保存失败（内核）：" + err.message;
+      return false;
+    }
+  }
+  try{
+    await saveApi(`projects/${DATA.project}/项目配置.json`, JSON.stringify(obj, null, 2));
+    DATA.projectConfig = obj; syncCfgJson();
+    if (msg) msg.textContent = "已保存（离线直写文件 · 未过内核校验；miniflow up 后可校验）";
+    return true;
+  }catch(err){ if (msg) msg.textContent = "失败：" + err.message; return false; }
+}
+async function saveConfigFromForm(){
+  const obj = readConfigForm();
+  const miss = cfgMissingRequired(obj);
+  if (miss.length){
+    const m = document.getElementById("cfg-msg");
+    if (m) m.innerHTML = `<span class="cfg-warn">缺必填输入：${escapeHtml(miss.join("、"))}</span> · 已按现状保存，flow_run 会拦（必填校验在内核）`;
+  }
+  return saveConfigObject(obj);
+}
+function loadOfficialConfig(){
+  if (!confirm("载入官方默认（本 flow 的出厂配置模板）？当前表单内容将被覆盖。")) return;
+  DATA.projectConfig = { ...(DATA.configTemplate || {}) };
+  const z = document.getElementById("cfg-zones");
+  if (z) z.innerHTML = configZonesPaper();
+  syncCfgJson();
+  const m = document.getElementById("cfg-msg");
+  if (m) m.textContent = "已载入官方默认（尚未保存）";
+}
+function exportConfig(){
+  const obj = { ...readConfigForm(), "项目": DATA.project };
+  const blob = new Blob([JSON.stringify(obj, null, 2) + "\n"], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `项目配置-${DATA.project}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+function importConfig(){
+  const inp = document.createElement("input");
+  inp.type = "file"; inp.accept = ".json,application/json";
+  inp.onchange = () => {
+    const f = inp.files && inp.files[0];
+    if (!f) return;
+    const fr = new FileReader();
+    fr.onload = () => {
+      try{
+        const obj = JSON.parse(String(fr.result));
+        if (!obj || typeof obj !== "object" || Array.isArray(obj)) throw new Error("顶层必须是对象");
+        DATA.projectConfig = obj;
+        const z = document.getElementById("cfg-zones");
+        if (z) z.innerHTML = configZonesPaper();
+        syncCfgJson();
+        const m = document.getElementById("cfg-msg");
+        if (m) m.textContent = "已导入（尚未保存；点「保存配置」落盘）";
+      }catch(err){
+        const m = document.getElementById("cfg-msg");
+        if (m) m.textContent = "导入失败：" + err.message;
+      }
+    };
+    fr.readAsText(f, "utf-8");
+  };
+  inp.click();
+}
 async function importDemo(flowId){
   if (!confirm("从官方 Demo 创建新项目？\n\n将复制官方示例（项目配置 + 输入素材已就绪，含说明.md）到 projects/demo-" + flowId + " ，并直接打开其工作台。")) return;
   try{
@@ -1577,9 +1767,20 @@ function openWfMgmt(tab){
   let h = `<div class="shelf-row" id="open-store" style="border-color:var(--accent)"><span class="no">店</span><span class="nm">流商店 · ${flows.length} 条生产线 <span class="msg">卡片浏览 / 搜索 / 分类 / 详情</span></span><span class="go">进入商店 →</span></div>`;
   h += `<div class="paper"><div class="doc-h"><span>流配置</span><span>${DATA.project}</span></div><div class="md">
     <div class="kv"><span class="k">流程 id</span><span class="v"><code>${flow.id}</code></span><span class="k">版本</span><span class="v">v${flow.version}</span></div>
-    <p class="msg">项目配置在开跑前定死题材/需求/严肃性/风格（flow_init 契约，flow_run 自动装载）。</p>
-    <textarea id="cfg-ta" style="min-height:190px">${JSON.stringify(DATA.projectConfig || {_说明: "填写 题材/需求/灵感/严肃性/风格/AB测试 后保存，flow_run 自动装载"}, null, 2).replace(/&/g,"&amp;").replace(/</g,"&lt;")}</textarea>
-    <div class="act"><button class="tb" id="cfg-save" style="border-color:var(--accent);color:var(--accent);font-weight:700">保存配置</button><span class="msg" id="cfg-msg" aria-live="polite"></span></div></div>`;
+    <p class="msg">初始化面板（OS-04）：项目输入 + 定性配置 → 落 <code>项目配置.json</code>（flow_init 契约，flow_run 自动装载）。
+      保存优先走内核 <code>PUT /api/projects/&lt;id&gt;/config</code>（schema 校验 + 绑定提示）；<code>miniflow up</code> 未运行时降级为直写文件并会说明。</p>
+    <div id="cfg-zones">${configZonesPaper()}</div>
+    <div class="act">
+      <button class="tb" id="cfg-save" style="border-color:var(--accent);color:var(--accent);font-weight:700">保存配置</button>
+      <button class="tb" id="cfg-official">载入官方默认</button>
+      <button class="tb" id="cfg-export">导出 JSON（存为模板）</button>
+      <button class="tb" id="cfg-import">导入模板…</button>
+      <span class="msg" id="cfg-msg" aria-live="polite"></span>
+    </div>
+    <details id="cfg-adv"><summary class="msg">高级 · 原始 JSON（逃生口：直接编辑并保存，同样过内核校验）</summary>
+      <textarea id="cfg-ta" style="min-height:190px"></textarea>
+      <div class="act"><button class="tb" id="cfg-save-raw">保存原始 JSON</button><span class="msg" id="cfg-raw-msg" aria-live="polite"></span></div>
+    </details></div></div>`;
   h += `<div class="shelf-cap">提示词 · 技能库（可查看可编辑） · ${skills.length}</div>`;
   h += skills.map(s => `<div class="shelf-row" data-skill="${s.id}"><span class="no">术</span><span class="nm">${s.name} <span class="msg">(skills/${s.id}.md)</span></span><span class="go">查看/编辑 →</span></div>`).join("");
   dBody.innerHTML = h;
@@ -1587,13 +1788,19 @@ function openWfMgmt(tab){
   if (EFF || OVERLAY || OPTIMIZE) dBody.insertAdjacentHTML("beforeend", orchestrationPaper());
   const ostore=dBody.querySelector("#open-store"); if (ostore) ostore.addEventListener("click", openFlowStore);
   dBody.querySelectorAll(".shelf-row[data-skill]").forEach(r=>r.addEventListener("click",()=>openSkillEditor(r.dataset.skill)));
-  document.getElementById("cfg-save").onclick = async ()=>{
+  document.getElementById("cfg-save").onclick = () => { void saveConfigFromForm(); };
+  document.getElementById("cfg-official").onclick = loadOfficialConfig;
+  document.getElementById("cfg-export").onclick = exportConfig;
+  document.getElementById("cfg-import").onclick = importConfig;
+  document.getElementById("cfg-save-raw").onclick = async ()=>{
+    const m = document.getElementById("cfg-raw-msg");
     try{
       const v = JSON.parse(document.getElementById("cfg-ta").value);
-      await saveApi(`projects/${DATA.project}/项目配置.json`, JSON.stringify(v, null, 2));
-      document.getElementById("cfg-msg").textContent = "已保存（flow_run 自动装载）";
-    }catch(err){ document.getElementById("cfg-msg").textContent = "失败: " + err.message; }
+      if (!v || typeof v !== "object" || Array.isArray(v)) throw new Error("顶层必须是对象");
+      if (await saveConfigObject(v, m)) document.getElementById("cfg-zones").innerHTML = configZonesPaper();
+    }catch(err){ if (m) m.textContent = "失败：" + err.message; }
   };
+  syncCfgJson();
   flashDoc(); dBody.scrollTop = 0;
 }
 let skillEditId = null;

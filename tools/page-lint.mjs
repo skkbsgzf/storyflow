@@ -302,6 +302,46 @@ if (HAS_EFF) {
   ok("读模型缺失：指标徽章显式「未采样」而非编造数字", mb === "[]", mb);
 }
 
+// ================= OS-04 · 初始化面板（项目输入区 / 定性配置区 / 模板） =================
+// 12b · 面板必须由 flow.inputs **逐字段渲染**（控件类型正确、必填可见、无泄漏），
+//       且保存走内核端点——否则「界面在撒谎」（原先是只能手写 JSON 的 textarea）。
+// 存量页由旧模板生成（函数不存在）⇒ 显式降级并列缺口，不假装通过、也不误报失败。
+if (probe(`typeof configZonesPaper === "function"`) !== true) {
+  gaps.push("本页由旧模板生成（无 OS-04 初始化面板）：重生成后覆盖 —— python tools/project-pages.py --root projects/<id>");
+} else {
+  const p4 = JSON.parse(JSON.stringify(payload));
+  p4.DATA.flowInputs = {
+    project: { type: "project", required: true, desc: "项目上下文" },
+    direction: { type: "string", required: true, desc: "题材方向" },
+    route: { type: "enum", default: "hot", options: ["hot", "calm", "dual"], desc: "路线" },
+    zeitgeist: { type: "boolean", default: true, desc: "是否扫描热点" },
+    chapters: { type: "number", default: 3, min: 1, max: 3, desc: "试稿章数" },
+  };
+  p4.DATA.projectConfig = null;
+  p4.DATA.configTemplate = { 项目: "p", 题材: "", 严肃性: "标准", 风格: "爽", AB测试: false, 市场预估: "", presets: {} };
+  const b4 = boot(p4);
+  const h = b4.probe(`configZonesPaper()`);
+  const missKeys = Object.keys(p4.DATA.flowInputs).filter(k => !h.includes(`data-cfg-key="${k}"`));
+  ok("OS-04 项目输入区：flow.inputs 逐字段渲染（每键都有控件）", missKeys.length === 0, missKeys.join(","));
+  ok("OS-04 必填输入可见（required + 星标）", h.includes('data-cfg-required="1"') && h.includes('class="req"'), "");
+  ok("OS-04 enum 渲染为下拉且含全部可选值", h.includes('data-cfg-type="enum"') && h.includes('<option value="dual"'), "");
+  ok("OS-04 boolean 渲染为开关", h.includes('data-cfg-type="boolean"') && h.includes('type="checkbox"'), "");
+  ok("OS-04 number 渲染为数字框并带 min/max", h.includes('data-cfg-type="number"') && h.includes('min="1"') && h.includes('max="3"'), "");
+  ok("OS-04 定性配置区渲染中文键（严肃性/风格为下拉）",
+    h.includes('data-cfg-key="严肃性"') && h.includes('data-cfg-key="风格"') && h.includes('<option value="出品"'), "");
+  ok("OS-04 面板 HTML 无 undefined/NaN 泄漏", !/undefined|NaN/.test(h), (h.match(/undefined|NaN/g) || []).slice(0, 3).join(","));
+  const missing = b4.probe(`JSON.stringify(cfgMissingRequired({direction:"x"}))`);
+  ok("OS-04 必填缺项可检出（开跑前可见，不等 flow_run 报错）", missing === '["project"]', missing);
+  const filled = b4.probe(`(()=>{DATA.projectConfig={route:"calm",chapters:2};
+    const s=configZonesPaper(); return JSON.stringify([s.includes('value="calm" selected'), s.includes('value="2"')]);})()`);
+  ok("OS-04 已有配置回填控件（不是空白表单）", filled === "[true,true]", filled);
+  const tplDown = b4.probe(`JSON.stringify(!!(DATA.configTemplate&&DATA.configTemplate.严肃性==="标准"))`);
+  ok("OS-04 出厂模板随 payload 下发（「载入官方默认」有据）", tplDown === "true", tplDown);
+  const saveSrc = probe(`JSON.stringify({kernel:String(saveConfigObject).includes("/config"), offline:String(saveConfigObject).includes("未过内核校验")})`);
+  ok("OS-04 保存走内核端点 /api/projects/<id>/config，且保留离线降级并显式说明",
+    saveSrc.includes('"kernel":true') && saveSrc.includes('"offline":true'), saveSrc);
+}
+
 console.log(`\n${page}\n  ${pass}/${pass + fail} passed`);
 if (gaps.length) console.log("  已知缺口：\n   - " + gaps.join("\n   - "));
 process.exit(fail ? 1 : 0);

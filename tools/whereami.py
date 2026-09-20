@@ -171,6 +171,35 @@ def render_block(a):
     return L
 
 
+def idle_hint():
+    """IDLE 分支的引导（OS-04）：首次运行必须**指路**，不能只说一句「没有待办」——
+    这个工具是 agent 的开工地标，返回 0 却无指引等于把人丢在空目录里。"""
+    flows = sorted(p.parent.name for p in (ROOT / "flows").glob("*/flow.json"))
+    proj_root = ROOT / "projects"
+    has_proj = proj_root.is_dir() and any(
+        d.is_dir() and not d.name.startswith("_") for d in proj_root.iterdir())
+    lines = []
+    if not has_proj:
+        lines += [
+            "IDLE: 还没有项目（首次运行）",
+            "  ① 起常驻服务（内核 API + 页面同进程；端口占用会自动顺延）：",
+            "       miniflow up",
+            "     然后打开 http://127.0.0.1:8421/ —— 顶部项目下拉里的「＋ 新建项目…」",
+            "  ② 或在命令行建项目 + 填初始化配置：",
+            "       miniflow flow_init --project <新项目id>      # 生成 项目配置.json（也可在页面「流配置」表单里填）",
+            "       miniflow flow_run --flow <flowId> --project <新项目id>",
+            "  ③ 想先跑通一遍：进页面「流商店」，挑带「装 Demo」标的流一键装官方示例",
+            f"     可用 flow：{', '.join(flows) if flows else '(none)'}",
+        ]
+    else:
+        lines += [
+            "IDLE: 已有项目但都没有待办（全部完成或无 run）",
+            "  看交付：projects/<id>/workflow.html（或 miniflow up 后从页面项目下拉进）",
+            "  开新项目：miniflow up →「＋ 新建项目…」，或 miniflow flow_init --project <新id>",
+        ]
+    return lines
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--project")
@@ -199,7 +228,10 @@ def main():
             kind = "AMBIGUOUS"
 
     if args.json:
-        print(json.dumps({"kind": kind, "results": results}, ensure_ascii=False, indent=2))
+        out = {"kind": kind, "results": results}
+        if kind == "IDLE":
+            out["hint"] = idle_hint()
+        print(json.dumps(out, ensure_ascii=False, indent=2))
         return
     if kind == "AMBIGUOUS":
         print(f"AMBIGUOUS: {len(results)} 个项目有待办节点，无法判定焦点——用 --project 指定：")
@@ -207,7 +239,8 @@ def main():
             print(f"  - {a['project']}（剩余 {a['pendingCount']} 节点：{', '.join(a['pendingIds'][:4])}…）")
         sys.exit(3)
     if kind == "IDLE":
-        print("IDLE: 没有待办项目（全部 done 或无 run-state）")
+        for line in idle_hint():
+            print(line)
         return
     print("\n".join(render_block(results[0])))
 

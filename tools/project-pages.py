@@ -209,6 +209,31 @@ def scan_files(proj: Path):
     return files
 
 
+def config_template(project_id: str) -> dict:
+    """出厂模板（与内核 viewConfig 的 template 同口径，缺一不可——面板「载入官方默认」靠它）。"""
+    return {"项目": project_id, "题材": "", "需求": "", "灵感": "", "严肃性": "标准",
+            "风格": "爽", "AB测试": False, "市场预估": "", "presets": {}}
+
+
+def load_config_view(proj: Path, project_id: str):
+    """项目配置的页面视图。与内核 viewConfig 同口径：无文件→None；非法→原文 + __invalid（前端标红）。
+
+    为什么必须注入：模板原先读 DATA.projectConfig，而生成器**从未注入该键**
+    ⇒ 「项目配置」编辑器恒显占位（OS-04 审计实测项）。手写 JSON 因此成了唯一入口。
+    """
+    tpl = config_template(project_id)
+    f = proj / "项目配置.json"
+    if not f.exists():
+        return None, tpl, False
+    try:
+        raw = json.loads(f.read_text(encoding="utf-8"))
+        if not isinstance(raw, dict):
+            raise ValueError("顶层不是对象")
+    except Exception as e:  # 非法配置不静默：原样带回让面板标红
+        return {"__invalid": True, "message": str(e)}, tpl, True
+    return raw, tpl, True
+
+
 def projects_switcher():
     """项目清单（W-项目管理）：id + 可读名(title=state.title>项目配置>id) + 状态 +
     最近变更(mtime，state.json 落盘时刻) + renderable（effective@2 可渲染，否则旧版页）。
@@ -374,6 +399,8 @@ def main():
         if isinstance(mr, dict) and mr.get("moduleId"):
             module_reports[mr["moduleId"]] = mr
 
+    cfg_view, cfg_tpl, cfg_exists = load_config_view(proj, project_id)
+
     payload = {
         "DATA": {
             "project": project_id,
@@ -389,6 +416,11 @@ def main():
             "kits": kits_summary_build(),
             "kbTitles": kb_titles_build(),
             "inputs": runstate.get("inputs") or {},
+            # OS-04 初始化面板：flow 声明的权威输入面 + 当前配置 + 出厂模板（三者都由内核/生成器算，页面只渲染）
+            "flowInputs": flow.get("inputs") or {},
+            "projectConfig": cfg_view,
+            "configTemplate": cfg_tpl,
+            "configExists": cfg_exists,
             "annos": annos.get("annos") or {},
             "projects": projects_switcher(),
         },

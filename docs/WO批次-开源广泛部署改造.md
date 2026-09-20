@@ -482,8 +482,9 @@ du -sh projects src/kakaxing-Json/data
 | **R8-OPS 第 0 批 · server 合一 + `miniflow up`** | ✅ 已落地 | 新增 `core/src/static.ts`（白名单静态面）+ `core/src/compat.ts`（serve.py 八个 legacy 端点并入内核面）；`cli.ts` 新增 `up`（端口占用自动顺延）。**同进程单端口同时提供 内核 API + legacy 端点 + 页面**。见下明细 | 2026-09-20 |
 | **R8-OPS 第 1 批 · 前端 live 化（快照 → 轮询）** | ✅ 已落地 | 新增 `kernel.viewLive()`（含 `fingerprint`/`revision`/`filesRevision`）+ `GET /api/projects/:id/live(?files=1)`；页面模板由「SSR 快照」改为**静态切片 SSR + 易变切片轮询**；**顺带修 flow@3 `workbench-payload` 500**（`flow.graph` 缺失，第 4 处 N 类 latent）。见下明细 | 2026-09-20 |
 | **R8-OPS 第 2 批 · 动词表唯一源** | ✅ 已落地 | 新建 `core/src/verbs.ts`（13 动词唯一台账）；MCP 由 7 个手写 tool → 遍历表注册；HTTP `/api/verbs/:verb` 由 4-case → 查表分派；CLI 删 13-case switch、`usage()` 由表生成。顺带修 `skill_patch` 写死 `ROOT` 的静默错位（改 `kernel.repoRoot`）；`contracts/http-openapi.json` 11→24 路径（补声明已有未声明端点）。见下明细 | 2026-09-20 |
+| **R8-OPS 第 3 批 · OS-04 初始化面板** | ✅ 已落地 | 页面「流配置」由**只读 JSON 改成真表单**：项目输入区（读 `flow.inputs` 逐字段渲染，按 `required`/`enum`/布尔/数值分控件）+ 项目定性配置区（中文字段）；模板=初值（**模板≠配置**）、导出/导入、保存走内核 `PUT /api/projects/:id/config`（离线回退写文件并显式标注）。顺带修 `project-pages.py` **`DATA.projectConfig` 从未注入**（面板恒显占位符的根因）；`whereami.py` 空态给首跑指引。见下明细 | 2026-09-20 |
 | OS-02 阶段 C（默认值回调）/ 阶段 D（死配置 `iterate`） | ⏳ 待开工 | 含 N2（`adapt:"off"` 未实现，需拍板）、N4（`set-link` 契约，需拍板）、§三勘误 2（`model_tier` 默认 `high`）、§二 C/D 两表 | — |
-| OS-00 数据剥离执行 / OS-04 / OS-05 / OS-06 / OS-07 | ⏳ 待开工 | 数据剥离需先拍板 附 D #2/#3/#5 | — |
+| OS-00 数据剥离执行 / OS-05 / OS-06 / OS-07 | ⏳ 待开工 | 数据剥离需先拍板 附 D #2/#3/#5 | — |
 
 ### OS-02 执行中新发现（已实测，需拍板才能动）
 
@@ -839,3 +840,91 @@ R8-OPS 讨论记录里点名的病灶实体：**「flow 调用规范问题」的
 - **下一步 = 步骤 2 · OS-04 初始化面板 + 模板库**（项目地址 + 配置模板：自存／导入官方／从零新建）。
   本批已为它扫清前置：`flow_init` 三面可达、`GET/PUT /api/projects/{id}/config` 已在契约内、
   页面可轮询实时状态。**守住「模板 ≠ 配置」**（配置只是项目 overlay 的输入，须经内核合成）。
+
+---
+
+## R8-OPS · 第 3 批（执行顺序里的「步骤 2」）：OS-04 初始化面板
+
+执行顺序 1 → 3 → **2**。第 1 批让页面"活"起来（轮询），第 3 批（=本批）把**「声明了但没入口」的配置能力**
+变成**可见、可填、可校验的初始化面板**。核心命题：**一个零上下文的陌生人，能否在页面上开出一个能跑的项目。**
+
+### 病灶：配置面「有契约、无入口」
+
+| # | 事实 | 证据 |
+|---|---|---|
+| 1 | **`DATA.projectConfig` 从来没被注入过** | `tools/project-pages.py` 生成 payload 时**根本没写这个键**。于是模板里所有 `DATA.projectConfig` 读取恒为 `undefined` ⇒ 「流配置」面板**永远显示占位符**，即便项目真有 `项目配置.json`。**又一个「以为有，其实没有」** |
+| 2 | 页面上「流配置」是**只读 JSON 文本块** | 只能看、不能改、不能存；改配置必须离开页面去手编文件 |
+| 3 | 官方模板 / 导入导出**不存在于任何 UI** | `flow_init` 能在 CLI/HTTP/MCP 生成模板，但**页面不知道**；用户面对空项目无从下手 |
+| 4 | 空态无指引 | `whereami.py` 在「没有任何项目」时只打印 `IDLE: 没有待办项目`，不给首跑动作 |
+
+### 本批落地（4 文件）
+
+**`tools/workflow-page-template.html`**（+221 行）：新增配置面板区。
+- CSS：`.cfg-zone / .cfg-grid / .cfg-row / .cfg-bool / .cfg-warn / .cfg-ok`
+- 纯函数：`cfgControl`（按字段类型选控件）、`configZonesPaper()`（把 `flow.inputs` 逐字段渲染成表单 HTML）、
+  `readConfigForm()`、`cfgMissingRequired()`（必填缺失检测）、`syncCfgJson()`
+- 动作：`saveConfigObject()` → **优先走内核 `PUT /api/projects/:id/config`**（受 schema 校验）；
+  `LIVE.on=false`（离线 `file://` 打开）时回退为写文件并**显式提示"离线保存，未经内核校验"**；
+  `saveConfigFromForm()`、`loadOfficialConfig()`、`exportConfig()`、`importConfig()`
+- `openWfMgmt` 的「流配置」块改为：**`#cfg-zones` 真表单** + 4 按钮（保存配置／载入官方默认／导出 JSON／导入模板）
+  + 折叠的 raw-JSON `<details>`（高级用户直编）
+
+**`tools/project-pages.py`**（+32 行）：新增 `config_template(project_id)`（读官方模板）+
+`load_config_view(proj, project_id)`（读项目实际 `项目配置.json`，非法则标 `__invalid`）。
+向 payload `DATA` 注入四个新键：**`flowInputs`**（该 flow 的 `inputs` 声明＝权威输入面）、
+**`projectConfig`**（项目配置视图，无则 `null`）、**`configTemplate`**、**`configExists`**。
+（修病灶 #1：这个键以前根本不存在。）
+
+**`tools/page-lint.mjs`**（+40 行）：新增「OS-04 初始化面板」断言块（12b，**11 条**）——
+`configZonesPaper()` 逐字段渲染 `flow.inputs`、`required`/`enum`/布尔/数值控件类型正确、
+无 `undefined`/`NaN` 泄漏、必填缺失可检出、已有配置能回填、模板可下载、保存路径 kernel-vs-offline 二选一。
+**对旧页面用 `typeof configZonesPaper === "function"` 守卫** ⇒ 旧页不判 FAIL，只记「已知缺口」。
+
+**`tools/whereami.py`**（+37 行）：新增 `idle_hint()`，空态分支分两种给首跑指引——
+**无任何项目** → `miniflow up` / `flow_init` / Demo 店；**有项目但都完事** → 下一步动作。
+
+### 「模板 ≠ 配置」这条纪律
+
+模板是**表单初值**，绝非直接当作 flow 参数。真实配置 = `flow.inputs`（英文键，权威输入面）
+⊕ `项目配置.json`（中文定性层），由 `configToInputs` 合成。面板只负责**填 / 校验 / 存**，
+合成与生效仍在**内核单点**（页面不重算）。
+
+### 冒烟与门禁实测（2026-09-20）
+
+**页面**（`page-lint`）
+
+| 页面 | 结果 |
+|---|---|
+| `projects/p-wxl-001/workflow.html`（新模板重生成） | **50/50 passed**（原 39/39；+11 条 OS-04 断言全绿） |
+| `projects/p-slj-001/workflow.html`、`projects/ccwd-fq/workflow.html`（旧模板） | **39/39 passed** + 缺口说明「本页由旧模板生成（无 OS-04 初始化面板）：重生成后覆盖」 |
+
+**配置端点端到端**（真进程 `miniflow up --port 8421` + curl）
+
+| 请求 | 结果 |
+|---|---|
+| `flow_init` 创建项目 | 真落官方模板 `项目配置.json` |
+| `GET /api/projects/:id/config` | 返回模板 + 当前配置 |
+| `PUT …/config`（合法） | **保存成功** |
+| `PUT …/config`（非法：`严肃性:"随便"`） | **400** `{"error":"INVALID_INPUT","message":"项目配置非法: schema violation [project-config]: /严肃性 must be equal to one of the allowed values"}`，且**不污染**既有配置（`严肃性=出品` 原样保留） |
+
+**门禁**（本批未动 `core/src`，故与原基线逐项一致）
+
+| 门 | 结果 |
+|---|---|
+| `cd core && tsc --noEmit` | **OK** |
+| `vitest` | **194 passed / 0 failed（20 files）**（同第 2 批） |
+| `module-lint.py` | **0 errors** / 36 warnings |
+| `kit-lint.py` | **0 errors** / 21 warnings |
+| `flow-lint.py` | **21 errors** / 1 warning（存量 flow@2） |
+| `artifact-lint.py` | **0 errors** / 168 warnings |
+| `validate-kb.py` | **1 FAIL**（N7 存量） |
+
+### 第 3 批明确未做 / 遗留
+
+- **存量项目页面未批量重生成**：`p-slj-001~007`、`ccwd-fq/2/3` 等仍是旧模板（39/39 + 缺口说明）。
+  批量重生成属**产物刷新**，且 `projects/` 是否入库待 OS-00 拍板，故不在本批范围。
+- **模板库尚无「从零新建/自存模板」**：本批只做了**载入官方默认 + 导入/导出 JSON**。
+  多模板管理与自存仍属 OS-04 余量。
+- **`AGENTS.md` 未改**（同上，属 OS-06/07 写权）：建议 OS-07 补一条
+  「**配置面板 ≠ 配置生效**：页面只填/存，`flow.inputs ⊕ 项目配置.json` 的合成只在内核做一次」。
+
