@@ -1,7 +1,0 @@
-{
-  "corpusName": "mini-pack",
-  "agent": { "base": "http://127.0.0.1:18992" },
-  "runtime": {
-    "ui": { "command": "python -m http.server {port} --directory .", "cwd": ".", "port": 18990, "health": "/" }
-  }
-}

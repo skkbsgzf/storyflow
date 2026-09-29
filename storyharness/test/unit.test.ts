@@ -14,7 +14,7 @@ import { KernelClient } from "../src/kernel.js";
 import { runFlow } from "../src/scheduler.js";
 import { runHeadless } from "../src/headless.js";
 import { pickTarget, tierSignalOf, composeArtifact } from "../src/executor.js";
-import { parseLastJson } from "../src/judge.js";
+import { parseLastJson } from "../src/sessions.js";
 
 const CORPUS: CorpusLayout = {
   projectsDir: "projects",
@@ -119,7 +119,7 @@ test("headless：NDJSON 事件序列形状（completed 短路，不触 LLM）", 
   assert.equal(r.ok, true);
   const names = events.map((e) => e.event);
   assert.deepEqual(names, ["run_start", "run_end", "final"]);
-  assert.equal(events[0].flow, "drama-flow");
+  assert.equal(events[0].flow, "screenplay");
   assert.equal(events[2].ok, true);
   // NDJSON 每行可 JSON.parse
   for (const e of events) assert.ok(typeof JSON.stringify(e) === "string");

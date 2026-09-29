@@ -232,10 +232,6 @@
     "output": {
       "file": "export-doc.docx",
       "audience": "编辑/甲方（可批注 docx）"
-    },
-    "acceptance": {
-      "scans": [],
-      "rules": []
     }
   }
 }

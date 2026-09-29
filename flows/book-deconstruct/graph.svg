@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 372 240" font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
-<rect width="372" height="240" fill="#0f1115" rx="10"/>
-<rect x="40" y="24" width="236" height="160" rx="12" fill="#3d7a4f" fill-opacity="0.08" stroke="#3d7a4f" stroke-width="1"/>
-<text x="52" y="48" fill="#3d7a4f" font-size="13" font-weight="700">01 选题</text>
-<text x="52" y="64" fill="#8b95a8" font-size="9.5">m1 · link=auto · caps 1/7</text>
-<rect x="54" y="75" width="208" height="26" rx="7" fill="#161a22" stroke="#2a2f3a"/>
-<circle cx="66" cy="88" r="3.2" fill="#3d7a4f"/><text x="76" y="92" fill="#c9ceda" font-size="10.5">topic-report</text>
-<text x="54" y="126" fill="#3d7a4f" font-size="10">＋ 拆书入库</text>
-</svg>

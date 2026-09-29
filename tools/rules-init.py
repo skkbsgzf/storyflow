@@ -26,10 +26,19 @@ def _ledger_path():
         p = ROOT / rel
         if p.exists():
             return p
-    raise SystemExit("找不到断言台账（在库与归档两处均无）——无法分诊")
+    return None
 
 
-LEDGER = _ledger_path()
+_LEDGER = None
+def LEDGER_PATH():
+    """懒解析：开源发布形态没有归档台账（v0.8 起审核层整体退役）——返回 None，
+    分诊表仍可用（TRACK_T/TRACK_X 是硬编码清单，不依赖台账内容）。"""
+    global _LEDGER
+    if _LEDGER is None:
+        _LEDGER = _ledger_path()
+    return _LEDGER
+
+LEDGER = None  # 兼容旧引用；实际取用走 LEDGER_PATH()
 OUT_DIR = ROOT / "knowledge" / "rules"
 
 # T 轨：27 条已被确定性校验器覆盖（v5.0 工单 §二 T 轨清单）
@@ -78,7 +87,11 @@ DOMAIN_CN = {
 
 def main() -> int:
     dry = "--dry-run" in sys.argv
-    ledger = json.loads(LEDGER.read_text(encoding="utf-8"))
+    lp = LEDGER_PATH()
+    if not lp:
+        print("无断言台账（开源发布形态）——分诊表仅供 lint 引用，规则卡生成跳过。")
+        return 0
+    ledger = json.loads(lp.read_text(encoding="utf-8"))
     entries = ledger["asserts"]
     names = {e["name"] for e in entries}
     leak = (TRACK_T | TRACK_X) - names

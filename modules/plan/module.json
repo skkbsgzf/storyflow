@@ -243,10 +243,6 @@
     "output": {
       "file": "topic-proposal.md",
       "audience": "需求方（选题方案对账单）"
-    },
-    "acceptance": {
-      "scans": [],
-      "rules": []
     }
   }
 }

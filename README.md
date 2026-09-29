@@ -1,116 +1,98 @@
-# StoryFlow · 底座 + 语料包的 AI 创作运行时
+# StoryFlow · 轻量、可玩的故事 Kit
 
-> StoryHarness 运行时内核的开源发布。一个把「AI 帮你写剧本/小说」从聊天框变成**可编排生产线**的本地运行时：
-> flow@3 编排引擎 + 协议面守护 + MCP 三面 + 确定性工具链，而**去 AI 味、文风模仿、剧情编排的提示词语料全部是磁盘上的可插拔文件**。
+> 一个「故事 kit 提供者」的运行时：**pi-agent-core 驱动的 agent runtime + 模块化 flow + MCP + 确定性工具链 + 可插拔语料**。
+> 浏览器、Electron、移动端通过同一个适配层接入。审核、打回、合规——宿主自己写（我们有接入协议），运行时不含任何审核逻辑。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![version](https://img.shields.io/badge/version-0.7.2-green.svg)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-0.8.0-green.svg)](CHANGELOG.md)
 
 ---
 
-## 这是什么
+## 定位
 
-StoryFlow 把创作拆成三层：
+**轻量、可玩性高的故事 kit 提供者。** 你拿到的是一台「故事生产线」：
+输入题材与集数，四条按用途归一的生产线（短剧剧本 / 长篇小说 / 成文流水线 / 选题）替你把故事跑出来；
+**推演模式**（点点点剧情 galgame）让你亲手玩剧情走向。运行时保持最简：
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│  语料层（preset · 全部是磁盘文件，热读，改完即生效）            │
-│  knowledge/  规则卡·知识卡·去AI味条款·文风条款·剧情编排知识     │
-│  skills/     编剧/文学/检测各专科的作业技能卡                   │
-│  flows/      flow@3 编排模板（短剧线/长篇线/选题线…）           │
-│  modules/    module@1 能力注册表（能力必须有家）                │
-├──────────────────────────────────────────────────────────────┤
-│  运行时                                                        │
-│  core/            编排内核（:8421）flow 引擎·verbs·overlay·MCP │
-│  storyharness/    协议面守护（:8431）批调度·会话·判官证据·SSE   │
-│  tools/           确定性工具链（lint/scan/export/snapshot…）    │
-├──────────────────────────────────────────────────────────────┤
-│  消费者（可选，本仓库发布不含前端源码，serve 自带兜底门面）       │
-│  浏览器工作台 / MCP 客户端 / 任何能发 HTTP 的东西               │
-└──────────────────────────────────────────────────────────────┘
+pi-agent-core（agent 执行环）
+  + module（module@1 能力注册表）
+  + mcp（MCP 三面动词）
+  + tool（确定性工具链，名称即功能带版本）
+  + flow（flow@3 生产线，按用途归一）
+  + 杂仓（kit：技能工具注册表 + HyperGraphRAG 向量图 + 生图/资产 seam）
 ```
 
-三条设计立场：
+## v0.8 的六个结构决定
 
-1. **前后端解耦是硬边界**——内核与协议面只讲 HTTP/SSE/JSON（接口清单见 `docs/`），前端只是消费者之一。开发者可以完全基于开放的后端代码改造自己的界面。
-2. **提示词本体可插拔**——「去 AI 味」「文风模仿」「剧情编排」不是写死在代码里的 prompt，而是 `knowledge/`、`skills/` 下的版本化文本卡；引擎每次派发**现读盘**，改文件即生效，删文件即降级，不进代码库也能挂自己的语料。
-3. **证据不裁决**——机器判分（快判官/扫描器）只产出复核优先级证据，永远不构成拦截闸；语义裁决归模型与人。
+1. **零 demo、零项目细节**——flows 只按用途命名（screenplay/novel/prose/topic），不带题材不带角色。
+2. **运行时精简**——上述六件套之外的一切（前端源码、判官、质量扫描器、红队、审核流）不在运行时。
+3. **Skill 即 Tool**——40 个内置技能全部以 `skill.*` 工具注册（名称即功能 + 版本号 + 使用约束），见 `kit/skills.tools.json`；用户自导技能另册。
+4. **knowledge = 一个 HyperGraphRAG 文件**——`kit/hypergraph.rag.json`（115 词条 / 5998 关系边）；松散 md 是本地可插拔层（引擎现读盘），不上传 GitHub。
+5. **无审核层**——合同/审核/约束/红队整体退役。宿主要做审核？`docs/PROTOCOL-REVIEW.md` 三条接入通道（gate 暂停点 / 事后审 / 对话内审）。
+6. **适配层**——`adapter/`：一个 base URL + 一个口令 + 七个端点，浏览器/Electron/移动端同构接入，参考客户端 `storyflow-client.mjs` 零依赖。
 
 ## 快速开始
 
-依赖：Node ≥ 20（本机 24 实测）、Python ≥ 3.11、一个 OpenAI 兼容的模型端点（如 ZAI）。
+依赖：Node ≥ 20、Python ≥ 3.11、一个 OpenAI 兼容模型端点。
 
 ```bash
-# 1) 装依赖（两个包各自独立）
-cd core && npm install && cd ..
-cd storyharness && npm install && cd ..
+cd core && npm install && cd ../storyharness && npm install && cd ..
 
-# 2) 配模型端点（.external 不入库，自己建）
-mkdir .external
+mkdir -p .external
 cat > .external/storyharness.json <<'JSON'
 { "provider": "zai", "model": "glm-5.3-flash", "apiKey": "你的KEY" }
 JSON
 
-# 3) 一键拉起（内核 8421 + 协议面 8431 + 浏览器）
+# 拉起运行时（内核 8421 + 协议面 8431 + 浏览器）
 cd storyharness && npx tsx src/cli.ts web
 
-# 4) 或者无头跑一条完整生产线（20 节点短剧流）
+# 或无头跑一条生产线
 npx tsx src/cli.ts headless "都市奇幻：修表铺祖传怀表能让时间倒转十分钟" --episodes 6
+
+# 推演模式（点点点剧情，galgame 式）
+#   浏览器打开 http://127.0.0.1:8431/deduce
 ```
 
-MCP 接入（在 Claude Desktop / Qoder / 任何 MCP 宿主里用同一批动词）：
+MCP：`cd core && npm run build` 后在任意 MCP 宿主注册 `node dist/mcp.js`（20 个内核动词）。
 
-```bash
-cd core && npm run build
-# 宿主配置里注册：node dist/mcp.js（20 个内核动词：flow_* / whereami / snapshot / quality_scan …）
-```
+## 可插拔层（改文件即生效）
 
-## 前后端接口
-
-| 面 | 端口 | 形态 | 文档 |
-|---|---|---|---|
-| 编排内核 | 8421 | HTTP `POST /api/verbs/:verb`（flow_run/flow_next/flow_gate/whereami/snapshot/quality_scan…）+ 工作台静态页 | `docs/底座规格-miniflow-harness.md` |
-| 协议面 | 8431 | REST + SSE（`/status` `/start` `/stop` `/events`、会话 CRUD、`/api/panel/*`、`/api/kernel-verb` 白名单代理） | `storyharness/src/serve.ts`（路由即文档）+ `docs/规范-项目文件与流程配置-R4.md` |
-| MCP | stdio | 三面动词：事实面（内核内联）/ 建议面（skillrouter）/ 判断面 | `core/src/mcp.ts` |
-
-前端仓库不在本发布内：serve 对未知路径自带 `home.ts` 兜底门面，任何静态托管指向 8431 亦可。
-
-## 可插拔语料（preset 层怎么玩）
-
-| 想改什么 | 动哪个文件 | 生效时机 |
+| 想改什么 | 动哪里 | 生效 |
 |---|---|---|
-| 去 AI 味条款 | `knowledge/rules/*.md`（域卡，50 条） | 下次派发现读 |
-| 文风模仿 | `skills/` 文风卡 + `knowledge/craft/`·`knowledge/rules/` 文风条款 | 同上 |
-| 剧情编排知识 | `knowledge/plot/`、`knowledge/craft/`、`knowledge/trope/` | 同上 |
-| 新增一条生产线 | `flows/<名字>/flow.json`（flow@3） | `flow_run` 可选 |
-| 新增/挂载能力 | `modules/<模块>/module.json`（module@1） | 重启内核 |
-| 旋钮（字数档/模型档/判官开关） | `.external/storyharness.json`（运行配置）+ overlay | 即时/重启 |
+| 提示词语料（去AI味/文风/编排） | `knowledge/` 本地 md（引擎现读盘） | 即时；改后 `python tools/kit-compile.py` 重建向量图 |
+| 技能 | `skills/*.md`（40 张卡 → `kit/skills.tools.json` 注册表） | `python tools/kit-skills.py` 重建 |
+| 生产线 | `flows/screenplay|novel|prose|topic/flow.json` | `python tools/flow-lint.py` 过 0 error |
+| 能力注册 | `modules/*/module.json` | 重启内核 |
+| 运行配置 | `.external/storyharness.json` | 即时/重启 |
 
-纪律：`tools/module-lint.py` + `tools/kit-lint.py` + `tools/flow-lint.py` 是语料层的守门人，改完跑一遍，0 error 才算数。
+注意：`knowledge/**/*.md` 不进 git（见 `knowledge/.gitignore`）——它是你的本地语料资产；
+GitHub 上只有编译产物 `kit/hypergraph.rag.json`。克隆后把你的 md 放回 `knowledge/` 即恢复全部语料。
 
-## 目录导览
+## 目录
 
 ```
-core/            编排内核：flow@3 引擎、verbs 单表、overlay 生效编排、MCP 面、agent 对话流
-storyharness/    运行时产品：serve 协议面、批调度 scheduler、pi-agent 执行环、会话 JSONL、
-                 判官证据（evidence-only）、遥测、MCP/toolchain 桥
-tools/           确定性工具链：flow-lint / module-lint / kit-lint / quality-scan / laya-scan /
-                 export-doc（自带完整性检查）/ snapshot / whereami / worldbook / batch-edit …
-knowledge/       提示词语料：规则卡 50 条（C 轨）+ 知识卡 + 文风/编排/去AI味条款（全部可插拔）
-skills/          专科技能卡：选题/编剧/文学/分镜/交付/检测
-flows/           flow@3 生产线模板（短剧/长篇/选题/推演）
-modules/         module@1 能力注册表（topic/plan/plot/prose/drama/delivery/detect/search/base）
-contracts/       JSON Schema：flow@3 / overlay / artifact 头 / 指标
-docs/            规格文档：底座规格 + R4-R8 规范 + 版本宣告 + 设计稿
-demos/mini-pack  最小语料包样例（npm run verify:pack 可自验）
+core/            编排内核（flow@3 引擎 / verbs / overlay / MCP / agent 对话流）
+storyharness/    运行时（serve 协议面 / 批调度 / 执行环 / 会话 JSONL / desktop 壳；前端源码不在本仓库）
+adapter/         适配层：接口协议 + 零依赖参考客户端
+kit/             杂仓：skills.tools.json（技能工具注册表）+ hypergraph.rag.json（知识向量图）
+flows/           四条用途生产线（screenplay / novel / prose / topic）
+modules/         module@1 能力注册表（8 模块）
+skills/          技能源卡（本地；编译进 kit）
+knowledge/       提示词语料（本地；编译进 kit）
+tools/           确定性工具链 + kit 编译器（kit-skills / kit-compile）
+contracts/       flow@3 / overlay JSON Schema
+docs/            规格 + 审核接入协议（PROTOCOL-REVIEW）
 ```
 
-## 规格文档（docs/）
+## 审核在哪
 
-- `底座规格-miniflow-harness.md` —— 总纲
-- `规范-项目文件与流程配置-R4.md` → `规范-生成式flow与运行时编排-R5.md` → `规范-模块化flow与工具箱-R6.md` → `规范-开源部署与可调面-R7.md`（**可调面唯一真源表**）→ `规范-规则语料与orchestrator激活-v6.md` → `规范-候选库与选择面-R8.md`
-- `版本宣告-v4.0.0.md` / `v5.0.0.md` —— 代际口径
+**不在运行时里。** 我们不内置判官、打分、红队、合规。宿主要审核：
+gate 暂停点自己裁决 / 事后 rerun 定点重跑 / 对话内只读档旁听——三条通道见
+[`docs/PROTOCOL-REVIEW.md`](docs/PROTOCOL-REVIEW.md)。
 
 ## License
 
-[MIT](LICENSE) © 2026 skkbsgzf。致谢：视觉对标 [agegr/pi-web](https://github.com/agegr/pi-web)（MIT；令牌值与布局几何的借鉴发生在内部门面，本发布不含前端源码）；本地建议面引擎 [SkillRouter](https://github.com/skkbsgzf/SkillRouter)。
+[MIT](LICENSE) © 2026 skkbsgzf。致谢：agent 基座 pi-agent-core（MIT）；视觉对标参考
+[agegr/pi-web](https://github.com/agegr/pi-web)（MIT，借鉴发生在内部门面）；本地建议面引擎
+[SkillRouter](https://github.com/skkbsgzf/SkillRouter)。

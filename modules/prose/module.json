@@ -960,16 +960,6 @@
     "output": {
       "file": "终稿.md",
       "audience": "读者（对外正文终稿，文学化+去AI味）"
-    },
-    "acceptance": {
-      "scans": [
-        "AE-AI-QUOTA",
-        "AE-PROSE-SLOP",
-        "AE-WNF-HOOK"
-      ],
-      "rules": [
-        "kb/rules/ai-trace"
-      ]
     }
   }
 }

@@ -459,12 +459,6 @@
     "output": {
       "file": "选题报告.md",
       "audience": "作者（选题决策文档，兼作编剧模块唯一输入）"
-    },
-    "acceptance": {
-      "scans": [
-        "AE-REPORT-DENSITY"
-      ],
-      "rules": []
     }
   }
 }

@@ -1,0 +1,5 @@
+# v0.8 目标4：knowledge 的松散 md 是本地可插拔层（引擎现读盘），不上传 GitHub。
+# GitHub 上只发布编译产物 kit/hypergraph.rag.json。把你的 md 放回本目录后重跑：
+#   python tools/kit-compile.py
+*.md
+!README.md

@@ -1,0 +1,527 @@
+{
+  "format": "storyflow-skill-tools@1",
+  "note": "内置技能的 Tool 注册表：名称即功能、版本号、使用约束。用户自导 skill 另册（不进本表）。",
+  "count": 40,
+  "tools": [
+    {
+      "tool": "skill.acceptance-decompose",
+      "version": 1,
+      "title": "acceptance-decompose（拆解器）",
+      "summary": "节级验收拆解器——把「节需求包+本节正文」拆成两类验收项（机器类走 laya 学生批扫证据、感受类派读者面板），逐项执行并出处置清单与节结论。原则上小验收项不达标不阻断整章过点。",
+      "constraints": {
+        "stage": "review",
+        "trigger": "写作模块 m4 在 ghostwrite 之后、novel-deai 之前（flow caps「节级验收拆解」装载）；输入 = 节需求包 + 本节正文 + kb/craft/section-pipeline",
+        "inputs": "本节正文 + 节需求包（塑造目标/前文概要/文风/其他需求）+ tools/laya-scan.py 题面名单（GATE-1 放行 13 题；semif-calibration 包保留作离线体检选题用，不再是机器路由事实源）",
+        "outputs": "内部/节验收-<章号>-<节号>-<ts>.json（验收项清单+执行回执）+ 章末汇入 内部/章过点-<章号>-<ts>.md"
+      },
+      "source": "skills/acceptance-decompose.md"
+    },
+    {
+      "tool": "skill.adapt-episode-map",
+      "version": 1,
+      "title": "分集重排表（原稿→目标集数的节拍再分配）",
+      "summary": "把已有原稿按新形态（集数/时长/铺垫段）重排成分集表：逐集功能、主辅爽点、字数配额、素材锚点、集末卡点、状态交接；产出可被剧本师逐集执行的施工图。",
+      "constraints": {
+        "stage": "adapt_polish",
+        "trigger": "诊断已定取向，需要把 N 集原稿落成 M 集施工图（或反之）时；铺垫段与兑现段配比要定盘时。",
+        "inputs": "诊断与改编取向 + 原稿剧本 + 素材节拍清单（原著章回取料） + 世界书集账",
+        "outputs": "分集重排表.md（全量集表）+ 铺垫段细排（前 10 集逐集）+ 集账交接"
+      },
+      "source": "skills/adapt-episode-map.md"
+    },
+    {
+      "tool": "skill.adapt-triage",
+      "version": 1,
+      "title": "改编反馈诊断（原稿×甲方反馈→病灶账）",
+      "summary": "把成品原稿与甲方反馈对撞，产出 file:line 级病灶清单与取舍取向；不做改写、不解释原稿为什么这么写；每条病灶必须落到一个可执行的改编动作。",
+      "constraints": {
+        "stage": "adapt_polish",
+        "trigger": "已有成品剧本（或分集稿）收到反馈，要判断「到底改哪里、砍什么、加码什么」时。",
+        "inputs": "原稿剧本 + 甲方反馈（或批注）+ 世界书 + 改编需求",
+        "outputs": "诊断与改编取向.md（病灶账 + 爽点五类落点盘点 + 逐条动作 + 不改动清单）"
+      },
+      "source": "skills/adapt-triage.md"
+    },
+    {
+      "tool": "skill.cold-open",
+      "version": 1,
+      "title": "登场桥段设计（冷介绍主角 + 与正文接缝）",
+      "summary": "为横插的独立剧本设计开篇冷开场：一件与主线不重复的独立小事，一次答完「她是谁/要什么/凭什么狠」，并规定它与正文第一场的承接方式，禁止硬切旁白。",
+      "constraints": {
+        "stage": "adapt_polish",
+        "trigger": "剧本是系列里独立插入的一章、观众没有前情义务，或诊断指出「看不懂/没代入感/主角出场太晚/出场即无敌无代价」时。",
+        "inputs": "分集重排表（第 1 集行）+ 诊断与改编取向 + 世界书人物卡 + 原著可取材桥段清单",
+        "outputs": "冷开场方案.md（三问答案 + 桥段选型 + 分拍稿 + 接缝设计 + 备选）"
+      },
+      "source": "skills/cold-open.md"
+    },
+    {
+      "tool": "skill.deconstruct-book",
+      "version": 1,
+      "title": "deconstruct-book（拆书师）",
+      "summary": "拆书技能——按拆书总协议把参考作品拆成六槽位可入库素材（梗/人设/剧情设计/导语/细化/片段），产出带替换变量与使用条件的 KB 候选条目；溯源纪律全程硬约束。",
+      "constraints": {
+        "stage": "deconstruct",
+        "trigger": "对标拆解、素材沉淀、知识库入库飞轮运转时。",
+        "inputs": "参考作品文本（≥样本数下限）+ kb/deconstruct/protocol",
+        "outputs": "六槽位拆解件（KB 候选条目，待人工确认入库）"
+      },
+      "source": "skills/deconstruct-book.md"
+    },
+    {
+      "tool": "skill.dialogue-polish",
+      "version": 1,
+      "title": "dialogue-polish（台词去AI味打磨）",
+      "summary": "剧本强制末环节技能——全部人物对话逐句过三遍：人物声口校准（遮名可辨+说话习惯一致）、处境校准（压力与关系下的语言变化）、去AI味清单（24类+结构指纹）；基于人物和处境优化，不做通用润色。",
+      "constraints": {
+        "stage": "script_polish",
+        "trigger": "剧本试稿定稿前的强制末环节（R4 验收前必须完成）；任何对白批量生成后。",
+        "inputs": "剧本全稿 + 各人物语言卡（人设节）+ 各场所处境说明（大纲节）+ kb/aesthetic/naturalness-zh + kb/aesthetic/ai-trace + kb/aesthetic/dialogue",
+        "outputs": "打磨后剧本（逐句修订）+ 台词修订对照表（原句/改句/依据——内部留痕，不随对外交付物输出）"
+      },
+      "source": "skills/dialogue-polish.md"
+    },
+    {
+      "tool": "skill.episodic-outline",
+      "version": 1,
+      "title": "episodic-outline（单元剧编排师）",
+      "summary": "网文大纲技能（单元剧标准·轻量）——暗线节点表 + 单元剧序列 + 首批单元细纲；不搞编剧式重型结构。大纲→成稿的重心在五问：人设立得住/冲突自然/梗多/节目效果足/没有AI味。",
+      "constraints": {
+        "stage": "novel_outline",
+        "trigger": "世界观定稿后的大纲步；每卷开卷前的单元排期。",
+        "inputs": "世界观圣经.md + 世界观/ wiki 索引 + 选题报告（单元剧素材库）+ kb/structure/episodic-webnovel",
+        "outputs": "单元剧大纲.md（暗线节点表 + 单元剧序列 + 首批单元细纲）"
+      },
+      "source": "skills/episodic-outline.md"
+    },
+    {
+      "tool": "skill.find-trope",
+      "version": 1,
+      "title": "find-trope（找梗师）",
+      "summary": "找梗技能——从市场梗库检索梗族、判定饱和度、选主梗辅梗、沿演化链找新变体落点；梗卡是选题方案的前置件。",
+      "constraints": {
+        "stage": "inspiration",
+        "trigger": "选题/策划需要确定\"写什么梗\"时；分析报告与方案生成前必跑。",
+        "inputs": "用户需求方向 + kb/trope/* + kb/market/snapshot",
+        "outputs": "梗卡（主梗/辅梗/饱和度判定/新变体落点/对标件引用）"
+      },
+      "source": "skills/find-trope.md"
+    },
+    {
+      "tool": "skill.flow-synthesize",
+      "version": 1,
+      "title": "flow-synthesize",
+      "summary": "",
+      "constraints": {
+        "stage": null,
+        "trigger": null,
+        "inputs": null,
+        "outputs": null
+      },
+      "source": "skills/flow-synthesize.md"
+    },
+    {
+      "tool": "skill.foreshadow-plant",
+      "version": 1,
+      "title": "foreshadow-plant（伏笔悬念师）",
+      "summary": "伏笔悬念插入技能——按伏笔台账在指定结构位点埋设伏笔（明面日常化伪装+暗面台账登记：埋设章/预期回收章/知情范围），产出伏笔点位表；埋设必须登记台账、到期必须回收（AE-CONT-FORESHADOW 卡点级 block），不埋无回收主的死伏笔。",
+      "constraints": {
+        "stage": "breakdown",
+        "trigger": "主线骨架与（如启用）暗线锚点表已定、分场开始之前（scene-breakdown 前置位）；或按卷/单元批量布点时。",
+        "inputs": "大纲/分集表 + 卡点编排表 + 暗线锚点表（如启用）+ 伏笔台账现状 + 世界书词表 + kb/continuity/{state-ledger,worldbook} + kb/craft/highlight-loop",
+        "outputs": "伏笔点位表（点位×明面伪装×预期回收章×知情范围）/ 台账待登记清单 / 回收排期（哪些到期必须在本卷闭账）"
+      },
+      "source": "skills/foreshadow-plant.md"
+    },
+    {
+      "tool": "skill.ghostwrite",
+      "version": 1,
+      "title": "ghostwrite（文学化师）",
+      "summary": "写作模块主交付工具——输入剧本（结构化 IR），把它文学化为小说正文：逐场成文、六维盖章自查、章末钩落地。结构已由剧本锁定，这里只负责「把已锁定的戏写好」。",
+      "constraints": {
+        "stage": "drafting",
+        "trigger": "小说流 m3 模块；输入 = 02-编剧/剧本.md，输出 = 03-写作/正文.md（N 章合并稿）",
+        "inputs": "剧本 + kb/craft/prose-constraints（六维路由总纲）+ kb/aesthetic/slop-list + kb/aesthetic/ai-trace",
+        "outputs": "正文终稿（m3 模块唯一交付件，交 novel-deai 薄修后交付）"
+      },
+      "source": "skills/ghostwrite.md"
+    },
+    {
+      "tool": "skill.internet-feel",
+      "version": 1,
+      "title": "internet-feel（网感师）",
+      "summary": "网感技能——按市场公式产标题、一句话卖点、共情点与所有对外文案；每个字都在传递钩子或爽点，产出过 24 类去模板化自检。",
+      "constraints": {
+        "stage": "inspiration",
+        "trigger": "标题/卖点/共情点/交付文案生成与改写时；方案定稿前通稿过一遍网感自检。",
+        "inputs": "策划案草稿 + kb/market/internet-feel",
+        "outputs": "标题候选×5 / 一句话卖点 / 共情点 / 网感自检记录"
+      },
+      "source": "skills/internet-feel.md"
+    },
+    {
+      "tool": "skill.layer-canon",
+      "version": 1,
+      "title": "layer-canon（设定官·设定层稿）",
+      "summary": "成文流水线专科层三——从分场卡逐拍产出设定层稿：知情范围切片、新词首现方案、台账增量、人设矛盾提示；只管世界观一致性与读者认知边界，不碰文笔。",
+      "constraints": {
+        "stage": "prose_layer",
+        "trigger": "分场卡锁定后、成文拼装前；每章必跑。",
+        "inputs": "成文节拍卡（五行卡）+ World Book 全量 + 连续性台账 + kb/continuity/state-ledger + kb/continuity/worldbook + kb/aesthetic/character（人设矛盾）",
+        "outputs": "层稿-设定.md（逐拍：知情范围/新词首现方案/台账增量/人设揭示点；尾部=新词登记清单+伏笔登记）"
+      },
+      "source": "skills/layer-canon.md"
+    },
+    {
+      "tool": "skill.layer-scenes",
+      "version": 1,
+      "title": "layer-scenes（场景师·场景层稿）",
+      "summary": "成文流水线专科层二——从分场卡逐拍产出场景层稿：五感计划、身体反应、布景道具、笔墨密度配比；只管让读者站进场景，不写台词不推情节。",
+      "constraints": {
+        "stage": "prose_layer",
+        "trigger": "分场卡锁定后、成文拼装前。",
+        "inputs": "成文节拍卡（五行卡）+ World Bible 场景相关切片 + kb/aesthetic/scene-value + kb/deconstruct/style-learning + kb/aesthetic/metaphor-zh",
+        "outputs": "层稿-场景.md（逐拍：五感计划/身体反应清单/道具与布景/笔墨密度档/入戏细节一处）"
+      },
+      "source": "skills/layer-scenes.md"
+    },
+    {
+      "tool": "skill.layer-voices",
+      "version": 1,
+      "title": "layer-voices（台词师·对白层稿）",
+      "summary": "成文流水线专科层一——从分场卡逐拍产出对白层稿：每句台词标注说话人/目的/潜台词，全员过遮名三句测试；只管台词，不写叙述。",
+      "constraints": {
+        "stage": "prose_layer",
+        "trigger": "分场卡锁定后、成文拼装前；对白密集章必跑。",
+        "inputs": "成文节拍卡（五行卡）+ 人物卡/声口表 + kb/aesthetic/dialogue + kb/aesthetic/character §五",
+        "outputs": "层稿-对白.md（逐拍台词清单：说话人/台词/目的/潜台词/压力档位）"
+      },
+      "source": "skills/layer-voices.md"
+    },
+    {
+      "tool": "skill.material-dissect",
+      "version": 1,
+      "title": "material-dissect（素材解剖师）",
+      "summary": "选题素材解剖技能——申论式四层剥离（现象/利益/权力/结构），把热点事件聚合成关系结构与权力不对称，从关系逆位生成爽点候选，产出材料落位表。素材不解剖=假材料，梗不落位=装饰品。",
+      "constraints": {
+        "stage": "inspiration",
+        "trigger": "实时素材/热点事件/现实映射类题材进入选题流程时；模板文题材（无限流/修仙/系统等）跳过本技能，直接走 kb/trope 梗族选型。",
+        "inputs": "热点事件/题材素材 + kb/market/topic-anatomy + kb/market/meme-rules",
+        "outputs": "素材解剖报告（关系结构图 + 权力不对称矩阵 + 逆位爽点候选 + 材料落位表）"
+      },
+      "source": "skills/material-dissect.md"
+    },
+    {
+      "tool": "skill.novel-bible",
+      "version": 1,
+      "title": "novel-bible（开书师）",
+      "summary": "长篇网文开书技能——三层问答定书（题材与核心情绪→主角与核心欲望→前十事件链），产出 World Bible 与卷纲前置件；三问答完才许开书。",
+      "constraints": {
+        "stage": "novel_setup",
+        "trigger": "长篇网文项目立项/开书时。",
+        "inputs": "用户需求 + kb/formats/webnovel-longform + kb/trope/* + kb/market/snapshot",
+        "outputs": "World Bible.md（题材/核心情绪/人物/世界规则/金手指/长期承诺）+ 前十事件链.md"
+      },
+      "source": "skills/novel-bible.md"
+    },
+    {
+      "tool": "skill.novel-chapter",
+      "version": 1,
+      "title": "novel-chapter（章回写手）",
+      "summary": "长篇网文逐章写作技能——按章功能与台账切片写单章：章末钩子强制、笔墨密度随情绪波动、连续性零越权；交稿即过断言与台账校验。",
+      "constraints": {
+        "stage": "novel_writing",
+        "trigger": "长篇逐章生成（含批量模式下的单章任务包）时。",
+        "inputs": "章任务包（章功能 + 台账切片 + 前情摘要 + 文风规则）+ kb/formats/webnovel-longform",
+        "outputs": "单章正文（过 AE-WNF-*/AE-CONT-* 断言）"
+      },
+      "source": "skills/novel-chapter.md"
+    },
+    {
+      "tool": "skill.novel-deai",
+      "version": 1,
+      "title": "novel-deai（快餐文去AI味终稿师）",
+      "summary": "快餐网文终稿打磨技能——四遍法打磨（声口校准→处境校准→比喻意象→节奏去机味）+ 多轮精修内环（评审官判分→定向修订→防劣化收敛），诊断先行、覆盖律记账、盲读内环信号；产出可发布终稿与全套收据。",
+      "constraints": {
+        "stage": "novel_polish",
+        "trigger": "章回成稿完整性检查通过后的强制末环节；批量交稿后的统一终稿。",
+        "inputs": "成稿章节（正文-第NNN章.md）+ World Bible（文风档/名目黑话/梗卡）+ 章功能序列 + 质量扫描收据 + 内部/修订对照表.md（旧账）",
+        "outputs": "终稿（对外交付/NN-前三章终稿.md）+ 内部收据包（诊断单/修订对照表增补/prose-scan/盲读报告）"
+      },
+      "source": "skills/novel-deai.md"
+    },
+    {
+      "tool": "skill.novel-judge",
+      "version": 1,
+      "title": "novel-judge（终稿评审官·五维锚点评分）",
+      "summary": "文学质量评审技能——五维锚点评分（10 分制，每维带 2/5/8 分锚点样例）+ 逐维一句诊断 + 「最差三处」可执行定向反馈；是多轮精修工坊的判分器，也是 gate 前的预读体检。用户判词恒优先于本表（§零否决权）。",
+      "constraints": {
+        "stage": "novel_polish",
+        "trigger": "多轮精修内环每轮判分；gate 前预读体检；任何批量修改后的质量复核。",
+        "inputs": "待评稿（章节或终稿）+ World Bible（文风档/人物卡）+ 前轮评分表（如有）",
+        "outputs": "内部/评审表-<对象>-<轮次>.md（评分 + 诊断 + 最差三处定向反馈，不外发）"
+      },
+      "source": "skills/novel-judge.md"
+    },
+    {
+      "tool": "skill.orchestration-miner",
+      "version": 1,
+      "title": "orchestration-miner",
+      "summary": "",
+      "constraints": {
+        "stage": null,
+        "trigger": null,
+        "inputs": null,
+        "outputs": null
+      },
+      "source": "skills/orchestration-miner.md"
+    },
+    {
+      "tool": "skill.plot-choreographer",
+      "version": 1,
+      "title": "plot-choreographer（剧情编排师）",
+      "summary": "剧情编排技能——把八段式策划案升级为可拍的三线骨架×分集功能表×卡点编排表；数据骨架（市场实盘）与美学标准（kb/aesthetic）双驱动。",
+      "constraints": {
+        "stage": "outline",
+        "trigger": "选题方案的大纲/剧情主线段生成时；分集结构检查与换轨时。",
+        "inputs": "策划案（八段式）+ 梗卡 + kb/market/constraints + kb/aesthetic/{pacing-density,reversal,emotion-curve,scene-value,ending}",
+        "outputs": "主线骨架（三幕×价值链）/ 分集功能表 / 卡点编排表 / 场景复用表 / 情感线设计（≥3 条：起点/转折/兑现 + 情绪曲线主辅型）"
+      },
+      "source": "skills/plot-choreographer.md"
+    },
+    {
+      "tool": "skill.plot-redline",
+      "version": 1,
+      "title": "剧情红队·多方视角评审",
+      "summary": "红方评审技能 v2（视角代入制）——代入目标读者/一般读者/资深编剧/甲方四类人分别给意见，说人话不念指标；打回时指认根因阶段；框架可行但单薄时提案不确定因素注入。每个阶段验收门强制注入。",
+      "constraints": {
+        "stage": "review",
+        "trigger": "各阶段验收门（R1 调研 / R2 结构 / R3 方案 / R4 剧本）裁决前强制注入；spot-check 模式可挂任意产出步之后。",
+        "inputs": "本阶段产物 + 对标件 + Bible + 约束移交单（**不读生产侧推理**）",
+        "outputs": "多视角意见书（四视角意见 + 共识判定 + 根因阶段指认 + 不确定因素提案）"
+      },
+      "source": "skills/plot-redline.md"
+    },
+    {
+      "tool": "skill.prose-assembler",
+      "version": 1,
+      "title": "prose-assembler（成文师·逐段拼装盖章）",
+      "summary": "成文流水线末环——把台词/场景/设定三层稿按节拍拼装成正文：逐段六维盖章（台词/场景/设定/人设/节奏/机味），全过才下推；产出正文+盖章单。无分场卡不开工。",
+      "constraints": {
+        "stage": "prose_assemble",
+        "trigger": "三层层稿齐备后；每章成文唯一入口。",
+        "inputs": "层稿-对白 + 层稿-场景 + 层稿-设定 + 成文节拍卡 + kb/craft/prose-constraints（六维路由总纲）+ 项目文风档",
+        "outputs": "正文-第NNN章.md + 内部/盖章单-第NNN章.md（逐段六维戳）"
+      },
+      "source": "skills/prose-assembler.md"
+    },
+    {
+      "tool": "skill.reader-panel",
+      "version": 1,
+      "title": "reader-panel（读者面板）",
+      "summary": "感受类验收的执行体——以目标读者人格冷读本节，只回答拆解器送来的三问（到位没有/最强一句/最弱一句），出评词与 ✓/△/✗ 判词。不做文字修理，不给改写方案。",
+      "constraints": {
+        "stage": "review",
+        "trigger": "acceptance-decompose 的 reader 类验收项；输入 = 节正文 + 感受类问题（≤3/节）+ 平台读者画像（flow inputs platform）",
+        "inputs": "本节正文（冷读，不带着创作上下文）+ 问题清单",
+        "outputs": "判词 JSON（问题/✓△✗/一句证据引用/最强一句/最弱一句）"
+      },
+      "source": "skills/reader-panel.md"
+    },
+    {
+      "tool": "skill.render-prompt-seedance",
+      "version": 1,
+      "title": "Seedance 分镜提示词（引用语法）",
+      "summary": "AI 生成视频的画面调度指令：@素材点名定岗/固定运镜词库/分时段描述/角色一致性锁图。",
+      "constraints": {
+        "stage": "render_prompt",
+        "trigger": null,
+        "inputs": null,
+        "outputs": null
+      },
+      "source": "skills/render-prompt-seedance.md"
+    },
+    {
+      "tool": "skill.scene-breakdown",
+      "version": 1,
+      "title": "scene-breakdown（小纲师·分镜脚本）",
+      "summary": "小纲阶段技能——把大纲拆成逐分镜的脚本 doc：每个分镜的场景/人物行动/台词，达意即可无需打磨；文末附创作思路页。输出 doc 格式供客户批注修改后回传。",
+      "constraints": {
+        "stage": "miniguide",
+        "trigger": "大纲过 R3 后、成品剧本前；客户要求小纲批注流转时。",
+        "inputs": "大纲（已过 R3）+ 分集功能表 + 人物语言卡",
+        "outputs": "小纲 doc（逐分镜：场景/人物行动/台词）+ 创作思路页"
+      },
+      "source": "skills/scene-breakdown.md"
+    },
+    {
+      "tool": "skill.script-drama-beat",
+      "version": 1,
+      "title": "短剧节拍表（场次与卡点）",
+      "summary": "竖屏短剧一集的硬格式：场次编号/△动作/台词内联情绪/前3秒钩子/结尾付费卡点体检；剧本是生产工具，不可拍摄内容是禁手。",
+      "constraints": {
+        "stage": "script_drama",
+        "trigger": "分集剧本写作与逐拍体检时。",
+        "inputs": "分集大纲 + 本集目标 + 出场人物",
+        "outputs": "单集分拍剧本（硬格式合规）"
+      },
+      "source": "skills/script-drama-beat.md"
+    },
+    {
+      "tool": "skill.script-final",
+      "version": 1,
+      "title": "script-final（成品剧本师）",
+      "summary": "成稿阶段技能——基于小纲（或客户批注后版本）产出连贯成品剧本：场次头+人物行动/表情+角色台词；特殊镜头与旁白用中括号备注；不出现钩型/时长/尾钩等内部标注。成稿后强制交接台词去AI味打磨。",
+      "constraints": {
+        "stage": "final_script",
+        "trigger": "小纲（或批注后版本）过验收后；成品剧本逐集产出时。",
+        "inputs": "小纲 doc（含客户批注的采纳清单）+ 人物语言卡 + kb/aesthetic 全套标准",
+        "outputs": "成品剧本（连贯格式，行动/表情/台词齐备，台词已初步定稿待打磨复核）"
+      },
+      "source": "skills/script-final.md"
+    },
+    {
+      "tool": "skill.script-forge",
+      "version": 1,
+      "title": "script-forge（剧本师）",
+      "summary": "编剧模块唯一交付工具——输入选题报告，交付一部通顺流畅、冲突激烈、逐集卡点的正常格式剧本（场景头/动作/台词/集末卡点），附人物卡与伏笔登记。",
+      "constraints": {
+        "stage": "plotting",
+        "trigger": "短剧/小说流 m2 模块；输入 = 01-选题/选题报告.md，输出 = 02-编剧/剧本.md",
+        "inputs": "选题报告 + kb/aesthetic/scene-value + kb/aesthetic/conflict-escalation + kb/aesthetic/reversal + kb/aesthetic/pacing-density + kb/aesthetic/hook-3s",
+        "outputs": "剧本（正常剧本格式，m2 模块唯一交付件）"
+      },
+      "source": "skills/script-forge.md"
+    },
+    {
+      "tool": "skill.story-outline",
+      "version": 1,
+      "title": "全季故事简纲（脊柱×节拍×STAR 节点）",
+      "summary": "把改编取向落成「哪一集踩在哪一章、踩的是哪一层」的全季简纲：脊柱映射、与原著差异清单、贯穿型压迫装置、逐节点 STAR 简纲、曲线对账。不写分集细表、不写台词、不写分场。",
+      "constraints": {
+        "stage": "adapt_polish",
+        "trigger": "目标集数远超原著可用素材的容量（如十章原文撑八十集），需要先定「全季只讲一件事」的走向，再往下派施工图时。",
+        "inputs": "改编取向与诊断账 + 分集重排表 + 结构选型案 + 原著对应章段 + 世界书",
+        "outputs": "故事大纲.md（设计思路 + 原著差异清单 + 节拍分段 + 压迫装置 + STAR 简纲 + 硬口径 + 曲线对账）"
+      },
+      "source": "skills/story-outline.md"
+    },
+    {
+      "tool": "skill.structure-design",
+      "version": 1,
+      "title": "structure-design（结构选型师）",
+      "summary": "第二阶段技能——从结构目录选型并完成深挖/改造/融合三步，产出故事框架案（结构选型理由+骨架具体化+改造点+不确定因素注入提案），确保节奏对齐市场实盘。",
+      "constraints": {
+        "stage": "structure",
+        "trigger": "选题调研过审后、方案成形前；叙事结构需要更换或融合时。",
+        "inputs": "选题调研报告（已过 R1）+ 梗卡 + kb/structure/catalog",
+        "outputs": "故事框架案.md（选型+骨架+改造+融合+2 个以上不确定因素注入提案）"
+      },
+      "source": "skills/structure-design.md"
+    },
+    {
+      "tool": "skill.subplot-weave",
+      "version": 1,
+      "title": "subplot-weave（暗线编织师）",
+      "summary": "暗线编织技能——在主骨架之上叠加第二条叙事线（身份线/复仇线/情感线）：暗线锚点表（每锚点=明线事件+暗线推进量）、双轨咬合检查（暗线停摆=空转）、揭示节奏规划（铺垫→半揭→反转→兑现）；暗线只在编剧层锁定，成文层无权改戏。",
+      "constraints": {
+        "stage": "outline",
+        "trigger": "主线骨架与分集功能表已定（plot-choreographer 之后）；需要暗线/双线结构的选题开编时。",
+        "inputs": "主线骨架（三线×分集功能表）+ 卡点编排表 + 梗卡 + kb/structure/episodic-webnovel + kb/aesthetic/{emotion-curve,reversal} + kb/craft/highlight-loop",
+        "outputs": "暗线锚点表（锚点×明线载体×暗线推进量）/ 揭示节奏表（铺垫→半揭→反转→兑现四拍）/ 双轨咬合检查单"
+      },
+      "source": "skills/subplot-weave.md"
+    },
+    {
+      "tool": "skill.topic-analysis-report",
+      "version": 1,
+      "title": "选题分析报告方法论",
+      "summary": "选题流程·分析报告步的工作规范——消费选题素材包与四视角评估批注，产出市场/目标客群/竞品/数据分析四板块加结论的选题分析报告，并以「创作约束移交单」向编剧步移交硬约束。",
+      "constraints": {
+        "stage": "inspiration",
+        "trigger": "选题流程第二步（生成选题分析报告）时；或需要对任何题材方向做结构化可行性分析时。",
+        "inputs": "选题素材包 + 四视角评估批注报告（由引擎按输入边自动拼入【文件名】内容）",
+        "outputs": "选题分析报告.md（五节结构，见下）"
+      },
+      "source": "skills/topic-analysis-report.md"
+    },
+    {
+      "tool": "skill.topic-chief-aesthetic",
+      "version": 1,
+      "title": "审美总编·选题方案质量观",
+      "summary": "审美总编技能（监管位）——以对标已出品爆款为强度标尺，对选题方案做爆点强度/钩子冲击力/名场面可视化三维把控；写入方案即视为总编终审通过。",
+      "constraints": {
+        "stage": "inspiration",
+        "trigger": "任何选题方案生成时作为监管技能注入；方案步收尾自检按本技能逐条过。",
+        "inputs": "选题方案草稿 + 对标作品参照",
+        "outputs": "达到总编过审强度的方案（不达标的段落重写）"
+      },
+      "source": "skills/topic-chief-aesthetic.md"
+    },
+    {
+      "tool": "skill.topic-delivery-gate",
+      "version": 1,
+      "title": "需求交付·对账清单",
+      "summary": "需求交付技能（监管位）——对分析报告「创作约束移交单」逐条合规对账 + 交付完整性核查；硬条款违反一票否决，合同优先于审美。",
+      "constraints": {
+        "stage": "inspiration",
+        "trigger": "任何选题方案生成时作为监管技能注入；方案定稿前逐条对账。",
+        "inputs": "选题方案草稿 + 选题分析报告（第五节创作约束移交单）",
+        "outputs": "逐条合规的方案（对账结果落文末合规表）"
+      },
+      "source": "skills/topic-delivery-gate.md"
+    },
+    {
+      "tool": "skill.topic-proposal",
+      "version": 1,
+      "title": "选题方案方法论",
+      "summary": "选题流程·选题方案步的工作规范——纯内容呈现：选题、人设、冲突设计、大纲、前三集初稿；市场结论只以「创作约束移交单」为输入，报告里禁止商业分析语言。",
+      "constraints": {
+        "stage": "inspiration",
+        "trigger": "选题流程第三步（生成选题方案）时；或需要把一个选题方向落成可开写的创作方案时。",
+        "inputs": "选题素材包 + 选题分析报告（其第五节「创作约束移交单」为硬约束）",
+        "outputs": "选题方案.md（五节结构，见下；前三集初稿遵循 topic-episode-draft 规范）"
+      },
+      "source": "skills/topic-proposal.md"
+    },
+    {
+      "tool": "skill.topic-report",
+      "version": 1,
+      "title": "topic-report（选题报告师）",
+      "summary": "选题模块唯一交付工具——输入一个灵感，产出一份成熟选题报告：梗选型（带饱和度数据）、竞品对标（文风/编排手法借鉴点）、素材结构解剖、可用话题清单。模块输出职责的单点承担者。",
+      "constraints": {
+        "stage": "inspiration",
+        "trigger": "小说流 m1 模块；输入 = 用户的灵感（direction），输出 = 01-选题/选题报告.md",
+        "inputs": "灵感（direction/需求/灵感字段）+ kb/trope/* + kb/market/* + kb/benchmark/*",
+        "outputs": "选题报告（单文件，m1 模块唯一交付件）"
+      },
+      "source": "skills/topic-report.md"
+    },
+    {
+      "tool": "skill.topic-zeitgeist",
+      "version": 1,
+      "title": "时代情绪锚",
+      "summary": "主旋律与实时性技能——选题必须锚定一个近 30 天可举证的社会情绪，故事是该情绪的具象化；无锚点的选题是经典母题复读，缺共鸣乘数。",
+      "constraints": {
+        "stage": "inspiration",
+        "trigger": "选题方案生成与分析报告撰写时；「一、选题」节的「时代情绪锚」声明按本技能写。",
+        "inputs": "选题素材（含实时热点段）+ 分析报告",
+        "outputs": "方案中的时代情绪锚声明 + 情绪具象化路线"
+      },
+      "source": "skills/topic-zeitgeist.md"
+    },
+    {
+      "tool": "skill.world-forge",
+      "version": 1,
+      "title": "world-forge（世界观锻造师）",
+      "summary": "网文开书技能（单元剧标准）——选题后先搞世界观：力量体系/势力矛盾/主角力量来源与代价/世界规则四件套；产出世界书（人读总览 + 卡片词条库 + GraphHyperRAG 图索引）；人物动机从世界观长出来，不硬安。",
+      "constraints": {
+        "stage": "novel_setup",
+        "trigger": "选题过门后的开书步；或世界观大改（版本更新级设定事件）时。",
+        "inputs": "选题报告（好梗集合+世界观种子）+ 素材解剖报告 + kb/structure/episodic-webnovel + kb/formats/webnovel-fastfood",
+        "outputs": "世界书/总览.md（人读，flow 产物声明路径）+ 世界书/<分类>/<词条>.md 卡片库 + 世界书/graph.json（归纳层，收口命令生成）"
+      },
+      "source": "skills/world-forge.md"
+    }
+  ]
+}

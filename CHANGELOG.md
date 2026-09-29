@@ -1,3 +1,15 @@
+## 0.8.0 · 故事 Kit 重构（2026-09-29）
+
+定位改版：**轻量、可玩性高的故事 kit 提供者**，与创作工作区彻底解耦。
+
+1. flows 按用途归一：screenplay / novel / prose / topic 四条（删除主题流与项目细节）；demos 全删。
+2. 运行时精简：判官层（judge.ts + 证据/回喂链路 + judge 子命令 + 配置段）整体移除；
+   module io.acceptance 验收约束层移除；detect 检测模块移除——审核归宿主（docs/PROTOCOL-REVIEW.md 三通道接入）。
+3. Skill 即 Tool：kit/skills.tools.json（40 技能 → skill.* 工具：名称即功能+版本+约束），tools/kit-skills.py 编译。
+4. knowledge 层改为发布编译产物 kit/hypergraph.rag.json（115 词条/5998 边 HyperGraphRAG）；源 md 不进 git（本地可插拔），tools/kit-compile.py 重建。
+5. 新增 adapter/ 适配层：REST+SSE 接口协议 + 零依赖参考客户端 storyflow-client.mjs（浏览器/Electron/移动端同构）。
+6. flow id 变更：drama-flow→screenplay、novel-longform→novel、novel-prose→prose、topic-selection→topic（headless 默认 screenplay）。
+
 # Changelog · miniflow harness
 
 版本唯一事实源：仓库根 `VERSION`。格式参考 Keep a Changelog；R1..R8 历史代际摘要附于 4.0.0 条目。

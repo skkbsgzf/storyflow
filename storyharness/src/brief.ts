@@ -15,7 +15,6 @@ export interface BriefParts {
   direction?: string;
   episodes?: number;
   gate?: string;
-  judgeFlagged?: string[];
   telemetry?: string;
 }
 
@@ -50,11 +49,8 @@ export function gatherBriefParts(kernel: KernelClient, project: string): BriefPa
     const files = fs.readdirSync(recDir).filter((f) => f.endsWith(".json")).map((f) => path.join(recDir, f))
       .sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
     for (const f of files) {
-      const r = JSON.parse(fs.readFileSync(f, "utf-8"));
-      if (r.judge?.ran && Array.isArray(r.judge.flagged) && r.judge.flagged.length) {
-        parts.judgeFlagged = r.judge.flagged;
-        break;
-      }
+      JSON.parse(fs.readFileSync(f, "utf-8"));
+      break;
     }
   } catch { /* 收据缺失 */ }
   // 最近遥测摘要
@@ -65,7 +61,7 @@ export function gatherBriefParts(kernel: KernelClient, project: string): BriefPa
     if (files.length) {
       const t = JSON.parse(fs.readFileSync(files[0], "utf-8"));
       const tt = t.totals ?? {};
-      parts.telemetry = `最近 run：${tt.okNodes ?? "?"}/${tt.nodes ?? "?"} 节点过闸 · usage ${tt.usageIn ?? "?"}/${tt.usageOut ?? "?"} tok · 判官 flagged ${tt.judgeFlagged ?? 0}`;
+      parts.telemetry = `最近 run：${tt.okNodes ?? "?"}/${tt.nodes ?? "?"} 节点过闸 · usage ${tt.usageIn ?? "?"}/${tt.usageOut ?? "?"} tok`;
     }
   } catch { /* 遥测缺失 */ }
   return parts;
@@ -84,7 +80,6 @@ export function buildProjectBrief(kernel: KernelClient, project: string): string
   if (p.next) lines.push(`- 下一步节点：${p.next}`);
   if (p.gate) lines.push(`- ⛔ ${p.gate}`);
   if (p.telemetry) lines.push(`- ${p.telemetry}`);
-  if (p.judgeFlagged?.length) lines.push(`- 最近判官 flagged（证据非闸，写前自查）：${p.judgeFlagged.join("、")}`);
   lines.push(`- 以上简报已覆盖盘面事实：无需再调 whereami/fs_tree 重复核实；只读你真正需要的具体文件。`);
   return lines.join("\n");
 }

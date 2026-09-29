@@ -1,0 +1,156 @@
+{
+  "format": "flow@3",
+  "id": "novel-longform",
+  "title": "长篇网文生产工作流",
+  "desc": "需求 → 三层问答开书（World Bible：题材与核心情绪→主角与金手指四件套→前十事件链）→ 卷纲与章功能序列（先出全段再逐章，避免流水式偏航）→ 逐章流水（台账切片→章回写作→扫描+台账双校验→红队抽检，每批 ≥1 章）→ 批次交付。format（章功能序列与章头形态）+ continuity（台账一致性扫描器三件套：专名/数值/伏笔）+ ai-trace 三维度是生命线——v5.0 起以扫描器收据 + 规则语料 + agent 裁决承载，不再是提交闸；两仗同时打：加规则治崩（台账零容忍）× 减规则治假（手法留白，配额≤5）。章级连续性由章回写手按 novel-chapter 契约滚动维护，断点续跑按章落盘。",
+  "version": "0.6.0",
+  "status": "official",
+  "inputs": {
+    "project": {
+      "type": "project",
+      "required": true,
+      "desc": "项目上下文"
+    },
+    "premise": {
+      "type": "string",
+      "required": true,
+      "desc": "一句话需求（题材方向 + 核心欲望）"
+    },
+    "platform": {
+      "type": "string",
+      "default": "番茄",
+      "desc": "目标平台（商业语境：保底节奏/更新频率/AI 检测口径）"
+    },
+    "batchSize": {
+      "type": "number",
+      "default": 10,
+      "min": 1,
+      "max": 50,
+      "desc": "单批章数（先出全段章功能序列再逐章执行）"
+    },
+    "sourceMaterials": {
+      "type": "string",
+      "required": false,
+      "desc": "素材源头目录（项目内相对路径，如 00-素材/）。在盘即声明：m2 开书从「凭空创造」切为「验收+补全」——素材已定条目只核对不重写，缺口（地理/势力盘/配角）由三层问答补全并交用户验收；缺席则照旧凭空创造（不猜值，缺席≠兜底）"
+    }
+  },
+  "defaults": {
+    "link": "auto"
+  },
+  "policy": {
+    "link_default": "auto",
+    "adapt": "off"
+  },
+  "modules": [
+    {
+      "id": "m1",
+      "module": "topic",
+      "caps": [
+        "找梗",
+        "网感文案"
+      ]
+    },
+    {
+      "id": "m2",
+      "module": "plot",
+      "link": "manual",
+      "caps": [
+        "世界观",
+        "主线",
+        "人设",
+        "红队评审"
+      ]
+    },
+    {
+      "id": "m3",
+      "module": "base",
+      "insert": {
+        "end": [
+          "continuity_slice"
+        ]
+      }
+    },
+    {
+      "id": "m4",
+      "module": "prose",
+      "caps": [
+        "直写单章",
+        "节级验收拆解",
+        "读者视角判词"
+      ],
+      "iterate": {
+        "unit": "chapter",
+        "over": "章功能序列",
+        "first": 10
+      }
+    },
+    {
+      "id": "m5",
+      "module": "base",
+      "insert": {
+        "end": []
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "module": "m2",
+      "title": "World Bible（三层问答产物）+ 卷纲与章功能序列",
+      "audience": "章回写手"
+    },
+    {
+      "module": "m3",
+      "title": "连续性台账（五类事实，滚动维护）",
+      "audience": "写前查账"
+    },
+    {
+      "module": "m4",
+      "title": "单章正文（章末钩子强制，收束四型轮换）",
+      "audience": "批次验收"
+    },
+    {
+      "node": "m2.world-forge",
+      "path": "世界书/总览.md",
+      "title": "世界书（GraphHyperRAG 词条库：世界书/<分类>/<词条>.md + graph.json）",
+      "audience": "写手 agent 直调（worldbook_search）+ pedia 可视化（worldbook.html）"
+    }
+  ],
+  "changelog": [
+    {
+      "0.6.0": "节卷积编排（用户计划 2026-09-22 全量执行）：m4 装载 prose/acceptance-decompose（拆解器：机器类=semif 校准包条款证据、感受类=reader-panel、其余 agent）+ reader-panel；ghostwrite 增 sectionLen 旋钮。节级验收在拆解器内逐节循环，内核不感知节。"
+    },
+    {
+      "version": "0.5.0",
+      "date": "2026-09-22",
+      "changes": [
+        "世界书强制插入（用户拍板）：world-forge 进 plot 实例 caps，outputs 声明 世界书/总览.md——产出 <分类>/<词条>.md 卡片库（frontmatter id/title/tags/links/status）+ graph.json 归纳层；查看层 worldbook.html（pedia），创作时 agent 直调 worldbook_search"
+      ]
+    },
+    {
+      "version": "0.4.0",
+      "date": "2026-09-21",
+      "changes": [
+        "素材入口（原创长篇首跑 p-kunxiu-001，用户口径「先跑3章」授权的最小结构改动）：inputs 增 sourceMaterials（可选，R8 口径：在盘才切模式，缺席不猜值不兜底）；m2 开书两 op（novel-bible/plot-choreographer）增 materialsMode 旋钮，默认「凭空创造」，素材项目在 overlay 切「验收+补全」",
+        "status draft→official：骨架已在 p-kunxiu-001 立项验证过映射（世界观素材→三层问答逐节可挂靠），首批 3 章实跑为转正验收"
+      ]
+    },
+    {
+      "version": "0.3.0",
+      "date": "2026-09-21",
+      "changes": [
+        "v5.0 断言退役（工单批B）：desc 改写为扫描证据 + agent 裁决口径（原 block 断言字样出账）；0.2.0 条目中的 op.asserts / AE-* 字样均为历史记录，现口径 = io.acceptance{scans,rules} + 扫描器收据，质量裁决归 agent"
+      ]
+    },
+    {
+      "version": "0.2.0",
+      "date": "2026-09-21",
+      "changes": [
+        "flow@2 → flow@3（v4.0.0 工单批A）：topic[找梗] → plot[人设(novel-bible),主线(choreographer)] → base[台账切片] → prose[直写单章]（逐章 iterate）→ base[断言/结算]；market 装载（snapshot/trope/longform 格式）归 op.knowledge 单点装载（K1）。base 实例用 insert{\"end\":[…]} 显式有序启用（base spine=[]，caps 无锚可落——缺口归批D）",
+        "红队抽检（plot-redline spotCheck，每批 ≥1 章，语义剖面 AE-NAT-HIT/AE-AI-STRUCT/AE-AI-QUOTA 记账）随 plot[红队评审] 承载；章回交稿后的批次级抽检由 rerun 定点派发",
+        "e-loop 回边（fin→ledger 逐章循环）取消——flow@3 无回边，逐章循环由 prose 模块 iterate{over:章功能序列} 表达；批次人工验收按 R5 §四降级为交卷即放行，朱雀类抽测仍按纪律执行（参考信号不作目标函数）",
+        "audit onFail「退回 chapter 定点修」归交卷-打回机制；AE-WNF-HOOK/CONT-* 随 novel-chapter op.asserts + base[美学断言] 双层承载",
+        "plot 骨架步（structure-design/scene-breakdown/script-forge）在本线出轻件为已知粗化——长篇线重心是 bible 与卷纲"
+      ]
+    }
+  ]
+}

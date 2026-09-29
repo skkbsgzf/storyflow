@@ -307,7 +307,8 @@ def lint_module(path, kb_index, minitools_reg):
         if not io:
             E("E-IO-REQUIRED", "spine 非空的模块缺 io 职责三件套（input/output/acceptance）")
         else:
-            bad = [k for k in ("input", "output", "acceptance") if not isinstance(io.get(k), dict)]
+            # v0.8：acceptance（验收声明）降为可选——审核层退役，验收契约归宿主系统（docs/PROTOCOL-REVIEW.md）
+            bad = [k for k in ("input", "output") if not isinstance(io.get(k), dict)]
             if bad:
                 E("E-IO-REQUIRED", f"io 缺段：{bad}")
             else:

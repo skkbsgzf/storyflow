@@ -1267,12 +1267,6 @@
     "output": {
       "file": "剧本.md",
       "audience": "写手（正文模块唯一输入；5W1H 结构化剧本 IR）"
-    },
-    "acceptance": {
-      "scans": [
-        "AE-SCRIPT-FIELDS"
-      ],
-      "rules": []
     }
   }
 }

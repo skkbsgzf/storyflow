@@ -147,9 +147,6 @@ export interface HarnessConfig {
    *  键 = `provider/model` 或裸 model id；供应商 usage 行没回报 cost 时按此估算，
    *  未命中/未配置照旧「查无」（面板不许报 $0 冒充）。cacheRead 不填 = 缓存读不计价。 */
   pricing?: Record<string, { input: number; output: number; cacheRead?: number }>;
-  /** 快判官（laya 学生）证据位：enabled 缺省 false。纪律：输出仅复核优先级证据，
-   *  不当闸、不触发打回；只进 会话流/收据/遥测（P 值纪律 + 阈值清剿口径）。 */
-  judge?: import("./judge.js").JudgeConfig & { feedback?: boolean };
   /** 流式死亡回落桥（python 非流式 POST）：Z.ai 网关对高档长思维流有断流行为，
    *  pi SSE 流重试穷尽后走桥（实测可扛数分钟生成）。缺省指向 v4 仓的 glm_chat.py。 */
   fallback?: { command?: string; script?: string; maxTokens?: number };
@@ -199,7 +196,6 @@ export function loadConfig(
     maxParallel: overrides.maxParallel ?? (file.maxParallel as number) ?? 3,
     thinking: (process.env.PI_THINKING as HarnessConfig["thinking"]) || (file.thinking as string) || "medium",
     tiers: file.tiers as HarnessConfig["tiers"],
-    judge: file.judge as HarnessConfig["judge"],
     fallback: file.fallback as HarnessConfig["fallback"],
   };
   if (!cfg.project) throw new Error("未指定项目：用 --project 或在 <workspace>/.external/storyharness.json 写 project");

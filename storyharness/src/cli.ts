@@ -15,7 +15,6 @@ import { analyzeFile } from "./analysis.js";
 import { makeModels, resolveModel } from "./llm.js";
 import { startServe } from "./serve.js";
 import { runWeb } from "./web.js";
-import { runLayaJudge } from "./judge.js";
 
 async function main() {
   const argv = process.argv.slice(2);
@@ -53,7 +52,7 @@ async function main() {
   if (cmd === "headless") {
     const direction = argv[1] && !argv[1].startsWith("--") ? argv[1] : "";
     if (!direction) {
-      console.log('用法：storyharness headless "<题材方向>" [--episodes N] [--flow drama-flow] [--project p-xxx] [--batches M] [--max N] [--dry]');
+      console.log('用法：storyharness headless "<题材方向>" [--episodes N] [--flow screenplay] [--project p-xxx] [--batches M] [--max N] [--dry]');
       process.exit(1);
     }
     const cfg = loadConfig({
@@ -81,17 +80,6 @@ async function main() {
       kernelPort: argOf("--kernel-port") ? Number(argOf("--kernel-port")) : undefined,
       noOpen: argv.includes("--no-open"),
     });
-    return;
-  }
-  if (cmd === "judge") {
-    // 手动/冒烟：对一份已交卷产物跑学生判官（证据位；需 .external/storyharness.json 配 judge.enabled）
-    const rel = argOf("--file");
-    if (!rel) { console.log("用法：storyharness judge --file <项目内相对路径>"); process.exit(1); }
-    const cfg = loadConfig({ project });
-    const abs = path.join(cfg.workspaceRoot, cfg.corpus.projectsDir, cfg.project, rel);
-    const ev = runLayaJudge(cfg, abs);
-    console.log(JSON.stringify(ev, null, 1));
-    process.exit(ev.ran ? 0 : 2);
     return;
   }
   if (cmd === "serve") {

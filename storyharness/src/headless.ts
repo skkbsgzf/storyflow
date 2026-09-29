@@ -1,5 +1,5 @@
 // headless（dsh 减法）：一条命令冷启动编剧项目并自动跑排期，NDJSON 事件流打到 stdout。
-//   storyharness headless "<题材>" [--episodes N] [--flow drama-flow] [--project p-xxx]
+//   storyharness headless "<题材>" [--episodes N] [--flow screenplay] [--project p-xxx]
 //                              [--batches M] [--max N] [--dry]
 // 事件契约（每行一个 JSON 对象，机器可消费；人类可读进度走 stderr）：
 //   {event:"run_start", project, flow, direction, episodes, model, resumed?}
@@ -31,7 +31,7 @@ export function emitNdjson(e: Record<string, unknown>): void {
 
 export async function runHeadless(kernel: KernelClient, cfg: HarnessConfig, opts: HeadlessOptions): Promise<{ ok: boolean; project: string; summary: string }> {
   const emit = opts.emit ?? emitNdjson;
-  const flow = opts.flow || "drama-flow";
+  const flow = opts.flow || "screenplay";
   const episodes = opts.episodes ?? 6;
   const project = opts.project || `p-sh-${new Date().toISOString().replace(/[-:T]/g, "").slice(0, 12)}${Math.random().toString(36).slice(2, 5)}`;
 

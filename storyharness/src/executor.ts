@@ -12,7 +12,6 @@ import { buildTools } from "./tools.js";
 import { makeAnalysisTools } from "./analysis.js";
 import { makeModels, makeStreamFn, resolveModel } from "./llm.js";
 import { newSession, appendSession, endSession, capResult, normUsage } from "./sessions.js";
-import { runLayaJudge, type JudgeEvidence } from "./judge.js";
 import { buildProjectBrief } from "./brief.js";
 import { spawnSync } from "node:child_process";
 import os from "node:os";
@@ -24,9 +23,7 @@ export interface NodeRunResult {
   file?: string;
   ok: boolean;
   detail: string;
-  /** 判官证据（cfg.judge.enabled 且 .md 产物过闸后才有） */
-  judge?: JudgeEvidence;
-  /** 遥测元数据：供 scheduler 汇总进 run-<ts>.json */
+  /** 遥测元数据：供 scheduler 汇总进 run-<ts>.json（审核层已移除——语义裁决归宿主，v0.8） */
   meta?: { elapsedMs: number; usage: Record<string, number>; toolCount: number; submitRounds: number };
 }
 
@@ -130,24 +127,6 @@ function writeReceipt(kernel: KernelClient, project: string, node: string, recei
   } catch { /* 收据失败不拖垮主流程 */ }
 }
 
-/** D-B1 · 读最近一个「过闸且判官 flagged 非空」的收据（排除本节点）——回喂写前提示的数据源。
- *  纪律：证据非闸（P 值纪律）；任何失败返回 null 零打扰。 */
-export function readLastJudgeFeedback(receiptsDir: string, excludeNode: string): { node: string; flagged: string[] } | null {
-  try {
-    const files = fs.readdirSync(receiptsDir).filter((f) => f.endsWith(".json")).map((f) => path.join(receiptsDir, f));
-    files.sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
-    for (const f of files) {
-      const r = JSON.parse(fs.readFileSync(f, "utf-8")) as { node?: string; submit?: { status?: string }; judge?: { ran?: boolean; flagged?: string[] } };
-      if (r.node === excludeNode) continue;
-      if (r.submit?.status !== "accepted") continue;
-      if (r.judge?.ran && Array.isArray(r.judge.flagged) && r.judge.flagged.length) {
-        return { node: String(r.node), flagged: r.judge.flagged };
-      }
-    }
-  } catch { /* 回喂失败零打扰 */ }
-  return null;
-}
-
 /** 执行一个已派发的任务包（Q3 调度器的并发单元）。 */
 export async function runEntry(kernel: KernelClient, cfg: HarnessConfig, entry: { nodeId: string; taskPackage?: Record<string, any>; spawnPrompt?: string }, opts: { dry?: boolean } = {}): Promise<NodeRunResult> {
   const t0 = Date.now();
@@ -198,26 +177,9 @@ export async function runEntry(kernel: KernelClient, cfg: HarnessConfig, entry: 
   const sessDir0 = { projectDir: kernel.projectDir(cfg.project), corpus: kernel.corpus };
   const sid = newSession(sessDir0.projectDir, sessDir0.corpus, { project: cfg.project, mode: "executor", node, model: modelTag });
 
-  // D-B1 · 判官证据回喂（E2 闭环最后一块）：注入写前提示。纪律红线：证据非闸、不构成拦截
-  // （P 值纪律）——回喂是喂信息，不是造第二把闸。
-  // 校准结论（runs/cali-check，2026-09-26）：student-v3 对 p-sh-final 两产物 13/13 全分歧（过敏），
-  // 未过闸期 flagged=噪声 ⇒ 回喂默认关闭（cfg.judge.feedback 显式开启）；证据采集/回放不受影响。
-  let finalPrompt = prompt;
-  const judgeFeedback = cfg.judge?.feedback === true ? readLastJudgeFeedback(path.join(sessDir0.projectDir, kernel.corpus.receiptsDir), node) : null;
-  if (judgeFeedback) {
-    finalPrompt = prompt + "\n\n【前文判官复核提示（证据非闸——仅供本节点写前自查，不构成拦截）】\n" +
-      `上一节点 ${judgeFeedback.node} 判官 flagged 条款：${judgeFeedback.flagged.join("、")}\n` +
-      "写作时请规避同类模式；本提示不改变交卷与裁决逻辑。";
-    appendSession(sessDir0.projectDir, sessDir0.corpus, sid, { kind: "run_event", event: { event: "judge_feedback", from: judgeFeedback.node, flagged: judgeFeedback.flagged } });
-    console.error(`[storyharness] 判官回喂：${judgeFeedback.node} 的 ${judgeFeedback.flagged.length} 条 flagged 条款注入写前提示`);
-  }
-  if (judgeFeedback) {
-    finalPrompt = prompt + "\n\n【前文判官复核提示（证据非闸——仅供本节点写前自查，不构成拦截）】\n" +
-      `上一节点 ${judgeFeedback.node} 判官 flagged 条款：${judgeFeedback.flagged.join("、")}\n` +
-      "写作时请规避同类模式；本提示不改变交卷与裁决逻辑。";
-    appendSession(sessDir0.projectDir, sessDir0.corpus, sid, { kind: "run_event", event: { event: "judge_feedback", from: judgeFeedback.node, flagged: judgeFeedback.flagged } });
-    console.error(`[storyharness] 判官回喂：${judgeFeedback.node} 的 ${judgeFeedback.flagged.length} 条 flagged 条款注入写前提示`);
-  }
+  // 审核层已移除（v0.8）：判官证据/回喂不再存在——语义复核归宿主系统（见 docs/PROTOCOL-REVIEW.md），
+  // 运行时只产出确定性产物与用量。
+  const finalPrompt = prompt;
 
   // 赋能前移：项目简报拼进系统提示（确定性事实，agent 醒来即知盘面——消重复考古）
   const projectBrief = buildProjectBrief(kernel, cfg.project) ?? "（新项目：尚无运行状态，从任务包开始）";
@@ -392,26 +354,13 @@ export async function runEntry(kernel: KernelClient, cfg: HarnessConfig, entry: 
   }
   const rejected = submit.status === "rejected";
 
-  // 快判官证据位（laya 学生）：仅对过闸的 .md 产物跑——证据只进 会话流/收据/遥测，
-  // 不当闸、不触发打回（P 值纪律）；学生未过闸前默认关闭（cfg.judge.enabled）。
-  let judge: JudgeEvidence | undefined;
-  if (!rejected && cfg.judge?.enabled && /\.(md|markdown)$/.test(file)) {
-    judge = runLayaJudge(cfg, abs);
-    appendSession(sessDir0.projectDir, sessDir0.corpus, sid, {
-      kind: "run_event",
-      event: { event: "judge_evidence", node, file, ran: judge.ran, flagged: judge.flagged ?? [], skipped: Object.keys(judge.skipped ?? {}).length, error: judge.error },
-    });
-    console.error(`[storyharness] 判官证据：${node} ${judge.ran ? `flagged=${judge.flagged?.length ?? 0} skipped=${Object.keys(judge.skipped ?? {}).length}` : `未跑（${judge.error}）`}`);
-  }
-
   endSession(sessDir0.projectDir, sessDir0.corpus, sid, rejected ? `交卷被拒（${rounds} 轮）` : "交卷通过");
   writeReceipt(kernel, cfg.project, node, {
     node, file, model: modelTag, elapsedMs, usage: totalUsage,
     toolCalls: toolLog, toolCount: toolLog.length, artifactChars: body.length, submit, submitRounds: rounds,
     quarantined: quarantined ?? undefined, bridgeUsed: bridgeUsed || undefined,
-    judge: judge ? { ran: judge.ran, flagged: judge.flagged, error: judge.error } : undefined,
   });
-  return { node, file, ok: !rejected, judge, meta: { elapsedMs, usage: totalUsage, toolCount: toolLog.length, submitRounds: rounds }, detail: rejected
+  return { node, file, ok: !rejected, meta: { elapsedMs, usage: totalUsage, toolCount: toolLog.length, submitRounds: rounds }, detail: rejected
     ? `交卷被拒×${rounds}：${(submit.problems ?? []).filter((p) => p.status === "block").map((p) => `${p.name}: ${p.detail ?? ""}`).join("；").slice(0, 160)}`
     : `${body.length} 字符 / ${elapsedMs}ms / 工具 ${toolLog.length} 次 / ${rounds} 轮提交` };
 }

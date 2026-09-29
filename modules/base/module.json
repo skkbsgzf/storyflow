@@ -128,38 +128,6 @@
         "台账结算"
       ]
     },
-    "analyze-kakaxing": {
-      "script": "tools/analyze-kakaxing.py",
-      "title": "analyze-kakaxing.py",
-      "desc": "kakaxing 语料分析：题材×热度、八段式策划案解析、句式与梗族挖掘。确定性、零 LLM。",
-      "kind": "check",
-      "config": {
-        "topN": {
-          "type": "number",
-          "default": 20,
-          "min": 0,
-          "desc": "题材×热度榜取前 N",
-          "effect": "提高 = 样本更全",
-          "tunable_by": [
-            "user",
-            "optimizer"
-          ]
-        },
-        "genre": {
-          "type": "string",
-          "default": "",
-          "desc": "限定题材（空=全量）",
-          "effect": "限定 = 更快更聚焦",
-          "tunable_by": [
-            "user",
-            "optimizer"
-          ]
-        }
-      },
-      "capability": [
-        "卡克行分析"
-      ]
-    },
     "artifact-lint": {
       "script": "tools/artifact-lint.py",
       "title": "artifact-lint.py",

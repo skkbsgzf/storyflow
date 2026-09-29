@@ -212,3 +212,28 @@ export function capResult(result: unknown): string {
   if (s.length <= RESULT_CAP) return s;
   return s.slice(0, RESULT_CAP) + `\n…[截断，全文 ${s.length} 字符]`;
 }
+
+/** 从混噪文本中取最后一个可解析的 JSON 对象：整文 → 逐行（从尾） → 有界花括号回扫。
+ *  （v0.8 自 judge.ts 迁入——通用解析件，与判官无关。） */
+export function parseLastJson(text: string): Record<string, unknown> | null {
+  const t = text.trim();
+  if (!t) return null;
+  try { const v = JSON.parse(t); if (v && typeof v === "object") return v as Record<string, unknown>; } catch { /* 落下一档 */ }
+  const lines = t.split("\n");
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const l = lines[i].trim();
+    if (!l.startsWith("{")) continue;
+    try { const v = JSON.parse(l); if (v && typeof v === "object") return v as Record<string, unknown>; } catch { /* 上一行 */ }
+  }
+  const first = t.indexOf("{");
+  if (first < 0) return null;
+  const window = t.length > 262_144 ? t.slice(-262_144) : t;
+  for (let end = window.length; end > 0; end--) {
+    if (window[end - 1] !== "}") continue;
+    try {
+      const v = JSON.parse(window.slice(window.indexOf("{", 0) , end));
+      if (v && typeof v === "object") return v as Record<string, unknown>;
+    } catch { /* 缩窗重试 */ }
+  }
+  return null;
+}

@@ -231,7 +231,7 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
           const hub = {
             workspace: path.basename(wsRoot),
             version: cfg.harnessVersion,
-            flows: ["drama-flow", "caocao-wudalang", "topic-selection", "novel-longform"].map((id) => {
+            flows: ["screenplay", "novel", "topic", "prose"].map((id) => {
               try {
                 const f = JSON.parse(fs.readFileSync(path.join(wsRoot, "flows", id, "flow.json"), "utf-8"));
                 return { id, title: f.title ?? id, version: f.version ?? "" };

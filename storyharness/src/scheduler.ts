@@ -132,19 +132,17 @@ export async function runFlow(
     const nodes = results.map((x) => ({
       node: x.node, ok: x.ok, file: x.file,
       ...(x.meta ?? {}),
-      judge: x.judge ? { ran: x.judge.ran, flagged: x.judge.flagged ?? [], error: x.judge.error } : undefined,
       detail: x.detail.slice(0, 200),
     }));
     const usageIn = results.reduce((a, x) => a + (x.meta?.usage.input ?? 0), 0);
     const usageOut = results.reduce((a, x) => a + (x.meta?.usage.output ?? 0), 0);
-    const flagged = results.reduce((a, x) => a + (x.judge?.flagged?.length ?? 0), 0);
     const telemetry = writeRunTelemetry(kernel, cfg, {
       startedAt: new Date(t0).toISOString(),
       endedAt: new Date().toISOString(),
       wallMs, ok: r.ok, stopped: r.stopped ?? null, batches,
       dry: !!opts.dry,
       model: `${cfg.provider}.${cfg.model}`,
-      totals: { nodes: results.length, okNodes: results.filter((x) => x.ok).length, usageIn, usageOut, judgeFlagged: flagged },
+      totals: { nodes: results.length, okNodes: results.filter((x) => x.ok).length, usageIn, usageOut, },
       nodes,
     });
     return { ...r, telemetry };
