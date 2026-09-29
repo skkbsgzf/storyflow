@@ -59,7 +59,7 @@ describe("R8 S4 · 拍板②：enum 输入摘除 default（选择发生在开跑
     };
 
   it("六处历史 default 全部清零：enum 输入不再藏默认值", () => {
-    const flows = ["topic", "prose", "episode-script", "outline-production", "book-deconstruct"];
+    const flows = ["topic", "prose", "screenplay", "novel", "test-dual"];   // v0.8：按在场四条生产线 + 引擎夹具清点
     for (const id of flows) {
       for (const [k, spec] of Object.entries(load(id).inputs ?? {})) {
         if (spec.type === "enum") expect(spec, `${id}.${k} 不应带 default`).not.toHaveProperty("default");

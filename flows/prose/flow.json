@@ -1,6 +1,6 @@
 {
   "format": "flow@3",
-  "id": "novel-prose",
+  "id": "prose",
   "title": "成文流水线（文学化专科拼装 · 逐段盖章）",
   "desc": "架构判词落地（2026-09-17）：剧情前置锁定（编剧流分场卡→五行节拍卡，成文层无权改戏）→ 三专科并行出层稿（台词师/场景师/设定官，各归其约各显神通）→ 成文师逐拍拼装+逐段六维盖章（台词/场景/设定/人设/节奏/机味，全过才下推）→ 质量扫描出证据（v5.0：提交链上无断言闸，裁决归 agent 与端尾验收）→ polish 只做收尾薄修（拒屎上雕花：质量主责在成文盖章，原文级问题打回重拼，禁止在 polish 层救烂原文）。约束整合入口=kb/craft/prose-constraints 六维路由总纲。文学判断节点（layer-voices/layer-scenes/prose-assembler/novel-deai/novel-judge）须强模型档执行（AGENTS.md 模型档位纪律）。",
   "version": "0.3.0",

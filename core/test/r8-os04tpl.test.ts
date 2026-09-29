@@ -80,10 +80,10 @@ describe("OS-04 · list：三来源一个清单，两个根分得清", () => {
     const { entries } = listConfigTemplates({ dataRoot, repoRoot, flowId: "topic" });
     const bySource = (s: string) => entries.filter((e) => e.source === s).map((e) => e.name);
     expect(bySource("blank")).toHaveLength(1);
-    expect(bySource("official")).toContain("官方示例（topic）");
+    expect(bySource("official")).toContain("官方示例（topic）");   // 自建夹具：official 发现机制本身仍受验
     expect(bySource("user")).toContain("我的配置");
 
-    // 关键回归：数据根 ≠ 仓库根。若实现把 repoRoot 缺省成 dataRoot，官方示例会凭空消失
+    // 关键回归：数据根 ≠ 仓库根的防护口径保留（official 恒空，两态等价）
     const noRepo = listConfigTemplates({ dataRoot, flowId: "topic" });
     expect(noRepo.entries.some((e) => e.source === "official")).toBe(false);
   });
@@ -427,9 +427,9 @@ describe("OS-04 · 内核落读模型：registry/config-templates.json", () => {
     expect(model.format).toBe("config-templates@1");
     expect(model.flowId).toBe("topic");
     const names = model.entries.map((e: { name: string }) => e.name);
-    // 三来源都在：blank（合成）+ official（仓库 demos）+ user（数据根）
+    // v0.8：仓库 demos（官方示例）随目标1「去 demo」移除——模板来源 = blank（合成）+ user（数据根）；
+    // 官方模板包后续作为独立发布物回归。
     expect(names).toContain("从零新建");
-    expect(names).toContain("官方示例（topic）");
     expect(names).toContain("自存甲");
 
     // live 切片现扫，与落盘读模型同源同内容（不另算一套）

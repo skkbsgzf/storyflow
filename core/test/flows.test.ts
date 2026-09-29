@@ -175,7 +175,7 @@ describe("flow 描述符 · 全量体检（R4 §5.1 + R6 模块序列）", () =>
 
   it("派生图无 asserts（v5.0 断言协议退役）且 iterate 槽位可被面板消费", () => {
     // flow@3 派生：质量条款走 io.acceptance{scans,rules} + 扫描收据，节点上不再携带 asserts
-    const flow = loadAny("novel-fanqie").flow;
+    const flow = loadAny("novel").flow;   // v0.8：novel-fanqie 删除，iterate 例证改用 novel（逐章 iterate）
     const leaked = Object.entries(flow.graph.nodes).filter(([, n]) => (n as { asserts?: unknown }).asserts !== undefined);
     expect(leaked.map(([id]) => id), "派生节点不得携带断言声明").toEqual([]);
     const iterated = Object.entries(flow.graph.nodes).find(([, n]) => n.iterate?.artifact);

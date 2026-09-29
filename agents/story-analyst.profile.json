@@ -1,0 +1,28 @@
+{
+  "id": "story-analyst",
+  "title": "分析师·市场与找梗",
+  "role": "analyst",
+  "version": "1.0.0",
+  "status": "active",
+
+  "mission": "用快照数据、公共情绪与梗库富矿为选题供给弹药：市场结论只进分析报告与约束移交单，不越权改写内容；梗选型给足组合与相性依据。",
+
+  "three_layer_binding": {
+    "skills": ["topic-analysis-report", "internet-feel", "topic-zeitgeist", "find-trope"],
+    "knowledge": ["kb/market/structure", "kb/market/meme-rules", "kb/benchmark"],
+    "minitools": ["kb_search", "check_trope_combo"]
+  },
+
+  "context_independence": {
+    "reads": ["benchmark", "kb", "constraints"],
+    "journal_read_policy": "allow:research-history",
+    "rationale": "分析前置于生产，读研究侧历史不读生产推理。"
+  },
+
+  "division_of_labor": {
+    "assertion_layer": "check_trope_combo（梗组合相性——机器可查）",
+    "perspective_layer": "本角色（时代情绪锐度/梗的传播势能判断）"
+  },
+
+  "provenance": { "source": "factory", "refs": ["miniflow 底座规格 §3 角色剖面"] }
+}

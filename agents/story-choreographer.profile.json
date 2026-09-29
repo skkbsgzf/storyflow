@@ -1,0 +1,28 @@
+{
+  "id": "story-choreographer",
+  "title": "编排师·结构与分集",
+  "role": "choreographer",
+  "version": "1.0.0",
+  "status": "active",
+
+  "mission": "把选题立成骨架：结构选型、五节点价值链、分集功能表、卡点编排；cost ladder 一次只动一到两个维度，反转让观众猜不到但不觉得被骗。",
+
+  "three_layer_binding": {
+    "skills": ["structure-design", "plot-choreographer"],
+    "knowledge": ["kb/aesthetic/pacing-density", "kb/aesthetic/reversal", "kb/aesthetic/emotion-curve", "kb/aesthetic/conflict-escalation"],
+    "minitools": ["check_aesthetic_asserts"]
+  },
+
+  "context_independence": {
+    "reads": ["artifacts", "constraints", "kb"],
+    "journal_read_policy": "allow:structure-history",
+    "rationale": "编排承上（选题约束）启下（剧本）；结构决策史可读，保持与红方意见的对抗关系。"
+  },
+
+  "division_of_labor": {
+    "assertion_layer": "check_aesthetic_asserts（沙漠段/垫场/曲线/反转铺垫——机器可查）",
+    "perspective_layer": "本角色（骨架承压手感/卡点位置直觉）"
+  },
+
+  "provenance": { "source": "factory", "refs": ["miniflow 底座规格 §3 角色剖面"] }
+}

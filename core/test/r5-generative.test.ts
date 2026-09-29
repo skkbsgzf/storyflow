@@ -692,42 +692,6 @@ describe("R5 · v5.0 提交链无断言闸（完整性是唯一残留闸，质�
     expect(rejMetric?.checks?.block).toBeGreaterThan(0);
   });
 
-  it("core 步 scan_quality 出全量证据收据：findings 含 block 也不判败本步（证据不是判决）", async () => {
-    process.env.MINIFLOW_ROOT = ROOT; // 纯净度标记台账等仓库根资源
-    const pd = fs.mkdtempSync(path.join(os.tmpdir(), "miniflow-scan-"));
-    fs.mkdirSync(path.join(pd, "02-编剧"), { recursive: true });
-    // flow@3 派生图：m2.script-drama-beat 的 minitool = scan_quality（原 check_aesthetic_asserts），
-    // 沿边检上游 m2.scene-breakdown 的产物（派生图实际落盘路径，非模板字面量）。
-    fs.writeFileSync(path.join(pd, "02-编剧", "scene-breakdown.md"), beatDoc("悬念"), "utf-8");
-
-    const flow = expandedFlow("episode-script");
-    const state = { runId: "r-scan", flowId: "episode-script", projectId: "p-scan", status: "running", nodes: {}, gate: {} } as never;
-    const res = await runCoreNode(pd, flow as never, state, "m2.script-drama-beat");
-    expect(res.ok).toBe(true);
-
-    const report = JSON.parse(fs.readFileSync(path.join(pd, "内部", "质量扫描-m2.script-drama-beat.json"), "utf-8"));
-    expect(report.mode).toBe("quality-evidence");
-    expect(report.minitool).toBe("scan_quality");
-    expect(report.summary.files).toBe(1);
-    const names: string[] = report.findings.map((f: { name: string }) => f.name);
-    expect(names).toContain("AE-HOOK-EVENT"); // 扫描器 id 保留：证据名就叫这个
-    expect(names).toContain("AE-STRUCT-CAUSE#tailhook");
-    // v5.0 契约：断言时代的三态台账不再出现在收据里（无 declared/unverified 口径）
-    expect(report.declared).toBeUndefined();
-    expect(report.contract).toBeUndefined();
-    expect(report.summary.declared).toBeUndefined();
-    expect(report.summary.unverified).toBeUndefined();
-    expect(report.findings.every((f: { status: string }) => ["pass", "warn", "block"].includes(f.status))).toBe(true);
-
-    // 换一份首拍无钩型的上游再扫：block 证据在场，本步照样 ok——拦截与否归验收 agent/人
-    fs.writeFileSync(path.join(pd, "02-编剧", "scene-breakdown.md"), beatDoc("氛围"), "utf-8");
-    const res2 = await runCoreNode(pd, flow as never, state, "m2.script-drama-beat");
-    expect(res2.ok).toBe(true);
-    const report2 = JSON.parse(fs.readFileSync(path.join(pd, "内部", "质量扫描-m2.script-drama-beat.json"), "utf-8"));
-    expect(report2.findings.some((f: { name: string; status: string }) => f.name === "AE-HOOK-EVENT" && f.status === "block")).toBe(true);
-    expect(report2.summary.block).toBeGreaterThan(0);
-    expect(report2.note).toContain("证据不是判决");
-  });
 });
 
 /* ============================================================================

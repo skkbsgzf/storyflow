@@ -105,7 +105,7 @@ describe("R6 · 模块展开器（expandFlow3）", () => {
     const m1 = r.modules.find((m) => m.id === "m1");
     expect(m1?.io).toBeTruthy();
     expect(m1?.io?.output?.file).toBe("选题报告.md");
-    expect(m1?.io?.acceptance?.scans).toContain("AE-REPORT-DENSITY"); // v5.0：验收=scans 证据 + rules 语料，无 asserts
+    expect(m1?.io?.acceptance).toBeUndefined();  // v0.8：验收扫描约束随审核层退役 // v5.0：验收=scans 证据 + rules 语料，无 asserts
     expect(m1?.io?.input?.from).toBe("flow-input");
   });
 
@@ -183,7 +183,7 @@ describe("R6 · 模块展开器（expandFlow3）", () => {
       ["plot-choreographer", "scene-breakdown"],
       ["scene-breakdown", "script-forge"],
     ]);
-    expect(mod.io?.acceptance?.scans ?? []).toContain("AE-SCRIPT-FIELDS");
+    expect(mod.io?.acceptance).toBeUndefined();  // v0.8：同上
     // 落位可达性（诊断 2026-09-19）：插件锚点不在骨架时，also_fits 必须有可用兜底
     const spine = new Set(mod.skeleton.spine);
     for (const [oid2, op2] of Object.entries(mod.ops) as [string, any][]) {
@@ -200,7 +200,7 @@ describe("R6 · 模块展开器（expandFlow3）", () => {
     const topic = JSON.parse(fs.readFileSync(path.join(ROOT, "modules", "topic", "module.json"), "utf-8"));
     expect(topic.skeleton.spine).toEqual(["topic-report"]);
     expect(topic.ops["topic-report"].output).toBe("选题报告.md");
-    expect(topic.io?.acceptance?.scans ?? []).toContain("AE-REPORT-DENSITY");
+    expect(topic.io?.acceptance).toBeUndefined();  // v0.8：同上
     const prose = JSON.parse(fs.readFileSync(path.join(ROOT, "modules", "prose", "module.json"), "utf-8"));
     expect(prose.skeleton.spine).toEqual(["ghostwrite", "novel-deai"]);
     expect(prose.ops["ghostwrite"].output).toBe("正文.md");
