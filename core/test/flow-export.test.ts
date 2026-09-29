@@ -7,7 +7,18 @@ import { join } from "node:path";
 function anyProject(): string | undefined {
   try {
     const dir = join(process.cwd(), "..", "projects");
-    return readdirSync(dir).find((d) => existsSync(join(dir, d, "state.json")));
+    const flows = join(process.cwd(), "..", "flows");
+    // 只挑 flowId 可解析的项目：项目可绑任意历史 flow 名，flows/ 没有对应目录时展开必炸
+    const hasFlow = (id: string) => existsSync(join(flows, id, "flow.json"));
+    return readdirSync(dir).find((d) => {
+      if (!existsSync(join(dir, d, "state.json"))) return false;
+      try {
+        const st = JSON.parse(fs.readFileSync(join(dir, d, "state.json"), "utf-8")) as { flowId?: string };
+        return !!st.flowId && hasFlow(st.flowId);
+      } catch {
+        return false;
+      }
+    });
   } catch {
     return undefined;
   }
