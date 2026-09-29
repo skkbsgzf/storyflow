@@ -326,16 +326,17 @@ def lint_module(path, kb_index, minitools_reg):
                 # v5.0（工单 §三）：验收面 = 确定性扫描器证据（T 轨 id）+ 归 agent 裁的规则卡。
                 # 原「io.acceptance.asserts 必须挂在 ops 声明上」的账随协议下架——
                 # 新账是「点名对象必须真存在」：scans ∈ T 轨名单、rules ∈ knowledge/rules/ 实卡。
-                acc = io["acceptance"]
-                scans, rules = acc.get("scans"), acc.get("rules")
-                if not isinstance(scans, list) or not isinstance(rules, list):
+                # v0.8：acceptance 整段可选（审核层退役）——缺席是合法形态，不进验收检查。
+                acc = io.get("acceptance")
+                scans, rules = (acc.get("scans"), acc.get("rules")) if isinstance(acc, dict) else (None, None)
+                if acc is not None and (not isinstance(scans, list) or not isinstance(rules, list)):
                     E("E-IO-ACCEPT-BAD", "io.acceptance 须为 {scans:[...], rules:[...]}（v5.0 起 asserts 字段出账）", "io")
                 else:
-                    for sid in scans:
+                    for sid in scans or []:
                         if sid not in TRACK_T:
                             E("E-IO-SCAN-UNKNOWN", f"验收扫描器 {sid} 不在 T 轨名单（tools/rules-init.py）"
                                                    f"——端尾验收无从出收据（是退役 id 还是没工具化？）", "io")
-                    for rid in rules:
+                    for rid in rules or []:
                         if rid not in rule_cards():
                             E("E-IO-RULE-UNKNOWN", f"验收规则卡 {rid} 在 knowledge/rules/ 不存在"
                                                    f"——agent 无从对照条款（声明=空转）", "io")
