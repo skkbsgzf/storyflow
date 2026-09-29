@@ -48,6 +48,17 @@ export function resolveWorkspaceRoot(explicit?: string): string {
   return path.resolve(explicit || process.env.STORYHARNESS_WORKSPACE || path.resolve(PKG_ROOT, ".."));
 }
 
+const isPlainObject = (x: unknown): x is Record<string, unknown> => !!x && typeof x === "object" && !Array.isArray(x);
+
+/** manifest runtime.packs 点名（扩展包目录清单）/ runtime.packsOff 停用点名；无 manifest/无该节 = 空。 */
+function readRuntimePacks(workspaceRoot: string): { packs: string[]; off: string[] } {
+  try {
+    const mf = JSON.parse(fs.readFileSync(process.env.STORYHARNESS_MANIFEST || path.join(workspaceRoot, ".storyharness.json"), "utf-8")) as { runtime?: { packs?: unknown; packsOff?: unknown } };
+    const list = (v: unknown) => (Array.isArray(v) ? (v as unknown[]).map(String) : []);
+    return { packs: list(mf.runtime?.packs), off: list(mf.runtime?.packsOff) };
+  } catch { return { packs: [], off: [] }; }
+}
+
 /** 读语料清单：<workspaceRoot>/.storyharness.json 的 corpus 段，缺省回落 v4 布局。 */
 function loadCorpus(workspaceRoot: string): { corpus: CorpusLayout; corpusName: string; manifestKernelBase?: string } {
   const manifestPath = process.env.STORYHARNESS_MANIFEST || path.join(workspaceRoot, ".storyharness.json");
@@ -150,6 +161,14 @@ export interface HarnessConfig {
   /** 流式死亡回落桥（python 非流式 POST）：Z.ai 网关对高档长思维流有断流行为，
    *  pi SSE 流重试穷尽后走桥（实测可扛数分钟生成）。缺省指向 v4 仓的 glm_chat.py。 */
   fallback?: { command?: string; script?: string; maxTokens?: number };
+  /** 包 manifest 声明的 extensions.<ns> schema（S3 回显用；装载归 packs.ts） */
+  extensions?: Record<string, unknown>;
+  /** 扩展包根（v0.8 打包形态 = 包自身根；默认即 PKG_ROOT） */
+  pkgRoot: string;
+  /** manifest runtime.packs 点名的额外包目录（相对 <ws>/packs 或绝对路径） */
+  packs?: string[];
+  /** S4 装载层：manifest runtime.packsOff 点名的包整包不挂载（改完重启 serve 才生效——挂载是启动期事实） */
+  packsOff?: string[];
 }
 
 function loadVersion(): string {
@@ -181,6 +200,7 @@ export function loadConfig(
   const workspaceRoot = resolveWorkspaceRoot(overrides.workspaceRoot);
   const { corpus, corpusName, manifestKernelBase } = loadCorpus(workspaceRoot);
   const file = readRuntimeFile(workspaceRoot);
+  const runtimePacks = readRuntimePacks(workspaceRoot);
   const cfg: HarnessConfig = {
     harnessVersion: loadVersion(),
     workspaceRoot,
@@ -197,6 +217,10 @@ export function loadConfig(
     thinking: (process.env.PI_THINKING as HarnessConfig["thinking"]) || (file.thinking as string) || "medium",
     tiers: file.tiers as HarnessConfig["tiers"],
     fallback: file.fallback as HarnessConfig["fallback"],
+    extensions: (isPlainObject(file.extensions) ? file.extensions : undefined) as HarnessConfig["extensions"],
+    pkgRoot: PKG_ROOT,
+    packs: runtimePacks.packs,
+    packsOff: runtimePacks.off,
   };
   if (!cfg.project) throw new Error("未指定项目：用 --project 或在 <workspace>/.external/storyharness.json 写 project");
   return cfg;

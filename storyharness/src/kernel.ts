@@ -1,6 +1,7 @@
 // 内核 HTTP 面客户端 + 工作区/语料持有者：编排事实的唯一通道（R5 编排单源——harness 不重算任何编排）。
 // 底座不硬编码语料路径：workspaceRoot + corpus 布局由 config 注入，随 KernelClient 下发给全链路。
 import { execFile } from "node:child_process";
+import * as fs from "node:fs";
 import path from "node:path";
 import type { CorpusLayout } from "./config.js";
 
@@ -112,8 +113,25 @@ export class KernelClient {
     });
   }
 
-  /** 项目目录 = <workspaceRoot>/<corpus.projectsDir>/<id>（与内核 projectDir 同构）。 */
+  /** S5 · 包挂载表注入（serve 装完 packs 后给；不注入＝纯算式，CLI/headless 行为零变化）。
+   *  底座不 import 挂载表的实现，只拿这两个函数——项目在哪，全仓只有一处答案。 */
+  packDirs?: { lookup: (project: string) => string | null; land: (project: string) => string };
+
+  /** 项目内容根：工作区在档优先，其次回落包内模板项目（`packs/<包>/templates/<id>`）。
+   *  病灶实证：包化后模板项目不在 projects/ 下，面侧一切按工作区路径算 → 列表空 + NO_PROJECT 404，
+   *  「包内项目选得中却打不开」。解析必须单点，不许包侧/面侧各判一套。 */
   projectDir(project: string): string {
-    return path.join(this.workspaceRoot, this.corpus.projectsDir, project);
+    const primary = path.join(this.workspaceRoot, this.corpus.projectsDir, project);
+    if (!fs.existsSync(primary) && this.packDirs) return this.packDirs.lookup(project) ?? primary;
+    return primary;
+  }
+
+  /** S5 · 首写落地：模板项目要写盘（建会话/发消息/改名/归档/分叉/传附件/fs_write）时，
+   *  先把整目录复制进工作区，返回可写路径——包内容物保持只读，读写两轴此后同源。 */
+  materializeProject(project: string): string {
+    const primary = path.join(this.workspaceRoot, this.corpus.projectsDir, project);
+    if (fs.existsSync(primary)) return primary;
+    if (!this.packDirs) return primary;
+    return this.packDirs.land(project);
   }
 }

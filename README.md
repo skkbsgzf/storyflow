@@ -4,15 +4,15 @@
 > 浏览器、Electron、移动端通过同一个适配层接入。审核、打回、合规——宿主自己写（我们有接入协议），运行时不含任何审核逻辑。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![version](https://img.shields.io/badge/version-0.8.0-green.svg)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-0.9.0-green.svg)](CHANGELOG.md)
 
 ---
 
 ## 定位
 
 **轻量、可玩性高的故事 kit 提供者。** 你拿到的是一台「故事生产线」：
-输入题材与集数，四条按用途归一的生产线（短剧剧本 / 长篇小说 / 成文流水线 / 选题）替你把故事跑出来。
-运行时保持最简：
+输入题材与集数，四条按用途归一的生产线（短剧剧本 / 长篇小说 / 成文流水线 / 选题）替你把故事跑出来；
+**推演模式**（点点点剧情 galgame，内置扩展包 `packs/deduce`）让你亲手玩剧情走向。运行时保持最简：
 
 ```
 pi-agent-core（agent 执行环）
@@ -71,7 +71,7 @@ GitHub 上只有编译产物 `kit/hypergraph.rag.json`。克隆后把你的 md �
 
 ```
 core/            编排内核（flow@3 引擎 / verbs / overlay / MCP / agent 对话流）
-storyharness/    运行时（serve 协议面 / 批调度 / 执行环 / 会话 JSONL / desktop 壳；前端源码不在本仓库）
+storyharness/    运行时（serve 协议面 / 批调度 / 执行环 / 会话 JSONL / packs/ 扩展包 / desktop 壳；前端源码不在本仓库）
 adapter/         适配层：接口协议 + 零依赖参考客户端
 kit/             杂仓：skills.tools.json（技能工具注册表）+ hypergraph.rag.json（知识向量图）
 flows/           四条用途生产线（screenplay / novel / prose / topic）

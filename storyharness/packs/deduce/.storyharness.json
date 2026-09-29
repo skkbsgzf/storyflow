@@ -1,0 +1,21 @@
+{
+  "$comment": "推演包（pack #3 · 波13 包化步2）：galgame 式编剧推演引擎由底座焊死态降级为扩展点包。pages/apis/config 三扩展点经底座挂载表装载（src/packs.ts）；requiresBase 不满足=整包拒挂显式回显。config 段=键形态契约（声明必有,值归用户 .external extensions.deduce 段;引擎内目录名「推演/」是包自有惯例）。",
+  "pack": { "name": "deduce", "version": "1.0.0", "requiresBase": "0.7.3" },
+  "extensions": {
+    "pages": [
+      { "route": "/deduce", "entry": "pack.ts", "export": "render", "title": "推演模式", "card": true, "defaultProject": "template-推演" }
+    ],
+    "apis": [
+      { "prefix": "/api/deduce/", "entry": "pack.ts", "export": "handle" }
+    ],
+    "config": {
+      "deduce": {
+        "provider": "推演档位 provider（缺省跟随顶层；文学判断按档位纪律建议钉强档）",
+        "model": "推演档位 model",
+        "apiKey": "独立端点密钥（可选）",
+        "baseUrl": "独立端点（可选）",
+        "image": { "backend": "comfyui | dashscope | off", "comfyuiCommand": "", "comfyuiScript": "", "dashscopeKey": "", "dashscopeBase": "", "dashscopeModel": "" }
+      }
+    }
+  }
+}

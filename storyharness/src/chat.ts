@@ -321,6 +321,14 @@ export async function* chatTurn(
         ...(role === "assistant" ? { model: { provider: model.provider, id: model.id } } : {}),
       });
       if (mu && role === "assistant") turnUsage = addUsage(turnUsage, mu);
+      // 模型侧失败（端点未配 key / provider 未注册 / 网络不可达）在 pi 里是一条 stopReason:"error" 的
+      // assistant 消息，**不抛异常**——不透出就只剩「气泡空白、日志无声」。
+      // 现场证据（0929 冒烟）：自定义端点缺 MINIFLOW_AGENT_KEY/ZAI_API_KEY 时回合 2ms 收口、
+      // content=[]、usage 全 0，真因「Provider is not configured: mock」被吞了三轮才追出来。
+      if (role === "assistant" && (ev.message as { stopReason?: string }).stopReason === "error") {
+        const em = String((ev.message as { errorMessage?: string }).errorMessage ?? "模型未返回内容");
+        push({ type: "error", message: `模型调用失败：${em}` });
+      }
     } else if (ev.type === "tool_execution_start") {
       toolCount += 1;
       push({ type: "tool_call", id: ev.toolCallId, name: ev.toolName, args: JSON.stringify(ev.args) });

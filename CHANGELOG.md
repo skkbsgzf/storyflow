@@ -1,3 +1,11 @@
+## 0.9.0 · 推演回归 + 两条运行时接线（2026-09-30）
+
+1. **推演模式随包回归**：packs/deduce（galgame 点点点剧情推演，engine/pages/templates/tools 四件）——挂载表自动装载，/deduce 即玩；模板项目 template-推演 随包（首写落地）。
+2. **Skill 即 Tool 装载**：执行环读 kit/skills.tools.json，40 技能以 skill_<slug> 工具进 agent（版本+约束在描述，调用返回源卡全文；缺卡报缺）。
+3. **HyperGraphRAG 装载**：kbSearch/kbRead 优先走 kit/hypergraph.rag.json 编译图（115 词条/5998 边）；缺图回落扫盘；缺源卡带指引报缺。
+4. 行为修复：配置内联 apiKey 优先于环境变量；模型侧 stopReason=error 透出为 error 事件（不再空气泡）。
+5. core 测试套迁移收口（flows 用途化/acceptance 可选化/夹具 test-dual），298/298；storyharness 94/94（+packgate 11、kit-wiring 3）。
+
 ## 0.8.0 · 故事 Kit 重构（2026-09-29）
 
 定位改版：**轻量、可玩性高的故事 kit 提供者**，与创作工作区彻底解耦。

@@ -22,7 +22,16 @@ export function makeModels(t: LlmTarget): Models {
         id: t.provider,
         name: t.provider,
         baseUrl: t.baseUrl,
-        auth: { apiKey: envApiKeyAuth("pi-agent key", ["MINIFLOW_AGENT_KEY", "ZAI_API_KEY"]) },
+        auth: {
+          apiKey: {
+            // v0.9（波14）：配置内联 apiKey 优先，环境变量兜底——自定义端点不再依赖进程 env
+            name: t.apiKey ? "storyharness 端点 key（配置内联）" : "pi-agent key",
+            resolve: async (input: Parameters<NonNullable<ReturnType<typeof envApiKeyAuth>["resolve"]>>[0]) =>
+              t.apiKey
+                ? { auth: { apiKey: t.apiKey }, source: "配置内联 apiKey（.external/storyharness.json）" }
+                : envApiKeyAuth("pi-agent key", ["MINIFLOW_AGENT_KEY", "ZAI_API_KEY"]).resolve(input),
+          },
+        },
         models: [
           {
             id: t.model,

@@ -38,7 +38,11 @@ import type { HarnessConfig } from "./config.js";
 import type { KernelClient } from "./kernel.js";
 import { runFlow, type FlowRunResult } from "./scheduler.js";
 import { listChats, createChat, chatTranscript, deleteChat, renameChat, setSessionFlags, forkChat, chatTurn, sessionStats, modelMetaOf } from "./chat.js";
+import { saveAttachment, listAttachments } from "./attachments.js";
 import { HOME_HTML } from "./home.js";
+import { loadPacks, packsBootLog, PackRuntime } from "./packs.js";
+import { packGateReport, setPackGate, packAllowed, projectFromRequest, cloneTemplateProject } from "./packgate.js";
+import { runWithPack, currentPackCtx } from "./packctx.js";
 import { panelWorldbook, panelFiles, panelTelemetry, panelCanvas, panelRaw, panelPreview, panelChanges, stripPromptFields, safeProject, type PanelReply } from "./panels.js";
 import {
   COOKIE_NAME, bearerToken, checkLimit, checkToken, clientKey, clearFails, cookieClear, cookieToken,
@@ -112,6 +116,25 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
     for (const c of sseClients) { try { c.write(`data: ${JSON.stringify(e)}\n\n`); } catch { /* 断连即弃 */ } }
   };
 
+  // S1 · 扩展点挂载表：启动首请求装载一次（挂载是启动期决定，不做热插拔——S4 口径）。
+  // 装载失败不拖垮协议面：逐包错误进 report，随启动日志与 /api/hub.packsReport 回显。
+  let runtime: PackRuntime = PackRuntime.EMPTY;
+  let runtimeLoading: Promise<void> | null = null;
+  const ensureRuntime = () => {
+    if (runtime === PackRuntime.EMPTY && !runtimeLoading) {
+      runtimeLoading = loadPacks(cfg).then((rt) => {
+        runtime = rt;
+        // S5 · 项目解析单点：kernel 的项目根从此会回落包内模板，写面经 materialize 首写落地。
+        kernel.packDirs = { lookup: (p) => rt.templateProjectDir(p), land: (p) => rt.materialize(cfg, p) };
+        for (const line of packsBootLog(rt)) console.error(line);
+      }).catch((e) => {
+        runtime = PackRuntime.failed(String((e as Error).message));
+        console.error(`[storyharness] 包装载整体失败：${(e as Error).message}`);
+      });
+    }
+    return runtimeLoading ?? Promise.resolve();
+  };
+
   const server = http.createServer((req, res) => {
     // B1 · CORS 收紧：`*` → loopback 源（8420/8421 作业台页跨源调用是本仓既有形态）+ serve.allowedOrigins 精确名单。
     // 门面壳与 API 同源（都走本端口），公网站点不需要 CORS，因此默认不放行。
@@ -132,6 +155,7 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
     req.on("data", (c) => (body += c));
     req.on("end", async () => {
       try {
+        await ensureRuntime();   // S1 · 首请求装载挂载表（之后为只读常量，开销＝一次判空）
         // ── B1 · 鉴权闸（口令未设时整段跳过，本机形态零改变）───────────
         if (auth.enabled) {
           const q = new URLSearchParams(req.url?.split("?")[1] ?? "");
@@ -231,7 +255,7 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
           const hub = {
             workspace: path.basename(wsRoot),
             version: cfg.harnessVersion,
-            flows: ["screenplay", "novel", "topic", "prose"].map((id) => {
+            flows: ["drama-flow", "caocao-wudalang", "topic-selection", "novel-longform"].map((id) => {
               try {
                 const f = JSON.parse(fs.readFileSync(path.join(wsRoot, "flows", id, "flow.json"), "utf-8"));
                 return { id, title: f.title ?? id, version: f.version ?? "" };
@@ -245,7 +269,19 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
             model: cfg.model,
             thinking: cfg.thinking,
             modelInfo: modelMetaOf(cfg),   // B19 · hub 直接带模型元信息（A20 状态行模型/档位 chip 免二次请求）；model 字符串保留不破旧消费
+            // S2 · 首页卡片唯一事实源 = 挂载表（包 manifest 声明 card:true 才出卡，无声明不出）
+            pages: runtime.cards(),
+            packsReport: { loaded: runtime.loaded.map((p) => ({ name: p.name, version: p.version, routes: p.routes, apis: p.apis, configs: p.configs, defaultEnabled: p.defaultEnabled })), errors: runtime.errors, warnings: runtime.warnings, packsOff: cfg.packsOff ?? [] },
           };
+          // 包内模板项目（templates/template-<id> 随包走）：单列一组，不混进语料仓 projects/。
+          // `template` 字段＝所在包组标签，前端只读它出「模板」徽标与复制入口（单一字段名，不嗅探组名）。
+          // 已落工作区的（S5 首写落地后）不再列进模板组：同一 id 出现在两组＝两套真相，工作区那份才是可写的正档。
+          for (const dir of runtime.templateProjectDirs()) {
+            const prows = listProjectsAt(dir.root, "")
+              .filter((p) => !fs.existsSync(path.join(wsRoot, cfg.corpus.projectsDir, p.id)))
+              .map((p) => ({ ...p, template: dir.label }));
+            if (prows.length) hub.groups.push({ name: dir.label, projects: prows });
+          }
           res.writeHead(200, { "content-type": "application/json" });
           res.end(JSON.stringify(hub));
           return;
@@ -374,7 +410,7 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
           return;
         }
         // ── agent 会话 API（镜像内核形状）───────────────────────
-        const m = url.match(/^\/api\/projects\/([^/]+)\/agent\/sessions(?:\/([^/]+)(\/rename|\/turn|\/stop|\/pin|\/fork|\/archive|\/stats)?)?$/);
+        const m = url.match(/^\/api\/projects\/([^/]+)\/agent\/sessions(?:\/([^/]+)(\/rename|\/turn|\/stop|\/pin|\/fork|\/archive|\/stats|\/attachments)?)?$/);
         if (m) {
           const project = decodeURIComponent(m[1]);
           // B1 · 路径边界：projectDir 是纯 join 不设防，%2F 编码的 ../ 在这里就拒（与 panels.ts 共用一把判定）
@@ -385,7 +421,7 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
           }
           const sid = m[2] ? decodeURIComponent(m[2]) : "";
           const sub = m[3] ?? "";
-          const projectDir = kernel.projectDir(project);
+          const projectDir = kernel.projectDir(project);   // 含包模板回落（S5：模板项目在面侧也「有档」）
           if (!sid && req.method === "POST" && !fs.existsSync(projectDir)) {
             res.writeHead(404, { "content-type": "application/json" });
             res.end(JSON.stringify({ error: "NO_PROJECT" }));
@@ -507,6 +543,30 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
             }
             return;
           }
+          // G1 · 会话附件：POST {name, data(base64), mime} → 落 内部/uploads/<sid>/；GET 列在档清单。
+          //     base64 走既有 JSON 文本通道（serve 体读只收文本，multipart 解析不在本期）。
+          if (sid && sub === "/attachments") {
+            try {
+              if (req.method === "GET") {
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ items: listAttachments(kernel, project, sid) }));
+                return;
+              }
+              if (req.method === "POST") {
+                const b = body ? (JSON.parse(body) as { name?: string; data?: string; mime?: string }) : {};
+                const meta = saveAttachment(kernel, project, sid, String(b.name || ""), String(b.data || ""), String(b.mime || ""));
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ ok: true, ...meta }));
+                return;
+              }
+              res.writeHead(405, { "content-type": "application/json" });
+              res.end(JSON.stringify({ error: "附件端点只认 GET（列清单）/ POST（上传）" }));
+            } catch (e) {
+              res.writeHead(400, { "content-type": "application/json" });
+              res.end(JSON.stringify({ error: (e as Error).message }));
+            }
+            return;
+          }
         }
         // ── B组 · 面板数据接口（工单 E-B：B1 世界书 / B2 文件 / B3 遥测，只读代理）──
         if (url.startsWith("/api/panel/")) {
@@ -553,6 +613,86 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
           res.end(JSON.stringify(reply.payload));
           return;
         }
+        // ── S4 · 扩展包启停面（GET=逐包三态门禁报告，POST=写项目表态进 项目配置.json）────
+        if (url === "/api/packs" || url.startsWith("/api/packs?")) {
+          const qq = new URLSearchParams(req.url?.split("?")[1] ?? "");
+          try {
+            if (req.method === "GET") {
+              const p = qq.get("project") ?? "";
+              if (!p) { res.writeHead(400, { "content-type": "application/json" }); res.end(JSON.stringify({ error: "project 必填（?project=<id>）" })); return; }
+              const reply = packGateReport(cfg, runtime, p);
+              res.writeHead(200, { "content-type": "application/json" });
+              res.end(JSON.stringify({ ...reply, harnessVersion: cfg.harnessVersion, packsOff: cfg.packsOff ?? [] }));
+              return;
+            }
+            if (req.method === "POST") {
+              const b = body ? JSON.parse(body) as { project?: string; pack?: string; enabled?: unknown } : {};
+              const p = String(b.project ?? qq.get("project") ?? "");
+              if (!p) { res.writeHead(400, { "content-type": "application/json" }); res.end(JSON.stringify({ error: "project 必填" })); return; }
+              if (!b.pack) { res.writeHead(400, { "content-type": "application/json" }); res.end(JSON.stringify({ error: "pack 必填" })); return; }
+              const item = setPackGate(cfg, runtime, p, String(b.pack), b.enabled !== false);
+              res.writeHead(200, { "content-type": "application/json" });
+              res.end(JSON.stringify({ ok: true, item, report: packGateReport(cfg, runtime, p) }));
+              return;
+            }
+            res.writeHead(405, { "content-type": "application/json" });
+            res.end(JSON.stringify({ error: "扩展包面只认 GET（门禁报告）/ POST（写表态）" }));
+          } catch (e) {
+            res.writeHead(400, { "content-type": "application/json" });
+            res.end(JSON.stringify({ error: (e as Error).message }));
+          }
+          return;
+        }
+        // S5 · 模板落地：把包内模板项目复制成工作区项目（可换名）。已存在则拒，绝不覆盖用户数据。
+        if (url === "/api/packs/clone" && req.method === "POST") {
+          try {
+            const b = body ? JSON.parse(body) as { project?: string; to?: string } : {};
+            // 先算后写（同会话面口径）：复制失败要在 400 里给文案，头先发出去就只剩「200 空响应」（0929 冒烟实测）
+            const reply = cloneTemplateProject(cfg, runtime, String(b.project ?? ""), b.to ? String(b.to) : undefined);
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify(reply));
+          } catch (e) {
+            res.writeHead(400, { "content-type": "application/json" });
+            res.end(JSON.stringify({ error: (e as Error).message }));
+          }
+          return;
+        }
+        // ── S1 · 扩展点挂载表（语料包 pages/apis；推演 = 内置包 packs/deduce）────────
+        // 鉴权闸在上方已跑过——包路由与核心面同闸，包不许绕闸。
+        // runWithPack 绑定注入面（cfg/runtime/packCfg），包代码经 currentPackCtx() 取用。
+        {
+          const fullUrl = req.url ?? "/";
+          const page = runtime.matchPage(url);
+          if (page) {
+            const html = await runWithPack(
+              { pack: page.pack, cfg, runtime, packCfg: (cfg.extensions?.[page.pack] as Record<string, unknown>) ?? {}, stripPrefix: () => "" },
+              async () => page.render(currentPackCtx(), req),
+            );
+            res.writeHead(200, { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" });
+            res.end(html);
+            return;
+          }
+          const hit = runtime.matchApi(url);
+          if (hit) {
+            // S4 · 项目级门禁：包照常挂载，数据面按项目放行/拒绝（改开关即生效，不重启）。
+            // 判不出项目时底座不代答——交回包自己的参数校验（deduce 会报「project 必填」），
+            // 免得同一件事两套话术；未来带 project-less 端点的包也不被底座拦死。
+            const gp = projectFromRequest(fullUrl, req.method ?? "GET", body);
+            if (gp && !packAllowed(cfg, runtime, gp, hit.mount.pack).enabled) {
+              res.writeHead(403, { "content-type": "application/json" });
+              res.end(JSON.stringify({
+                error: "PACK_DISABLED", pack: hit.mount.pack, project: gp,
+                note: `包「${hit.mount.pack}」在项目「${gp}」未启用：设置 · 扩展包 里打开（或改语料 manifest runtime.packsOff 做工作区级停用，那要重启 serve）`,
+              }));
+              return;
+            }
+            await runWithPack(
+              { pack: hit.mount.pack, cfg, runtime, packCfg: (cfg.extensions?.[hit.mount.pack] as Record<string, unknown>) ?? {}, stripPrefix: (u: string) => u.slice(hit.prefixLen) },
+              async () => hit.mount.handle(currentPackCtx(), res, fullUrl, req.method ?? "GET", body, hit.prefixLen),
+            );
+            return;
+          }
+        }
         res.writeHead(404, { "content-type": "application/json" });
         res.end(JSON.stringify({ error: "NOT_FOUND" }));
       } catch (e) {
@@ -567,6 +707,9 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
         res.end(JSON.stringify({ error: (e as Error).message }));
       }
     });
+  });
+  ensureRuntime().then(() => {
+    console.error(`[storyharness] 扩展包：${runtime.loaded.map((p) => `${p.name}${p.version ? "@" + p.version : ""}`).join(", ") || "无（底座裸面）"}${runtime.errors.length ? ` · 拒挂 ${runtime.errors.length} 个（见 /api/hub.packsReport）` : ""}`);
   });
   server.listen(port, host, () => {
     const face = auth.enabled
