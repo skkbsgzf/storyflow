@@ -1,0 +1,21 @@
+{
+ "title": "假对比与揭示三连（slop-list S3/S4）",
+ "clause": "reveal-stack",
+ "question": "目标句是否用否定铺排再翻转来替读者抖出结论（「不是A。不是B。是C。」或「不是A，是B」式假对比）——由上下文直接承载反常感的白描与判断句不算；对白/引文内的翻转不算？",
+ "options": [
+  {
+   "id": "yes",
+   "description": "是：叙述层用否定蓄势再翻转揭示，属应打回的机味句式。"
+  },
+  {
+   "id": "no",
+   "description": "否：普通单项判断/否定，或翻转发生在对白、引文内。"
+  },
+  {
+   "id": "insufficient",
+   "description": "目标句与上下文不足以判断。"
+  }
+ ],
+ "flag": "yes",
+ "filter": "不|非|没"
+}

@@ -1,0 +1,20 @@
+{
+ "schema": "laya-backtest@1",
+ "at": "2026-09-23",
+ "checkpoint": "convaiinnovations/laya subfolder=multilingual (mmBERT-base 322M, Apache-2.0)",
+ "why": "甲方发现件：社区称 Laya 远优于 semif——用本包 19 题金标卷实测对照",
+ "choice_primitive": {
+  "checkpoint": "convaiinnovations/laya subfolder=multilingual (mmBERT-base 322M)",
+  "cases": 19,
+  "accuracy": "10/19 = 53%",
+  "mine_yes": "9/10",
+  "legal_no": "1/8",
+  "latency_avg_ms": 111.9,
+  "baseline_4b_semif": "15/19 = 79%（合法 7/8，埋雷 8/10）"
+ },
+ "noul_primitive": "二分 6/18=33%（埋雷 5/10，合法 1/8；insufficient 样张 P=0.277）",
+ "baseline_4b": "15/19=79%（合法 7/8，埋雷 8/10）",
+ "verdict": "本条款上 Laya multilingual 显著劣于 4B 判官（53%/33% vs 79%）；失败模式=否定类高置信误判，与 22 题卷对 4B 的警示同构。快（~95-112ms CPU）但不可作判据。",
+ "scripts": "tools/laya-exp/（可复现）",
+ "discipline": "P 值只排复核优先级；任何外来判官按三态台账处置，未经本包校准 = 不进证据渠道"
+}

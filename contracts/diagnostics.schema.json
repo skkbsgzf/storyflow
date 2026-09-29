@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "miniflow/diagnostics",
+  "title": "diagnostics@1 · 旁路失败的留痕（R8-OPS 诊断通道）",
+  "description": "projects/<id>/registry/diagnostics.jsonl（仓库级则 <root>/registry/diagnostics.jsonl）的一行。存在的唯一理由：把「旁路失败」从静默变成可见。R7 事故台账的 N6 正是本通道要消灭的模式——contracts/metrics.schema.json 的 phase.enum 漏了 link ⇒ recordMetric 抛 SchemaViolation ⇒ 被 kernel.metric 的 catch{}（指标是旁路）吞掉 ⇒ 实盘 436 行 metrics 里 link 相 0 条，连接件驳回率对优化器完全不可见。判据：凡「吞掉就会改变结论/让能力静默失效」的 catch，必须在此留痕；纯容错型 catch（半行 JSON 跳过、锁目录清理）不在其列。",
+  "type": "object",
+  "required": ["ts", "format", "kind", "scope", "detail"],
+  "additionalProperties": false,
+  "properties": {
+    "ts": { "type": "string", "description": "ISO 时间戳" },
+    "format": { "const": "diag@1" },
+    "kind": {
+      "enum": ["metric", "assert", "kb", "aesthetic", "overlay", "feedback", "io", "other"],
+      "description": "诊断类别：metric=指标写入失败（后果是指标撒谎）；assert=确定性检查链失败（完整性校验/检查脚本执行器；id 名沿用自 v5.0 前的断言协议，语义已收窄为「机器检查没跑成」）；kb=知识库索引/台账读取失败（后果是命中率结构性归零）；aesthetic=审美台账/规则语料读取失败（后果是检查静默不适用）；overlay=编排叠加读写失败；feedback=挖掘/优化等负反馈旁路；io=文件读写；other=其他。"
+    },
+    "scope": {
+      "type": "string",
+      "description": "出错调用点，形如 `<nodeId>/<phase>`、`<module>::<fn>`。同一 (kind, scope) 在进程内只打一次 stderr，但每次都落盘。"
+    },
+    "detail": { "type": "string", "description": "异常文本（截断至 500 字符）" }
+  }
+}

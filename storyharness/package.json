@@ -1,0 +1,22 @@
+{
+  "name": "storyharness",
+  "private": true,
+  "version": "0.7.2",
+  "description": "miniflow 创作任务 harness 底座：pi agent 执行环 + 内核 HTTP 客户端 + 批调度 + 协议面。语料无关，经 .storyharness.json 清单注入工作区与语料布局。",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "start": "tsx src/cli.ts",
+    "test": "tsx --test test/*.test.ts",
+    "verify:pack": "node ../demos/mini-pack/verify.mjs"
+  },
+  "dependencies": {
+    "@earendil-works/pi-agent-core": "0.87.1",
+    "@earendil-works/pi-ai": "0.87.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
+  }
+}

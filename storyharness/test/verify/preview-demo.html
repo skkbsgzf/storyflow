@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>B13 预览数据面 · 消费形状演示</title>
+<style>
+  :root { color-scheme: light; }
+  body { margin: 0; padding: 22px; font: 15px/1.6 "Songti SC", "Noto Serif CJK SC", serif; background: #f7f4ee; color: #241f1a; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: #6c6255; font-size: 13px; margin-bottom: 18px; }
+  .card { background: #fff; border: 1px solid #ddd5c8; border-radius: 10px; padding: 14px 16px; margin: 0 0 14px; }
+  .card h2 { font-size: 15px; margin: 0 0 6px; }
+  .meta { font: 12px/1.5 ui-monospace, Consolas, monospace; color: #6c6255; word-break: break-all; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; border: 1px solid #c9bfae; background: #f2ecdf; }
+  .badge.inline { background: #e5f0e2; border-color: #a9c6a0; }
+  .badge.none, .badge.missing { background: #f3e2e0; border-color: #cfa39d; }
+  img.prev { max-width: 100%; height: auto; border: 1px solid #ddd5c8; border-radius: 6px; display: block; margin-top: 8px; }
+  iframe.prev { width: 100%; height: 340px; border: 1px solid #ddd5c8; border-radius: 6px; background: #fff; margin-top: 8px; }
+  .note { margin-top: 8px; padding: 10px 12px; border-left: 3px solid #c9bfae; background: #f6f2ea; font-size: 13px; }
+</style>
+</head>
+<body>
+<h1>B13 · 图片 / PDF 内嵌预览（数据面消费形状）</h1>
+<div class="sub">页面只做一件事：逐件问 <code>/api/panel/preview</code>，按 <code>kind</code> 分支渲染。URL 全部来自后端返回值，前端不拼路径、不猜类型。</div>
+<div id="root">加载中…</div>
+<script>
+const P = 'p-sh-demo2';
+const FILES = [
+  '内部/预览验收/B13验收图.png',
+  '内部/预览验收/B13验收.pdf',
+  '01-选题/选题报告.md',
+  '内部/预览验收/B13对照.docx',
+  '内部/预览验收/没有这件.pdf',
+];
+const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+
+async function ask(file) {
+  const r = await fetch(`/api/panel/preview?project=${encodeURIComponent(P)}&file=${encodeURIComponent(file)}`);
+  return { status: r.status, body: await r.json() };
+}
+
+function render(file, res) {
+  const b = res.body;
+  const kind = b.kind || 'error';
+  let inner = '';
+  if (kind === 'inline' && b.mime === 'image/png') {
+    inner = `<img class="prev" alt="" src="${esc(b.url)}" onload="this.dataset.nw=this.naturalWidth;this.dataset.nh=this.naturalHeight;document.dispatchEvent(new Event('recount'))" />`;
+  } else if (kind === 'inline' && b.mime === 'application/pdf') {
+    inner = `<iframe class="prev" src="${esc(b.url)}" title="pdf"></iframe>`;
+  } else if (kind === 'text') {
+    inner = `<div class="note">文本档：正文走 B2（<code>${esc(b.url)}</code>），本页不重复渲染。</div>`;
+  } else {
+    inner = `<div class="note"><b>显式降级（不是空白）</b>：${esc(b.note || b.error || res.status)}</div>`;
+  }
+  return `<section class="card">
+    <h2><span class="badge ${esc(kind)}">${esc(kind)}</span> ${esc(b.name || file)}</h2>
+    <div class="meta">${esc(file)} · mime=${esc(b.mime || '—')} · ${b.sizeKB ?? '—'}KB · url=${esc(b.url || '—')}</div>
+    ${inner}
+  </section>`;
+}
+
+(async () => {
+  const parts = [];
+  for (const f of FILES) {
+    try { parts.push(render(f, await ask(f))); }
+    catch (e) { parts.push(`<section class="card"><h2>请求失败</h2><div class="note">${esc(e.message)}</div></section>`); }
+  }
+  document.getElementById('root').innerHTML = parts.join('');
+  document.title = 'B13 预览数据面';
+  window.__done = true;
+})();
+</script>
+</body>
+</html>

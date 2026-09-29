@@ -1,0 +1,21 @@
+{
+  "name": "miniflow-kernel",
+  "source_skill": "examples: 真实域样例——把一个创作流程内核的 CLI 动词登记为 tool 池",
+  "version": "0.2",
+  "capability_tags": ["flow", "编排", "交卷", "派发", "快照", "扫描", "状态"],
+  "tools": [
+    { "id": "whereami", "name": "我在哪", "description": "报告当前项目、当前节点、必读输入与应产输出；开工前定位", "keywords": ["在哪", "定位", "当前节点", "状态", "开工"], "implementation": "python tools/whereami.py", "depends_on": [], "semif_checks": [] },
+    { "id": "flow_next", "name": "派发任务包", "description": "取下一个待执行节点并组装任务包（标尺、台账切片、前情摘要）", "keywords": ["下一步", "派发", "任务包", "继续", "节点"], "implementation": "flow_next", "depends_on": [], "semif_checks": [] },
+    { "id": "flow_submit", "name": "交卷", "description": "提交节点产物，走确定性完整性检查链（存在/非空/残渣/头部/词汇表）；iterate 实例最后件用 --seal 收口", "keywords": ["交卷", "提交", "产物", "submit", "seal", "收口"], "implementation": "flow_submit", "depends_on": ["flow_next"], "semif_checks": [] },
+    { "id": "flow_rerun", "name": "重跑节点", "description": "重开已完成节点（done 产物修改的唯一合法入口），下游置 stale 重编译", "keywords": ["重跑", "重写", "已完成节点", "rerun", "修改"], "implementation": "flow_rerun", "depends_on": [], "semif_checks": [] },
+    { "id": "snapshot", "name": "交付快照", "description": "产物落盘后按文件清单捕获快照留档", "keywords": ["快照", "留档", "交付", "snapshot"], "implementation": "python tools/snapshot.py capture", "depends_on": ["flow_submit"], "semif_checks": [] },
+    { "id": "scan_quality", "name": "质量扫描", "description": "对正文跑全量确定性扫描（T 轨条款），输出证据 JSON 与收据，不裁决", "keywords": ["扫描", "质量", "证据", "去AI味", "检查"], "implementation": "python tools/quality-scan.py", "depends_on": [], "semif_checks": [] }
+  ],
+  "orchestration": {
+    "typical_flow": [["whereami"], ["flow_next"], ["flow_submit"]],
+    "parallel_groups": [],
+    "conditional_branches": [
+      { "condition": "要修改已完成节点的产物 或 完全重写", "use": "flow_rerun", "skip": ["flow_next"] }
+    ]
+  }
+}

@@ -1,0 +1,975 @@
+{
+  "format": "module@1",
+  "id": "prose",
+  "name": "写作",
+  "desc": "文学域：三专科层稿 + 成文师逐段六维盖章 + 终稿打磨——文学质量内置在成文流水线，剧情前置锁定后成文层无权改戏",
+  "version": "2.0.0",
+  "ops": {
+    "layer-voices": {
+      "skill": "layer-voices",
+      "title": "layer-voices",
+      "desc": "成文流水线专科层一——从分场卡逐拍产出对白层稿：每句台词标注说话人/目的/潜台词，全员过遮名三句测试；只管台词，不写叙述。",
+      "kind": "produce",
+      "model_tier": "high",
+      "knowledge": [
+        "kb/aesthetic/character",
+        "kb/aesthetic/dialogue",
+        "kb/craft/prose-constraints",
+        "kb/craft/user-style-rules",
+        "kb/craft/highlight-loop"
+      ],
+      "config": {
+        "subtextDepth": {
+          "type": "enum",
+          "default": "标准",
+          "enum": [
+            "浅",
+            "标准",
+            "深"
+          ],
+          "desc": "潜台词的显式程度",
+          "effect": "提高 = 台词更耐读、更慢",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "maskTest": {
+          "type": "boolean",
+          "default": true,
+          "desc": "全员过遮名三句测试",
+          "effect": "关掉 = 声口靠读者脑补",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "perLineTag": {
+          "type": "enum",
+          "default": "说话人+目的+潜台词",
+          "enum": [
+            "说话人",
+            "说话人+目的",
+            "说话人+目的+潜台词"
+          ],
+          "desc": "每句台词的标注字段",
+          "effect": "只标说话人 = 上下文不足",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "台词层"
+      ],
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      },
+      "slot": "before:ghostwrite"
+    },
+    "layer-scenes": {
+      "skill": "layer-scenes",
+      "title": "layer-scenes",
+      "desc": "成文流水线专科层二——从分场卡逐拍产出场景层稿：五感计划、身体反应、布景道具、笔墨密度配比；只管让读者站进场景，不写台词不推情节。",
+      "kind": "produce",
+      "model_tier": "high",
+      "knowledge": [
+        "kb/aesthetic/metaphor-zh",
+        "kb/aesthetic/scene-value",
+        "kb/craft/prose-constraints",
+        "kb/deconstruct/style-learning",
+        "kb/craft/user-style-rules"
+      ],
+      "config": {
+        "senseChannels": {
+          "type": "number",
+          "default": 5,
+          "min": 0,
+          "desc": "五感计划的通道数",
+          "effect": "降低 = 场景变扁平",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "densityProfile": {
+          "type": "enum",
+          "default": "随情绪波动",
+          "enum": [
+            "均一",
+            "随情绪波动"
+          ],
+          "desc": "笔墨密度的配比方式",
+          "effect": "均一 = 读起来像说明书",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "propsDepth": {
+          "type": "enum",
+          "default": "陈列",
+          "enum": [
+            "点到",
+            "陈列",
+            "考据"
+          ],
+          "desc": "道具与布景的考据深度",
+          "effect": "点到 = 快；考据 = 沉",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "场景层"
+      ],
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      },
+      "slot": "before:ghostwrite"
+    },
+    "layer-canon": {
+      "skill": "layer-canon",
+      "title": "layer-canon",
+      "desc": "成文流水线专科层三——从分场卡逐拍产出设定层稿：知情范围切片、新词首现方案、台账增量、人设矛盾提示；只管世界观一致性与读者认知边界，不碰文笔。",
+      "kind": "produce",
+      "knowledge": [
+        "kb/aesthetic/character",
+        "kb/continuity/state-ledger",
+        "kb/continuity/worldbook",
+        "kb/craft/prose-constraints",
+        "kb/craft/user-style-rules"
+      ],
+      "config": {
+        "sliceUnit": {
+          "type": "enum",
+          "default": "按拍",
+          "enum": [
+            "按章",
+            "按拍"
+          ],
+          "desc": "知情范围切片粒度",
+          "effect": "按章 = 更省，越权漏检率上升",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "newWordPolicy": {
+          "type": "enum",
+          "default": "首现即注",
+          "enum": [
+            "首现即注",
+            "延后注"
+          ],
+          "desc": "新词第一次出现的处理",
+          "effect": "延后注 = 前几章读者发懵",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "ledgerDiff": {
+          "type": "boolean",
+          "default": true,
+          "desc": "输出台账增量",
+          "effect": "关掉 = 设定层与台账脱钩",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "设定层"
+      ],
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      },
+      "slot": "before:ghostwrite"
+    },
+    "prose-assembler": {
+      "skill": "prose-assembler",
+      "title": "prose-assembler",
+      "desc": "成文流水线末环——把台词/场景/设定三层稿按节拍拼装成正文：逐段六维盖章（台词/场景/设定/人设/节奏/机味），全过才下推；产出正文+盖章单。无分场卡不开工。",
+      "kind": "produce",
+      "model_tier": "high",
+      "knowledge": [
+        "kb/aesthetic/ai-trace",
+        "kb/aesthetic/slop-list",
+        "kb/craft/prose-constraints",
+        "kb/deconstruct/style-learning",
+        "kb/formats/webnovel-fastfood",
+        "kb/craft/user-style-rules",
+        "kb/craft/highlight-loop"
+      ],
+      "config": {
+        "stampDims": {
+          "type": "number",
+          "default": 6,
+          "min": 0,
+          "desc": "逐段六维盖章的维度数",
+          "effect": "降低 = 拼装质量失控",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "failFast": {
+          "type": "boolean",
+          "default": true,
+          "desc": "任一段未过即停（不带着问题下推）",
+          "effect": "关掉 = 错误向下游放大",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "beatFidelity": {
+          "type": "enum",
+          "default": "严格",
+          "enum": [
+            "严格",
+            "允许微调"
+          ],
+          "desc": "对分场卡的忠实度",
+          "effect": "允许微调 = 更顺但可能偏题",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "拼装盖章"
+      ],
+      "also_fits": [
+        "before:ghostwrite"
+      ],
+      "requires": [],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      },
+      "slot": "after:layer-canon"
+    },
+    "novel-deai": {
+      "skill": "novel-deai",
+      "title": "novel-deai",
+      "desc": "快餐网文终稿打磨技能——四遍法打磨（声口校准→处境校准→比喻意象→节奏去机味）+ 多轮精修内环（评审官判分→定向修订→防劣化收敛），诊断先行、覆盖律硬门槛、盲读内环验收；产出可发布终稿与全套收据。",
+      "kind": "produce",
+      "model_tier": "high",
+      "knowledge": [
+        "kb/aesthetic/ai-trace",
+        "kb/aesthetic/character",
+        "kb/aesthetic/metaphor-zh",
+        "kb/aesthetic/naturalness-zh",
+        "kb/aesthetic/slop-list",
+        "kb/deconstruct/style-learning",
+        "kb/formats/webnovel-fastfood",
+        "kb/formats/webnovel-longform",
+        "kb/method/longform-engineering",
+        "kb/method/revision-loop"
+      ],
+      "minitools": [
+        "scan_quality"
+      ],
+      "config": {
+        "passes": {
+          "type": "number",
+          "default": 4,
+          "min": 0,
+          "desc": "四遍法的遍数",
+          "effect": "降低 = 省成本但覆盖律失效",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "innerLoops": {
+          "type": "number",
+          "default": 2,
+          "min": 0,
+          "desc": "精修内环轮数（判分→定向修订→收敛）",
+          "effect": "提高 = 更收敛、更贵",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "coverageLaw": {
+          "type": "boolean",
+          "default": true,
+          "desc": "覆盖律硬门槛（每条诊断必须被处理）",
+          "effect": "关掉 = 诊断变成摆设",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "metaphorBudget": {
+          "type": "number",
+          "default": 6,
+          "min": 0,
+          "desc": "比喻意象的预算条数",
+          "effect": "超标即视为堆砌",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "maxChars": {
+          "type": "number",
+          "default": 7000,
+          "unit": "字",
+          "desc": "本步产物正文篇幅上限：按「章长 2000 基准 × 3 章 + 余量」定（用户口径 2026-09-21），与 ghostwrite.maxChars 同扩，防精修时被上限逼瘦",
+          "effect": "与 chapterMin/Max 联动：上限 < 章数×章长 = 结构性冲突",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "revisionFloor": {
+          "type": "number",
+          "default": 3,
+          "min": 0,
+          "unit": "处/千字",
+          "desc": "首润修订密度下限（2026-09-23 耗时复盘建议 1）：诊断单×终稿实算修订 < 此值时，必须在诊断单如实回显缺口与原因，不得静默交卷——是预算地板不是提交闸，够不够仍归 agent 与端尾人裁",
+          "effect": "提高 = 改得更狠、墙钟线性上涨；kunxiu 09-23 实测 2.2/千字不达 3，缺口挂人裁",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "depth": {
+          "type": "enum",
+          "default": "标准",
+          "enum": [
+            "标准",
+            "深"
+          ],
+          "desc": "修订方案斟酌档位：深 = 每处命中给「原句/改法/弃案」三行对照（耗时约 ×1.5）",
+          "effect": "调深 = 修订理由可抽查，deai 目标墙钟 ≥40m；标准 = 只登对照表一行",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "终稿打磨",
+        "去机味"
+      ],
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      },
+      "output": "终稿.md"
+    },
+    "novel-chapter": {
+      "skill": "novel-chapter",
+      "title": "novel-chapter",
+      "desc": "长篇网文逐章写作技能——按章功能与台账切片写单章：章末钩子强制、笔墨密度随情绪波动、连续性零越权；交稿即过断言与台账校验。",
+      "kind": "produce",
+      "knowledge": [
+        "kb/craft/convolution-waves",
+        "kb/aesthetic/ai-trace",
+        "kb/aesthetic/naturalness-zh",
+        "kb/aesthetic/scene-value",
+        "kb/continuity/state-ledger",
+        "kb/deconstruct/style-learning",
+        "kb/formats/webnovel-longform",
+        "kb/method/longform-engineering",
+        "kb/aesthetic/sensory-detail"
+      ],
+      "minitools": [
+        "scan_quality"
+      ],
+      "config": {
+        "chapterChars": {
+          "type": "number",
+          "default": 3000,
+          "min": 0,
+          "desc": "单章目标字数",
+          "effect": "提高 = 单章更沉、日更压力大",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "hookStrength": {
+          "type": "enum",
+          "default": "标准",
+          "enum": [
+            "轻",
+            "标准",
+            "强"
+          ],
+          "desc": "章末钩子强度",
+          "effect": "提高 = 留存好、疲劳感上升",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "ledgerScope": {
+          "type": "enum",
+          "default": "本拍",
+          "enum": [
+            "本拍",
+            "本阶段"
+          ],
+          "desc": "台账切片的范围",
+          "effect": "本阶段 = 更稳更慢",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "densityWave": {
+          "type": "enum",
+          "default": "随情绪",
+          "enum": [
+            "均一",
+            "随情绪"
+          ],
+          "desc": "笔墨密度",
+          "effect": "均一 = 无起伏",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "直写单章"
+      ],
+      "slot": "end",
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "script-final": {
+      "skill": "script-final",
+      "title": "script-final",
+      "desc": "成稿阶段技能——基于小纲（或客户批注后版本）产出连贯成品剧本：场次头+人物行动/表情+角色台词；特殊镜头与旁白用中括号备注；不出现钩型/时长/尾钩等内部标注。成稿后强制交接台词去AI味打磨。",
+      "kind": "produce",
+      "knowledge": [
+        "kb/aesthetic/ai-trace",
+        "kb/aesthetic/character",
+        "kb/aesthetic/dialogue",
+        "kb/aesthetic/naturalness-zh",
+        "kb/aesthetic/pacing-density",
+        "kb/aesthetic/scene-value"
+      ],
+      "minitools": [
+        "scan_quality"
+      ],
+      "config": {
+        "annotationLevel": {
+          "type": "enum",
+          "default": "中括号备注",
+          "enum": [
+            "中括号备注",
+            "内联"
+          ],
+          "desc": "特殊镜头/旁白的标注法",
+          "effect": "内联 = 与台词混排，演员易误读",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "forbidInternalMark": {
+          "type": "boolean",
+          "default": true,
+          "desc": "禁止出现钩型/时长/尾钩等内部标注",
+          "effect": "关掉 = 交付件泄露生产标记",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "sceneHeaderStyle": {
+          "type": "enum",
+          "default": "场次号+场景",
+          "enum": [
+            "场次号+场景",
+            "简洁"
+          ],
+          "desc": "场次头写法",
+          "effect": "简洁 = 与拍摄方约定不一致",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "剧本成稿"
+      ],
+      "slot": "end",
+      "also_fits": [
+        "after:prose-assembler"
+      ],
+      "requires": [],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "dialogue-polish": {
+      "skill": "dialogue-polish",
+      "title": "dialogue-polish",
+      "desc": "剧本强制末环节技能——全部人物对话逐句过三遍：人物声口校准（遮名可辨+说话习惯一致）、处境校准（压力与关系下的语言变化）、去AI味清单（24类+结构指纹）；基于人物和处境优化，不做通用润色。",
+      "kind": "produce",
+      "model_tier": "high",
+      "knowledge": [
+        "kb/aesthetic/ai-trace",
+        "kb/aesthetic/character",
+        "kb/aesthetic/dialogue",
+        "kb/aesthetic/naturalness-zh"
+      ],
+      "minitools": [
+        "scan_quality"
+      ],
+      "config": {
+        "passes": {
+          "type": "number",
+          "default": 3,
+          "min": 0,
+          "desc": "逐句过的遍数（声口/处境/去AI味）",
+          "effect": "降低 = 省成本但机味残留",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "maskTest": {
+          "type": "boolean",
+          "default": true,
+          "desc": "遮名三句测试（遮住名字能认出谁说话）",
+          "effect": "关掉 = 人物声口趋同",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "aiTraceDeck": {
+          "type": "enum",
+          "default": "24类",
+          "enum": [
+            "精简",
+            "24类"
+          ],
+          "desc": "去AI味清单的档位",
+          "effect": "精简 = 只查高频类，漏检增加",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "preserveVoice": {
+          "type": "boolean",
+          "default": true,
+          "desc": "保留作者原有节奏不改成标准腔",
+          "effect": "关掉 = 全部对话变成同一种腔调",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "对话打磨"
+      ],
+      "slot": "after:script-final",
+      "also_fits": [
+        "after:novel-deai"
+      ],
+      "requires": [],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "novel-judge": {
+      "skill": "novel-judge",
+      "title": "novel-judge",
+      "desc": "文学质量评审技能——五维锚点评分（10 分制，每维带 2/5/8 分锚点样例）+ 逐维一句诊断 + 「最差三处」可执行定向反馈；是多轮精修工坊的判分器，也是 gate 前的预读体检。用户判词恒优先于本表（§零否决权）。",
+      "kind": "review",
+      "model_tier": "high",
+      "knowledge": [
+        "kb/aesthetic/ai-trace",
+        "kb/aesthetic/character",
+        "kb/aesthetic/metaphor-zh",
+        "kb/aesthetic/naturalness-zh",
+        "kb/aesthetic/scene-value",
+        "kb/method/revision-loop"
+      ],
+      "minitools": [
+        "scan_quality"
+      ],
+      "config": {
+        "scale": {
+          "type": "enum",
+          "default": "10分制",
+          "enum": [
+            "10分制",
+            "5分制"
+          ],
+          "desc": "评分标尺",
+          "effect": "换 5 分制 = 与既有锚点样例不兼容",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "dims": {
+          "type": "number",
+          "default": 5,
+          "min": 0,
+          "desc": "评分维度数",
+          "effect": "增加 = 更细也更慢",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "worstThree": {
+          "type": "boolean",
+          "default": true,
+          "desc": "输出「最差三处」可执行反馈",
+          "effect": "关掉 = 只有分数没有处方",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "userVeto": {
+          "type": "boolean",
+          "default": true,
+          "desc": "用户判词恒优先于本表（§零否决权）",
+          "effect": "关掉 = 与甲方意志冲突",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "文学评审"
+      ],
+      "slot": "after:novel-deai",
+      "also_fits": [
+        "after:prose-assembler",
+        "end"
+      ],
+      "requires": [],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "render-prompt-seedance": {
+      "skill": "render-prompt-seedance",
+      "title": "Seedance 分镜提示词",
+      "desc": "AI 生成视频的画面调度指令：@素材点名定岗/固定运镜词库/分时段描述/角色一致性锁图。",
+      "kind": "produce",
+      "knowledge": [
+        "kb/aesthetic/visual-poster",
+        "kb/deconstruct/style-learning"
+      ],
+      "minitools": [
+        "scan_quality"
+      ],
+      "config": {
+        "shotSec": {
+          "type": "number",
+          "default": 5,
+          "min": 0,
+          "desc": "单镜头时长（秒）",
+          "effect": "提高 = 镜头更少更慢",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "cameraLock": {
+          "type": "enum",
+          "default": "固定词库",
+          "enum": [
+            "固定词库",
+            "自由"
+          ],
+          "desc": "运镜词来源",
+          "effect": "自由 = 模型理解不稳",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "consistencyLock": {
+          "type": "enum",
+          "default": "锁图",
+          "enum": [
+            "锁图",
+            "锁描述"
+          ],
+          "desc": "跨镜头一致性的锁定方式",
+          "effect": "锁描述 = 省图但漂移更快",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "视频提示词"
+      ],
+      "slot": "after:script-final",
+      "also_fits": [
+        "end"
+      ],
+      "requires": [],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "ghostwrite": {
+      "skill": "ghostwrite",
+      "title": "文学化师",
+      "desc": "写作模块主交付工具：输入剧本 → 逐场文学化为正文（六维盖章自查/章末钩/纯净度）。输入职责=剧本；输出职责=正文单件；验收职责=既有 prose 断言表（章长/钩/纯度/台账）",
+      "kind": "produce",
+      "knowledge": [
+        "kb/craft/prose-constraints",
+        "kb/craft/convolution-waves",
+        "kb/aesthetic/slop-list",
+        "kb/aesthetic/ai-trace",
+        "kb/aesthetic/metaphor-zh",
+        "kb/craft/user-style-rules",
+        "kb/craft/section-pipeline"
+      ],
+      "capability": [
+        "正文"
+      ],
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      },
+      "config": {
+        "waveBeats": {
+          "type": "number",
+          "default": 4,
+          "desc": "卷积波次：一波推进的拍数（章拍表/分场卡取序）",
+          "effect": "每波收口执行回看三查（kb/craft/convolution-waves），非一次性成稿",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "waveOvershootPct": {
+          "type": "number",
+          "default": 20,
+          "unit": "%",
+          "desc": "超额写幅度：全章初积比 chapterMax 多写的比例，章末收敛砍回去",
+          "effect": "0=退化为按额直写（接缝病失去回看料）",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "chapterMin": {
+          "type": "number",
+          "default": 1800,
+          "desc": "章长下限（CJK）",
+          "effect": "低于=断言打回",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "chapterMax": {
+          "type": "number",
+          "default": 2200,
+          "desc": "章长上限（CJK）",
+          "effect": "超=节奏拖",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "maxChars": {
+          "type": "number",
+          "default": 7000,
+          "unit": "字",
+          "desc": "本步产物正文篇幅上限：按「章长 2000 基准 × 3 章 + 余量」定（用户口径 2026-09-21），逐章扩展时节点 config 覆盖",
+          "effect": "与 chapterMin/Max 联动：上限 < 章数×章长 = 结构性冲突",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "sectionLen": {
+          "type": "number",
+          "default": 600,
+          "min": 300,
+          "max": 900,
+          "desc": "节卷积：单节目标字数（500-700 带宽）",
+          "effect": "写作仍由本 op 承担；一写一验收一滚上下文由 acceptance-decompose 执行（kb/craft/section-pipeline）",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "output": "正文.md"
+    },
+    "acceptance-decompose": {
+      "skill": "acceptance-decompose",
+      "title": "拆解器（节级验收拆解）",
+      "kind": "review",
+      "slot": "after:ghostwrite",
+      "desc": "把「节需求包+本节正文」拆成两类验收项并逐项执行：机器类走 tools/laya-scan.py（生产扫描唯一引擎=laya 学生头，人裁 09-24；题面=spec GATE-1 放行 13 题，known_weakness 随件），感受类派读者面板，其余 agent 对照语料卡。产 内部/节验收-*.json；章末汇总 内部/章过点-*.md。小项不达标不阻断整章。",
+      "knowledge": [
+        "kb/craft/section-pipeline",
+        "kb/aesthetic/slop-list",
+        "kb/craft/user-style-rules"
+      ],
+      "capability": [
+        "节级验收拆解"
+      ],
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      },
+      "config": {
+        "readerQuestions": {
+          "type": "number",
+          "default": 3,
+          "min": 1,
+          "max": 5,
+          "desc": "每节送读者面板的感受类问题上限",
+          "effect": "超出的感受项改走 agent 裁决，防问爆",
+          "tunable_by": [
+            "user",
+            "agent"
+          ]
+        },
+        "pilotToHuman": {
+          "type": "boolean",
+          "default": true,
+          "desc": "pilot 状态条款命中是否强制升人工复核",
+          "effect": "false=允许 pilot 命中直接落证据（仅在条款升 calibrated 后允许）",
+          "tunable_by": [
+            "user"
+          ]
+        }
+      }
+    },
+    "reader-panel": {
+      "skill": "reader-panel",
+      "title": "读者面板（感受类判词）",
+      "kind": "review",
+      "slot": "before:novel-deai",
+      "desc": "目标读者人格冷读本节，只答到位/最强/最弱三问，出 ✓△✗ 判词；不修理文字。由拆解器派单，判词并回节验收 JSON。",
+      "knowledge": [
+        "kb/formats/webnovel-fastfood",
+        "kb/craft/section-pipeline"
+      ],
+      "capability": [
+        "读者视角判词"
+      ],
+      "also_fits": [],
+      "requires": [
+        "acceptance-decompose"
+      ],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      },
+      "config": {
+        "persona": {
+          "type": "string",
+          "default": "platform",
+          "desc": "读者画像来源：platform=随 flow inputs.platform；custom=节点 config 覆写一句话画像",
+          "effect": "决定爽点口径与去留节奏",
+          "tunable_by": [
+            "user",
+            "agent"
+          ]
+        }
+      }
+    }
+  },
+  "skeleton": {
+    "spine": [
+      "ghostwrite",
+      "novel-deai"
+    ],
+    "edges": [
+      [
+        "ghostwrite",
+        "novel-deai"
+      ]
+    ]
+  },
+  "caps": [
+    "台词层",
+    "场景层",
+    "设定层",
+    "拼装盖章",
+    "终稿打磨",
+    "去机味",
+    "直写单章",
+    "剧本成稿",
+    "对话打磨",
+    "文学评审",
+    "视频提示词",
+    "正文",
+    "节级验收拆解",
+    "读者视角判词"
+  ],
+  "io": {
+    "input": {
+      "from": "plot",
+      "shape": "剧本 IR（逐场行动/台词/价值/钩 + 伏笔登记）"
+    },
+    "output": {
+      "file": "终稿.md",
+      "audience": "读者（对外正文终稿，文学化+去AI味）"
+    },
+    "acceptance": {
+      "scans": [
+        "AE-AI-QUOTA",
+        "AE-PROSE-SLOP",
+        "AE-WNF-HOOK"
+      ],
+      "rules": [
+        "kb/rules/ai-trace"
+      ]
+    }
+  }
+}

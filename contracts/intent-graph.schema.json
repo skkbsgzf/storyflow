@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miniflow.dev/contracts/intent-graph.schema.json",
+  "title": "intent-graph@1 · 立意图（可能空间，方案盘 20260924）",
+  "description": "落 universes/<uid>/intent-graph.json（宇宙级：故事宇宙 > 项目 > flow）。存「可能是什么」（候选 + 剪枝排序分 + 证据）与「最后选了什么」（committed）。committed 经 ig_sync 单向流落 projects/<id>/decisions/（feeds_decision 桥的推广，R8 机制复用；已存在不回填）。红线：P 值是剪枝排序分，禁当放行闸；无 scorer 的候选禁带 p；excluded 必须带理由（铁律 R8：为什么没装 X 不许哑）。",
+  "type": "object",
+  "required": ["format", "universe", "title", "updated_at", "nodes"],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "const": "intent-graph@1" },
+    "universe": { "type": "string", "pattern": "^u-[a-z0-9-]+$", "description": "宇宙 id（universes/<uid>/）" },
+    "title": { "type": "string", "minLength": 1, "description": "宇宙名（人类可读）" },
+    "updated_at": { "type": "string", "description": "ISO 8601" },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "title", "status", "candidates"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+          "kind": { "type": "string", "enum": ["立意", "人物", "世界观", "主旨", "题材", "钩子", "设定"], "description": "立意图节点种类（思维导图的一级分支语义）" },
+          "title": { "type": "string", "minLength": 1 },
+          "content": { "type": "string", "description": "节点陈述（无候选时的本体内容）" },
+          "parent": { "type": ["string", "null"], "description": "父节点 id（思维导图树形；null=根）" },
+          "status": { "type": "string", "enum": ["open", "committed", "excluded"] },
+          "decision_key": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "committed 后 ig_sync 落 decisions/<key>.json 的决策键（intent- 前缀命名，避免与 flow inputs 桥键相撞）" },
+          "candidates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "status"],
+              "additionalProperties": false,
+              "properties": {
+                "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+                "title": { "type": "string" },
+                "content": { "type": "string" },
+                "p": { "type": "number", "minimum": 0, "maximum": 1, "description": "剪枝排序分——只排复核优先级，禁当放行闸（semif 纪律）" },
+                "scorer": { "type": "string", "enum": ["human", "semif-4b", "laya-student", "jev-api", "untested"], "description": "打分来源；untested 禁带 p（不编造概率）" },
+                "evidence": { "type": "string", "description": "打分/提案依据（可溯源；R8 无证据不立案）" },
+                "status": { "type": "string", "enum": ["proposed", "committed", "excluded"] },
+                "excluded_reason": { "type": "string", "description": "excluded 必带（不哑）" }
+              },
+              "if": { "required": ["p"] },
+              "then": { "properties": { "scorer": { "enum": ["human", "semif-4b", "laya-student", "jev-api"] } } }
+            }
+          }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "description": "节点间关系（MVP 树形之外的联系；可选）",
+      "items": {
+        "type": "object",
+        "required": ["from", "to", "rel"],
+        "additionalProperties": false,
+        "properties": {
+          "from": { "type": "string" },
+          "to": { "type": "string" },
+          "rel": { "type": "string", "enum": ["supports", "contradicts", "refines", "feeds"] }
+        }
+      }
+    },
+    "stats": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "nodes": { "type": "number" },
+        "committed": { "type": "number" },
+        "candidates": { "type": "number" }
+      },
+      "description": "信息性统计（工具维护，不参与契约判断）"
+    }
+  }
+}

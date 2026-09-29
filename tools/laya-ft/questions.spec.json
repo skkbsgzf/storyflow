@@ -1,0 +1,187 @@
+{
+  "spec": "laya-question-spec@1",
+  "version": "0.3.0",
+  "date": "2026-09-24",
+  "note": "qid 永不复用：任何 rubric 改动 = 新 qid 或本 spec 升版本，只重新标注受影响题。感受类整题禁止（accept.py lint：instructions 含 好看/有趣/精彩/好不好 即 FAIL）。所有 qid 的 rubric_ref 必须指向真实知识卡。v0.3.0（2026-09-24 用户两标准落地：题面深度 + 场景与生产一对一）：①每题新增必填 production_hook，accept.py 校验其指向的 module:op 真实存在，写不出 hook 的题不许入 spec；②撤 semif.dash-abuse.v1.noul（其 choice 三分类版的降级重复）；③slop.ai-trace.v1 → v2 改打词表外结构腔（AE-NAT-HIT 登记缺口的语义半边），铁证词计数归 prose-scan 词表层不做；④B 类五题（scene-value/curve-type/ending-hook/hook-strength/sensory-concrete）题面不动、state 加强（state_builder v0.3 注入 视角人物/上一场收束/后续场景/章末段/开场切片），旧 state 标签作废重标；⑤对抗例：calibration 包句级埋雷/豁免例作 trap 轮，sensory 陷阱例入 trap 集。",
+  "questions": {
+    "semif.pov-leak.v1.noul": {
+      "type": "noul",
+      "instructions": "判断该段是否出现视角泄漏：非视角人物的内心活动被叙述者直接写出（如「他心想…」「她暗自后悔」类直写，而视角人物在场上无从得知）。",
+      "rubric_ref": "knowledge/aesthetic/perspective-review.md + knowledge/semif-calibration/pov-leak/",
+      "production_hook": "detect:semif-clause-screen（学生引擎位）+ tools/amend-artifact.py 改稿句级回扫",
+      "needs_pov": true,
+      "state_requires": ["场景文本", "视角人物"]
+    },
+    "slop.ai-trace.v2.noul": {
+      "type": "noul",
+      "instructions": "判断该段是否出现词表之外的结构性 AI 腔（至少命中一条才算 true）：①连续多句长度与句式整齐得不自然，段段像模板；②段尾总结腔/拔高腔（把事情收束成一句人生道理或意义概括）；③对仗排比刻意成串且不承担信息增量；④情绪用泛化套语直给（五味杂陈类）而非具体可感。注意：铁证词词表命中由 prose-scan 词表层负责，本题只判词表抓不到的结构面；干净的白描、口语拍子、有信息增量的排比判 false。",
+      "rubric_ref": "knowledge/aesthetic/ai-trace.md（八维画像结构面）+ knowledge/aesthetic/naturalness-zh.md",
+      "production_hook": "tools/quality-scan.py 聚合的 AE-NAT-HIT 语义半边（台账登记的扫描器缺口，词表命中面归 prose-scan 不重复）",
+      "state_requires": ["场景文本"]
+    },
+    "craft.sensory-concrete.v1.noul": {
+      "type": "noul",
+      "instructions": "判断该段是否包含至少两处具体感官细节（视觉/听觉/嗅觉/触觉/味觉的可感细节或具体动作物象），抽象形容与情绪直述不计入。",
+      "rubric_ref": "knowledge/aesthetic/sensory-detail.md + kb/craft/prose-constraints（写情绪不写哭）",
+      "production_hook": "prose:novel-chapter 六维盖章证据流（成文章节验收随章过点报告汇总）",
+      "state_requires": ["场景文本"]
+    },
+    "aesthetic.conflict-clear.v1.noul": {
+      "type": "noul",
+      "instructions": "判断该场景中冲突双方的目标是否都可陈述：谁想要什么、什么在挡。若只有单向施压而无对抗方的明确目标，判 false。",
+      "rubric_ref": "knowledge/aesthetic/conflict-escalation.md",
+      "production_hook": "plot:script-forge 逐场 IR 冲突复核 + novel-longform m4 章过点报告",
+      "state_requires": ["场景文本", "人设卡"]
+    },
+    "aesthetic.dialogue-push.v1.noul": {
+      "type": "noul",
+      "instructions": "判断该段对白是否为行动：台词之下有欲望与策略，且回应处理了对方的策略。仅交换双方都已知道的信息、按话题轮流发言（乒乓）判 false。",
+      "rubric_ref": "knowledge/aesthetic/dialogue.md 一、行动性判定 1/2",
+      "production_hook": "prose:dialogue-polish 评审步证据 + prose:acceptance-decompose 机器类路由",
+      "state_requires": ["场景文本"]
+    },
+    "craft.ending-hook.v1.noul": {
+      "type": "noul",
+      "instructions": "判断该章末尾是否落在钩上：以悬念、反转、新目标或新压力收束（任一即 true）；平淡收束、总结式收尾判 false。state 中「是否章末段」为 false 时本题不作答（无章末可判）。",
+      "rubric_ref": "knowledge/aesthetic/hook-3s.md + knowledge/aesthetic/ending.md",
+      "production_hook": "prose:novel-chapter 章末钩体检 → 章过点报告汇总（正则面 AE-WNF-HOOK/AE-CARD-END 只抓格式词，语义归型归学生）",
+      "state_requires": ["场景文本", "章节位置", "是否章末段"]
+    },
+    "semif.dash-abuse.v1.choice": {
+      "type": "choice",
+      "instructions": "目标句中的「——」是否只是解释、补充、复述、揭示或引出下文的万能胶用法（按规则仅两类合法：对话被打断、歌谣/韵文断句）？",
+      "criteria": {
+        "yes": "是：破折号在做解释、补充、复述、揭示或引出，应打回改写。",
+        "no": "否：这是对话被打断或歌谣/韵文断句的功能性保留用法。",
+        "insufficient": "目标句与上下文不足以判断。"
+      },
+      "rubric_ref": "knowledge/semif-calibration/dash-abuse/（19 题金标卷同口径）",
+      "production_hook": "detect:semif-clause-screen → prose:acceptance-decompose 机器类路由 → 面板 machineScans",
+      "state_requires": ["场景文本"]
+    },
+    "aesthetic.scene-value.v1.choice": {
+      "type": "choice",
+      "instructions": "判断本场景的故事价值转折类型（麦基式：每场至少一个价值发生实质变化；只是换一种说法=无变化）。对照 state 的「上一场收束」与本场文本的出场状态判定转折。",
+      "criteria": {
+        "pos2neg": "正向转负向：安全变危险、信任变怀疑、希望变绝望等。",
+        "neg2pos": "负向转正向：绝境生机、误会消解、劣势翻盘等。",
+        "double": "双转：一场内价值两次翻转（先得后失或先失后得）。",
+        "none": "无实质变化：开头结尾同一状态，只是换一种说法。"
+      },
+      "rubric_ref": "knowledge/aesthetic/scene-value.md（入场/出场价值判定条款）",
+      "production_hook": "plot:script-forge 价值列复核 + prose:layer-scenes 层稿盖章（章过点报告汇总）",
+      "state_requires": ["场景文本", "上一场收束"]
+    },
+    "aesthetic.dialogue-defect.v1.choice": {
+      "type": "choice",
+      "instructions": "判断本段对白的主要缺陷类型（缺陷八清单口径；若行动性达标且无下列缺陷选 none）。",
+      "criteria": {
+        "none": "无主要缺陷：每句可标注行动且回应处理了对方策略。",
+        "exposition": "解释独白：角色停止行动向读者说明双方都已知道的设定或关系。",
+        "pingpong": "乒乓发言：双方只按话题交换信息，回应不处理对方策略，无第三对象介入。",
+        "onNose": "写在鼻子上：潜文本被直接说尽或写进括号动作说明。"
+      },
+      "rubric_ref": "knowledge/aesthetic/dialogue.md 一/三/四",
+      "production_hook": "prose:dialogue-polish 评审步证据（缺陷归型决定修哪句）",
+      "state_requires": ["场景文本"]
+    },
+    "craft.curve-type.v1.choice": {
+      "type": "choice",
+      "instructions": "判断该段的情绪曲线形态（六型判别；state 含本场与「后续场景」的连排序列，按序列整体走势判，无法成形选 flat）。",
+      "criteria": {
+        "burst": "压抑爆发：连续 ≥60% 篇幅压抑后单点爆发。",
+        "misalign_sweet": "错位甜：双方目的错位制造甜，甜点伴随信息差收紧。",
+        "escalate": "层层递进：赌注逐级抬高。",
+        "spiral": "螺旋下降：主角连续失去，但有微小反击。",
+        "cross": "双线交叉：两线各自推进交叉引爆。",
+        "hookback": "倒钩回升：结尾钩向开头回收。",
+        "flat": "平/未成形：无可用判别形态。"
+      },
+      "rubric_ref": "knowledge/aesthetic/emotion-curve.md（六型判别表）",
+      "production_hook": "novel-longform m4 章过点报告曲线形态列（plot:subplot-weave 双轨咬合同口径）",
+      "state_requires": ["场景文本", "后续场景"]
+    },
+    "aesthetic.hook-strength.v1.score": {
+      "type": "score",
+      "instructions": "评估开场的钩子强度——以 state 的「开场切片」（该章前 100 字）为判定对象，其余文本只作上下文。",
+      "criteria": [
+        "无钩：开场为背景铺陈或日常，无张力信息。",
+        "弱钩：有信息量但无张力或悬念。",
+        "强钩：冲突/反常清晰可感，产生明确疑问。",
+        "不可放下：强钩之外还压了时间压力或身份危机。"
+      ],
+      "rubric_ref": "knowledge/aesthetic/hook-3s.md（3 秒公式）",
+      "production_hook": "topic 选题报告开篇体检 + drama:scene-breakdown 冷开场评级（端尾验收面板）",
+      "state_requires": ["场景文本", "开场切片"]
+    },
+    "aesthetic.pacing-density.v1.score": {
+      "type": "score",
+      "instructions": "评估本段节奏密度（信息与事件密度，不是字数）。",
+      "criteria": [
+        "空洞：无信息无事件，纯情绪空转。",
+        "铺陈：有铺垫无推进。",
+        "正常：信息与事件按需推进。",
+        "密实：每段都有新信息或新动作。",
+        "爆点连续：高密度事件+反转连续落点。"
+      ],
+      "rubric_ref": "knowledge/aesthetic/pacing-density.md（爆点密度标准）",
+      "production_hook": "novel-longform m4 章过点报告密度列（语义面归学生；AE-DENSITY-WORDS 词表面不重复）",
+      "state_requires": ["场景文本"]
+    },
+    "aesthetic.reversal-setup.v1.score": {
+      "type": "score",
+      "instructions": "评估本段反转的铺垫充分度（若本段无反转意图，判 0 并非惩罚）。",
+      "criteria": [
+        "无反转意图。",
+        "有反转但零铺垫：结局意外却无任何前置线索。",
+        "有铺垫缺最后稻草：线索在但缺压垮性事件。",
+        "铺垫+最后稻草齐备：意料之外且情理之中。"
+      ],
+      "rubric_ref": "knowledge/aesthetic/reversal.md（意料之外情理之中）",
+      "production_hook": "plot:foreshadow-plant 交卷复核 + 端尾验收反转专项面板",
+      "state_requires": ["场景文本"]
+    },
+    "slop.neg-pattern.v1.noul": {
+      "type": "noul",
+      "instructions": "判断该段叙述层（旁白腔）是否出现成串否定短语排比蓄势（如「不救人，不解释，只做生意」「不X不Y」「没有A，也没有B」）。人物对白/引文内角色自己的话豁免；孤立的单项否定不计。",
+      "rubric_ref": "knowledge/aesthetic/slop-list.md S2 + knowledge/semif-calibration/neg-pattern/prompt.json",
+      "production_hook": "detect:semif-clause-screen → prose:acceptance-decompose 机器类路由 → 面板 machineScans",
+      "state_requires": ["场景文本"]
+    },
+    "slop.reveal-stack.v1.noul": {
+      "type": "noul",
+      "instructions": "判断该段叙述层是否用否定铺排再翻转替读者抖出结论（揭示三连「不是A。不是B。是C。」，或假对比「不是A，而是B」式）。由上下文直接承载反常感的白描与判断句不计；对白/引文内的翻转不计。",
+      "rubric_ref": "knowledge/aesthetic/slop-list.md S3/S4 + knowledge/semif-calibration/reveal-stack/prompt.json",
+      "production_hook": "detect:semif-clause-screen → prose:acceptance-decompose 机器类路由 → 面板 machineScans",
+      "state_requires": ["场景文本"]
+    },
+    "craft.daisy-chain.v1.noul": {
+      "type": "noul",
+      "instructions": "判断该段是否存在顶真裸接的电报腔链：句A收尾词紧接句B开头复述（「X。X，……」式），既不带语法桥（「之后」「一旦」「紧接着」等），也不在真正的刹车点。对白内的复述、带语法桥的顶真、普通主语复现不计。",
+      "rubric_ref": "knowledge/craft/user-style-rules.md R7 + knowledge/semif-calibration/daisy-chain/prompt.json",
+      "production_hook": "detect:semif-clause-screen → prose:acceptance-decompose 机器类路由（index.json 已宣告接管 R7 顶方正则）",
+      "state_requires": ["场景文本"]
+    },
+    "craft.simile-suspend.v1.noul": {
+      "type": "noul",
+      "instructions": "判断该段是否含悬浮比喻：删掉句中的比喻/明喻成分后，句子承载的信息与感觉原样成立，且喻体是通用字典意象（像一只受伤的小鹿/像一潭死水/像一团乱麻一类）。喻体带来新信息、错位喜感或世界质感的不计。",
+      "rubric_ref": "knowledge/aesthetic/metaphor-zh.md 病1（悬浮比喻） + knowledge/semif-calibration/simile-suspend/prompt.json",
+      "production_hook": "detect:semif-clause-screen → prose:acceptance-decompose 机器类路由（pilot 态经 pilotToHuman 升人工不变）",
+      "state_requires": ["场景文本"]
+    },
+    "drama.hook-type.v1.choice": {
+      "type": "choice",
+      "instructions": "判断该段开场第一拍的钩型（3 秒公式四型判别：以 state 的「开场切片」为准，前 100 字内出现的具体钩子事件属于哪一型；氛围铺垫、世界观说明、人物自介=无钩）。",
+      "criteria": {
+        "suspense": "悬念型：抛出未解之谜或悬置因果（「他刚X就Y了」「没有人知道X的真正原因」）。",
+        "subvert": "反常型：场景与行为的错位违和（「所有人都X，只有他Y」「X做了Y，表情却是Z」）。",
+        "danger": "危险型：即时威胁或倒计时（「X还有N秒抵达」「被发现就完了」）。",
+        "promise": "承诺型：向读者许诺回报（「从今天起你要X」「三天后你会感谢此刻」）。",
+        "nohook": "无钩：开场为背景铺陈、世界观说明或人物自介。"
+      },
+      "rubric_ref": "knowledge/aesthetic/hook-3s.md 判定条款1 + 四型钩子句式模板",
+      "production_hook": "drama:scene-breakdown / plot:script-drama-beat 前3秒钩子体检（机器近似面 AE-HOOK-EVENT 之外做语义归型）",
+      "state_requires": ["场景文本", "开场切片"]
+    }
+  }
+}

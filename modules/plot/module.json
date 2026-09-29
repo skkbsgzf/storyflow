@@ -1,0 +1,1278 @@
+{
+  "format": "module@1",
+  "id": "plot",
+  "name": "编剧",
+  "desc": "编剧域：主线剧情、人设、世界观、暗线、伏笔悬念的编排——剧情在成文前锁定，成文层无权改戏",
+  "version": "2.1.0",
+  "ops": {
+    "adapt-triage": {
+      "skill": "adapt-triage",
+      "title": "改编反馈诊断",
+      "kind": "review",
+      "desc": "原稿×甲方反馈对撞，产出 file:line 级病灶账（A结构病/B单集病/C句面病）+ 爽点五类盘点三数（各出现几次/最长空窗/全程缺席哪类）+ 改编取向 + 不改动清单；不做改写，不给「已充分考虑」。",
+      "knowledge": [
+        "kb/formats/comic-drama-adapt",
+        "kb/aesthetic/perspective-review",
+        "kb/aesthetic/unreasonable-highlight",
+        "kb/method/revision-loop"
+      ],
+      "minitools": [
+        "scan_quality"
+      ],
+      "config": {
+        "maxFindings": {
+          "type": "number",
+          "default": 5,
+          "min": 1,
+          "desc": "进手术方案的最差病灶条数",
+          "effect": "提高 = 一轮摊得太开，违反「一轮改透三处」",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "thrillAudit": {
+          "type": "boolean",
+          "default": true,
+          "desc": "是否强制产出爽点五类盘点表",
+          "effect": "关掉 = 「避重就轻不足」退回主观印象",
+          "tunable_by": [
+            "user"
+          ]
+        },
+        "harshness": {
+          "type": "enum",
+          "default": "标准",
+          "enum": [
+            "温和",
+            "标准",
+            "苛刻"
+          ],
+          "desc": "病灶判级尺度",
+          "effect": "提高 = 更多立案，也更容易把件改坏",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "keepList": {
+          "type": "boolean",
+          "default": true,
+          "desc": "是否强制产出「不改动清单」",
+          "effect": "关掉 = 下游顺手改坏原有好件",
+          "tunable_by": [
+            "user"
+          ]
+        }
+      },
+      "capability": [
+        "改编诊断"
+      ],
+      "slot": "before:structure-design",
+      "also_fits": [
+        "end"
+      ],
+      "requires": [],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "story-outline": {
+      "skill": "story-outline",
+      "title": "全季故事简纲",
+      "kind": "produce",
+      "desc": "把改编取向落成全季简纲：脊柱映射（哪一集踩在哪一章）＋与原著的差异清单（逐条带章号与理由）＋节拍分段＋贯穿型压迫装置＋逐节点 STAR 简纲＋曲线对账。只到集区粒度，不写逐集表／分场／台词。",
+      "knowledge": [
+        "kb/formats/comic-drama-adapt",
+        "kb/market/constraints",
+        "kb/aesthetic/pacing-density",
+        "kb/aesthetic/reversal",
+        "kb/aesthetic/emotion-curve"
+      ],
+      "minitools": [
+        "scan_quality"
+      ],
+      "config": {
+        "starGranularity": {
+          "type": "enum",
+          "default": "集区节点",
+          "enum": [
+            "集区节点",
+            "逐集"
+          ],
+          "desc": "简纲的下探粒度",
+          "effect": "逐集 = 与分集重排表越权重叠，两本账必漂移",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "sourceDiffTable": {
+          "type": "boolean",
+          "default": true,
+          "desc": "是否强制产出「原著 vs 本稿」差异清单",
+          "effect": "关掉 = 甲方无从核对是否偷改原著",
+          "tunable_by": [
+            "user"
+          ]
+        },
+        "pressureDevice": {
+          "type": "boolean",
+          "default": true,
+          "desc": "是否强制产出贯穿全季的压迫装置（明轨＋暗轨＋读数时点）",
+          "effect": "关掉 = 退化成一案换一个反派，中段必然疲劳",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "故事大纲"
+      ],
+      "slot": "before:structure-design",
+      "also_fits": [
+        "before:adapt-episode-map",
+        "end"
+      ],
+      "requires": [],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "adapt-episode-map": {
+      "skill": "adapt-episode-map",
+      "title": "分集重排表",
+      "kind": "produce",
+      "desc": "原稿→目标集数的施工图：逐集「段落/一集一事/主辅爽点/字数配额/素材锚/卡点/交接/砍留」十列齐填；铺垫段末集必须停在展开点，先定末集再倒推。缺口与素材锚不许静默丢失。",
+      "knowledge": [
+        "kb/formats/comic-drama-adapt",
+        "kb/aesthetic/pacing-density",
+        "kb/aesthetic/hook-3s",
+        "kb/continuity/state-ledger"
+      ],
+      "minitools": [
+        "scan_quality"
+      ],
+      "config": {
+        "setupEpisodes": {
+          "type": "number",
+          "default": 10,
+          "min": 1,
+          "desc": "铺垫段集数（末集=展开点）",
+          "effect": "提高 = 铺垫更厚、兑现段被压缩",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "targetEpisodes": {
+          "type": "number",
+          "default": 80,
+          "min": 1,
+          "desc": "目标总集数",
+          "effect": "改了 = 全表重排",
+          "tunable_by": [
+            "user"
+          ]
+        },
+        "granularity": {
+          "type": "enum",
+          "default": "标准",
+          "enum": [
+            "粗",
+            "标准",
+            "细"
+          ],
+          "desc": "铺垫段的排表颗粒度",
+          "effect": "细 = 逐集给三要素自检与代价，排表更贵",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "分集重排"
+      ],
+      "slot": "before:structure-design",
+      "also_fits": [
+        "end"
+      ],
+      "requires": [
+        "adapt-triage"
+      ],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "structure-design": {
+      "skill": "structure-design",
+      "title": "structure-design",
+      "desc": "第二阶段技能——从结构目录选型并完成深挖/改造/融合三步，产出故事框架案（结构选型理由+骨架具体化+改造点+不确定因素注入提案），确保节奏对齐市场实盘。",
+      "kind": "produce",
+      "knowledge": [
+        "kb/aesthetic/conflict-escalation",
+        "kb/aesthetic/pacing-density",
+        "kb/aesthetic/reversal",
+        "kb/market/setting-rules",
+        "kb/market/structure",
+        "kb/structure/catalog"
+      ],
+      "minitools": [
+        "kb_search",
+        "check_trope_combo"
+      ],
+      "config": {
+        "fuseCount": {
+          "type": "number",
+          "default": 2,
+          "min": 0,
+          "desc": "融合的结构数",
+          "effect": "提高 = 更独特、可读性风险上升",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "injectUncertainty": {
+          "type": "boolean",
+          "default": true,
+          "desc": "是否输出不确定因素注入提案",
+          "effect": "关掉 = 单薄问题被掩盖",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "steps": {
+          "type": "enum",
+          "default": "三步",
+          "enum": [
+            "两步",
+            "三步"
+          ],
+          "desc": "深挖/改造/融合的执行粒度",
+          "effect": "两步 = 快，三步 = 稳",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "model_tier": {
+          "type": "enum",
+          "enum": [
+            "high",
+            "lite"
+          ],
+          "default": "high",
+          "desc": "执行档位：high=强模型（文学/结构判断），未声明=不约束",
+          "effect": "文学与结构判断节点必须 high；机械整理类可降 lite",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "结构"
+      ],
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      },
+      "slot": "end"
+    },
+    "plot-choreographer": {
+      "skill": "plot-choreographer",
+      "title": "plot-choreographer",
+      "desc": "剧情编排技能——把八段式策划案升级为可拍的三线骨架×分集功能表×卡点编排表；数据骨架（市场实盘）与美学标准（kb/aesthetic）双驱动。",
+      "kind": "produce",
+      "knowledge": [
+        "kb/aesthetic/conflict-escalation",
+        "kb/aesthetic/emotion-curve",
+        "kb/aesthetic/ending",
+        "kb/aesthetic/pacing-density",
+        "kb/aesthetic/reversal",
+        "kb/aesthetic/scene-value",
+        "kb/market/constraints"
+      ],
+      "minitools": [
+        "scan_quality"
+      ],
+      "config": {
+        "materialsMode": {
+          "type": "enum",
+          "default": "凭空创造",
+          "enum": [
+            "凭空创造",
+            "验收+补全"
+          ],
+          "desc": "任务包声明了素材源（flow 输入 sourceMaterials 在盘）时切「验收+补全」：素材已定条目只核对存在性与一致性、不重写；缺口（地理/势力盘/配角/时间线）补全后单独列「补全清单」交用户验收；冲突（素材自相矛盾）列「疑点清单」上报，不擅自裁决",
+          "effect": "验收+补全 = 设定贴近用户意图、开书快；素材本身的完成度决定上限",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "actModel": {
+          "type": "enum",
+          "default": "八段式",
+          "enum": [
+            "八段式",
+            "三幕",
+            "单元剧"
+          ],
+          "desc": "结构模型选型",
+          "effect": "换了 = 分集功能表全表重排",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "cardDensity": {
+          "type": "enum",
+          "default": "标准",
+          "enum": [
+            "疏",
+            "标准",
+            "密"
+          ],
+          "desc": "分场卡密度",
+          "effect": "提高 = 每集卡点更多、拍摄成本更高",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "dataAnchor": {
+          "type": "enum",
+          "default": "市场实盘",
+          "enum": [
+            "市场实盘",
+            "母题",
+            "混合"
+          ],
+          "desc": "节奏的标尺来源",
+          "effect": "换成母题 = 少依赖实盘数据",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "lineCount": {
+          "type": "number",
+          "default": 3,
+          "min": 0,
+          "desc": "三线骨架的线数",
+          "effect": "提高 = 结构更丰富也更难收",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "主线"
+      ],
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      },
+      "slot": "end"
+    },
+    "novel-bible": {
+      "skill": "novel-bible",
+      "title": "novel-bible",
+      "desc": "长篇网文开书技能——三层问答定书（题材与核心情绪→主角与核心欲望→前十事件链），产出 World Bible 与卷纲前置件；三问答完才许开书。",
+      "kind": "produce",
+      "knowledge": [
+        "kb/aesthetic/character",
+        "kb/aesthetic/conflict-escalation",
+        "kb/formats/webnovel-longform"
+      ],
+      "knowledge_pools": [
+        {
+          "pool": "kb/trope/*",
+          "where": {
+            "tags": [
+              "$decision:region.picked"
+            ]
+          },
+          "onMissingDecision": "load-all-with-warning"
+        }
+      ],
+      "minitools": [
+        "kb_search",
+        "check_trope_combo"
+      ],
+      "config": {
+        "materialsMode": {
+          "type": "enum",
+          "default": "凭空创造",
+          "enum": [
+            "凭空创造",
+            "验收+补全"
+          ],
+          "desc": "任务包声明了素材源（flow 输入 sourceMaterials 在盘）时切「验收+补全」：素材已定条目（身份谜/力量体系/成长线/核心矛盾/典型场景等）逐条挂进 World Bible 并标「素材原样」，只验收不重写；缺口补全列「补全清单」，矛盾列「疑点清单」上报用户裁决",
+          "effect": "验收+补全 = Bible 与用户脑中设定零漂移；三问的提问重心从「定设定」转为「查缺口」",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "quests": {
+          "type": "number",
+          "default": 3,
+          "min": 0,
+          "desc": "开书三问的问答轮数",
+          "effect": "提高 = 设定更稳，开书更慢",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "powerSystem": {
+          "type": "enum",
+          "default": "力量体系",
+          "enum": [
+            "力量体系",
+            "情绪体系",
+            "社会体系"
+          ],
+          "desc": "核心设定的骨架类型",
+          "effect": "换了 = 全书冲突来源换血",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "deadlineRounds": {
+          "type": "number",
+          "default": 3,
+          "min": 0,
+          "desc": "三问未答完最多许开书几轮",
+          "effect": "提高 = 更难卡住，也更容易带病开书",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "model_tier": {
+          "type": "enum",
+          "enum": [
+            "high",
+            "lite"
+          ],
+          "default": "high",
+          "desc": "执行档位：high=强模型（文学/结构判断），未声明=不约束",
+          "effect": "文学与结构判断节点必须 high；机械整理类可降 lite",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "maxChars": {
+          "type": "number",
+          "min": 200,
+          "max": 40000,
+          "default": 6000,
+          "unit": "字",
+          "desc": "正文篇幅目标：写到接近 6000 字（下限按 80% 执行≈4800 字）；超出视为未收敛",
+          "effect": "人设圣经",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "人设"
+      ],
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      },
+      "slot": "end"
+    },
+    "scene-breakdown": {
+      "skill": "scene-breakdown",
+      "title": "scene-breakdown",
+      "desc": "小纲阶段技能——把大纲拆成逐分镜的脚本 doc：每个分镜的场景/人物行动/台词，达意即可无需打磨；文末附创作思路页。输出 doc 格式供客户批注修改后回传。",
+      "kind": "produce",
+      "knowledge": [
+        "kb/aesthetic/character",
+        "kb/aesthetic/dialogue",
+        "kb/aesthetic/hook-3s",
+        "kb/aesthetic/pacing-density",
+        "kb/aesthetic/scene-value",
+        "kb/method/longform-engineering"
+      ],
+      "minitools": [
+        "scan_quality"
+      ],
+      "config": {
+        "shotsPerScene": {
+          "type": "number",
+          "default": 6,
+          "min": 0,
+          "desc": "每个场景的分镜数",
+          "effect": "提高 = 成稿更细、小纲更慢",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "includeRationale": {
+          "type": "boolean",
+          "default": true,
+          "desc": "文末附创作思路页",
+          "effect": "关掉 = 客户批注时缺少依据",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "dialogLevel": {
+          "type": "enum",
+          "default": "达意",
+          "enum": [
+            "达意",
+            "打磨"
+          ],
+          "desc": "分镜里台词的打磨程度",
+          "effect": "改成打磨 = 与成稿阶段重复劳动",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "model_tier": {
+          "type": "enum",
+          "enum": [
+            "high",
+            "lite"
+          ],
+          "default": "high",
+          "desc": "执行档位：high=强模型（文学/结构判断），未声明=不约束",
+          "effect": "文学与结构判断节点必须 high；机械整理类可降 lite",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "maxChars": {
+          "type": "number",
+          "min": 200,
+          "max": 40000,
+          "default": 8000,
+          "unit": "字",
+          "desc": "正文篇幅目标：写到接近 8000 字（下限按 80% 执行≈6400 字）；超出视为未收敛",
+          "effect": "分集分场纲，厚分镜的地基",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "分场"
+      ],
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      },
+      "slot": "end"
+    },
+    "world-forge": {
+      "skill": "world-forge",
+      "title": "world-forge",
+      "desc": "网文开书技能（单元剧标准）——选题后先搞世界观：力量体系/势力矛盾/主角力量来源与代价/世界规则四件套；产出世界观圣经（人读）+ wiki 词条库（RAG，index.json+条目交叉链接）；人物动机从世界观长出来，不硬安。",
+      "kind": "produce",
+      "knowledge": [
+        "kb/aesthetic/character",
+        "kb/aesthetic/conflict-escalation",
+        "kb/continuity/worldbook",
+        "kb/formats/webnovel-fastfood",
+        "kb/formats/webnovel-longform",
+        "kb/structure/episodic-webnovel",
+        "kb/craft/highlight-loop"
+      ],
+      "knowledge_pools": [
+        {
+          "pool": "kb/trope/*",
+          "where": {
+            "tags": [
+              "$decision:region.picked"
+            ]
+          },
+          "onMissingDecision": "load-all-with-warning"
+        }
+      ],
+      "config": {
+        "factionCount": {
+          "type": "number",
+          "default": 3,
+          "min": 0,
+          "desc": "势力矛盾条数",
+          "effect": "提高 = 冲突来源更多，读者认知负担上升",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "powerCost": {
+          "type": "boolean",
+          "default": true,
+          "desc": "力量必须有代价",
+          "effect": "关掉 = 爽感无上限、后期崩盘",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "wikiEntries": {
+          "type": "number",
+          "default": 20,
+          "min": 0,
+          "desc": "wiki 词条库条目数",
+          "effect": "提高 = RAG 更全，索引成本上升",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "mode": {
+          "type": "enum",
+          "default": "全量建设",
+          "enum": [
+            "全量建设",
+            "仅差异"
+          ],
+          "desc": "仅差异 = 世界书/素材在盘时的重跑轮口径（2026-09-23 耗时复盘建议 3）：先查后写，逐卡核对存在性与一致性，只补差异并交「差异清单」，零差异如实交「无增量」，禁止无脑整写覆写",
+          "effect": "kunxiu 09-23 实测：全量轮该步 18.2m，实质增量只有规则清单两列＋补卡 2 张",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "世界观"
+      ],
+      "slot": "before:structure-design",
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "episodic-outline": {
+      "skill": "episodic-outline",
+      "title": "episodic-outline",
+      "desc": "网文大纲技能（单元剧标准·轻量）——暗线节点表 + 单元剧序列 + 首批单元细纲；不搞编剧式重型结构。大纲→成稿的重心在五问：人设立得住/冲突自然/梗多/节目效果足/没有AI味。",
+      "kind": "produce",
+      "knowledge": [
+        "kb/aesthetic/pacing-density",
+        "kb/formats/webnovel-fastfood",
+        "kb/structure/episodic-webnovel",
+        "kb/craft/highlight-loop"
+      ],
+      "config": {
+        "units": {
+          "type": "number",
+          "default": 3,
+          "min": 0,
+          "desc": "首批细纲的单元数",
+          "effect": "提高 = 一次摊得更开，返工成本更大",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "hookPerUnit": {
+          "type": "boolean",
+          "default": true,
+          "desc": "每个单元末尾强制钩子",
+          "effect": "关掉 = 单元之间可能泄气",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "darklineDepth": {
+          "type": "enum",
+          "default": "标准",
+          "enum": [
+            "轻",
+            "标准",
+            "重"
+          ],
+          "desc": "暗线铺陈力度",
+          "effect": "提高 = 伏笔更厚，读者短期获得感下降",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "outlineDensity": {
+          "type": "enum",
+          "default": "标准",
+          "enum": [
+            "粗",
+            "标准",
+            "细"
+          ],
+          "desc": "细纲颗粒度",
+          "effect": "提高 = 写作期更省心、大纲期更贵",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "model_tier": {
+          "type": "enum",
+          "enum": [
+            "high",
+            "lite"
+          ],
+          "default": "high",
+          "desc": "执行档位：high=强模型（文学/结构判断），未声明=不约束",
+          "effect": "文学与结构判断节点必须 high；机械整理类可降 lite",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "maxChars": {
+          "type": "number",
+          "min": 200,
+          "max": 40000,
+          "default": 6000,
+          "unit": "字",
+          "desc": "正文篇幅目标：写到接近 6000 字（下限按 80% 执行≈4800 字）；超出视为未收敛",
+          "effect": "分集大纲",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "单元剧大纲"
+      ],
+      "slot": "end",
+      "also_fits": [],
+      "requires": [
+        "structure-design"
+      ],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "script-drama-beat": {
+      "skill": "script-drama-beat",
+      "title": "短剧节拍表",
+      "desc": "竖屏短剧一集的硬格式：场次编号/△动作/台词内联情绪/前3秒钩子/结尾付费卡点体检；剧本是生产工具，不可拍摄内容是禁手。",
+      "kind": "produce",
+      "knowledge": [
+        "kb/aesthetic/dialogue",
+        "kb/aesthetic/hook-3s",
+        "kb/aesthetic/pacing-density",
+        "kb/aesthetic/platform-compliance",
+        "kb/aesthetic/visual-poster"
+      ],
+      "minitools": [
+        "scan_quality"
+      ],
+      "config": {
+        "hookWindowSec": {
+          "type": "number",
+          "default": 3,
+          "min": 0,
+          "desc": "前几秒必须出现钩子",
+          "effect": "提高 = 更宽容；超过 5 秒观众已划走",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "paywallCard": {
+          "type": "boolean",
+          "default": true,
+          "desc": "结尾强制付费卡点体检",
+          "effect": "关掉 = 交付件可能不带商业钩子",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "shotNotation": {
+          "type": "enum",
+          "default": "△动作",
+          "enum": [
+            "△动作",
+            "平板",
+            "无"
+          ],
+          "desc": "镜头标注法",
+          "effect": "换了 = 与拍摄方约定不一致",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "model_tier": {
+          "type": "enum",
+          "enum": [
+            "high",
+            "lite"
+          ],
+          "default": "high",
+          "desc": "执行档位：high=强模型（文学/结构判断），未声明=不约束",
+          "effect": "文学与结构判断节点必须 high；机械整理类可降 lite",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "maxChars": {
+          "type": "number",
+          "min": 200,
+          "max": 40000,
+          "default": 6000,
+          "unit": "字",
+          "desc": "正文篇幅目标：写到接近 6000 字（下限按 80% 执行≈4800 字）；超出视为未收敛",
+          "effect": "节拍表",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "短剧节拍"
+      ],
+      "slot": "after:scene-breakdown",
+      "also_fits": [
+        "end"
+      ],
+      "requires": [],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "plot-redline": {
+      "skill": "plot-redline",
+      "title": "剧情红队·多方视角评审",
+      "desc": "红方评审技能 v2（视角代入制）——代入目标读者/一般读者/资深编剧/甲方四类人分别给意见，说人话不念指标；打回时指认根因阶段；框架可行但单薄时提案不确定因素注入。每个阶段验收门强制注入。",
+      "kind": "review",
+      "knowledge": [
+        "kb/aesthetic/ai-trace",
+        "kb/aesthetic/constitution",
+        "kb/aesthetic/perspective-review",
+        "kb/aesthetic/platform-compliance",
+        "kb/aesthetic/redline-scoring",
+        "kb/aesthetic/unreasonable-highlight",
+        "kb/structure/catalog"
+      ],
+      "minitools": [
+        "kb_read",
+        "kb_search",
+        "flow_read_artifact",
+        "scan_quality"
+      ],
+      "config": {
+        "angles": {
+          "type": "number",
+          "default": 4,
+          "min": 0,
+          "desc": "代入的评审视角数（读者/编剧/甲方…）",
+          "effect": "提高 = 更全面、成本线性上升",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "harshness": {
+          "type": "enum",
+          "default": "标准",
+          "enum": [
+            "温和",
+            "标准",
+            "苛刻"
+          ],
+          "desc": "苛刻程度",
+          "effect": "提高 = 更多打回更少漏网；过高会空转",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "allowInject": {
+          "type": "boolean",
+          "default": true,
+          "desc": "框架单薄时是否允许提交流程重构建议",
+          "effect": "关掉 = 只报问题不给方案",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "voice": {
+          "type": "enum",
+          "default": "说人话",
+          "enum": [
+            "说人话",
+            "念指标"
+          ],
+          "desc": "意见书的语体",
+          "effect": "念指标 = 读者读不懂，说人话 = 可执行",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "model_tier": {
+          "type": "enum",
+          "enum": [
+            "high",
+            "lite"
+          ],
+          "default": "high",
+          "desc": "执行档位：high=强模型（文学/结构判断），未声明=不约束",
+          "effect": "文学与结构判断节点必须 high；机械整理类可降 lite",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "红队评审"
+      ],
+      "slot": "after:scene-breakdown",
+      "also_fits": [
+        "after:plot-choreographer",
+        "before:structure-design",
+        "end"
+      ],
+      "requires": [],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "subplot-weave": {
+      "skill": "subplot-weave",
+      "title": "暗线编织",
+      "desc": "暗线编织技能——在主骨架之上叠加第二条叙事线（身份线/复仇线/情感线）：暗线锚点表（每锚点=明线事件+暗线推进量）、双轨咬合检查（暗线停摆=空转）、揭示节奏规划（铺垫→半揭→反转→兑现）；暗线只在编剧层锁定，成文层无权改戏。",
+      "kind": "produce",
+      "knowledge": [
+        "kb/structure/episodic-webnovel",
+        "kb/aesthetic/emotion-curve",
+        "kb/aesthetic/reversal",
+        "kb/craft/highlight-loop"
+      ],
+      "minitools": [
+        "scan_quality"
+      ],
+      "config": {
+        "weaveDensity": {
+          "type": "enum",
+          "default": "标准",
+          "enum": [
+            "轻",
+            "标准",
+            "重"
+          ],
+          "desc": "暗线锚点密度",
+          "effect": "提高 = 暗线更厚，读者短期获得感下降",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "revealCurve": {
+          "type": "boolean",
+          "default": true,
+          "desc": "强制产出揭示节奏规划（铺垫→半揭→反转→兑现）",
+          "effect": "关掉 = 暗线揭示时机随缘，反转乏力",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "暗线"
+      ],
+      "slot": "after:plot-choreographer",
+      "also_fits": [],
+      "requires": [
+        "plot-choreographer"
+      ],
+      "adds": {
+        "knowledge": [
+          "kb/structure/episodic-webnovel"
+        ],
+        "config": {}
+      }
+    },
+    "foreshadow-plant": {
+      "skill": "foreshadow-plant",
+      "title": "伏笔悬念插入",
+      "desc": "伏笔悬念插入技能——按伏笔台账在指定结构位点埋设伏笔（明面日常化伪装+暗面台账登记：埋设章/预期回收章/知情范围），产出伏笔点位表；埋设必须登记台账、到期必须回收（AE-CONT-FORESHADOW），不埋无回收主的死伏笔。",
+      "kind": "produce",
+      "knowledge": [
+        "kb/continuity/state-ledger",
+        "kb/continuity/worldbook",
+        "kb/craft/highlight-loop"
+      ],
+      "minitools": [
+        "continuity_commit"
+      ],
+      "config": {
+        "plantPerUnit": {
+          "type": "number",
+          "default": 2,
+          "min": 0,
+          "desc": "每单元埋设伏笔数上限",
+          "effect": "提高 = 网更密，回收负担上升",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "disguiseLevel": {
+          "type": "enum",
+          "default": "日常化",
+          "enum": [
+            "明示",
+            "半遮",
+            "日常化"
+          ],
+          "desc": "伏笔的明面伪装强度",
+          "effect": "越日常化 = 读者惊喜感越强，但埋设成本越高",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "capability": [
+        "伏笔",
+        "悬念"
+      ],
+      "slot": "before:scene-breakdown",
+      "also_fits": [],
+      "requires": [
+        "plot-choreographer"
+      ],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      }
+    },
+    "script-forge": {
+      "skill": "script-forge",
+      "title": "剧本师",
+      "desc": "编剧模块唯一交付工具：输入选题报告 → 结构化剧本 IR（逐场 5W1H/行动/台词/价值/钩 + 人物卡 + 伏笔登记）。输入职责=选题报告；输出职责=剧本单件；验收职责=AE-SCRIPT-FIELDS",
+      "kind": "produce",
+      "knowledge": [
+        "kb/aesthetic/scene-value",
+        "kb/aesthetic/conflict-escalation",
+        "kb/aesthetic/reversal",
+        "kb/aesthetic/character",
+        "kb/craft/highlight-loop",
+        "kb/aesthetic/pacing-density",
+        "kb/aesthetic/hook-3s"
+      ],
+      "capability": [
+        "编剧"
+      ],
+      "also_fits": [],
+      "requires": [],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      },
+      "config": {
+        "minScenes": {
+          "type": "number",
+          "default": 6,
+          "desc": "场数下限（AE-SCRIPT-FIELDS 阈值）",
+          "effect": "调高=分场更细",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "maxChars": {
+          "type": "number",
+          "min": 200,
+          "max": 40000,
+          "default": 10000,
+          "unit": "字",
+          "desc": "正文篇幅目标：写到接近 10000 字（下限按 80% 执行≈8000 字）；超出视为未收敛",
+          "effect": "剧本 IR 是成剧唯一输入（覆盖旧 6000）",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "model_tier": {
+          "type": "enum",
+          "enum": [
+            "high",
+            "lite"
+          ],
+          "default": "high",
+          "desc": "执行档位：high=强模型（文学/结构判断），未声明=不约束",
+          "effect": "文学与结构判断节点必须 high；机械整理类可降 lite",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        }
+      },
+      "output": "剧本.md"
+    },
+    "cold-open": {
+      "skill": "cold-open",
+      "title": "登场桥段设计",
+      "kind": "produce",
+      "desc": "横插独立剧本的第 1 集冷开场：三问一次答完（她是谁/要什么/凭什么狠）+ 本集代价；选一件与主线不重复的独立小事，并规定与正文第一场的接缝（承人/承物/承账），禁硬切旁白。",
+      "knowledge": [
+        "kb/formats/comic-drama-adapt",
+        "kb/aesthetic/character",
+        "kb/aesthetic/hook-3s",
+        "kb/aesthetic/visual-poster"
+      ],
+      "minitools": [
+        "scan_quality"
+      ],
+      "config": {
+        "beats": {
+          "type": "number",
+          "default": 4,
+          "min": 2,
+          "desc": "冷开场分拍数",
+          "effect": "提高 = 更长，可能挤占正文配额",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "seam": {
+          "type": "enum",
+          "default": "承账",
+          "enum": [
+            "承人",
+            "承物",
+            "承账"
+          ],
+          "desc": "与正文第一场的承接方式",
+          "effect": "换了 = 正文首场开场句需同步改",
+          "tunable_by": [
+            "user",
+            "optimizer"
+          ]
+        },
+        "alternatives": {
+          "type": "number",
+          "default": 1,
+          "min": 0,
+          "desc": "备选桥段方案数",
+          "effect": "0 = 选型无对照，甲方驳回即返工",
+          "tunable_by": [
+            "user"
+          ]
+        }
+      },
+      "capability": [
+        "登场桥段"
+      ],
+      "slot": "before:scene-breakdown",
+      "also_fits": [
+        "after:structure-design",
+        "end"
+      ],
+      "requires": [],
+      "adds": {
+        "knowledge": [],
+        "config": {}
+      }
+    }
+  },
+  "skeleton": {
+    "spine": [
+      "structure-design",
+      "plot-choreographer",
+      "scene-breakdown",
+      "script-forge"
+    ],
+    "edges": [
+      [
+        "structure-design",
+        "plot-choreographer"
+      ],
+      [
+        "plot-choreographer",
+        "scene-breakdown"
+      ],
+      [
+        "scene-breakdown",
+        "script-forge"
+      ]
+    ]
+  },
+  "caps": [
+    "结构",
+    "主线",
+    "人设",
+    "分场",
+    "世界观",
+    "单元剧大纲",
+    "短剧节拍",
+    "暗线",
+    "伏笔",
+    "悬念",
+    "红队评审",
+    "编剧",
+    "改编诊断",
+    "分集重排",
+    "登场桥段",
+    "故事大纲"
+  ],
+  "io": {
+    "input": {
+      "from": "topic",
+      "shape": "选题报告（梗选型+竞品对标+结构手法+可用话题）"
+    },
+    "output": {
+      "file": "剧本.md",
+      "audience": "写手（正文模块唯一输入；5W1H 结构化剧本 IR）"
+    },
+    "acceptance": {
+      "scans": [
+        "AE-SCRIPT-FIELDS"
+      ],
+      "rules": []
+    }
+  }
+}

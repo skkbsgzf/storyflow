@@ -1,0 +1,124 @@
+{
+  "format": "flow@3",
+  "id": "episode-script",
+  "title": "分集剧本流水工作流",
+  "desc": "已验收的分集大纲 → 逐集任务包（台账切片注入 → 分拍写作 → 扫描+台账双校验 → 红队抽检，每批 ≥1 集优先爆点集与卡点集）→ 剧本包。v5.0 起提交链上无断言闸：长线一致性（专名/数值/伏笔台账比对）由确定性扫描器出具收据，是否进台账结算归 agent 评审与端尾验收；正文与台账增量原子提交（InkOS 纪律：不许状态推进了正文没落盘）；audit 退回走 journal 重试记账，不阻塞批次。route 档位参数生效：hot=零时差/爆点密度，calm=9:1 浓度。",
+  "version": "0.4.0",
+  "status": "draft",
+  "inputs": {
+    "project": {
+      "type": "project",
+      "required": true,
+      "desc": "项目上下文"
+    },
+    "route": {
+      "type": "enum",
+      "options": [
+        "hot",
+        "calm"
+      ],
+      "desc": "沿用选题阶段路线档位（R8：选择无默认——开跑前显式选或由项目配置 风格/AB测试 推导）"
+    },
+    "range": {
+      "type": "string",
+      "required": true,
+      "desc": "集数范围（如 '1-6'，前三集优先）"
+    },
+    "batch": {
+      "type": "number",
+      "default": 6,
+      "min": 1,
+      "max": 12,
+      "desc": "单批集数（人工验收批次粒度）"
+    }
+  },
+  "defaults": {
+    "link": "auto"
+  },
+  "policy": {
+    "link_default": "auto",
+    "adapt": "off"
+  },
+  "modules": [
+    {
+      "id": "m1",
+      "module": "base",
+      "link": "auto",
+      "insert": {
+        "end": [
+          "continuity_slice"
+        ]
+      }
+    },
+    {
+      "id": "m2",
+      "module": "plot",
+      "link": "auto",
+      "caps": [
+        "世界观",
+        "短剧节拍",
+        "红队评审"
+      ],
+      "iterate": {
+        "unit": "episode",
+        "over": "分集功能表",
+        "first": 6
+      }
+    },
+    {
+      "id": "m3",
+      "module": "base",
+      "insert": {
+        "end": [
+          "scan_quality",
+          "continuity_commit"
+        ]
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "module": "m2",
+      "title": "单集剧本（script-drama-beat 硬格式）",
+      "audience": "批次人工验收"
+    },
+    {
+      "module": "m3",
+      "title": "逐集质量扫描收据 + 连续性台账（滚动维护）",
+      "audience": "agent 评审与端尾验收（提交链无断言闸）"
+    },
+    {
+      "node": "m2.world-forge",
+      "path": "世界书/总览.md",
+      "title": "世界书（GraphHyperRAG 词条库：世界书/<分类>/<词条>.md + graph.json）",
+      "audience": "写手 agent 直调（worldbook_search）+ pedia 可视化（worldbook.html）"
+    }
+  ],
+  "changelog": [
+    {
+      "version": "0.4.0",
+      "date": "2026-09-22",
+      "changes": [
+        "世界书强制插入（用户拍板）：world-forge 进 plot 实例 caps，outputs 声明 世界书/总览.md——产出 <分类>/<词条>.md 卡片库（frontmatter id/title/tags/links/status）+ graph.json 归纳层；查看层 worldbook.html（pedia），创作时 agent 直调 worldbook_search"
+      ]
+    },
+    {
+      "version": "0.3.0",
+      "date": "2026-09-21",
+      "changes": [
+        "v5.0 断言退役（工单批B）：desc 改写为扫描证据 + agent 裁决口径；0.2.0 条目中的 op.asserts / AE-* 字样均为历史记录，现口径 = io.acceptance{scans,rules} + 扫描器收据，质量裁决归 agent"
+      ]
+    },
+    {
+      "version": "0.2.0",
+      "date": "2026-09-21",
+      "changes": [
+        "flow@2 → flow@3（v4.0.0 工单批A）：base[台账切片] → plot[短剧节拍,红队评审]（逐集 iterate）→ base[美学断言,台账结算]；台账切片/断言/结算三个 core 节点升格为 base 模块实例——base spine=[] 无锚点，caps 触发无法落位（E-PLACE），改用 insert{\"end\":[…]} 显式有序启用；base 无骨架模块的落位缺口归批D收尾",
+        "audit 节点 9 条 asserts（AE-HOOK-EVENT/DENSITY-*/CARD-END/BEAT-FORMAT/VIS-EMPTY/CONT-*）折算入 script-drama-beat 的 op.asserts（K1 单点装载，口径不变）；onFail「退回 write 定点修」归交卷-打回机制",
+        "redline 的 spotCheck/policy（每批 ≥1 集）随 op.config（harshness/angles）与 desc 批次纪律承载；e-red role:optional 的手工虚线取消",
+        "fin「批次人工验收」+「连续 2 批全过→红队哨兵钝化自检」按 R5 §四拆除：批次交卷自动放行，钝化自检归 cot-analyst/编排挖掘",
+        "plot 模块整体 iterate 使骨架步（structure-design 等）逐集重跑为已知粗化——重件步产轻件、以分拍为主；彻底解法待批D工具箱细分（记录在案）"
+      ]
+    }
+  ]
+}

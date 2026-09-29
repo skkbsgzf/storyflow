@@ -1,0 +1,95 @@
+{
+ "schema": "semif-calibration@1",
+ "title": "SemIf 条款校准包索引 —— 「训练结果」的家：逐条款体检卷+金标+跑分证据+报告，按模型钉版",
+ "modelPins": {
+  "judge": "SemIf direct（冻结 Qwen3.5-4B typed-logit，不训练权重；所谓『训练结果』=本库语料累积，非梯度产物）",
+  "backend": "llamacpp CPU, llama-cpp-python 0.3.35",
+  "tokenizer": "D:/hf-cache/qwen35-4b-tokenizer",
+  "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+  "gguf": "D:/hf-cache/gguf-test/qwen35-4b-q4km-fresh.gguf",
+  "gguf_sha256_prefix": "13c16f426047"
+ },
+ "serving": {
+  "status": "retired-2026-09-24",
+  "note": "4B 常驻判官已随引擎卸载整批删除：tools/semif-daemon/、tools/semif-scan.py、tools/semif-mcp/、tools/_vendor/SemIf/（1.4GB venv+GGUF）均不在盘上。依据：09-24 人裁 laya 唯一引擎、4B 永不回落（docs/人裁-laya唯一引擎-20260924.md）＋用户卸载指令。本段原 serving 配置（端口 8937、startCmd、endpoints、耗时实测）全部转为历史记账，不再是可执行配置；复原路径见 tools/_vendor/README.md。",
+  "survivingDiscipline": "腾内存由用户亲手关应用，任何组件不代杀进程——此纪律与服务无关，继续有效",
+  "historicalReceipt": "docs/收据-semif常驻与批扫-20260923.md、docs/收据-semif常驻daemon真4B实连-20260922.md"
+ },
+ "rules": [
+  "换模型/换量化/GGUF sha 变化 = 全部条款作废重体检，任何旧一致率不得引用",
+  "题面 question/options 逐字锁定：改动 = 重出卷重跑，不许沿用旧分",
+  "每份 results-*.jsonl 内嵌 gguf sha256 + prompt_sha256 自证；报告报数必附 results 路径（收据制）",
+  "条款状态只有三档：calibrated（可作证据渠道替换计数规则）/ pilot（有分未过闸，只进复核列表）/ failed（退回 agent 裁决）",
+  "新判例来源=端尾人裁与批注，卷进对应条款后该条款必须重跑；P 值只排复核优先级，任何状态都禁止当放行闸"
+ ],
+ "clauses": {
+  "pov-leak": {
+   "title": "视角泄漏",
+   "status": "calibrated",
+   "evidence": "5/5 双向（22 题卷），P 带稳定",
+   "casesAt": "projects/p-kunxiu-001/内部/semif-trial/（历史卷原件，不复制防漂移）",
+   "report": "projects/p-kunxiu-001/内部/semif-trial/小测验报告-Q4K20260922.md",
+   "landedAs": "历史落点 tools/semif-scan.py（2026-09-24 卸载已删除）；生产扫描=modules/detect laya-screen"
+  },
+  "dash-abuse": {
+   "title": "破折号滥用（slop-list S1/S5）",
+   "status": "calibrated",
+   "evidence": "15/19=79%（埋雷 8/10 全落复核带、合法 7/8 高置信带）；真实正文回测 n=1 判对（P=0.812）；dw10/dl7 边缘两题按「批量接入全量执行」指令从判官口径记参考位",
+   "home": "knowledge/semif-calibration/dash-abuse/",
+   "gateForCalibrated": [],
+   "targetRuleToRetire": "prose-scan 7b 叙述层破折号计数（批D，过闸前不降级）",
+   "backtest": "knowledge/semif-calibration/dash-abuse/backtest-results-20260922.jsonl",
+   "note": "真实回测样本薄（正文历轮清洗后仅 1 处），持续回测=批C 节验收逐节累积；边缘两题人裁可随时推翻记法"
+  },
+  "nonsense-sentence": {
+   "title": "无义句",
+   "status": "failed",
+   "evidence": "22 题卷否定类全漏且高置信",
+   "report": "projects/p-kunxiu-001/内部/semif-trial/小测验报告-Q4K20260922.md"
+  },
+  "voice-ooc": {
+   "title": "声口 OOC",
+   "status": "failed",
+   "evidence": "22 题卷否定类全漏",
+   "report": "projects/p-kunxiu-001/内部/semif-trial/小测验报告-Q4K20260922.md"
+  },
+  "timeline-consistency": {
+   "title": "时序一致",
+   "status": "failed",
+   "evidence": "22 题卷含人裁样张 s0 以 P=0.825 漏判",
+   "report": "projects/p-kunxiu-001/内部/semif-trial/小测验报告-Q4K20260922.md"
+  },
+  "neg-pattern": {
+   "title": "否定排比（slop-list S2）",
+   "status": "calibrated",
+   "home": "knowledge/semif-calibration/neg-pattern/",
+   "evidence": "10/12：合法 6/6 零误伤，埋雷 4/6（错的两题 P 0.52/0.74 复核带）",
+   "targetRuleToRetire": "prose-scan 7c 扣分（已降证据行）"
+  },
+  "reveal-stack": {
+   "title": "假对比/揭示三连（S3/S4）",
+   "status": "calibrated",
+   "home": "knowledge/semif-calibration/reveal-stack/",
+   "evidence": "11/13：合法 7/7 全对，埋雷 4/6（MISS 均 <0.75 复核带）；rv-e1 配额争议样张从宽记合法仍对",
+   "targetRuleToRetire": "无机器计数（原为纯语料条款），新增证据渠道"
+  },
+  "daisy-chain": {
+   "title": "顶真电报腔（user-style-rules R7）",
+   "status": "calibrated",
+   "home": "knowledge/semif-calibration/daisy-chain/",
+   "evidence": "12/12 满分（含事故原句；合法组带 3 个边缘样张全判对）",
+   "targetRuleToRetire": "R7 机械判定「留待工具化」——由本条款接管，不再写正则"
+  },
+  "simile-suspend": {
+   "title": "悬浮比喻（metaphor-zh 病1）",
+   "status": "pilot",
+   "home": "knowledge/semif-calibration/simile-suspend/",
+   "evidence": "10/12：两个 MISS 均出卷时已标边缘样张（非边缘 10/10）；删喻信息判断最接近已失败的无义句条款，谨慎升档",
+   "gateForCalibrated": [
+    "端尾真实判例回灌一卷再评",
+    "sm-l5/sm-w3 人裁"
+   ],
+   "targetRuleToRetire": "明喻密度计数保留（配额制非语义，不在替换范围）"
+  }
+ }
+}

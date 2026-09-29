@@ -1,0 +1,794 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>__TITLE__ · 世界书</title>
+<style>
+/* ===== 世界书 v2.1 视觉（2026-09-28）：纸·墨·朱印 书房系 =====
+   信息架构与交互承 v2（四区首页/力导向图谱/ego 邻域/三源分组/检索升级），
+   本层只做视觉语言：暖纸底、衬线标题、朱砂点缀、水墨分类色；
+   零外部依赖（字体走系统衬线栈），滚动条对齐工作台黄底棕条。 */
+:root{
+  --paper:#f3ecdc;      /* 页面底 */
+  --paper-2:#efe6d1;    /* 侧栏/深一档纸 */
+  --sheet:#fdfaf2;      /* 卡片纸面 */
+  --sheet-2:#f8f1df;    /* 卡内浅 band */
+  --ink:#2f2820;        /* 墨 */
+  --ink-2:#57503f;      /* 淡墨 */
+  --muted:#8c8172;      /* 灰褐 */
+  --line:#e3d8bf;       /* 细线 */
+  --line-2:#d2c3a0;     /* 重线 */
+  --accent:#9d3b26;     /* 朱砂 */
+  --accent-soft:#f2e0d4;
+  --ochre:#8a5a2b;      /* 赭 */
+  --gold:#a08a58;       /* 台账金 */
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scrollbar-color:var(--gold) #ece5d4}
+*::-webkit-scrollbar{width:10px;height:10px;background:#ece5d4}
+*::-webkit-scrollbar-thumb{background:var(--gold);border-radius:5px}
+*::-webkit-scrollbar-thumb:hover{background:#86713f}
+::selection{background:#f0d9ae;color:var(--ink)}
+body{
+  font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;
+  color:var(--ink);font-size:15px;line-height:1.7;
+  background:linear-gradient(180deg,#f6f0e1 0%,var(--paper) 320px);
+}
+a{color:var(--ochre);text-decoration:none;transition:color .15s ease}
+a:hover{color:var(--accent);text-decoration:underline}
+a.wl{cursor:pointer}
+mark{background:#f5dfa6;color:inherit;padding:0 2px;border-radius:3px}
+/* ---- 顶栏：纸面 + 台账双线 ---- */
+.topbar{position:sticky;top:0;z-index:40;background:rgba(251,246,235,.96);backdrop-filter:blur(6px);
+  border-bottom:3px double var(--line-2);display:flex;align-items:center;gap:14px;padding:9px 20px;flex-wrap:wrap}
+.topbar .brand{font-family:"Noto Serif SC","Source Han Serif SC","Songti SC","STZhongsong","SimSun",serif;
+  font-size:19px;font-weight:700;letter-spacing:.4px;white-space:nowrap;display:flex;align-items:center;gap:9px}
+.topbar .brand .seal{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;flex:none;
+  background:var(--accent);color:#f9f1de;border-radius:6px;font-size:17px;line-height:1;
+  box-shadow:inset 0 0 0 1.5px rgba(249,241,222,.55),0 1px 3px rgba(90,40,20,.25)}
+.topbar .brand small{font-family:"Segoe UI","Microsoft YaHei",sans-serif;font-weight:400;font-size:12px;color:var(--muted);margin-left:2px}
+.search{position:relative;flex:1;min-width:210px;max-width:430px}
+.search input{width:100%;padding:8px 15px;border:1px solid var(--line-2);border-radius:999px;font-size:13px;outline:none;
+  background:#fff;color:var(--ink);transition:border-color .15s,box-shadow .15s}
+.search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(157,59,38,.14)}
+.search input::placeholder{color:#b3a88f}
+.sug{position:absolute;top:calc(100% + 5px);left:0;right:0;background:var(--sheet);border:1px solid var(--line-2);
+  border-radius:11px;max-height:330px;overflow-y:auto;display:none;z-index:50;box-shadow:0 8px 26px rgba(80,60,30,.16)}
+.sug.on{display:block}
+.sug div{padding:7px 13px;font-size:13px;cursor:pointer;border-bottom:1px dashed var(--line);display:flex;gap:8px;align-items:baseline}
+.sug div:last-child{border-bottom:none}
+.sug div:hover{background:var(--sheet-2)}
+.sug .t{font-size:11px;color:var(--ochre);background:var(--sheet-2);border:1px solid var(--line);border-radius:8px;padding:0 7px;flex:none}
+.topbar .cnt{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.backflow{flex:none;font-size:12.5px;color:var(--ochre);border:1px solid var(--line-2);border-radius:999px;padding:5px 13px;background:transparent;transition:all .15s}
+.backflow:hover{background:var(--sheet-2);color:var(--accent);text-decoration:none;border-color:var(--gold)}
+/* ---- 三栏骨架 ---- */
+.layout{display:flex;align-items:flex-start;max-width:1520px;margin:0 auto}
+.side{width:250px;flex:none;border-right:1px solid var(--line-2);padding:16px 0 60px;position:sticky;top:53px;
+  height:calc(100vh - 53px);overflow-y:auto;background:var(--paper-2)}
+.side h3{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin:16px 16px 7px;font-weight:700}
+.side .nav a{display:block;padding:5px 16px;font-size:13.5px;color:var(--ochre);border-left:3px solid transparent}
+.side .nav a:hover{background:#f4ecd8;text-decoration:none}
+.side .nav a.on{background:#f1e6ca;border-left-color:var(--accent);font-weight:600;color:var(--ink)}
+.side .grp{margin-bottom:2px}
+.side .grp>.gh{padding:5px 16px;font-size:12.5px;color:var(--ink-2);cursor:pointer;display:flex;justify-content:space-between;user-select:none;font-weight:600}
+.side .grp>.gh:hover{background:#f0e6cd}
+.side .grp .items{display:none;max-height:290px;overflow-y:auto}
+.side .grp.open .items{display:block}
+.side .grp .items a{display:block;padding:3px 16px 3px 28px;font-size:13px;color:var(--ochre);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.side .grp .items a:hover{background:#f4ecd8;text-decoration:none}
+.side .grp .items a.on{background:#f1e6ca;font-weight:600;color:var(--ink)}
+.main{flex:1;min-width:0;padding:26px 38px 90px;max-width:1010px}
+/* 面包屑 */
+.crumb{font-size:12.5px;color:var(--muted);margin-bottom:12px;padding-bottom:9px;border-bottom:1px solid var(--line)}
+.crumb a{color:var(--ochre)}
+.crumb span.sep{color:var(--line-2);margin:0 7px}
+/* 词条标题：衬线大标 + 双线 */
+h1.art{font-family:"Noto Serif SC","Source Han Serif SC","Songti SC","STZhongsong","SimSun",serif;
+  font-size:32px;font-weight:600;line-height:1.3;color:var(--ink);
+  border-bottom:3px double var(--line-2);padding-bottom:8px;margin-bottom:6px}
+.subtitle{font-size:13px;color:var(--muted);margin-bottom:18px}
+.cat-badge{display:inline-block;font-size:11.5px;background:var(--sheet-2);color:var(--ochre);
+  border:1px solid var(--line-2);border-radius:999px;padding:1px 10px;margin-left:8px;vertical-align:middle;font-style:normal;font-family:"Segoe UI","Microsoft YaHei",sans-serif;font-weight:400}
+.hyper{display:inline-block;font-size:11px;background:var(--accent-soft);color:var(--accent);
+  border:1px solid #dcb9a5;border-radius:4px;padding:1px 8px;margin-left:6px;vertical-align:middle;letter-spacing:.5px}
+/* Infobox：藏书票卡 */
+.infobox{float:right;width:274px;margin:0 0 16px 22px;background:var(--sheet);border:1px solid var(--line-2);
+  border-radius:10px;font-size:13px;line-height:1.55;box-shadow:0 3px 14px rgba(96,74,40,.09);overflow:hidden}
+.infobox .ib-h{background:linear-gradient(180deg,var(--sheet-2),var(--sheet));padding:10px 12px;text-align:center;
+  font-family:"Noto Serif SC","Source Han Serif SC","Songti SC","SimSun",serif;font-weight:700;font-size:15.5px;border-bottom:3px double var(--line-2)}
+.infobox .ib-h .sub{font-family:"Segoe UI","Microsoft YaHei",sans-serif;font-weight:400;font-size:11.5px;color:var(--muted);margin-top:2px}
+.infobox table{width:100%;border-collapse:collapse}
+.infobox th,.infobox td{padding:6px 11px;vertical-align:top;border-top:1px solid var(--line);text-align:left;font-weight:400}
+.infobox tr:first-child th,.infobox tr:first-child td{border-top:none}
+.infobox th{background:var(--sheet-2);width:76px;color:var(--muted);white-space:nowrap;font-size:12px}
+.infobox .ib-src{padding:6px 11px;font-size:11px;color:var(--muted);border-top:1px solid var(--line);background:#fcf7ea}
+.infobox .ib-note{padding:7px 11px;font-size:11.5px;color:var(--muted);border-top:1px dashed var(--line-2);text-align:center;background:var(--sheet-2)}
+/* 正文：书页衬线 */
+.sec{margin-bottom:24px}
+.sec>h2{font-family:"Noto Serif SC","Source Han Serif SC","Songti SC","SimSun",serif;font-size:21px;font-weight:600;
+  border-bottom:1px solid var(--line-2);padding-bottom:4px;margin:20px 0 10px;color:var(--ink)}
+.sec>h3{font-size:15px;font-weight:700;margin:15px 0 6px;color:var(--ink-2)}
+.sec>h3::before{content:"";display:inline-block;width:7px;height:7px;border-radius:2px;background:var(--gold);margin-right:8px;vertical-align:2px}
+.sec p{margin-bottom:10px}
+.lead{font-size:15.5px;line-height:1.85}
+/* 词条正文走衬线（书页感），UI 元件保持黑体 */
+.md-body{font-family:"Noto Serif SC","Source Han Serif SC","Songti SC","STSong","SimSun",serif;font-size:15.5px;line-height:1.88;color:#33291c;word-break:break-word}
+.md-body p{margin-bottom:10px}
+ul.tight{margin:0 0 10px 22px}
+ul.tight li{margin-bottom:5px}
+.quote{border-left:3px solid var(--gold);background:var(--sheet-2);padding:8px 13px;margin:0 0 9px;font-size:13.5px;color:var(--ink-2);border-radius:0 7px 7px 0}
+.tag{display:inline-block;background:#efe6cf;color:#7a5c28;border:1px solid #ddcda6;border-radius:999px;padding:1px 10px;font-size:12px;margin:0 5px 5px 0;cursor:pointer;transition:all .15s}
+.tag:hover{background:var(--accent);border-color:var(--accent);color:#f9f1de}
+.tag.rel{background:#f6ecd9;color:#96572a;border-color:#e6cfa8}
+/* 数据来源徽章 */
+.src-badge{display:inline-block;font-size:11px;padding:1px 8px;border-radius:999px;vertical-align:middle;margin-left:5px;font-weight:500;cursor:help;border:1px solid transparent}
+.src-r{background:#e7efdc;color:#4a6530;border-color:#c9d9ac}
+.src-l{background:#f7edd2;color:#8a6420;border-color:#e4d29e}
+.src-s{background:#e5eaf1;color:#3f5e8c;border-color:#c4d0e2}
+.src-m{background:#ece3de;color:#7a5a4a;border-color:#d8c6ba}
+/* 统计：细账数字 */
+.statgrid{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0 20px}
+.statgrid .st{flex:1;min-width:118px;background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:12px 16px;box-shadow:0 2px 8px rgba(96,74,40,.05)}
+.statgrid .st b{display:block;font-family:"Noto Serif SC","Source Han Serif SC","Songti SC","SimSun",serif;font-size:26px;font-weight:600;color:var(--ochre);font-variant-numeric:tabular-nums}
+.statgrid .st span{font-size:12px;color:var(--muted)}
+/* 分类索引 */
+.catgrid{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 4px}
+.catgrid a{border:1px solid var(--line-2);background:var(--sheet);padding:9px 16px;font-size:13.5px;border-radius:9px;transition:all .15s;box-shadow:0 1px 4px rgba(96,74,40,.05)}
+.catgrid a:hover{text-decoration:none;transform:translateY(-1px);border-color:var(--gold);box-shadow:0 4px 12px rgba(96,74,40,.12);color:var(--ink)}
+.catgrid a b{color:var(--ink)}
+.catgrid a small{color:var(--muted);margin-left:7px;font-variant-numeric:tabular-nums}
+/* 最近更新流 */
+.updl{border:1px solid var(--line);background:var(--sheet);border-radius:10px;padding:5px 15px;margin:6px 0 20px;box-shadow:0 2px 8px rgba(96,74,40,.05)}
+.updl .u-row{display:flex;gap:10px;align-items:baseline;padding:6px 0;font-size:13px;border-bottom:1px dashed var(--line)}
+.updl .u-row:last-child{border-bottom:none}
+.updl .u-dot{width:8px;height:8px;border-radius:50%;flex:none;align-self:center;box-shadow:0 0 0 2px rgba(160,138,88,.18)}
+.updl .u-cat{font-size:11px;color:var(--muted);flex:none}
+.updl .u-time{font-size:11.5px;color:var(--muted);margin-left:auto;flex:none;font-variant-numeric:tabular-nums}
+/* 变动史时间线：朱批点 */
+.hist{border-left:3px solid #dcb887;margin:10px 0 14px 5px}
+.hist .h-item{display:flex;gap:11px;padding:5px 0 5px 14px;position:relative;font-size:13.5px;line-height:1.7}
+.hist .h-item::before{content:"";position:absolute;left:-6.5px;top:12px;width:8px;height:8px;border-radius:50%;
+  background:var(--accent);border:1.5px solid var(--sheet);box-shadow:0 0 0 1px #d9b08c}
+/* 关系三源分组 */
+.rel-grp{margin-bottom:14px}
+.rel-grp>h3{font-size:13px;color:var(--ink-2);margin-bottom:6px}
+.rt{display:inline-block;font-size:10.5px;font-weight:600;border-radius:8px;padding:0 8px;margin-right:7px;vertical-align:1px}
+.rt-link{background:#e7efdc;color:#4a6530;border:1px solid #c9d9ac}
+.rt-mention{background:#f7edd2;color:#8a6420;border:1px solid #e4d29e}
+.rt-tag{background:#e5eaf1;color:#3f5e8c;border:1px solid #c4d0e2}
+/* 词条 ego 图 */
+.egobox{border:1px solid var(--line-2);background:var(--sheet);border-radius:10px;margin:10px 0 16px;overflow:hidden;box-shadow:0 2px 8px rgba(96,74,40,.05)}
+.egobox svg{display:block;width:100%;height:auto;background:var(--sheet)}
+.egobox .ego-h{font-size:12px;color:var(--muted);padding:7px 12px;border-bottom:1px solid var(--line);background:var(--sheet-2)}
+/* 图谱区 */
+.graphbox{border:1px solid var(--line-2);background:var(--sheet);margin:14px 0;padding:12px;border-radius:12px;box-shadow:0 3px 14px rgba(96,74,40,.07)}
+svg.graph{display:block;width:100%;height:460px;background:linear-gradient(180deg,#fdfaf2,#f9f3e3);border:1px solid var(--line);
+  border-radius:8px;cursor:grab;touch-action:none}
+svg.graph:active{cursor:grabbing}
+svg.graph text{user-select:none;cursor:pointer}
+svg.graph circle.node{cursor:pointer;transition:opacity .12s}
+svg.graph line{transition:opacity .12s}
+svg.graph.focus line{opacity:.05}
+svg.graph.focus line.on{opacity:.9}
+svg.graph.focus circle.node{opacity:.22}
+svg.graph.focus circle.node.on{opacity:1}
+.gctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 2px 0}
+.lg-chip{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line-2);background:#fff;border-radius:999px;padding:2.5px 11px;font-size:12px;cursor:pointer;color:var(--ink-2);user-select:none;transition:all .15s}
+.lg-chip:hover{border-color:var(--gold)}
+.lg-chip.off{opacity:.35;text-decoration:line-through;color:var(--muted)}
+.lg-chip i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.gbtn{background:#fff;border:1px solid var(--line-2);border-radius:999px;padding:2.5px 12px;font-size:12px;cursor:pointer;color:var(--ochre);transition:all .15s}
+.gbtn:hover{background:var(--sheet-2);color:var(--accent)}
+.g-hint{font-size:11.5px;color:var(--muted);margin-left:auto}
+/* 检索 */
+.s-chips{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0 16px}
+.s-chip{border:1px solid var(--line-2);border-radius:999px;background:#fff;padding:3px 13px;font-size:12.5px;cursor:pointer;color:var(--ochre);transition:all .15s}
+.s-chip:hover{border-color:var(--gold)}
+.s-chip.on{background:var(--accent);color:#f9f1de;border-color:var(--accent)}
+.s-hit{border:1px solid var(--line);background:var(--sheet);padding:12px 16px;margin-bottom:11px;border-radius:10px;transition:all .15s;box-shadow:0 1px 5px rgba(96,74,40,.04)}
+.s-hit:hover{border-color:var(--gold);box-shadow:0 4px 12px rgba(96,74,40,.1)}
+.s-hit .s-t{font-family:"Noto Serif SC","Source Han Serif SC","Songti SC","SimSun",serif;font-size:16.5px;font-weight:600}
+.s-hit .s-snip{font-size:12.8px;color:var(--ink-2);margin-top:5px;line-height:1.7}
+.s-hit .s-rel{font-size:12px;color:var(--muted);margin-top:6px}
+.match-badge{display:inline-block;font-size:10.5px;background:var(--sheet-2);color:var(--ochre);border:1px solid var(--line);border-radius:8px;padding:0 7px;margin-right:4px;vertical-align:1px}
+/* 空态 / 折叠 */
+.wbempty{border:1.5px dashed var(--gold);background:#fbf4e0;padding:26px 30px;line-height:2.1;border-radius:12px;color:var(--ink-2);font-family:"Noto Serif SC","Source Han Serif SC","Songti SC","SimSun",serif}
+.fold summary{cursor:pointer;color:var(--ochre);font-size:14px;padding:7px 0;user-select:none;list-style:none;display:flex;align-items:center;gap:7px}
+.fold summary::before{content:"▸";color:var(--gold);font-size:12px;transition:transform .15s}
+.fold[open] summary::before{transform:rotate(90deg)}
+.fold summary::-webkit-details-marker{display:none}
+.fold[open] summary{margin-bottom:6px}
+.fold{border-bottom:1px dashed var(--line)}
+.fold:last-child{border-bottom:none}
+.tip{position:fixed;background:var(--ink);color:#f5eeda;font-size:12px;padding:5px 10px;border-radius:5px;pointer-events:none;display:none;z-index:60;max-width:280px;line-height:1.5}
+/* 汉堡 / 抽屉（窄屏） */
+.side-toggle{display:none;background:none;border:none;font-size:20px;line-height:1;cursor:pointer;color:var(--accent);padding:6px 10px;margin-right:2px;border-radius:6px}
+.side-toggle:hover{background:var(--sheet-2)}
+.side-mask{display:none}
+/* 悬停浮字（顶栏计数等） */
+.muted{color:var(--muted);font-size:12.5px}
+/* 创作历程（作者视角） */
+.ph-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:11px;margin:10px 0 6px}
+.ph-card{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:12px 15px;box-shadow:0 2px 8px rgba(96,74,40,.05)}
+.ph-card .ph-t{font-weight:600;font-size:13.5px;color:var(--ink)}
+.ph-card .ph-n{font-size:11.5px;color:var(--muted);margin:1px 0 8px}
+.ph-bar{height:6px;background:#ece2c8;border-radius:3px;overflow:hidden}
+.ph-bar i{display:block;height:100%;border-radius:3px;background:var(--ochre)}
+.ph-rework{font-size:11.5px;color:#b04a3a;margin-top:6px}
+.ms{border-left:3px solid var(--line-2);margin:10px 0 8px 5px}
+.ms .ms-item{position:relative;display:flex;gap:10px;align-items:baseline;padding:6px 0 6px 15px;font-size:13px}
+.ms .ms-item::before{content:"";position:absolute;left:-6.5px;top:13px;width:8px;height:8px;border-radius:50%;background:var(--gold);border:1.5px solid var(--sheet);box-shadow:0 0 0 1px var(--line-2)}
+.ms .ms-time{flex:none;color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums;width:76px}
+.ms .ms-t{font-weight:600;color:var(--ink)}
+.ms .ms-d{color:var(--muted);font-size:12px;margin-top:1px;line-height:1.6}
+.kb{display:inline-block;font-size:10.5px;font-weight:600;color:#fff;border-radius:8px;padding:0 7px;margin-right:7px;vertical-align:1px}
+.ver-row{padding:10px 0;border-bottom:1px dashed var(--line)}
+.ver-row:last-child{border-bottom:none}
+.ver-head{display:flex;gap:9px;align-items:baseline;flex-wrap:wrap}
+.ver-head .vn{font-family:"Noto Serif SC","Songti SC","SimSun",serif;font-weight:600;font-size:14.5px}
+.ver-head .va{font-size:11.5px;color:var(--muted)}
+.ver-chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:6px}
+.vchip{font-size:11.5px;background:var(--sheet-2);border:1px solid var(--line);border-radius:999px;padding:1px 10px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.vchip b{color:var(--ochre)}
+.dc-row{padding:10px 0;border-bottom:1px dashed var(--line)}
+.dc-row:last-child{border-bottom:none}
+.dc-key{font-family:"Noto Serif SC","Songti SC","SimSun",serif;font-weight:600;font-size:14.5px;margin-right:6px}
+.dc-meta{font-size:11.5px;color:var(--muted)}
+.dc-ev{font-size:12px;color:var(--ink-2);margin-top:3px;line-height:1.6}
+.fd-card{background:var(--sheet);border:1px solid var(--line);border-left-width:4px;border-radius:8px;padding:10px 14px;margin-bottom:9px}
+.fd-high{border-left-color:#b04a3a}.fd-medium{border-left-color:#c2831f}.fd-low{border-left-color:#8c8172}
+.fd-card .fd-t{font-weight:600;font-size:13.5px}
+.fd-card .fd-r{font-size:12.5px;color:var(--ink-2);margin-top:3px;line-height:1.7}
+.sev{display:inline-block;font-size:10.5px;font-weight:600;border-radius:8px;padding:0 7px;margin-right:7px;vertical-align:1px}
+.sev-high{background:#f3ddd3;color:#9d3b26}.sev-medium{background:#f7edd2;color:#8a6420}.sev-low{background:#eee9dc;color:#6b6353}
+.sum-hint{border:1.5px dashed var(--gold);background:#fbf4e0;border-radius:10px;padding:12px 16px;font-size:12.5px;color:var(--ink-2);line-height:1.9}
+/* 响应式 */
+@media(max-width:900px){
+  .side-toggle{display:block}
+  .side{display:block;position:fixed;left:0;top:53px;bottom:0;width:268px;z-index:60;
+    transform:translateX(-105%);transition:transform .22s ease;box-shadow:4px 0 18px rgba(60,40,15,.22);
+    height:calc(100vh - 53px)}
+  .side.open{transform:none}
+  .side-mask{display:block;position:fixed;inset:0;background:rgba(47,40,32,.35);z-index:55;
+    opacity:0;pointer-events:none;transition:opacity .2s}
+  .side-mask.on{opacity:1;pointer-events:auto}
+  .main{padding:18px 16px 60px}
+  .infobox{float:none;width:100%;margin:0 0 14px}
+  h1.art{font-size:25px}
+}
+</style>
+</head><body>
+
+<div class="topbar">
+  <button id="sideToggle" class="side-toggle" aria-label="打开目录">☰</button>
+  <div class="brand"><span class="seal">書</span>__TITLE__<small>世界书 · 拆解即真相</small></div>
+  <div class="search">
+    <input id="q" placeholder="搜索词条 / 标签 / 摘要 / 正文…" autocomplete="off">
+    <div class="sug" id="sug"></div>
+  </div>
+  <div class="cnt" id="topcnt"></div>
+  <a class="backflow" href="workflow.html">← 工作流</a>
+</div>
+<div id="sideMask" class="side-mask"></div>
+
+<div class="layout">
+  <nav class="side" id="side"></nav>
+  <main class="main" id="main"></main>
+</div>
+<div class="tip" id="tip"></div>
+
+<script type="application/json" id="wbdata">__WBDATA__</script>
+<script>
+/* ================= 数据层（worldbook-graph@1，生成器注入） ================= */
+const WBDATA = JSON.parse(document.getElementById("wbdata").textContent);
+const G = WBDATA.graph || {};
+const ENTS = G.entries || [];
+const RELS = G.relations || [];
+const STATS = G.stats || {};
+const BYID = {};
+ENTS.forEach(e => { BYID[e.id] = e; });
+/* 邻接表：src 保留原始三源标签（link=声明 / mention=正文互涉 / tag=标签交叉），"+ " 连接 */
+const ADJ = {};
+RELS.forEach(r => {
+  if (!BYID[r.a] || !BYID[r.b]) return;
+  (ADJ[r.a] = ADJ[r.a] || []).push({ with: r.b, w: r.weight, src: r.src });
+  (ADJ[r.b] = ADJ[r.b] || []).push({ with: r.a, w: r.weight, src: r.src });
+});
+Object.values(ADJ).forEach(l => l.sort((a, b) => b.w - a.w));
+const DEG = {};
+Object.keys(ADJ).forEach(id => DEG[id] = ADJ[id].length);
+/* 分类序：总览置顶（总纲文档），其余按出现序 */
+const _cats = [...new Set(ENTS.map(e => e.cat))];
+const CATS = _cats.includes("总览") ? ["总览", ..._cats.filter(c => c !== "总览")] : _cats;
+/* 水墨分类色：黛蓝/竹绿/赭石/紫棠/绛红/琥珀/墨绿/鸦青… */
+const CAT_COLOR = { "人物": "#3f5e8c", "设定": "#4a7c59", "势力": "#a8722a", "场景": "#7d5ba6", "道具": "#b04a3a", "伏笔": "#c2831f", "底牌": "#2f5d50", "总览": "#8a8171", "分集账": "#33607a", "时间线": "#41598f", "地理": "#3a7d6c", "编年": "#41598f" };
+const catColor = c => CAT_COLOR[c] || "#8c8172";
+const SRC_ZH = { link: "声明", mention: "互涉", tag: "标签" };
+const SRC_CLS = { link: "rt-link", mention: "rt-mention", tag: "rt-tag" };
+/* 创作历程（worldbook-history@1，生成器注入；全部派生自 journal/快照/决策账/复盘 findings） */
+const HIST = WBDATA.history || null;
+const HIST_KIND = { run: ["开跑", "#3f5e8c"], gate: ["门裁决", "#4a7c59"], rerun: ["重做", "#b04a3a"], overlay: ["编排", "#a8722a"], end: ["收束", "#a08a58"] };
+
+function esc(s) { return s == null ? "" : String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+function trunc(s, n) { s = String(s == null ? "" : s); return s.length > n ? s.slice(0, n) + "…" : s; }
+const ST_ZH = { active: "生效", draft: "草稿", retired: "已退役" };
+function statusBadge(e) {
+  const cls = e.status === "active" ? "src-r" : e.status === "retired" ? "src-m" : "src-l";
+  return `<span class="src-badge ${cls}" title="状态机 draft → active → retired">${ST_ZH[e.status] || esc(e.status || "draft")}</span>`;
+}
+/* 关系三源归类：一条邻边归入其最高权威来源组（声明 > 互涉 > 标签），不重复计数 */
+function relBucket(src) {
+  const ss = new Set(String(src || "").split("+"));
+  if (ss.has("link")) return "link";
+  if (ss.has("mention")) return "mention";
+  return "tag";
+}
+function edgeStyle(src) { return String(src || "").split("+").includes("link") ? "" : "4 3"; }
+
+/* md-lite 渲染：标题/粗体/列表/引用/段落 + 词条标题自动内链（pedia 体验的关键） */
+let AUTOLINK_RE = null;
+function buildAutolink() {
+  const ts = ENTS.filter(e => e.title && e.title.length >= 2);
+  const titles = ts.map(e => e.title).sort((a, b) => b.length - a.length).slice(0, 120);
+  const pat = titles.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+  AUTOLINK_RE = pat ? new RegExp("(" + pat + ")", "g") : null;
+  AUTOLINK_RE && (AUTOLINK_RE._map = ts.reduce((m, e) => (m[e.title] = e.id, m), {}));
+}
+function mdInline(s) {
+  return s
+    .replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (m, id, label) => `<a class="wl" data-e="${id.trim()}">${esc(label || id)}</a>`)
+    .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>");
+}
+/* 正文分节：按 #/##/### 标题切块；「变动史/增补」节渲染为时间线 */
+const HIST_RE = /变动史|增补|修订/;
+function splitSections(body) {
+  const lines = String(body || "").split(/\r?\n/);
+  const secs = []; let cur = { h: null, lines: [] };
+  for (const ln of lines) {
+    const m = ln.match(/^(#{1,3})\s+(.*)$/);
+    if (m) { if (cur.h !== null || cur.lines.join("").trim()) secs.push(cur); cur = { h: { level: m[1].length, text: m[2] }, lines: [] }; }
+    else cur.lines.push(ln);
+  }
+  if (cur.h !== null || cur.lines.join("").trim()) secs.push(cur);
+  return secs;
+}
+function mdBlocks(text) {
+  let html = "", inList = false;
+  for (const ln of String(text).split(/\r?\n/)) {
+    if (/^[-*]\s+/.test(ln)) { if (!inList) { html += '<ul class="tight">'; inList = true; } html += `<li>${mdInline(ln.replace(/^[-*]\s+/, ""))}</li>`; continue; }
+    if (inList) { html += "</ul>"; inList = false; }
+    if (/^>\s?/.test(ln)) { html += `<div class="quote">${mdInline(ln.replace(/^>\s?/, ""))}</div>`; continue; }
+    if (!ln.trim()) continue;
+    html += `<p>${mdInline(ln)}</p>`;
+  }
+  if (inList) html += "</ul>";
+  return html;
+}
+function histList(text) {
+  const items = String(text).split(/\r?\n/).filter(l => /^[-*]\s+/.test(l)).map(l => l.replace(/^[-*]\s+/, ""));
+  if (!items.length) return text.trim() ? `<p>${mdInline(text.trim())}</p>` : "";
+  return `<div class="hist">${items.map(it => `<div class="h-item"><div>${mdInline(it)}</div></div>`).join("")}</div>`;
+}
+function mdRender(text) {
+  let t = esc(text);
+  if (AUTOLINK_RE) t = t.replace(AUTOLINK_RE, m => `<a class="wl" data-e="${AUTOLINK_RE._map[m] || ""}">${m}</a>`);
+  let html = "";
+  for (const s of splitSections(t)) {
+    const body = s.lines.join("\n");
+    if (!s.h) { html += mdBlocks(body); continue; }
+    const head = mdInline(s.h.text);
+    if (HIST_RE.test(s.h.text)) html += `<h2>${head}</h2>` + histList(body);
+    else html += (s.h.level === 1 ? `<h2>${head}</h2>` : `<h3>${head}</h3>`) + mdBlocks(body);
+  }
+  return html;
+}
+/* 检索高亮：原文切片逐段 esc 后包 <mark>，不在转义后的串上做正则（防命中实体名） */
+function rxQuote(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+function hlMark(text, terms) {
+  if (!terms || !terms.length) return esc(text);
+  const re = new RegExp("(" + terms.map(rxQuote).join("|") + ")", "ig");
+  const out = []; let last = 0, m;
+  while ((m = re.exec(text))) {
+    out.push(esc(text.slice(last, m.index)), `<mark>${esc(m[0])}</mark>`);
+    last = m.index + m[0].length;
+    if (!m[0].length) re.lastIndex++;
+  }
+  out.push(esc(text.slice(last)));
+  return out.join("");
+}
+function snippet(text, terms, pad) {
+  const raw = String(text || "").replace(/^#{1,3}\s+/gm, "").replace(/\*\*/g, "");
+  const low = raw.toLowerCase();
+  let i = -1;
+  for (const t of terms) { const j = low.indexOf(t.toLowerCase()); if (j >= 0 && (i < 0 || j < i)) i = j; }
+  if (i < 0) return esc(trunc(raw, 90));
+  const s = Math.max(0, i - (pad || 45));
+  return (s > 0 ? "…" : "") + hlMark(raw.slice(s, i + 120), terms) + (s + 120 < raw.length ? "…" : "");
+}
+/* ================= 视图 ================= */
+const main = document.getElementById("main"), side = document.getElementById("side");
+function crumb(crumbs) {
+  return `<div class="crumb"><a href="#/home">世界书</a>${crumbs.map(c => `<span class="sep">›</span>${c}`).join("")}</div>`;
+}
+function entryLink(id, label) {
+  const e = BYID[id];
+  if (!e) return esc(label || id);
+  return `<a class="wl" data-e="${esc(id)}">${esc(label || e.title)}</a>`;
+}
+
+/* ---- 力导向关系网络（零依赖：布局预跑 280 拍后静止，拖拽/缩放/平移/悬停聚焦/分类隐藏） ---- */
+const GW = 800, GH = 520;
+let GK = 1, GTX = 0, GTY = 0;
+let hiddenCats = new Set();
+
+function computeLayout(nodes, edges) {
+  const cx = GW / 2, cy = GH / 2, T = 280;
+  for (let t = 0; t < T; t++) {
+    const al = 1 - t / T;
+    for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i], b = nodes[j];
+      let dx = a.x - b.x, dy = a.y - b.y, d2 = dx * dx + dy * dy;
+      if (d2 < 1) { dx = Math.random() - .5; dy = Math.random() - .5; d2 = dx * dx + dy * dy; }
+      const d = Math.sqrt(d2), f = (3000 + (a.r + b.r) * 160) * al / d2;
+      const fx = dx / d * f, fy = dy / d * f;
+      a.vx += fx; a.vy += fy; b.vx -= fx; b.vy -= fy;
+    }
+    for (const e of edges) {
+      const a = e.na, b = e.nb;
+      const dx = b.x - a.x, dy = b.y - a.y, d = Math.sqrt(dx * dx + dy * dy) || 1;
+      const f = (d - (58 + a.r + b.r)) * 0.018 * al;
+      const fx = dx / d * f, fy = dy / d * f;
+      a.vx += fx; a.vy += fy; b.vx -= fx; b.vy -= fy;
+    }
+    for (const n of nodes) { const g = 0.005 / (1 + (DEG[n.id] || 0) * 0.12); n.vx += (cx - n.x) * g; n.vy += (cy - n.y) * g; }
+    for (const n of nodes) {
+      n.vx *= 0.62; n.vy *= 0.62;
+      n.x += Math.max(-18, Math.min(18, n.vx));
+      n.y += Math.max(-18, Math.min(18, n.vy));
+      n.x = Math.max(18, Math.min(GW - 18, n.x));
+      n.y = Math.max(14, Math.min(GH - 14, n.y));
+    }
+  }
+}
+
+function mountGraph() {
+  const mount = document.getElementById("graphMount");
+  if (!mount) return;
+  if (!ENTS.length) { mount.innerHTML = ""; return; }
+  GK = 1; GTX = 0; GTY = 0;
+  const on = id => { const e = BYID[id]; return e && !hiddenCats.has(e.cat); };
+  const vis = ENTS.filter(e => !hiddenCats.has(e.cat));
+  const nodes = vis.map(e => ({ id: e.id, cat: e.cat, title: e.title, r: 4.5 + Math.min(DEG[e.id] || 0, 24) * 0.6, x: 0, y: 0, vx: 0, vy: 0 }));
+  const byId = new Map(nodes.map(n => [n.id, n]));
+  const byCat = {};
+  nodes.forEach(n => (byCat[n.cat] = byCat[n.cat] || []).push(n));
+  const cats = Object.keys(byCat);
+  cats.forEach((c, ci) => byCat[c].forEach((n, i) => {
+    const a = (ci / cats.length) * Math.PI * 2 - Math.PI / 2;
+    const rr = 120 + (i % 6) * 16;
+    n.x = GW / 2 + rr * Math.cos(a + i * 0.55);
+    n.y = GH / 2 + rr * Math.sin(a + i * 0.55) * 0.78;
+  }));
+  const edges = RELS.filter(r => on(r.a) && on(r.b))
+    .map(r => ({ a: r.a, b: r.b, w: r.weight, src: r.src, na: byId.get(r.a), nb: byId.get(r.b) }));
+  computeLayout(nodes, edges);
+  const lines = edges.map(e => {
+    const dash = edgeStyle(e.src) ? ` stroke-dasharray="${edgeStyle(e.src)}"` : "";
+    return `<line data-a="${esc(e.a)}" data-b="${esc(e.b)}" x1="${e.na.x.toFixed(1)}" y1="${e.na.y.toFixed(1)}" x2="${e.nb.x.toFixed(1)}" y2="${e.nb.y.toFixed(1)}" stroke="#d6c8a8"${dash} stroke-opacity="${Math.min(.3 + e.w * .06, .85).toFixed(2)}" stroke-width="${Math.min(e.w * .4, 2.2).toFixed(1)}"/>`;
+  }).join("");
+  const dots = nodes.map(n => `<circle class="node" data-e="${esc(n.id)}" cx="${n.x.toFixed(1)}" cy="${n.y.toFixed(1)}" r="${n.r.toFixed(1)}" fill="${catColor(n.cat)}" fill-opacity=".88" stroke="#fdfaf2" stroke-width="1.2"><title>${esc(n.title)} · ${esc(n.cat)} · ${DEG[n.id] || 0} 条关系</title></circle>`).join("");
+  mount.innerHTML = `<svg class="graph" id="wbGraph" viewBox="0 0 ${GW} ${GH}" role="img" aria-label="世界书关系网络"><g id="wbGport">${lines}${dots}</g></svg>`;
+  bindGraph(mount.querySelector("#wbGraph"), mount.querySelector("#wbGport"), nodes);
+}
+
+function bindGraph(svg, gport, nodes) {
+  const nodeEls = {};
+  svg.querySelectorAll("circle.node").forEach(c => nodeEls[c.dataset.e] = c);
+  const lineEls = [...svg.querySelectorAll("line")];
+  const setTf = () => gport.setAttribute("transform", `translate(${GTX} ${GTY}) scale(${GK})`);
+  const svgXY = evt => {
+    const m = gport.getScreenCTM();
+    if (!m) return null;
+    const p = new DOMPoint(evt.clientX, evt.clientY).matrixTransform(m.inverse());
+    return [p.x, p.y];
+  };
+  const focus = id => {
+    if (!id) { svg.classList.remove("focus"); svg.querySelectorAll(".on").forEach(x => x.classList.remove("on")); return; }
+    svg.classList.add("focus");
+    const nb = new Set([id]);
+    (ADJ[id] || []).forEach(x => nb.add(x.with));
+    lineEls.forEach(l => l.classList.toggle("on", l.dataset.a === id || l.dataset.b === id));
+    for (const [eid, el] of Object.entries(nodeEls)) el.classList.toggle("on", nb.has(eid));
+  };
+  svg.querySelectorAll("circle.node").forEach(c => {
+    c.addEventListener("pointerenter", () => focus(c.dataset.e));
+    c.addEventListener("pointerleave", () => focus(null));
+  });
+  let drag = null;
+  svg.addEventListener("pointerdown", evt => {
+    const c = evt.target.closest("circle.node");
+    const p = svgXY(evt);
+    if (!p) return;
+    if (c) {
+      const n = nodes.find(x => x.id === c.dataset.e);
+      drag = { type: "node", el: c, n, ox: p[0] - n.x, oy: p[1] - n.y, moved: false };
+    } else drag = { type: "pan", x0: evt.clientX, y0: evt.clientY, tx0: GTX, ty0: GTY, moved: false };
+    try { svg.setPointerCapture(evt.pointerId); } catch (_) {}
+  });
+  svg.addEventListener("pointermove", evt => {
+    if (!drag) return;
+    if (drag.type === "pan") {
+      const dx = evt.clientX - drag.x0, dy = evt.clientY - drag.y0;
+      if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
+      GTX = drag.tx0 + dx; GTY = drag.ty0 + dy; setTf(); return;
+    }
+    const p = svgXY(evt);
+    if (!p) return;
+    drag.moved = true;
+    drag.n.x = p[0] - drag.ox; drag.n.y = p[1] - drag.oy;
+    drag.el.setAttribute("cx", drag.n.x.toFixed(1)); drag.el.setAttribute("cy", drag.n.y.toFixed(1));
+    lineEls.forEach(l => {
+      if (l.dataset.a === drag.n.id) { l.setAttribute("x1", drag.n.x.toFixed(1)); l.setAttribute("y1", drag.n.y.toFixed(1)); }
+      if (l.dataset.b === drag.n.id) { l.setAttribute("x2", drag.n.x.toFixed(1)); l.setAttribute("y2", drag.n.y.toFixed(1)); }
+    });
+  });
+  svg.addEventListener("pointerup", () => {
+    if (drag && drag.type === "node" && !drag.moved) location.hash = "#/e/" + encodeURIComponent(drag.n.id);
+    drag = null;
+  });
+  svg.addEventListener("wheel", evt => {
+    evt.preventDefault();
+    const nk = Math.max(.4, Math.min(3, GK * (evt.deltaY < 0 ? 1.12 : 0.89)));
+    GTX = GW / 2 - (GW / 2 - GTX) * (nk / GK);
+    GTY = GH / 2 - (GH / 2 - GTY) * (nk / GK);
+    GK = nk; setTf();
+  }, { passive: false });
+}
+function syncLegend() {
+  main.querySelectorAll(".lg-chip").forEach(ch => ch.classList.toggle("off", hiddenCats.has(ch.dataset.c)));
+}
+
+/* ---- 首页：统计 → 最近更新 → 分类索引 → 总览文档 → 关系网络 ---- */
+function viewHome() {
+  const st = STATS || {};
+  let body = "";
+  if (ENTS.length) {
+    const upd = ENTS.filter(e => e.cat !== "总览" && e.mtime)
+      .sort((a, b) => b.mtime.localeCompare(a.mtime)).slice(0, 8);
+    const updHtml = upd.length ? `<div class="updl">${upd.map(e =>
+      `<div class="u-row"><span class="u-dot" style="background:${catColor(e.cat)}"></span><span class="u-cat">${esc(e.cat)}</span><a class="wl" data-e="${esc(e.id)}">${esc(e.title)}</a><span class="u-time">修订 ${esc(e.mtime)}</span></div>`).join("")}</div>` : "";
+    const ovs = ENTS.filter(e => e.cat === "总览");
+    const ovsHtml = ovs.length ? `<div class="sec"><h2>总览文档</h2>${ovs.map((e, i) =>
+      `<details class="fold"${(e.body || "").length > 400 && i === 0 ? " open" : ""}><summary>${esc(e.title)}${statusBadge(e)}</summary><div class="sec md-body">${mdRender(e.body || e.summary || "")}</div></details>`).join("")}</div>` : "";
+    body = `${updHtml}
+    <div class="statgrid">
+      <div class="st"><b>${st.entries || ENTS.length}</b><span>词条</span></div>
+      <div class="st"><b>${st.edges || RELS.length}</b><span>关系边</span></div>
+      <div class="st"><b>${st.isolated ?? 0}</b><span>孤立词条</span></div>
+      <div class="st"><b>${CATS.length}</b><span>分类</span></div>
+    </div>
+    <div class="sec"><h2>分类索引</h2><div class="catgrid">${CATS.map(c => `<a href="#/c/${encodeURIComponent(c)}"><b>${esc(c)}</b><small>${st.byCat?.[c] || 0} 条</small></a>`).join("")}</div></div>
+    ${ovsHtml}
+    <div class="sec"><h2>关系网络</h2>
+    <div class="graphbox"><div id="graphMount"></div>
+      <div class="gctl">${CATS.map(c => `<span class="lg-chip" data-c="${esc(c)}"><i style="background:${catColor(c)}"></i>${esc(c)} ${st.byCat?.[c] || 0}</span>`).join("")}
+      <button class="gbtn" id="gReset">重置视图</button>
+      <span class="g-hint">拖节点 · 滚轮缩放 · 空白拖动平移 ｜ 实线 = 声明边，虚线 = 归纳边（互涉 / 标签）</span></div>
+    </div>
+    <p style="font-size:12.5px;color:#8c8172;margin-top:8px">点节点看词条；创作时 agent 用 <code>worldbook_search --project ${esc(WBDATA.project)} --q "&lt;关键词&gt;"</code> 直调本图（CLI/HTTP/MCP 三面同源）。</p></div>`;
+  } else {
+    body = `<div class="wbempty"><b>本流程尚未产出世界书。</b><br>
+      2026-09-22 起 world-forge（世界观锻造师）已强制接入各生产流程：开书/改编时产出 <code>世界书/&lt;分类&gt;/&lt;词条&gt;.md</code>（frontmatter 带 id/title/tags/links/status）。<br>
+      存量项目补索引：<code>python tools/worldbook-index.py --root projects/${esc(WBDATA.project)}</code>（归纳）→ 刷新本页即见图谱。</div>`;
+  }
+  main.innerHTML = `${crumb([])}
+    <h1 class="art">${esc(WBDATA.book || WBDATA.project)} <span class="cat-badge">世界书</span><span class="hyper">GraphHyperRAG</span></h1>
+    <div class="subtitle">${ENTS.length ? `归纳于 ${esc(G.built_at || "")} · 文件即真相 · 归纳层 graph.json / 调用层 worldbook_search / 查看层本页` : ""}</div>
+    ${body}`;
+  if (ENTS.length) {
+    mountGraph();
+    main.querySelectorAll(".lg-chip").forEach(ch => ch.addEventListener("click", () => {
+      const c = ch.dataset.c;
+      if (hiddenCats.has(c)) hiddenCats.delete(c); else hiddenCats.add(c);
+      syncLegend(); mountGraph();
+    }));
+    const rst = document.getElementById("gReset");
+    rst && rst.addEventListener("click", () => { hiddenCats.clear(); GK = 1; GTX = 0; GTY = 0; syncLegend(); mountGraph(); });
+  }
+  bindLinks();
+}
+/* ---- 分类页 ---- */
+function viewCat(cat) {
+  const list = ENTS.filter(e => e.cat === cat).sort((a, b) => a.title.localeCompare(b.title, "zh"));
+  main.innerHTML = `${crumb([`<span>${esc(cat)}</span>`])}
+    <h1 class="art">${esc(cat)} <span class="cat-badge">分类 · ${list.length} 条</span></h1>
+    <div class="sec">${list.map(e => `<div style="margin:12px 0 16px"><a class="wl" data-e="${esc(e.id)}" style="font-family:'Noto Serif SC','Songti SC','SimSun',serif;font-size:16.5px;font-weight:600">${esc(e.title)}</a> ${statusBadge(e)}
+      <div style="font-size:13px;color:#8c8172;margin-top:2px">${esc(e.summary || "")}</div></div>`).join("")}</div>`;
+  bindLinks();
+}
+/* ---- 词条 ego 邻域图（确定性径向布局：中心 + 权重前 10 邻居） ---- */
+function egoSVG(id) {
+  const c = BYID[id];
+  const nbs = (ADJ[id] || []).slice(0, 10);
+  if (!c || !nbs.length) return "";
+  const W = 640, H = 250, cx = W / 2, cy = H / 2;
+  const pos = new Map([[id, [cx, cy]]]);
+  nbs.forEach((n, i) => {
+    const a = -Math.PI / 2 + i * 2 * Math.PI / nbs.length;
+    pos.set(n.with, [cx + 235 * Math.cos(a), cy + 92 * Math.sin(a) + 6]);
+  });
+  const lines = nbs.map(n => {
+    const p = pos.get(n.with);
+    const dash = edgeStyle(n.src) ? ` stroke-dasharray="${edgeStyle(n.src)}"` : "";
+    return `<line x1="${cx}" y1="${cy}" x2="${p[0].toFixed(1)}" y2="${p[1].toFixed(1)}" stroke="#d6c8a8" stroke-opacity=".9" stroke-width="${Math.min(n.w * .4, 2.4).toFixed(1)}"${dash}/>`;
+  }).join("");
+  const dots = nbs.map(n => {
+    const p = pos.get(n.with), t = BYID[n.with];
+    return `<g class="eg-n" data-e="${esc(n.with)}" style="cursor:pointer"><circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="6" fill="${catColor(t ? t.cat : "")}" fill-opacity=".92" stroke="#fdfaf2" stroke-width="1.2"><title>${esc(t ? t.title : n.with)} · ${esc(t ? t.cat : "")} · 权重 ${n.w}（${esc(n.src)}）</title></circle><text x="${p[0].toFixed(1)}" y="${(p[1] + 19).toFixed(1)}" text-anchor="middle" font-size="10.5" fill="#8c8172">${esc(trunc(t ? t.title : n.with, 7))}</text></g>`;
+  }).join("");
+  const cl = `<circle cx="${cx}" cy="${cy}" r="10" fill="${catColor(c.cat)}" stroke="#fdfaf2" stroke-width="1.5"><title>${esc(c.title)}（本页）</title></circle><text x="${cx}" y="${cy - 17}" text-anchor="middle" font-size="11.5" font-weight="600" fill="#2f2820" font-family="Noto Serif SC,Songti SC,SimSun,serif">${esc(trunc(c.title, 8))}</text>`;
+  return `<div class="egobox"><div class="ego-h">邻域图 · 中心词条 + 权重前 ${nbs.length} 邻居 ｜ 实线 = 声明边，虚线 = 归纳边 ｜ 点邻居跳转</div><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="词条邻域图">${lines}${dots}${cl}</svg></div>`;
+}
+
+/* ---- 词条页：Infobox + 正文（变动史渲染为时间线） + 邻域图 + 三源分组关系 ---- */
+function viewEntry(id) {
+  const e = BYID[id];
+  if (!e) { main.innerHTML = `<div class="wbempty">词条不存在：<code>${esc(id)}</code></div>`; return; }
+  const all = ADJ[id] || [];
+  const nbs = all.slice(0, 10);
+  const groups = { link: [], mention: [], tag: [] };
+  all.forEach(n => groups[relBucket(n.src)].push(n));
+  const GRP = {
+    link: ["声明关系", "frontmatter links 权威边"],
+    mention: ["正文互涉", "词条标题在对方正文出现（归纳）"],
+    tag: ["标签交叉", "tag 与其他词条标题互hit（归纳）"],
+  };
+  const relHtml = all.length ? Object.entries(groups).filter(([, g]) => g.length).map(([k, g]) =>
+    `<div class="rel-grp"><h3><span class="rt ${SRC_CLS[k]}">${SRC_ZH[k]}</span>${GRP[k][0]} · ${g.length} 条 <small style="font-weight:400;color:#8c8172">— ${GRP[k][1]}</small></h3><div>${g.map(n => `<span class="tag rel">${entryLink(n.with)}<small style="color:#8c8172"> · ${n.w}</small></span>`).join(" ")}</div></div>`).join("") : "";
+  const ib = `<aside class="infobox">
+    <div class="ib-h">${esc(e.title)}<div class="sub">${esc(e.cat)}</div></div>
+    <div class="ib-src">id: ${esc(e.id)} · ${esc(e.version || "v1")}</div>
+    <table>
+      <tr><th>状态</th><td>${statusBadge(e)}</td></tr>
+      <tr><th>分类</th><td><a href="#/c/${encodeURIComponent(e.cat)}">${esc(e.cat)}</a></td></tr>
+      ${e.mtime ? `<tr><th>修订</th><td>${esc(e.mtime)}</td></tr>` : ""}
+      ${(e.tags || []).length ? `<tr><th>标签</th><td>${e.tags.map(t => `<span class="tag">${esc(t)}</span>`).join("")}</td></tr>` : ""}
+      <tr><th>关系</th><td>${all.length} 条（声明 ${groups.link.length} · 互涉 ${groups.mention.length} · 标签 ${groups.tag.length}）</td></tr>
+    </table>
+    <div class="ib-note">GraphHyperRAG · worldbook_search 直调可查</div>
+  </aside>`;
+  const body = mdRender(e.body || e.summary || "");
+  const related = all.length ? `<div class="sec"><h2>关联词条</h2>${egoSVG(id)}${relHtml}</div>` : "";
+  main.innerHTML = `${crumb([`<a href="#/c/${encodeURIComponent(e.cat)}">${esc(e.cat)}</a>`, `<span>${esc(e.title)}</span>`])}
+    <h1 class="art">${esc(e.title)} <span class="cat-badge">${esc(e.cat)}</span> ${statusBadge(e)}</h1>
+    <div class="subtitle">${esc(e.summary || "")}</div>
+    ${ib}
+    <div class="sec md-body">${body}</div>
+    ${related}`;
+  main.querySelectorAll(".eg-n").forEach(g => g.addEventListener("click", () => { location.hash = "#/e/" + encodeURIComponent(g.dataset.e); }));
+  bindLinks();
+}
+/* ---- 搜索结果页：分类过滤 + 高亮 + 正文摘要 + 图扩展（浏览器端预览；agent 以 worldbook_search 为准） ---- */
+let searchCat = null, lastQ = null;
+function viewSearch(q) {
+  if (q !== lastQ) { searchCat = null; lastQ = q; }
+  const terms = q.trim().toLowerCase().split(/[\s,，、;；/]+/).filter(Boolean);
+  const low = s => String(s || "").toLowerCase();
+  const hits = ENTS.map(e => {
+    let s = 0; const f = [];
+    if (terms.some(t => low(e.title).includes(t))) { s += 12; f.push("标题"); }
+    if (terms.some(t => (e.tags || []).some(x => low(x).includes(t)))) { s += 6; f.push("标签"); }
+    if (terms.some(t => low(e.summary).includes(t))) { s += 4; f.push("摘要"); }
+    if (terms.some(t => low(e.body).includes(t))) { s += 2; f.push("正文"); }
+    return { e, s, f };
+  }).filter(x => x.s > 0).sort((a, b) => b.s - a.s || a.e.id.localeCompare(b.e.id, "zh"));
+  const byCatCount = {};
+  hits.forEach(x => byCatCount[x.e.cat] = (byCatCount[x.e.cat] || 0) + 1);
+  const shown = searchCat ? hits.filter(x => x.e.cat === searchCat) : hits;
+  const chips = hits.length ? `<div class="s-chips"><span class="s-chip ${!searchCat ? "on" : ""}" data-c="">全部 ${hits.length}</span>` +
+    Object.keys(byCatCount).sort((a, b) => byCatCount[b] - byCatCount[a]).map(c =>
+      `<span class="s-chip ${searchCat === c ? "on" : ""}" data-c="${esc(c)}">${esc(c)} ${byCatCount[c]}</span>`).join("") + `</div>` : "";
+  const list = shown.map(x => {
+    const nbs = (ADJ[x.e.id] || []).slice(0, 3);
+    const rel = nbs.length ? `<div class="s-rel">图扩展一跳：${nbs.map(n => entryLink(n.with)).join(" · ")}</div>` : "";
+    return `<div class="s-hit"><a class="wl" data-e="${esc(x.e.id)}"><span class="s-t">${hlMark(x.e.title, terms)}</span></a><span class="cat-badge">${esc(x.e.cat)}</span> ${statusBadge(x.e)} ${x.f.map(f => `<span class="match-badge">${f}</span>`).join("")}<div class="s-snip">${snippet(x.e.body || x.e.summary || "", terms)}</div>${rel}</div>`;
+  }).join("") || `<p>无命中——试试更短的词；写手/agent 创作检索以内核 <code>worldbook_search</code> 为准（词面打分 + 一跳图扩展）。</p>`;
+  main.innerHTML = `${crumb([`<span>搜索「${esc(q)}」</span>`])}
+    <h1 class="art">搜索 <span class="cat-badge">${hits.length} 条命中</span></h1>
+    <div class="subtitle">浏览器端预览检索；命中字段：标题 &gt; 标签 &gt; 摘要 &gt; 正文。</div>
+    ${chips}
+    <div class="sec">${list}</div>`;
+  main.querySelectorAll(".s-chip").forEach(ch => ch.addEventListener("click", () => { searchCat = ch.dataset.c || null; viewSearch(q); }));
+  bindLinks();
+}
+/* ---- 创作历程（作者视角：阶段进度 / 里程碑 / 版本脉络 / 思路定案 / 复盘与建议 / 阶段总结） ---- */
+function viewHistory() {
+  const H = HIST;
+  const has = H && !H.empty;
+  let body = "";
+  if (!has) {
+    body = `<div class="wbempty"><b>本项目暂无可归纳的历程。</b><br>
+      历程全部派生自既有账本：journal（里程碑）/ snapshots（版本轮次）/ decisions（思路定案）/ miner-findings（复盘建议）。<br>
+      项目跑起来后这里自动生长；作者侧的沉淀口只有一个——<code>世界书/历程/小结-*.md</code>（模块收口 / 门通过 / 完稿时，由执行会话写：结论 / 取舍 / 教训 / 下一步建议）。</div>`;
+  } else {
+    const phases = (H.phases || []).length ? `<div class="sec"><h2>阶段进度</h2><div class="ph-grid">${H.phases.map(p => {
+      const pct = p.total ? Math.round(p.done / p.total * 100) : 0;
+      return `<div class="ph-card"><div class="ph-t">阶段 ${esc(p.id)}</div><div class="ph-n">${esc(p.title === p.id ? "" : p.title)}${p.done}/${p.total} 节点完成</div><div class="ph-bar"><i style="width:${pct}%"></i></div>${p.rework ? `<div class="ph-rework">↻ ${p.rework} 节点经历过重做</div>` : ""}</div>`;
+    }).join("")}</div></div>` : "";
+    const ms = (H.milestones || []).length ? `<div class="sec"><h2>里程碑</h2><div class="ms">${H.milestones.map(m => {
+      const k = HIST_KIND[m.kind] || ["历程", "#8c8172"];
+      return `<div class="ms-item"><span class="ms-time">${esc(m.ts)}</span><span><span class="kb" style="background:${k[1]}">${k[0]}</span><span class="ms-t">${esc(m.title)}</span>${m.detail ? `<div class="ms-d">${esc(m.detail)}</div>` : ""}</span></div>`;
+    }).join("")}</div></div>` : "";
+    const vers = (H.versions || []).length ? `<div class="sec"><h2>版本脉络 · 重写热点</h2>${H.versions.map(v => `
+      <div class="ver-row"><div class="ver-head"><span class="vn">${esc(v.node)}</span>${v.artifact ? `<span class="va">${esc(v.artifact)}</span>` : ""}<span class="va">${v.rounds.length} 轮</span></div>
+      <div class="ver-chips">${v.rounds.map(r => `<span class="vchip" title="${esc(r.note || "")}"><b>r${r.round}</b> ${esc(r.ts)}${r.note ? " · " + esc(trunc(r.note, 26)) : ""}</span>`).join("")}</div></div>`).join("")}</div>` : "";
+    const dcs = (H.decisions || []).length ? `<div class="sec"><h2>思路定案</h2>${H.decisions.map(d => `
+      <div class="dc-row"><span class="dc-key">${esc(d.key)}</span>${(d.picked || []).map(p => `<span class="tag rel">${esc(p)}</span>`).join("")}<span class="dc-meta">${esc(d.by)} · ${esc(d.at)}</span>${d.evidence ? `<div class="dc-ev">凭据：${esc(d.evidence)}</div>` : ""}</div>`).join("")}</div>` : "";
+    const fds = (H.findings || []).length ? `<div class="sec"><h2>复盘与建议</h2><p class="muted" style="margin-bottom:9px">编排挖掘师 findings（带证据、不裁决）；改进入提案池见 <code>flow_optimize</code>。</p>${H.findings.map(f => `
+      <div class="fd-card fd-${esc(f.severity || "low")}"><span class="sev sev-${esc(f.severity || "low")}">${esc(f.severity || "low")}</span><span class="fd-t">${esc(f.title)}</span>${f.reason ? `<div class="fd-r">${esc(f.reason)}</div>` : ""}</div>`).join("")}</div>` : "";
+    const sums = H.summaries || [];
+    const sumSec = `<div class="sec"><h2>阶段总结</h2>${sums.length ? sums.map((s, i) =>
+      `<details class="fold"${i === 0 ? " open" : ""}><summary>${esc(s.title)}<span class="dc-meta" style="margin-left:8px">${esc(s.mtime)}</span></summary><div class="sec md-body">${mdRender(s.body || "")}</div></details>`).join("")
+      : `<div class="sum-hint">还没有人写过阶段总结。约定：模块收口 / 门通过 / 完稿时，由执行会话追加 <code>世界书/历程/小结-*.md</code>——结论、取舍、教训、下一步建议。这里是作者看见自己思维链路的地方，机器不代笔。</div>`}</div>`;
+    body = `${phases}${ms}${vers}${dcs}${fds}${sumSec}`;
+  }
+  main.innerHTML = `${crumb([])}
+    <h1 class="art">创作历程 <span class="cat-badge">作者视角</span></h1>
+    <div class="subtitle">从 journal / 快照轮次 / 决策账 / 复盘 findings 派生，零新增记录负担 · 总结由作者与执行会话撰写，机器不代笔</div>
+    ${body}`;
+  bindLinks();
+}
+/* ================= 导航与交互（侧栏分组 + 搜索联想 + hash 路由） ================= */
+function renderSide() {
+  side.innerHTML = `<h3>导航</h3><div class="nav"><a href="#/home" data-r="#/home">总览 · 关系网络</a><a href="#/h" data-r="#/h">创作历程</a></div>` +
+    CATS.map(c => `<div class="grp open"><div class="gh" data-c="${esc(c)}"><span>${esc(c)}</span><span>${STATS.byCat?.[c] || 0}</span></div>
+      <div class="items">${ENTS.filter(e => e.cat === c).sort((a, b) => a.title.localeCompare(b.title, "zh")).map(e =>
+        `<a href="#/e/${encodeURIComponent(e.id)}" data-e="${esc(e.id)}" title="${esc(e.summary || "")}">${esc(e.title)}</a>`).join("")}</div></div>`).join("");
+  side.querySelectorAll(".gh").forEach(gh => gh.addEventListener("click", () => gh.parentElement.classList.toggle("open")));
+  markSide();
+}
+function markSide() {
+  side.querySelectorAll("a").forEach(a => a.classList.toggle("on", a.getAttribute("data-r") === location.hash || a.getAttribute("href") === location.hash));
+}
+function bindLinks() {
+  main.querySelectorAll("a.wl").forEach(a => a.addEventListener("click", ev => { ev.preventDefault(); const id = a.dataset.e; if (id && BYID[id]) location.hash = "#/e/" + encodeURIComponent(id); }));
+  main.querySelectorAll(".graphbox circle[data-e]").forEach(c => c.addEventListener("click", () => { location.hash = "#/e/" + encodeURIComponent(c.dataset.e); }));
+  markSide();
+}
+function route() {
+  const h = decodeURIComponent(location.hash || "#/home");
+  side.classList.remove("open"); document.getElementById("sideMask").classList.remove("on");
+  if (h.startsWith("#/e/")) viewEntry(h.slice(4));
+  else if (h.startsWith("#/c/")) viewCat(h.slice(4));
+  else if (h.startsWith("#/h")) viewHistory();
+  else if (h.startsWith("#/s/")) viewSearch(h.slice(4));
+  else viewHome();
+  main.scrollTop = 0;
+}
+window.addEventListener("hashchange", route);
+/* 搜索联想：标题/标签即时命中 + 摘要命中回车兜底 */
+const qEl = document.getElementById("q"), sug = document.getElementById("sug");
+qEl.addEventListener("input", () => {
+  const kw = qEl.value.trim().toLowerCase();
+  if (!kw) { sug.classList.remove("on"); return; }
+  const hits = ENTS.filter(e => e.title.toLowerCase().includes(kw) || (e.tags || []).some(t => t.toLowerCase().includes(kw)) || (e.summary || "").toLowerCase().includes(kw)).slice(0, 8);
+  sug.innerHTML = hits.map(e => `<div data-e="${esc(e.id)}"><span class="t">${esc(e.cat)}</span>${esc(e.title)}</div>`).join("") ||
+    `<div><span class="t">回车</span>全文搜索「${esc(qEl.value.trim())}」</div>`;
+  sug.classList.add("on");
+  sug.querySelectorAll("[data-e]").forEach(d => d.addEventListener("click", () => { sug.classList.remove("on"); qEl.value = ""; location.hash = "#/e/" + encodeURIComponent(d.dataset.e); }));
+});
+qEl.addEventListener("keydown", ev => {
+  if (ev.key === "Enter" && qEl.value.trim()) { sug.classList.remove("on"); location.hash = "#/s/" + encodeURIComponent(qEl.value.trim()); }
+  if (ev.key === "Escape") sug.classList.remove("on");
+});
+document.addEventListener("click", ev => { if (!sug.contains(ev.target) && ev.target !== qEl) sug.classList.remove("on"); });
+/* 侧栏抽屉（窄屏） */
+const sideToggle = document.getElementById("sideToggle");
+sideToggle && sideToggle.addEventListener("click", () => { side.classList.toggle("open"); document.getElementById("sideMask").classList.toggle("on"); });
+document.getElementById("sideMask").addEventListener("click", () => { side.classList.remove("open"); document.getElementById("sideMask").classList.remove("on"); });
+/* ================= 启动 ================= */
+document.getElementById("topcnt").textContent = `词条 ${ENTS.length} · 关系 ${RELS.length}${G.built_at ? " · 归纳 " + G.built_at : ""}`;
+buildAutolink();
+renderSide();
+route();
+</script>
+</body></html>

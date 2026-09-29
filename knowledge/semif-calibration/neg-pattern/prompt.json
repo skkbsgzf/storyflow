@@ -1,0 +1,21 @@
+{
+ "title": "否定排比（slop-list S2）",
+ "clause": "neg-pattern",
+ "question": "目标句里成串的否定短语是否属于叙述层（旁白腔）的否定排比蓄势——规则要求叙述层清零；对白/引文内人物自己的话、以及普通的单项否定是否豁免？",
+ "options": [
+  {
+   "id": "yes",
+   "description": "是：叙述层用成串否定铺陈蓄势，应打回改积极句式。"
+  },
+  {
+   "id": "no",
+   "description": "否：这是人物对白/引文里的话，或只是普通单项否定。"
+  },
+  {
+   "id": "insufficient",
+   "description": "目标句与上下文不足以判断。"
+  }
+ ],
+ "flag": "yes",
+ "filter": "[不没]"
+}

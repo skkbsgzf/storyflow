@@ -1,0 +1,798 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "miniflow kernel API",
+    "version": "1.2.0",
+    "description": "miniflow 内核 HTTP 面（冻结 v1）——官方可视化底座的供数契约。全部端点 CORS 开放。数据模型以 contracts/*.schema.json 为准（本文件引用其字段名，不复制定义）。写回纪律：可视化端不直接写项目文件，一律走 POST 端点（gate/rerun），产物提交走宿主动词。兼容桥：GET /api/projects/{id}/workbench-payload 返回与现 workflow.html 的 DATA payload 同构形状（{flow, files, runstate, project, snapshots}），供旧页面渐迁。\n\nv1.1 追加：项目初始化配置读写端点（GET/PUT /api/projects/{id}/config）——官方可视化插件可直接做配置表单，字段中键与 项目配置.json 一一对应（题材/需求/灵感/严肃性/风格/AB测试/市场预估）。PUT 带 schema 校验；run 已绑定的字段修改仅对重跑/下一次 flow_run 生效（响应含 boundWarning）。\n\nv1.2 追加（R8-OPS 0/1/3 步）：**把已实现却未声明的面补进契约**——诊断通道（GET /api/diagnostics、GET /api/projects/{id}/diagnostics）、前端轮询切片（GET /api/projects/{id}/live，带 revision/filesRevision 两正交指纹）、内核动词直通（POST /api/verbs/{verb}，由 core/src/verbs.ts 的动词表唯一派生）、自描述契约（GET /api/openapi.json），以及自 tools/serve.py 并入的 legacy 兼容面（均标 deprecated，新前端请勿使用）。此前这些端点**真实存在但契约里查不到**——「声明面 ≠ 实际面」本身就是要消灭的病。"
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8421"
+    }
+  ],
+  "paths": {
+    "/api/projects": {
+      "get": {
+        "summary": "项目列表（含焦点与待办数）",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "projectId": {
+                        "type": "string"
+                      },
+                      "flowId": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string",
+                        "description": "run 状态：running/awaiting_input/suspended/completed/failed/none"
+                      },
+                      "focus": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "焦点节点 id"
+                      },
+                      "gateAwaiting": {
+                        "type": "boolean"
+                      },
+                      "pendingCount": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "projectId"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{id}/state": {
+      "get": {
+        "summary": "run 状态机（state.json 全文）",
+        "description": "结构 = contracts/run-state.schema.json（v1.0.1）。nodes[*].status 七态；gate 三出口裁决值域。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "项目无 run"
+          }
+        }
+      }
+    },
+    "/api/projects/{id}/graph": {
+      "get": {
+        "summary": "flow 描述符（画布消费：nodes/edges/stages/inputs/outputs）",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "flow.json 原文",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{id}/artifacts": {
+      "get": {
+        "summary": "产物注册表条目（可按节点过滤）",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "node",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "latest",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "仅每节点最新一条"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ArtifactEntry[]（contracts/artifact.schema.json）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{id}/artifacts/content": {
+      "get": {
+        "summary": "产物全文（仅文本产物；路径必须已在注册表内——未注册=不可读）",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "文本全文",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "路径未注册"
+          },
+          "404": {
+            "description": "文件不存在"
+          }
+        }
+      }
+    },
+    "/api/projects/{id}/journal": {
+      "get": {
+        "summary": "事件流（append-only，可回放）",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "ISO 时间下界"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 200
+            }
+          },
+          {
+            "name": "node",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "JournalEvent[]（contracts/journal-event.schema.json）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{id}/snapshots/{node}": {
+      "get": {
+        "summary": "节点快照（轮次索引 + 各轮文本内容）",
+        "description": "与 tools/snapshot.py 的 snapshots/index.json 同源；content.{文件名:全文} 供前端直接渲染。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "node",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{id}/workbench-payload": {
+      "get": {
+        "summary": "兼容桥：旧 workflow.html 的 DATA payload 同构形状",
+        "description": "返回 {flow, files, runstate, project, snapshots, deliveryPage}。runstate 为 state.json 的兼容投影（字段同名）。仅作渐迁用，新前端请用上述细分端点。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{id}/gate": {
+      "post": {
+        "summary": "提交人工裁决（三出口语义；裁决权在人）",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "nodeId",
+                  "verdict"
+                ],
+                "properties": {
+                  "nodeId": {
+                    "type": "string"
+                  },
+                  "round": {
+                    "type": "integer",
+                    "description": "挂起时返回的门轮次；旧轮次迟到裁决被拒绝"
+                  },
+                  "verdict": {
+                    "type": "string",
+                    "enum": [
+                      "pass",
+                      "pass-with-conditions",
+                      "send-back",
+                      "reject"
+                    ]
+                  },
+                  "comment": {
+                    "type": "string"
+                  },
+                  "rootCauseStage": {
+                    "type": "string",
+                    "description": "send-back 时指认根因阶段 id（级联失效从该阶段入口起算）"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "裁决已应用；返回 {applied, rollbackScope?, next?}",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "token/round 三重校验不过（旧轮次裁决或门不在挂起）"
+          }
+        }
+      }
+    },
+    "/api/projects/{id}/rerun": {
+      "post": {
+        "summary": "重跑范围推演/执行（未变上游缓存命中语义在 M2 全量）",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "nodeId"
+                ],
+                "properties": {
+                  "nodeId": {
+                    "type": "string"
+                  },
+                  "dryRun": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "true 仅返回受影响子图，不落盘"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{scope:[nodeId], dryRun, next?}",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{id}/config": {
+      "get": {
+        "summary": "读项目初始化配置（无文件时返回模板供表单绑定）",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "exists": {
+                      "type": "boolean"
+                    },
+                    "config": {
+                      "type": "object",
+                      "description": "项目配置.json 原文（中键：题材/需求/灵感/严肃性/风格/AB测试/市场预估/presets）；非法配置时带 __invalid+message"
+                    },
+                    "template": {
+                      "type": "object",
+                      "description": "缺省模板（表单初始值）"
+                    },
+                    "boundWarning": {
+                      "type": "string",
+                      "description": "run 存在时的生效时机提示"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "保存项目初始化配置（schema 校验；项目名以路径为准）",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "项目"
+                ],
+                "properties": {
+                  "项目": {
+                    "type": "string"
+                  },
+                  "题材": {
+                    "type": "string"
+                  },
+                  "需求": {
+                    "type": "string"
+                  },
+                  "灵感": {
+                    "type": "string"
+                  },
+                  "严肃性": {
+                    "type": "string",
+                    "enum": [
+                      "探索",
+                      "标准",
+                      "出品"
+                    ]
+                  },
+                  "风格": {
+                    "type": "string",
+                    "enum": [
+                      "爽",
+                      "标准"
+                    ]
+                  },
+                  "AB测试": {
+                    "type": "boolean"
+                  },
+                  "市场预估": {
+                    "type": "string"
+                  },
+                  "presets": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{saved:true, file, boundWarning?}",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "schema 校验失败"
+          }
+        }
+      }
+    },
+    "/api/verbs/{verb}": {
+      "post": {
+        "summary": "内核动词直通（动词表唯一源 = core/src/verbs.ts）",
+        "description": "按 `core/src/verbs.ts` 的 `VERBS` 表分派，请求体即该动词的归一化入参。表里有几个动词这里就能收几个——CLI / MCP / 本端点三面同源，不再各自维护动词清单。未知动词 → 404 UNKNOWN_VERB 且 detail 列出可用动词（不静默）。专用端点（/gate、/rerun、/config）为便利面，与表分派同语义。",
+        "parameters": [
+          {
+            "name": "verb",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "动词名，见 core/src/verbs.ts（flow_list / flow_run / flow_init / flow_next / flow_submit / flow_resume / flow_gate / flow_rerun / flow_effect / flow_mine / skill_patch / flow_optimize / flow_overlay）"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "该动词的归一化入参（键名与 verbs.ts 的 params[].name 一致）"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "动词返回值（形状随动词而定；写操作返回到达的停靠点）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "UNKNOWN_VERB（detail 列出可用动词）"
+          }
+        }
+      }
+    },
+    "/api/projects/{id}/live": {
+      "get": {
+        "summary": "前端轮询用的实时切片（R8-OPS 第 1 批：快照 → 轮询）",
+        "description": "一次返回 state / eff / overlay / optimize / metrics / diagnostics + 两个指纹。`revision` 由状态/门裁决/逐节点 round·verdict/overlayHash/planHash/metrics 事件数/诊断条数合成；`filesRevision` 由产物清单的 路径+size+mtimeMs 合成。**两指纹刻意正交**：状态没动但文件变了（或反之）都能单独识别，页面据此避免无差别重绘。默认**不**返回产物正文（轮询要便宜）。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "files",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "1/true 时附带 files 与 snapshots 正文（可能上 MB）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{project,state,eff,overlay,optimize,metrics,diagnostics,revision,filesRevision[,files,snapshots]}",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/diagnostics": {
+      "get": {
+        "summary": "仓库级旁路失败汇总（诊断通道）",
+        "description": "读 `<root>/registry/diagnostics.jsonl` 的汇总（count/byKind/byScope/recent）。旁路失败（写指标抛错、知识库索引读不出、断言台账不可读…）此前被 `try{}catch{}` 静默吞掉；**count > 0 表示「某个结论可能不可信」**，不再静默。",
+        "responses": {
+          "200": {
+            "description": "{scope:\"repo\",count,byKind,byScope,recent}（contracts/diagnostics.schema.json）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/projects/{id}/diagnostics": {
+      "get": {
+        "summary": "项目级旁路失败汇总（诊断通道）",
+        "description": "同上，读 `<项目>/registry/diagnostics.jsonl`（指标/断言/词汇表/反馈类失败）。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "{scope:\"project\",projectId,count,byKind,byScope,recent}",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/openapi.json": {
+      "get": {
+        "summary": "本契约原文（OpenAPI 3.1）",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/_kit/save": {
+      "post": {
+        "summary": "[legacy] 写项目内文本文件（自 tools/serve.py 并入内核面）",
+        "description": "页面 legacy 端点。写路径复用与静态面**同一份** `isDeniedRelativePath` 判定（单点实现）；敏感路径 400。新前端请改用内核端点。",
+        "deprecated": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "content"],
+                "properties": {
+                  "name": { "type": "string", "description": "相对仓库根的路径（后缀须在白名单内）" },
+                  "content": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "{saved:true,path}" },
+          "400": { "description": "路径敏感或后缀不准入" }
+        }
+      }
+    },
+    "/api/save": {
+      "post": {
+        "summary": "[legacy] 同 /_kit/save（字段名 path）",
+        "deprecated": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["path", "content"],
+                "properties": { "path": { "type": "string" }, "content": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" }, "400": { "description": "拒绝" } }
+      }
+    },
+    "/_kit/history": {
+      "get": { "summary": "[legacy] 读写作历史（页面右栏）", "deprecated": true, "responses": { "200": { "description": "OK" } } },
+      "post": { "summary": "[legacy] 追加写作历史", "deprecated": true, "responses": { "200": { "description": "OK" } } }
+    },
+    "/api/archive-project": {
+      "post": {
+        "summary": "[legacy] 归档项目 → 移动进 projects/_archived/<id>-<ts>（不真删）",
+        "deprecated": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "required": ["project"], "properties": { "project": { "type": "string" } } }
+            }
+          }
+        },
+        "responses": { "200": { "description": "{movedTo}" }, "400": { "description": "拒绝（如归档目录自身）" } }
+      }
+    },
+    "/api/import-flow": {
+      "post": { "summary": "[legacy] 导入 flow 描述符", "deprecated": true, "responses": { "200": { "description": "OK" } } }
+    },
+    "/api/regen": {
+      "post": {
+        "summary": "[legacy] 重生成页面（调 tools/project-pages.py）",
+        "description": "页面生成失败**显式返回**（不再假装成功）；解释器可用 MINIFLOW_PYTHON 指定。",
+        "deprecated": true,
+        "responses": { "200": { "description": "{ok:true,...}" }, "500": { "description": "{ok:false,error,tail}（生成失败，含 stderr 尾部）" } }
+      }
+    },
+    "/api/import-demo": {
+      "post": { "summary": "[legacy] 导入示例项目", "deprecated": true, "responses": { "200": { "description": "OK" } } }
+    },
+    "/_kit/tunnel.json": {
+      "get": {
+        "summary": "[legacy] 隧道状态——内核面**显式声明未启用**（隧道能力暂只在 tools/serve.py 侧）",
+        "deprecated": true,
+        "responses": {
+          "200": {
+            "description": "{active:false,url:\"\"}（模板页据此隐藏隧道入口，不假装有）",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          }
+        }
+      }
+    }
+  }
+}

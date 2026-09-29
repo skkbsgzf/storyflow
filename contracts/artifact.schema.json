@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miniflow.dev/contracts/artifact.schema.json",
+  "title": "artifact · 产物注册表条目",
+  "description": "未注册 = 不存在 = 不可交付。对外交付/ 下的文件必须由注册产物经导出 minitool 生成。",
+  "type": "object",
+  "required": ["path", "node", "round", "sha1", "producer", "ts"],
+  "additionalProperties": false,
+  "properties": {
+    "path": { "type": "string", "description": "项目内相对路径" },
+    "node": { "type": "string", "description": "生产节点 id" },
+    "round": { "type": "integer", "minimum": 1 },
+    "sha1": { "type": "string", "description": "内容 sha1 前 12 位" },
+    "ts": { "type": "string" },
+    "producer": { "type": "string", "description": "生成方式：minitool id / host-submit / intake" },
+    "inputs": {
+      "type": "object",
+      "description": "输入指纹 {相对路径: sha1}——下游缓存命中与 stale 判定依据",
+      "additionalProperties": { "type": ["string", "null"] }
+    },
+    "validations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "description": "确定性检查器名（v5.0：不再登记 AE- 断言 id），如 integrity / export-count / glossary / script:check-purity" },
+          "status": { "type": "string", "enum": ["pass", "block", "warn"] },
+          "detail": { "type": "string" }
+        }
+      }
+    },
+    "delivery": { "type": "boolean", "default": false, "description": "是否对外交付物" },
+    "snapshot": { "type": "string", "description": "对应快照路径 snapshots/<node>/r<N>/" }
+  }
+}

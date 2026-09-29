@@ -1,0 +1,337 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "miniflow/module",
+  "title": "module@1 · 工种工具箱（模块化 flow 的能力单元）",
+  "description": "modules/<id>/module.json。模块 = 一个认知工种的完整工具箱（ops）+ 默认骨架（skeleton）+ 插槽表 + 能力清单（caps）。取代 kit@1（见 contracts/kit.schema.json，已废弃）。flow@3 只引用模块序列，节点与边由内核 modules.ts::expandFlow 从骨架派生（R6 规范 §一/§三）。设计源：docs/规范-模块化flow与工具箱-R6.md。",
+  "type": "object",
+  "required": [
+    "format",
+    "id",
+    "name",
+    "ops",
+    "skeleton",
+    "caps"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "format": {
+      "const": "module@1"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "模块 id，即 modules/<id>/ 目录名；flow@3 modules[].module 引用它"
+    },
+    "name": {
+      "type": "string",
+      "description": "工种名（如 编剧 / 检索 / 写作），面板模块卡片顶栏显示"
+    },
+    "desc": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "ops": {
+      "type": "object",
+      "description": "工具箱：tool id → tool 定义（原 kit@1 的 op，字段沿用并新增插件四件套）",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/definitions/tool"
+      }
+    },
+    "skeleton": {
+      "type": "object",
+      "description": "默认骨架 = 最小可用流水线。flow 不写 caps 时启用的就是它",
+      "required": [
+        "spine",
+        "edges"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "spine": {
+          "type": "array",
+          "minItems": 0,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "description": "默认启用的 tool 序列（次序即执行次序）；每一项必须在 ops 中声明（module-lint E 级）。允许空数组 = 纯能力包模块（如 检索/检测/底座：只有机器件、无常驻流水线节点，见勘误 §十一.9）"
+        },
+        "edges": {
+          "type": "array",
+          "description": "骨架内接线 [from, to]；两端都必须是 spine 成员（module-lint 校验）",
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]*$"
+            }
+          }
+        }
+      }
+    },
+    "caps": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "本模块可提供的全部能力标签（人类词，如 主线/人设/暗线/伏笔）。骨架覆盖其中子集，差值即可玩空间；前端能力标签条与 toolbox 抽屉以此渲染（caps 是唯一渲染依据）"
+    },
+    "io": {
+      "type": "object",
+      "description": "模块职责三件套（工单 W-01）：输入职责/输出职责/验收职责的声明式契约。spine 非空的模块必填（module-lint E 级强制），expandFlow3 传播进 effective@2 composition，前端模块卡直接渲染。",
+      "required": [
+        "input",
+        "output",
+        "acceptance"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "input": {
+          "type": "object",
+          "required": [
+            "from",
+            "shape"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "from": {
+              "type": "string",
+              "description": "flow-input（流程级输入）或上游模块 id"
+            },
+            "shape": {
+              "type": "string",
+              "description": "输入形态（人读）"
+            }
+          }
+        },
+        "output": {
+          "type": "object",
+          "required": [
+            "file",
+            "audience"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "file": {
+              "type": "string",
+              "description": "模块收敛交付件文件名（须=末位 spine 工具的 op.output 文件名）"
+            },
+            "audience": {
+              "type": "string",
+              "description": "交付对象"
+            }
+          }
+        },
+        "acceptance": {
+          "type": "object",
+          "required": [
+            "scans",
+            "rules"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "scans": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "端尾验收时展示的确定性扫描器 id（T 轨工具，只出证据不判决；须 ∈ tools/rules-init.py 的 TRACK_T 名单）"
+            },
+            "rules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "本模块验收时归 agent 裁决的规则卡 id（C 轨语料，kb/rules/*，须在 knowledge/rules/ 真实存在）"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "slot": {
+      "type": "string",
+      "pattern": "^(after|before):[a-z][a-z0-9-]*$|^end$",
+      "description": "插入点：after:<tool> / before:<tool> / end。锚点必须是本模块 ops 中声明的 tool"
+    },
+    "tool": {
+      "type": "object",
+      "required": [
+        "title",
+        "kind",
+        "capability"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "工具名（面板显示）"
+        },
+        "desc": {
+          "type": "string"
+        },
+        "planned": {
+          "type": "boolean",
+          "description": "能力占位声明（批D，铁律11「能力必须有家」的诚实形态）：true = 绑定的执行体内核未实现（minitool impl=planned），触达即 blocked。module-lint 对 planned tool 豁免 E-MINITOOL-IMPL 但显式记 W-PLANNED 台账——占位可见，不冒充有执行体。flow 引用 planned tool 进生产属结构类改动，须人批"
+        },
+        "skill": {
+          "type": "string",
+          "description": "认知类 tool 绑定的技能档案（skills/<skill>.md）；与 minitools/script 三者其一"
+        },
+        "minitools": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "description": "确定性 tool 绑定的内核 minitool 列表（须在 minitools.json 登记）；与 skill/script 三者其一。原 kit@1 即数组形态（勘误 §十一.10，单数 minitool 字段废弃）"
+        },
+        "script": {
+          "type": "string",
+          "description": "tools/ 脚本壳 tool 的脚本名（如 whereami/snapshot——开发基建，非流水线节点）；与 skill/minitools 三者其一（勘误 §十一.11）"
+        },
+        "model_tier": {
+          "enum": [
+            "high",
+            "lite"
+          ],
+          "description": "运行档位声明（R7 勘误：原枚举为 high|low，与引擎 kits.ts 的 high|lite 冲突——写 low 能过 lint 却被引擎丢弃。已统一为 high|lite）。high=强模型档（文学判断节点：novel-deai/novel-judge/dialogue-polish/评审类），lite=轻量档可接管。**缺省不声明 = 无档位约束**；轻档会话接手 high 节点前必须声明降档风险（AGENTS 铁律）"
+        },
+        "kind": {
+          "enum": [
+            "produce",
+            "review",
+            "check"
+          ],
+          "default": "produce",
+          "description": "produce=产出步 / review=评审步（R6 下仍是普通 agent 节点，不是门）/ check=确定性校验步"
+        },
+        "knowledge": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "注入标尺的知识条目（kb/… 或 kb/…/* 通配）"
+        },
+        "exclude_knowledge": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "从标尺中**精确剔除**的条目 id（批D 随 kit@1 迁入：glob 声明如 kb/trope/* 无法逐项排除，走精确名单——可审计、可回滚，装配器 loadKnowledge 显式回显「已剔除」而非静默消失，D1-D5 注入收窄口径）"
+        },
+        "knowledge_pools": {
+          "type": "array",
+          "description": "R8 选择面 · 候选池（规范 R8 §1.3）：从「点名清单」升级为「按决策过滤」。pool=目录池或精确条目 id，where.tags/where.notTags 可写 $decision:<key>.<picked|tags|excluded_tags>（唯一决策引用语法，不新造 DSL）；决策缺失时 onMissingDecision=block（缺省：整池不装+告警，绝不装作选了）或 load-all-with-warning（须明说：全装+「未按决策过滤」回显）。候选无默认生效权（铁律 2）",
+          "items": {
+            "type": "object",
+            "required": ["pool"],
+            "additionalProperties": false,
+            "properties": {
+              "pool": { "type": "string" },
+              "where": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "tags": { "type": "array", "items": { "type": "string" } },
+                  "notTags": { "type": "array", "items": { "type": "string" } }
+                }
+              },
+              "onMissingDecision": { "enum": ["block", "load-all-with-warning"] }
+            }
+          }
+        },
+        "skill_pool": {
+          "type": "string",
+          "description": "R8 §2.2 · 技能池（如 `style/*`）：装哪个技能由 decisions/<pool键>.json 的 picked 决定，替代「一个 op 焊死一个 skill」。与 skill 共存时 skill 是逃生口（module-lint W-SKILL-POOL 点名）"
+        },
+        "config": {
+          "type": "object",
+          "description": "内容配置旋钮表：key → {type, default, desc, enum?}。每个 tool 必须声明（R5 E7 口径沿用）",
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "type",
+              "desc"
+            ],
+            "properties": {
+              "type": {
+                "enum": [
+                  "number",
+                  "string",
+                  "boolean",
+                  "enum",
+                  "array"
+                ]
+              },
+              "default": {},
+              "desc": {
+                "type": "string"
+              },
+              "enum": {
+                "type": "array"
+              }
+            }
+          }
+        },
+        "capability": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          },
+          "description": "本 tool 提供什么能力（人类词）。渲染与选工具的唯一依据；必须 ⊆ 模块 caps（module-lint E 级）"
+        },
+        "slot": {
+          "$ref": "#/definitions/slot",
+          "description": "默认插入点。骨架成员可省略；非骨架成员必填（module-lint E 级）"
+        },
+        "also_fits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/slot"
+          },
+          "description": "其他允许的插入点（用户/优化器可改到这里）。缺省 []"
+        },
+        "requires": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "description": "前置 tool（未启用则本 tool 不可启用；展开器做可达性剪枝，缺失报错不静默丢）。缺省 []"
+        },
+        "adds": {
+          "type": "object",
+          "description": "插件式增量：插入后追加的标尺 / 旋钮（伏笔/暗线类插件的载体）。缺省 {}。v5.0：原「追加断言」通道随声明式断言协议退役。",
+          "additionalProperties": false,
+          "properties": {
+            "knowledge": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "config": {
+              "type": "object"
+            }
+          }
+        },
+        "output": {
+          "type": "string",
+          "description": "派生产物文件名（相对模块目录，默认 <toolId>.md）——模块输出职责的落盘名，如 选题报告.md / 剧本.md"
+        }
+      }
+    }
+  }
+}

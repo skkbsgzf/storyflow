@@ -1,0 +1,111 @@
+{
+  "format": "flow@3",
+  "id": "drama-adapt-polish",
+  "title": "改编润色流 v1（成品剧本 → 新形态重排 + 逐集改写）",
+  "desc": "已有成品剧本收到反馈后的第二轮工作流：原稿×反馈诊断（病灶账 + 爽点五类盘点）→ 分集重排表（目标集数/铺垫段配额/展开点卡位）→ 改编结构案 → 主线重排 → 冷开场登场桥段 → 分场与节拍 → 逐集改写剧本 → 红队评审；机械侧配 base.scan_quality（质量证据）；逐集字数/时长/卡点由 detect.manju-meter 脚本壳在各认知步交卷前跑并附收据（铁律 3/10）。口径卡：kb/formats/comic-drama-adapt。提交链无断言闸（v5.0）：语义判据归语料卡与 agent，机械项归扫描器证据，报数必附收据。",
+  "version": "1.1.0",
+  "status": "draft",
+  "inputs": {
+    "project": {
+      "type": "project",
+      "required": true,
+      "desc": "项目上下文"
+    },
+    "direction": {
+      "type": "string",
+      "required": true,
+      "desc": "改编方向（一句话说清这次要改成什么）"
+    },
+    "feedback": {
+      "type": "string",
+      "required": true,
+      "desc": "甲方反馈原文（逐条进诊断，不许概括后丢弃）"
+    },
+    "episodes": {
+      "type": "number",
+      "default": 80,
+      "min": 1,
+      "desc": "目标集数"
+    },
+    "setupEpisodes": {
+      "type": "number",
+      "default": 10,
+      "min": 1,
+      "desc": "铺垫段集数（末集=剧情展开点）"
+    },
+    "targetMinutes": {
+      "type": "number",
+      "default": 90,
+      "min": 1,
+      "desc": "全片目标时长（分钟），反推集数与配额"
+    }
+  },
+  "defaults": {
+    "link": "auto"
+  },
+  "policy": {
+    "link_default": "auto",
+    "adapt": "off"
+  },
+  "modules": [
+    {
+      "id": "m1",
+      "module": "plot",
+      "link": "auto",
+      "caps": [
+        "世界观",
+        "分集重排",
+        "改编诊断",
+        "登场桥段",
+        "短剧节拍",
+        "红队评审"
+      ]
+    },
+    {
+      "id": "m2",
+      "module": "base",
+      "link": "auto",
+      "insert": {
+        "end": [
+          "scan_quality"
+        ]
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "module": "m1",
+      "title": "改编润色施工图（诊断账 + 分集重排表 + 冷开场方案）+ 逐集改写稿",
+      "audience": "编剧与甲方验收"
+    },
+    {
+      "module": "m2",
+      "title": "质量扫描证据（findings + 收据）",
+      "audience": "agent 评审与端尾验收"
+    },
+    {
+      "node": "m1.world-forge",
+      "path": "世界书/总览.md",
+      "title": "世界书（GraphHyperRAG 词条库：世界书/<分类>/<词条>.md + graph.json）",
+      "audience": "写手 agent 直调（worldbook_search）+ pedia 可视化（worldbook.html）"
+    }
+  ],
+  "changelog": [
+    {
+      "version": "1.1.0",
+      "date": "2026-09-22",
+      "changes": [
+        "世界书强制插入（用户拍板）：world-forge 进 plot 实例 caps，outputs 声明 世界书/总览.md——产出 <分类>/<词条>.md 卡片库（frontmatter id/title/tags/links/status）+ graph.json 归纳层；查看层 worldbook.html（pedia），创作时 agent 直调 worldbook_search"
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-09-21",
+      "changes": [
+        "首版：应 p-yaomo-001 甲方反馈（80 集漫剧形态 / 前 10 集只铺垫宝刹寺 / 第 1 集代入三要素 / 爽点要具体）新建；配套新增能力 plot[改编诊断,分集重排,登场桥段] + detect[漫剧配额核数] 与标尺卡 kb/formats/comic-drama-adapt",
+        "plot 实例仍带模块骨架四步（结构/编排/分场/剧本）——改编轮把它们用作「改编结构案 / 主线重排 / 分场重排 / 逐集改写」，与 episode-script 记录的同一条已知粗化同帐；彻底解法待工具箱细分",
+        "detect.manju-meter 不入流水线（与 prose-scan/zhuque-check 同为脚本壳非节点件）：认知步交卷前显式跑，收据落 内部/收据/ 并在产物中引用"
+      ]
+    }
+  ]
+}

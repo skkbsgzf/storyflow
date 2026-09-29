@@ -1,0 +1,12 @@
+{"id":"np-w1","gold":"yes","basis":"slop-list S2 原文事故句式：叙述层三否定排比"}
+{"id":"np-w2","gold":"yes","basis":"S2：「没有人X，没有人Y」叙述层铺陈"}
+{"id":"np-w3","gold":"yes","basis":"S2+S4 复合：否定蓄势再给判语（叙述层）"}
+{"id":"np-w4","gold":"yes","basis":"S2：环境描写成串否定"}
+{"id":"np-w5","gold":"yes","basis":"S2：动作链尾排否定（没有…没有…也没有…）"}
+{"id":"np-w6","gold":"yes","basis":"S2：人物评述式否定排比"}
+{"id":"np-l1","gold":"no","basis":"S2 明示：对白内人物语言合法（坐堂郎中腔）"}
+{"id":"np-l2","gold":"no","basis":"S2：引文（牌匾）内否定=物在说话"}
+{"id":"np-l3","gold":"no","basis":"普通单项否定，非成串铺陈"}
+{"id":"np-l4","gold":"no","basis":"对白重复是人物口吻，非旁白蓄势"}
+{"id":"np-l5","gold":"no","basis":"边缘：重复否定是等待张力的功能拍（叙事推进），非排比铺陈；人裁参考样张"}
+{"id":"np-l6","gold":"no","basis":"文书引文内否定=引文"}

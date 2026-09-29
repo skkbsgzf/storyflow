@@ -1,0 +1,636 @@
+{
+  "id": "kb/market/snapshot",
+  "type": "market-snapshot",
+  "title": "咔咔猩市场快照（机器可读）",
+  "version": "2026-09-15",
+  "status": "active",
+  "source": {
+    "dataset": "kakaxing scriptrawstone",
+    "capturedAt": "2026-09-15",
+    "corpus": 7938,
+    "parsed": 6928
+  },
+  "note": "由 tools/distill-kakaxing.mjs 确定性生成；数据每日可刷新（update.cmd → 本工具）。avgHeatW 单位=万。",
+  "formatConstraints": {
+    "episodes": {
+      "30": 116,
+      "40": 718,
+      "50": 945,
+      "60": 4224,
+      "80": 925
+    },
+    "episodeDurationMin": "1-1.5 分钟/集（主流）",
+    "wordCountLimit": {
+      "1000": 1640,
+      "1200": 4284,
+      "1400": 528,
+      "1600": 476
+    },
+    "sceneNumberMax": {
+      "2": 1,
+      "3": 6927
+    },
+    "actorNumberMax": {
+      "6": 2,
+      "8": 5,
+      "10": 6921
+    }
+  },
+  "heat": {
+    "withHeat": 6809,
+    "medianW": 0.5817100000000001,
+    "p75W": 19000,
+    "p90W": 35000,
+    "maxW": 150000
+  },
+  "grades": {
+    "S": 33,
+    "A+": 3414,
+    "A": 3481
+  },
+  "regions": {
+    "NA": 2994,
+    "CN": 3934
+  },
+  "categories": {
+    "F": 4682,
+    "M": 2246
+  },
+  "genreHeatCN": [
+    {
+      "genre": "都市",
+      "count": 1478,
+      "avgHeatW": 17675,
+      "heatSumW": 26124190
+    },
+    {
+      "genre": "大女主",
+      "count": 1138,
+      "avgHeatW": 19557,
+      "heatSumW": 22255610
+    },
+    {
+      "genre": "逆袭",
+      "count": 1042,
+      "avgHeatW": 20955,
+      "heatSumW": 21834932
+    },
+    {
+      "genre": "打脸虐渣",
+      "count": 1031,
+      "avgHeatW": 17609,
+      "heatSumW": 18155125
+    },
+    {
+      "genre": "商战",
+      "count": 849,
+      "avgHeatW": 18750,
+      "heatSumW": 15918852
+    },
+    {
+      "genre": "打脸",
+      "count": 536,
+      "avgHeatW": 22657,
+      "heatSumW": 12144189
+    },
+    {
+      "genre": "甜宠",
+      "count": 484,
+      "avgHeatW": 10772,
+      "heatSumW": 5213564
+    },
+    {
+      "genre": "豪门",
+      "count": 476,
+      "avgHeatW": 16499,
+      "heatSumW": 7853562
+    },
+    {
+      "genre": "先婚后爱",
+      "count": 431,
+      "avgHeatW": 12180,
+      "heatSumW": 5249754
+    },
+    {
+      "genre": "重生",
+      "count": 426,
+      "avgHeatW": 16088,
+      "heatSumW": 6853351
+    },
+    {
+      "genre": "种田",
+      "count": 394,
+      "avgHeatW": 18535,
+      "heatSumW": 7302604
+    },
+    {
+      "genre": "大男主",
+      "count": 353,
+      "avgHeatW": 20130,
+      "heatSumW": 7105934
+    },
+    {
+      "genre": "穿越",
+      "count": 321,
+      "avgHeatW": 11133,
+      "heatSumW": 3573659
+    },
+    {
+      "genre": "复仇",
+      "count": 319,
+      "avgHeatW": 20449,
+      "heatSumW": 6523125
+    },
+    {
+      "genre": "马甲",
+      "count": 278,
+      "avgHeatW": 14689,
+      "heatSumW": 4083627
+    },
+    {
+      "genre": "现代",
+      "count": 265,
+      "avgHeatW": 17076,
+      "heatSumW": 4525100
+    },
+    {
+      "genre": "玄幻",
+      "count": 255,
+      "avgHeatW": 12020,
+      "heatSumW": 3065103
+    },
+    {
+      "genre": "年代",
+      "count": 239,
+      "avgHeatW": 19628,
+      "heatSumW": 4691143
+    },
+    {
+      "genre": "脑洞",
+      "count": 227,
+      "avgHeatW": 15226,
+      "heatSumW": 3456313
+    },
+    {
+      "genre": "女性成长",
+      "count": 224,
+      "avgHeatW": 10813,
+      "heatSumW": 2422199
+    },
+    {
+      "genre": "奇幻",
+      "count": 219,
+      "avgHeatW": 14215,
+      "heatSumW": 3113036
+    },
+    {
+      "genre": "双向救赎",
+      "count": 215,
+      "avgHeatW": 8889,
+      "heatSumW": 1911094
+    },
+    {
+      "genre": "仙侠",
+      "count": 206,
+      "avgHeatW": 11421,
+      "heatSumW": 2352654
+    },
+    {
+      "genre": "异能",
+      "count": 205,
+      "avgHeatW": 17872,
+      "heatSumW": 3663741
+    },
+    {
+      "genre": "职场",
+      "count": 202,
+      "avgHeatW": 20951,
+      "heatSumW": 4232113
+    },
+    {
+      "genre": "现言",
+      "count": 183,
+      "avgHeatW": 12130,
+      "heatSumW": 2219741
+    },
+    {
+      "genre": "系统",
+      "count": 178,
+      "avgHeatW": 15344,
+      "heatSumW": 2731230
+    },
+    {
+      "genre": "悬疑",
+      "count": 174,
+      "avgHeatW": 18734,
+      "heatSumW": 3259736
+    },
+    {
+      "genre": "古代",
+      "count": 155,
+      "avgHeatW": 14085,
+      "heatSumW": 2183115
+    },
+    {
+      "genre": "古言",
+      "count": 154,
+      "avgHeatW": 12799,
+      "heatSumW": 1971045
+    },
+    {
+      "genre": "科幻",
+      "count": 154,
+      "avgHeatW": 23040,
+      "heatSumW": 3548140
+    },
+    {
+      "genre": "乡村",
+      "count": 153,
+      "avgHeatW": 20748,
+      "heatSumW": 3174504
+    },
+    {
+      "genre": "暴富",
+      "count": 136,
+      "avgHeatW": 20987,
+      "heatSumW": 2854287
+    },
+    {
+      "genre": "神医",
+      "count": 133,
+      "avgHeatW": 15807,
+      "heatSumW": 2102386
+    },
+    {
+      "genre": "喜剧",
+      "count": 130,
+      "avgHeatW": 7708,
+      "heatSumW": 1002059
+    },
+    {
+      "genre": "强者回归",
+      "count": 107,
+      "avgHeatW": 21803,
+      "heatSumW": 2332936
+    },
+    {
+      "genre": "架空",
+      "count": 100,
+      "avgHeatW": 13884,
+      "heatSumW": 1388425
+    },
+    {
+      "genre": "求生",
+      "count": 94,
+      "avgHeatW": 22179,
+      "heatSumW": 2084829
+    },
+    {
+      "genre": "萌宠",
+      "count": 70,
+      "avgHeatW": 12561,
+      "heatSumW": 879255
+    },
+    {
+      "genre": "小人物",
+      "count": 69,
+      "avgHeatW": 17609,
+      "heatSumW": 1215013
+    }
+  ],
+  "genreHeatNA": [
+    {
+      "genre": "Revenge",
+      "count": 1810,
+      "avgHeatW": 364,
+      "heatSumW": 659312
+    },
+    {
+      "genre": "Billionaire",
+      "count": 1071,
+      "avgHeatW": 185,
+      "heatSumW": 198201
+    },
+    {
+      "genre": "Secret-Identity",
+      "count": 975,
+      "avgHeatW": 418,
+      "heatSumW": 407131
+    },
+    {
+      "genre": "Underdog-Rise",
+      "count": 839,
+      "avgHeatW": 578,
+      "heatSumW": 485095
+    },
+    {
+      "genre": "Enemies-to-Lovers",
+      "count": 477,
+      "avgHeatW": 55,
+      "heatSumW": 26039
+    },
+    {
+      "genre": "Corporate-Warfare",
+      "count": 463,
+      "avgHeatW": 441,
+      "heatSumW": 204097
+    },
+    {
+      "genre": "High-Society",
+      "count": 442,
+      "avgHeatW": 713,
+      "heatSumW": 315116
+    },
+    {
+      "genre": "Werewolf",
+      "count": 424,
+      "avgHeatW": 144,
+      "heatSumW": 61037
+    },
+    {
+      "genre": "Marriage-of-Convenience",
+      "count": 348,
+      "avgHeatW": 37,
+      "heatSumW": 13045
+    },
+    {
+      "genre": "Superpower",
+      "count": 293,
+      "avgHeatW": 65,
+      "heatSumW": 19025
+    },
+    {
+      "genre": "Toxic-Love / Dark Romance",
+      "count": 288,
+      "avgHeatW": 337,
+      "heatSumW": 97039
+    },
+    {
+      "genre": "Transformation / Glow-Up",
+      "count": 278,
+      "avgHeatW": 363,
+      "heatSumW": 101047
+    },
+    {
+      "genre": "High-Fantasy",
+      "count": 265,
+      "avgHeatW": 72,
+      "heatSumW": 19017
+    },
+    {
+      "genre": "Forbidden-Love",
+      "count": 259,
+      "avgHeatW": 135,
+      "heatSumW": 35033
+    },
+    {
+      "genre": "Urban-Fantasy",
+      "count": 232,
+      "avgHeatW": 164,
+      "heatSumW": 38026
+    },
+    {
+      "genre": "Reincarnation",
+      "count": 215,
+      "avgHeatW": 396,
+      "heatSumW": 85038
+    },
+    {
+      "genre": "Fake-Relationship",
+      "count": 195,
+      "avgHeatW": 0,
+      "heatSumW": 24
+    },
+    {
+      "genre": "Shifter (Non-Wolf)",
+      "count": 187,
+      "avgHeatW": 161,
+      "heatSumW": 30014
+    },
+    {
+      "genre": "Mafia",
+      "count": 181,
+      "avgHeatW": 862,
+      "heatSumW": 156020
+    },
+    {
+      "genre": "Forced-Proximity",
+      "count": 180,
+      "avgHeatW": 339,
+      "heatSumW": 61018
+    },
+    {
+      "genre": "Secret-Baby",
+      "count": 176,
+      "avgHeatW": 74,
+      "heatSumW": 13027
+    },
+    {
+      "genre": "Divorce-Recovery",
+      "count": 163,
+      "avgHeatW": 338,
+      "heatSumW": 55028
+    },
+    {
+      "genre": "Vampire",
+      "count": 142,
+      "avgHeatW": 92,
+      "heatSumW": 13015
+    },
+    {
+      "genre": "Office-Romance",
+      "count": 122,
+      "avgHeatW": 107,
+      "heatSumW": 13021
+    },
+    {
+      "genre": "Sports-Romance",
+      "count": 111,
+      "avgHeatW": 1225,
+      "heatSumW": 136007
+    },
+    {
+      "genre": "Soul-Bond / Fated-Mates (Non-Shifter)",
+      "count": 104,
+      "avgHeatW": 212,
+      "heatSumW": 22013
+    },
+    {
+      "genre": "Military / Special-Ops Elite",
+      "count": 100,
+      "avgHeatW": 0,
+      "heatSumW": 7
+    },
+    {
+      "genre": "Psychological-Thriller",
+      "count": 99,
+      "avgHeatW": 0,
+      "heatSumW": 22
+    },
+    {
+      "genre": "Second-Chance",
+      "count": 88,
+      "avgHeatW": 148,
+      "heatSumW": 13011
+    },
+    {
+      "genre": "Mythological / Gods & Demigods",
+      "count": 87,
+      "avgHeatW": 0,
+      "heatSumW": 8
+    },
+    {
+      "genre": "Survival-Adventure",
+      "count": 79,
+      "avgHeatW": 2950,
+      "heatSumW": 233013
+    },
+    {
+      "genre": "LGBTQ+ Romance",
+      "count": 75,
+      "avgHeatW": 0,
+      "heatSumW": 1
+    },
+    {
+      "genre": "Reverse-Harem",
+      "count": 73,
+      "avgHeatW": 890,
+      "heatSumW": 65000
+    },
+    {
+      "genre": "Arranged-Marriage",
+      "count": 69,
+      "avgHeatW": 1131,
+      "heatSumW": 78006
+    },
+    {
+      "genre": "Campus-Romance",
+      "count": 66,
+      "avgHeatW": 0,
+      "heatSumW": 5
+    },
+    {
+      "genre": "Class Divide",
+      "count": 64,
+      "avgHeatW": 594,
+      "heatSumW": 38012
+    },
+    {
+      "genre": "Post-Apocalyptic",
+      "count": 59,
+      "avgHeatW": 0,
+      "heatSumW": 4
+    },
+    {
+      "genre": "Betrayal & Conspiracy",
+      "count": 57,
+      "avgHeatW": 1351,
+      "heatSumW": 77017
+    },
+    {
+      "genre": "Mistaken-Identity",
+      "count": 53,
+      "avgHeatW": 0,
+      "heatSumW": 11
+    },
+    {
+      "genre": "Grumpy-Sunshine",
+      "count": 50,
+      "avgHeatW": 0,
+      "heatSumW": 6
+    }
+  ],
+  "families": [
+    {
+      "slug": "dalian-nuezha",
+      "name": "打脸虐渣梗",
+      "count": 1510,
+      "avgHeatW": 18558,
+      "saturation": "红海·有效"
+    },
+    {
+      "slug": "na-billionaire",
+      "name": "豪门财富梗(NA)",
+      "count": 895,
+      "avgHeatW": 228,
+      "saturation": "红海·过饱和"
+    },
+    {
+      "slug": "majia-diaoma",
+      "name": "马甲掉马梗",
+      "count": 750,
+      "avgHeatW": 9215,
+      "saturation": "红海·过饱和"
+    },
+    {
+      "slug": "chongsheng-fuchou",
+      "name": "重生复仇梗",
+      "count": 702,
+      "avgHeatW": 11978,
+      "saturation": "红海·有效"
+    },
+    {
+      "slug": "xianhun-lianai",
+      "name": "先婚后爱梗",
+      "count": 387,
+      "avgHeatW": 10092,
+      "saturation": "稳定·主流"
+    },
+    {
+      "slug": "shenhao-baofu",
+      "name": "神豪暴富梗",
+      "count": 380,
+      "avgHeatW": 18987,
+      "saturation": "上升期·蓝海偏好"
+    },
+    {
+      "slug": "na-werewolf",
+      "name": "狼人命定梗(NA)",
+      "count": 359,
+      "avgHeatW": 167,
+      "saturation": "退潮期·慎入"
+    },
+    {
+      "slug": "zhuxu-zhanshen",
+      "name": "赘婿战神梗",
+      "count": 192,
+      "avgHeatW": 10684,
+      "saturation": "稳定·主流"
+    },
+    {
+      "slug": "na-fantasy",
+      "name": "奇幻生物梗(NA)",
+      "count": 161,
+      "avgHeatW": 234,
+      "saturation": "退潮期·慎入"
+    },
+    {
+      "slug": "zhuiqi-huozangchang",
+      "name": "追妻火葬场梗",
+      "count": 132,
+      "avgHeatW": 14218,
+      "saturation": "上升期·蓝海偏好"
+    },
+    {
+      "slug": "liufang-zhongtian",
+      "name": "流放种田梗",
+      "count": 92,
+      "avgHeatW": 22598,
+      "saturation": "上升期·蓝海偏好"
+    },
+    {
+      "slug": "zhenjia-qianjin",
+      "name": "真假千金梗",
+      "count": 83,
+      "avgHeatW": 7938,
+      "saturation": "退潮期·慎入"
+    },
+    {
+      "slug": "tuanchong",
+      "name": "团宠护短梗",
+      "count": 63,
+      "avgHeatW": 2703,
+      "saturation": "退潮期·慎入"
+    }
+  ]
+}

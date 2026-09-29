@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "miniflow/flow-overlay",
+  "title": "flow-overlay@1 · 运行时编排覆盖层（R5 生成式 flow）",
+  "description": "流程 bootstrap（flows/<id>/flow.json）保持稳定，运行编排由 overlay 表达：tool 的位置（增删/改线/换 op）与 tool 的内容配置（config/knowledge）都在这里改。装载序：flows/<id>/flow.json ⊕ flows/<id>/overlay.default.json（出厂建议） ⊕ projects/<id>/registry/overlay.json（项目运行编排）。应用是纯函数、幂等、可审计：同一条 patch 重复应用结果不变。每条的 kind 取值见 $defs/patch 的 oneOf 分节。v5.0：add_asserts/remove_asserts 两条 patch 字段随声明式断言协议退役（质量条款走 knowledge/ 规则语料，机器项走扫描器证据）。",
+  "type": "object",
+  "required": ["format", "flowId", "origin", "patches"],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "const": "flow-overlay@1" },
+    "flowId": { "type": "string" },
+    "origin": {
+      "enum": ["user", "optimizer", "factory", "kernel"],
+      "description": "谁写的：人 / 优化 agent / 出厂建议 / 内核自动（如边界验收注入）"
+    },
+    "reason": { "type": "string", "description": "本层整体意图（一句话）" },
+    "basedOn": {
+      "type": "object",
+      "description": "写这份 overlay 时所依据的快照",
+      "properties": {
+        "flowVersion": { "type": "string" },
+        "flowHash": { "type": "string" },
+        "metricsWindow": { "type": "string", "description": "指标窗口，如 last-10-runs / run-xxx" },
+        "evidence": { "type": "array", "items": { "type": "string" }, "description": "指标条目引用（rule@node/op）" }
+      }
+    },
+    "patches": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/patch" }
+    },
+    "history": {
+      "type": "array",
+      "description": "apply 记录（谁在什么时候应用了这一层，以及前后的编排哈希）",
+      "items": {
+        "type": "object",
+        "required": ["at", "actor"],
+        "properties": {
+          "at": { "type": "string" },
+          "actor": { "type": "string" },
+          "flowHashBefore": { "type": "string" },
+          "flowHashAfter": { "type": "string" },
+          "note": { "type": "string" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "patch": {
+      "type": "object",
+      "required": ["kind", "reason"],
+      "properties": {
+        "kind": {
+          "enum": [
+            "set-node",
+            "set-op",
+            "place-node",
+            "remove-node",
+            "set-edge",
+            "add-edge",
+            "remove-edge",
+            "set-tool",
+            "set-policy",
+            "suppress-boundary",
+            "set-input",
+            "set-module",
+            "insert-tool",
+            "set-link"
+          ],
+          "description": "R7 勘误：此前 schema 只列 11 种，而 flow@3 展开器实际只消费 set-policy/set-module/insert-tool——契约与实现各有对方没有的 kind（交集仅 set-policy），已把 13 种统一进本枚举。R7+N4：补第 14 种 `set-link`（per-link 降级通道）——`R7-boundary-auto` 此前产 `set-policy{key:kit_boundary}`，而 R6 已退役该键 ⇒ flow@3 结构性无法表达「只把某一处交界降为 auto」。每种 kind 的『消费者』见 docs/规范-开源部署与可调面-R7.md §二。"
+        },
+        "reason": { "type": "string", "description": "为什么改（必填，优化器还须给 evidence）" },
+        "evidence": {
+          "type": "object",
+          "description": "origin=optimizer 时必填：指标证据（rule/metric/value/samples）",
+          "properties": {
+            "rule": { "type": "string" },
+            "metric": { "type": "string" },
+            "value": {},
+            "samples": { "type": "integer" }
+          }
+        },
+        "status": {
+          "enum": ["applied", "proposed", "rejected"],
+          "default": "applied",
+          "description": "proposed = 待人工批（policy.adapt=propose 时的默认）；只有 applied 参与编排合成"
+        },
+
+        "id": { "type": "string", "description": "节点 id 或边 id（取决于 kind）" },
+        "config": { "type": "object", "description": "tool 的内容配置项取值（覆盖 op.config 的 default）" },
+        "when": { "description": "节点级启用条件 / 边条件（结构化谓词）" },
+        "output": { "type": "string" },
+        "role": { "enum": ["flow", "reject", "optional", "loop", "batch"] },
+        "params": { "type": "object" },
+
+        "kit": { "type": "string" },
+        "op": { "type": "string", "description": "kit 域内的 tool id（区别于本对象的 kind 判别键）" },
+        "minitool": { "type": "string" },
+
+        "node": {
+          "type": "object",
+          "description": "place-node：要插入的 tool",
+          "required": ["id", "kind", "title"],
+          "properties": {
+            "id": { "type": "string" },
+            "kind": { "enum": ["agent", "core", "gate"] },
+            "title": { "type": "string" },
+            "kit": { "type": "string" },
+            "op": { "type": "string" },
+            "minitool": { "type": "string" },
+            "output": { "type": "string" },
+            "config": { "type": "object" },
+            "desc": { "type": "string" }
+          }
+        },
+        "after": { "type": "array", "items": { "type": "string" } },
+        "before": { "type": "array", "items": { "type": "string" } },
+        "wire": {
+          "enum": ["chain", "fan-in", "fan-out"],
+          "default": "chain",
+          "description": "place-node 自动接线：串接 after→新→before / 汇集 after 全部 / 分发到 before 全部"
+        },
+        "rewire": {
+          "enum": ["bridge", "drop"],
+          "default": "bridge",
+          "description": "remove-node：bridge=把入边上游直连到出边下游 / drop=连同边一起丢"
+        },
+        "edge": {
+          "type": "object",
+          "description": "add-edge：要加的线",
+          "required": ["id", "from", "to"],
+          "properties": {
+            "id": { "type": "string" },
+            "from": { "type": "string" },
+            "to": { "type": "string" },
+            "role": { "enum": ["flow", "reject", "optional", "loop", "batch"], "default": "flow" },
+            "when": {},
+            "params": { "type": "object" },
+            "via": { "type": "string" },
+            "desc": { "type": "string" }
+          }
+        },
+
+        "add_knowledge": { "type": "array", "items": { "type": "string" } },
+        "remove_knowledge": { "type": "array", "items": { "type": "string" } },
+        "model_tier": { "enum": ["high", "lite"] },
+
+        "key": { "type": "string", "description": "set-policy/set-input 的键（policy 键由 flow.schema 的 policy 白名单约束）" },
+        "value": {},
+        "proposal": { "type": "string", "description": "来源提案 id（优化器产出时带上；人可凭 flow_overlay --approve <id> 把 proposed 批为 applied）" },
+        "from": { "type": "string", "description": "suppress-boundary：源节点 id" },
+        "to": { "type": "string", "description": "suppress-boundary：目标节点 id" },
+
+        "caps": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "set-module：模块实例要启用的能力清单（整体替换该实例的 caps）。消费者 = core/src/modules.ts::effectiveFlow3"
+        },
+        "module": {
+          "type": "string",
+          "description": "insert-tool：目标模块实例 id（如 m2）。消费者 = core/src/modules.ts::effectiveFlow3"
+        },
+        "tool": {
+          "type": "string",
+          "description": "insert-tool：要插入的 tool（op）id；必须存在于目标模块的 ops 声明中"
+        },
+        "slot": {
+          "type": "string",
+          "description": "insert-tool：插入锚点，取值 after:<spine成员> / before:<spine成员> / end（end = 追加到模块末尾）"
+        },
+        "link": {
+          "type": "string",
+          "description": "set-link：目标连接件 id（连接件节点 id 为 `<模块实例id>.link`，如 m2.link；也接受裸实例 id `m2`）。消费者 = core/src/modules.ts::effectiveFlow3（改模块实例的 link 字段，由 expandFlow3 派生连接件时生效）"
+        },
+        "mode": {
+          "enum": ["auto", "manual"],
+          "description": "set-link：该处交界的裁决模式。auto = 自动放行（仅在跨界风险升高时才拦人）；manual = 每次跨此交界都挂人工门。**改的是人工裁决的位置 = 结构类改动，永远只 proposed、不会自动落地**"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "spec": "laya-style-question-spec@1",
+  "version": "0.2.1",
+  "date": "2026-09-27",
+  "retirement": "0.2.1（2026-09-27）：六个统计/退化题退役（rhythm/punct/dialogue/time-word/density/slop.banned，qid 保留不复用）。依据 encoder_probe 实证（dataset-style/v02/encoder-probe.json）：①四 noul 统计题线性探针仅平多数类（+1~5pt）且阈值型标签可被 prose-scan 确定性计算——统计面归扫描器，学生模型是错误工具位；②slop.banned 探针=多数类（标签退化，自然语料零命中）；③density 为特征命中计数，同属扫描器位。学生定形=只做判别面（style.origin.v1.choice + style.real.v1.choice）——v03-choice-e15 在 123 行 held-out test 上 origin 85.1%（探针上限 89.9%），直评 PASS（校准 ECE 0.101）。",
+  "purpose": "文风指纹学生模型（AI 写作过拟合的判别面）——与质量评审 spec（questions.spec.json）分离：本题面只做文风统计画像与来源判别，不做质量裁决。",
+  "labeling": "全部题面由语料统计特征自动打标（阈值源自 语言DNA.md 作者画像，v0.2 按语料分布重定标），零人裁金标依赖；人裁仅做验收抽检。slop.banned 题含 v0.2 合成污染增强（15% 块随机插 1-2 个一级词表词——自然语料命中≈0，不增强则该题退化为常数题）。",
+  "corpus": {
+    "pengpai": "D:/写作/04_风格蒸馏/异兽迷城-彭湃/raw/（1306 章）",
+    "other_human": "D:/写作/04_资料/下载小说语料/ 十日终焉.txt + 诸神愚戏.txt",
+    "ai": "本仓在档 AI 成稿（projects/*/正文/终稿/章节）"
+  },
+  "questions": {
+    "style.rhythm.v1.noul": {
+      "retired": "0.2.1：统计阈值题，探针平多数类，归 prose-scan（qid 不复用）",
+      "type": "noul",
+      "instructions": "判断该段句法节奏是否符合「短句主导、一拍一段」的网文快节奏特征：平均句长 ≤32 字、≤15 字短句占比 ≥30%、且存在单句独立成段。",
+      "features": ["avg_sent_len", "short_sent_ratio", "oneline_para_ratio"],
+      "auto_threshold": "avg≤32 ∧ short≥0.30 ∧ oneline≥0.10",
+      "rubric_ref": "语言DNA.md §一（作者画像：23.4 字均长 / 43.5% 短句 / 26.5% 单句成段）"
+    },
+    "style.punct.v1.noul": {
+      "retired": "0.2.1：统计阈值题，探针平多数类，归 prose-scan（qid 不复用）",
+      "type": "noul",
+      "instructions": "判断该段标点画像是否符合该文风：省略号存在两用痕迹（声音延续或单独成行转场）、破折号克制（<4/千字）、感叹号偏活跃（≥2/千字）。",
+      "features": ["ellipsis_line", "dash_per_k", "excl_per_k"],
+      "auto_threshold": "(省略号行 ≥1 ∨ 省略号 ≥2/千字) ∧ 破折号 <4/千字 ∧ 叹号 ≥2/千字",
+      "rubric_ref": "语言DNA.md §二（标点画像每千字表）"
+    },
+    "style.dialogue.v1.noul": {
+      "retired": "0.2.1：统计阈值题，探针平多数类，归 prose-scan（qid 不复用）",
+      "type": "noul",
+      "instructions": "判断该段是否对白驱动：双引号对白占比 15%-40%，且带「说道/问道/笑着说道」类神态短句标签。",
+      "features": ["dialogue_ratio", "said_tag_count"],
+      "auto_threshold": "0.15 ≤ 对白占比 ≤ 0.40 ∧ 引号对数 ≥2",
+      "rubric_ref": "语言DNA.md §三（对白驱动 ≈25%）"
+    },
+    "slop.banned.v1.noul": {
+      "retired": "0.2.1：标签退化（自然语料零命中，探针=多数类），词表扫描归 prose-scan/slop-list（qid 不复用）",
+      "type": "noul",
+      "instructions": "判断该段是否出现 AI 腔铁证：一级铁证词（赋能/深耕/聚焦/助力/打造/引领/全方位/闭环/抓手/底层逻辑/颗粒度等）、机器人开场客服短语、或意义拔高套话（未来可期/谱写新华章等）。",
+      "features": ["banned_hits"],
+      "auto_threshold": "任一命中 = true（AI 侧预期高发）",
+      "rubric_ref": "knowledge/aesthetic/slop-list.md 一级词表 + 机器人短语（正则可测）"
+    },
+    "style.time-word.v1.noul": {
+      "retired": "0.2.1：统计阈值题，探针平多数类，归 prose-scan（qid 不复用）",
+      "type": "noul",
+      "instructions": "判断该段是否使用时间推进词卡点（很快/几秒后/两秒后/忽然/一时间/顿了顿 等）推进节奏与悬念。",
+      "features": ["time_word_per_k"],
+      "auto_threshold": "≥1 处/千字（v0.2 由彭湃分布重定标：≥2 命中仅 11%，p90=2）",
+      "rubric_ref": "语言DNA.md §三（时间推进词密）"
+    },
+    "style.real.v1.choice": {
+      "type": "choice",
+      "instructions": "两段文本中，哪段是真人作者写的网文正文？（AI 生成段常见：套话词、长句堆叠、无单句成段、解释腔）",
+      "criteria": {
+        "A": "A 段是真人原文。",
+        "B": "B 段是真人原文。"
+      },
+      "pairing": "真人块（彭湃/其他真人）× AI 块 随机配对",
+      "state_requires": ["文本A", "文本B"]
+    },
+    "style.origin.v1.choice": {
+      "type": "choice",
+      "instructions": "判断该段正文出自哪类来源。",
+      "criteria": {
+        "pengpai": "彭湃《异兽迷城》（短句快节奏、生活物件锚、单句成段）。",
+        "other_human": "其他真人作者（十日终焉/诸神愚戏等）。",
+        "ai": "AI 生成（套话/解释腔/节奏平）。"
+      },
+      "state_requires": ["场景文本"]
+    },
+    "style.density.v1.score": {
+      "retired": "0.2.1：特征命中计数=扫描器位（qid 不复用）",
+      "type": "score",
+      "instructions": "评估该段的文风指纹浓度（画像特征贴合程度，噪声标注——仅供软标签蒸馏）。",
+      "criteria": [
+        "零贴合：句长/标点/节奏全偏离画像。",
+        "弱贴合：个别特征命中。",
+        "中贴合：多数特征命中。",
+        "强贴合：短句+单句成段+标点画像全面命中。"
+      ],
+      "auto_threshold": "命中特征数分桶（0-1/2/3+/全）",
+      "rubric_ref": "语言DNA.md 画像表（噪声软标签，验收以真伪判别为主米）",
+      "state_requires": ["场景文本"]
+    }
+  }
+}

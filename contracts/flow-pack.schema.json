@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miniflow.dev/contracts/flow-pack.schema.json",
+  "title": "flow-pack · L2 领域包 manifest",
+  "description": "flows/skills/knowledge/templates/minitools 的打包分发单位。安装 = 解包到对应目录 + manifest 登记。第三方发布一个领域包 = 一个目录 + 本 manifest。",
+  "type": "object",
+  "required": ["id", "name", "version", "kernel"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "name": { "type": "string" },
+    "version": { "type": "string", "description": "semver" },
+    "author": { "type": "string" },
+    "kernel": { "type": "string", "description": "兼容内核版本区间，如 >=0.1 <0.3" },
+    "flows": { "type": "array", "items": { "type": "string" }, "description": "携带的 flow 目录名（flow@3 格式；v4.0.0 基线）" },
+    "skills": { "type": "array", "items": { "type": "string" } },
+    "knowledge": { "type": "array", "items": { "type": "string" }, "description": "KB 条目 id 或 glob" },
+    "templates": { "type": "array", "items": { "type": "string" } },
+    "minitools": { "type": "array", "items": { "type": "string" }, "description": "携带的 L1 minitool id" },
+    "glossary": { "type": "string", "description": "领域词汇表文件（跨包隔离守卫用，M2）" },
+    "desc": { "type": "string" }
+  }
+}

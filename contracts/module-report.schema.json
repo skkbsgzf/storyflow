@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "module-report@1",
+  "title": "module-report@1 · 模块结果报告（W-04）：模块收口时的产出/验收/指标/反馈读模型，负反馈的批注载体",
+  "type": "object",
+  "required": ["format", "projectId", "moduleId", "moduleName", "closedAt", "artifacts", "acceptance", "metrics"],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "const": "module-report@1" },
+    "projectId": { "type": "string" },
+    "flowId": { "type": "string" },
+    "moduleId": { "type": "string" },
+    "moduleName": { "type": "string" },
+    "title": { "type": "string" },
+    "closedAt": { "type": "string", "description": "模块收口时间（link 通过时刻）" },
+    "io": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "input": { "type": "array", "items": { "type": "string" } },
+        "output": { "type": "string" }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["node", "path"],
+        "additionalProperties": false,
+        "properties": {
+          "node": { "type": "string" },
+          "op": { "type": "string" },
+          "path": { "type": "string" },
+          "role": { "enum": ["deliverable", "process"] }
+        }
+      }
+    },
+    "acceptance": {
+      "type": "array",
+      "description": "验收证据：来自各节点最新产物的确定性检查结果（v5.0：原断言三态含 unverified 已随声明式协议退役；语义层判定归评审 agent 与端尾人工验收，不进本表）",
+      "items": {
+        "type": "object",
+        "required": ["node", "check", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "node": { "type": "string" },
+          "check": { "type": "string", "description": "检查器名（integrity / export-count / glossary…），非 AE- 断言 id" },
+          "status": { "enum": ["pass", "block", "warn"] },
+          "detail": { "type": "string" }
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "submits": { "type": "integer" },
+        "retries": { "type": "integer" },
+        "tokensIn": { "type": "number" },
+        "tokensOut": { "type": "number" },
+        "latencyMs": { "type": "number" },
+        "ctxOffered": { "type": "integer" },
+        "ctxUsed": { "type": "integer" },
+        "hitRate": { "type": "number" }
+      }
+    },
+    "feedback": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "annotations": { "type": "integer", "description": "本模块批注数" },
+        "proposals": { "type": "integer", "description": "optimize 池内相关提案数" }
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "skillrouter-mcp",
+  "version": "0.3.0",
+  "description": "Advisory tool-router MCP server: converts skills into tool registries and ranks the tool pool per request with a pluggable engine (deterministic fallback + optional local small model). Never gates — the agent decides.",
+  "type": "module",
+  "bin": {
+    "skillrouter-mcp": "src/server.mjs"
+  },
+  "main": "src/server.mjs",
+  "scripts": {
+    "start": "node src/server.mjs",
+    "test": "node test/selftest.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "src",
+    "examples",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "mcp",
+    "tool-routing",
+    "agent",
+    "skill",
+    "scheduler"
+  ],
+  "license": "MIT"
+}

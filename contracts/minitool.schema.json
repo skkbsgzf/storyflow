@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miniflow.dev/contracts/minitool.schema.json",
+  "title": "minitool · L1 能力插件声明",
+  "description": "确定性原子操作（零 token）。语言无关：exec 指向可执行入口，内核以子进程调用，stdin/stdout JSON。第三方写一个带 schema 的可执行文件即完成接入。",
+  "type": "object",
+  "required": ["id", "title", "exec", "input", "output"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "全局唯一 id，如 export-doc / quality-scan" },
+    "title": { "type": "string" },
+    "version": { "type": "string", "default": "0.1.0" },
+    "exec": {
+      "type": "object",
+      "required": ["cmd"],
+      "additionalProperties": false,
+      "properties": {
+        "cmd": { "type": "string", "description": "启动命令，如 python tools/export-doc.py（相对领域包根）" },
+        "cwd": { "type": "string", "description": "工作目录约定，默认领域包根" },
+        "timeoutMs": { "type": "integer", "minimum": 1000, "default": 60000 }
+      }
+    },
+    "input": { "$ref": "#/$defs/jsonSchema", "description": "stdin JSON 的 Schema（内联）" },
+    "output": { "$ref": "#/$defs/jsonSchema", "description": "stdout JSON 的 Schema（内联）" },
+    "sideEffects": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["write-artifact", "write-state", "network"] },
+      "description": "副作用声明；含 write-* 的 minitool 只能由内核在校验链内调用"
+    },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "jsonSchema": { "type": "object", "description": "JSON Schema draft 2020-12 内联对象" }
+  }
+}

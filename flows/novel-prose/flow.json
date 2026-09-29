@@ -1,0 +1,125 @@
+{
+  "format": "flow@3",
+  "id": "novel-prose",
+  "title": "成文流水线（文学化专科拼装 · 逐段盖章）",
+  "desc": "架构判词落地（2026-09-17）：剧情前置锁定（编剧流分场卡→五行节拍卡，成文层无权改戏）→ 三专科并行出层稿（台词师/场景师/设定官，各归其约各显神通）→ 成文师逐拍拼装+逐段六维盖章（台词/场景/设定/人设/节奏/机味，全过才下推）→ 质量扫描出证据（v5.0：提交链上无断言闸，裁决归 agent 与端尾验收）→ polish 只做收尾薄修（拒屎上雕花：质量主责在成文盖章，原文级问题打回重拼，禁止在 polish 层救烂原文）。约束整合入口=kb/craft/prose-constraints 六维路由总纲。文学判断节点（layer-voices/layer-scenes/prose-assembler/novel-deai/novel-judge）须强模型档执行（AGENTS.md 模型档位纪律）。",
+  "version": "0.3.0",
+  "status": "draft",
+  "inputs": {
+    "project": {
+      "type": "project",
+      "required": true,
+      "desc": "项目上下文"
+    },
+    "route": {
+      "type": "enum",
+      "options": [
+        "hot",
+        "calm"
+      ],
+      "desc": "沿用选题阶段路线档位（R8：选择无默认——开跑前显式选或由项目配置 风格/AB测试 推导）"
+    },
+    "range": {
+      "type": "string",
+      "required": true,
+      "desc": "章范围（如 '4-9'）"
+    },
+    "batch": {
+      "type": "number",
+      "default": 4,
+      "min": 1,
+      "max": 6,
+      "desc": "每批章数"
+    }
+  },
+  "defaults": {
+    "link": "auto"
+  },
+  "policy": {
+    "link_default": "auto",
+    "adapt": "off"
+  },
+  "modules": [
+    {
+      "id": "m1",
+      "module": "base",
+      "insert": {
+        "end": [
+          "continuity_slice"
+        ]
+      }
+    },
+    {
+      "id": "m2",
+      "module": "drama",
+      "caps": [
+        "分集分镜"
+      ]
+    },
+    {
+      "id": "m3",
+      "module": "prose",
+      "link": "manual",
+      "caps": [
+        "台词层",
+        "场景层",
+        "设定层",
+        "拼装盖章",
+        "文学评审"
+      ],
+      "iterate": {
+        "unit": "chapter",
+        "over": "成文节拍卡",
+        "first": 4
+      }
+    },
+    {
+      "id": "m4",
+      "module": "base",
+      "insert": {
+        "end": [
+          "scan_quality",
+          "check-purity",
+          "continuity_commit"
+        ]
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "module": "m2",
+      "title": "五行卡节拍（剧情锁定件）",
+      "audience": "成文三专科"
+    },
+    {
+      "module": "m3",
+      "title": "章正文（逐段盖章产物）+ 层稿×3",
+      "audience": "质量扫描与 agent 评审"
+    },
+    {
+      "module": "m4",
+      "title": "质量扫描收据 + 终稿（盖章单随稿交付）",
+      "audience": "批次人工验收（agent 裁决 + 端尾验收）"
+    }
+  ],
+  "changelog": [
+    {
+      "version": "0.3.0",
+      "date": "2026-09-21",
+      "changes": [
+        "v5.0 断言退役（工单批B）：desc 中「硬断言闸」改写为「质量扫描出证据 + agent 裁决」；0.2.0 条目中的 op.asserts / AE-* 字样为历史记录——现口径 = io.acceptance{scans,rules} + 扫描器收据 + agent 裁决，提交链上无断言闸（成文质量判据见 knowledge/rules/ 规则语料卡与 kb/craft/prose-constraints）"
+      ]
+    },
+    {
+      "version": "0.2.0",
+      "date": "2026-09-21",
+      "changes": [
+        "flow@2 → flow@3（v4.0.0 工单批A）：base[台账切片] → drama[分集分镜]（分场锻拍=scene-breakdown 轻装路径）→ prose[三专科+拼装+评审]（逐章 iterate）→ base[断言/结算/纯净]；beats 节点不再引 plot 重型骨架。base 实例用 insert{\"end\":[…]} 显式有序启用（base spine=[]，caps 无锚可落——缺口归批D）",
+        "prose 模块整体 iterate 使 ghostwrite 骨架步与拼装盖章并行共存为已知粗化（与 caocao-wudalang m3 同口径）；novel-deai（polish 收尾薄修）为 prose 骨架步，契约不变",
+        "audit 节点 8 条 asserts（AE-WNF-HOOK/PROSE-*/CONT-*）折算：产物级随 prose op.asserts，闸级复扫归 m4 base[美学断言]；onFail「退回 assemble 定点修」归交卷-打回机制（重试记账入 journal）",
+        "fin「批次人工验收」按 R5 §四拆除，批次裁决=prose 域界门（m3 link:manual 保留跨域交接验收）",
+        "harness.parallel（voices∥textures∥canon）与 receipts 清单取消手工声明——同模块内就绪批派发由内核调度，收据走快照/收据目录"
+      ]
+    }
+  ]
+}

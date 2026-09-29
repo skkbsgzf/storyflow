@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "miniflow/artifact-header",
+  "title": "过程交付件头部（artifact@1 · R6 模块化布局）",
+  "description": "projects/**/*.md 的 YAML 头部解析结果。R6 变更：新增 module（产物归属模块实例）；删除 class/round/version（目录准入改按模块分段目录，版本由 git + snapshots 承担——避免第二处真相）；review 改挂连接件（只在经由 manual 连接件放行后写入）。头部是上游与审核背景的唯一真相——正文不得复述。见 docs/规范-模块化flow与工具箱-R6.md §五。",
+  "type": "object",
+  "required": ["artifact", "id", "module", "node", "state", "at", "by", "upstream"],
+  "additionalProperties": false,
+  "properties": {
+    "artifact": { "const": 1, "description": "格式版本，当前恒为 1" },
+    "id": {
+      "type": "string",
+      "pattern": "^([a-z][a-z0-9-]*\\.[a-z0-9-]+(\\.[a-z0-9-]+)*|world\\.[^.]+\\.[^.]+|input\\.[^.]+)$",
+      "description": "逻辑产物 id：<module>.<tool> | core.<minitool> | world.<类>.<名> | input.<名>"
+    },
+    "module": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "产物归属的模块实例 id（如 m2）；目录 NN-模块名 的 NN 由该实例在 flow.modules 中的序号决定"
+    },
+    "node": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*\\.[a-z][a-z0-9-]*(\\.link)?$",
+      "description": "产它的派生节点 id：<实例id>.<tool>（连接件 <实例id>.link 不产 artifact，此字段不会是 link）"
+    },
+    "state": {
+      "enum": ["draft", "final"],
+      "description": "draft=过程稿 / final=定稿。旧 reviewed/superseded 由 snapshots 与 git 承担，不再是头部状态"
+    },
+    "at": { "type": "string", "description": "产出时间 YYYY-MM-DD HH:MM" },
+    "by": {
+      "type": "string",
+      "pattern": "^(module/[a-z][a-z0-9-]*\\.[a-z0-9-]+|core/[a-z0-9_]+|user)$",
+      "description": "生产者：module/<实例id>.<tool> | core/<minitool> | user"
+    },
+    "upstream": {
+      "type": "array",
+      "description": "上游依赖，元素形如 路径@sha1前12 或 知识卡 id（kb/…）；无依赖为 []。命中率计量的分子来源",
+      "items": { "type": "string", "minLength": 3 }
+    },
+    "review": {
+      "description": "审核背景：只在产物经由 manual 连接件放行后写入（auto 连接件仅 journal 留痕，不写头部）。未过连接件写 null",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["link", "verdict"],
+          "additionalProperties": false,
+          "properties": {
+            "link": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]*\\.link$",
+              "description": "放行本模块产出的连接件 id（<上游实例id>.link）"
+            },
+            "verdict": { "enum": ["pass", "reject"], "description": "R6 两值：manual 连接件只有放行/驳回；reject = 重跑整个上游模块" },
+            "at": { "type": "string" },
+            "by": { "type": "string", "description": "裁决人（user / agent 名）" },
+            "reason": { "type": "string", "maxLength": 80, "description": "≤40 字一句话结论" }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,13 @@
+import fs from "node:fs";
+import vm from "node:vm";
+const root = "D:/storymasterv4";
+const html = fs.readFileSync(root + "/tmp-fixture-page/workflow.html", "utf-8");
+const payloadRaw = html.match(/<script type="application\/json" id="payload">([\s\S]*?)<\/script>/)[1];
+const payload = JSON.parse(payloadRaw.replaceAll("<\/","</"));
+const jsMatch = html.match(/<script>([\s\S]*?)<\/script>/g);
+const mainJs = jsMatch.filter(s=>s.includes("function openNodeDoc")).map(s=>s.replace(/<\/?script>/g,"")).join("\n");
+const noop=()=>{};
+const el = { innerHTML:"", textContent:"", style:{}, classList:{add(){},remove(){},toggle(){}}, setAttribute(){}, getAttribute:()=>null, addEventListener(){}, appendChild(){}, insertAdjacentHTML(){}, querySelectorAll:()=>[], querySelector:null, focus(){}, value:"", checked:false };
+const document = { getElementById:(id)=> id==="payload" ? {textContent: JSON.stringify(payload).replaceAll("<","\u003c")} : el, createElement:()=>({...el}), querySelectorAll:()=>[], querySelector:()=>null, addEventListener(){}, body:{}, createTextNode:()=>({}) };
+const ctx = { window:{}, document, console, setTimeout:noop, clearTimeout:noop, requestAnimationFrame:noop, localStorage:{getItem:()=>null,setItem(){}}, alert:noop, navigator:{clipboard:{writeText:()=>{}}}, JSON,Math,Object,Array,String,Number,Boolean,Set,Map,Date,RegExp,Error,Promise,URL, encodeURIComponent,decodeURIComponent,parseInt,parseFloat,isNaN, fs, path: (await import("node:path")), renderEffectiveBanner: noop, configPaper: ()=>"", };
+vm.createContext(ctx);

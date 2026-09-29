@@ -1,0 +1,406 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "miniflow/page-payload",
+ "title": "page-payload@2 · 工作台页注入数据（冻结契约）",
+ "description": "tools/project-pages.py 注入 workflow.html 的 JSON 数据形状——本契约冻结顶层五键（DATA/EFF/OVERLAY/OPTIMIZE/METRICS）及各子键，供前端布局与面板（WO-04/WO-05/WO-07）并行消费。新增键须立新 WO 改本契约，禁止页面侧私加。替代 payload@1（单 DATA 形态，见 docs/规范-模块化flow与工具箱-R6.md §五/§六）。",
+ "type": "object",
+ "required": [
+  "DATA",
+  "EFF",
+  "OVERLAY",
+  "OPTIMIZE",
+  "METRICS"
+ ],
+ "additionalProperties": false,
+ "properties": {
+  "DATA": {
+   "type": "object",
+   "description": "项目主体数据：页面渲染的一切静态与运行时内容",
+   "required": [
+    "project",
+    "flow",
+    "modules",
+    "toolbox",
+    "files",
+    "runstate",
+    "deliverables"
+   ],
+   "properties": {
+    "project": {
+     "type": "string",
+     "description": "项目 id"
+    },
+    "flow": {
+     "type": "object",
+     "description": "flow@3 摘要（展示用；完整 flow 见 DATA.flowRaw 或 EFF.flow）",
+     "properties": {
+      "id": {
+       "type": "string"
+      },
+      "title": {
+       "type": "string"
+      },
+      "version": {
+       "type": "string"
+      },
+      "status": {
+       "enum": [
+        "draft",
+        "official",
+        "retired"
+       ]
+      }
+     }
+    },
+    "modules": {
+     "type": "array",
+     "description": "模块实例列表（按 flow.modules 序）：页面模块卡片与画布布局的唯一来源",
+     "items": {
+      "type": "object",
+      "required": [
+       "id",
+       "module",
+       "name",
+       "link",
+       "caps",
+       "capsEnabled"
+      ],
+      "properties": {
+       "id": {
+        "type": "string",
+        "description": "实例 id（节点前缀 <id>.<tool>，连接件 <id>.link）"
+       },
+       "module": {
+        "type": "string",
+        "description": "模块 id"
+       },
+       "name": {
+        "type": "string",
+        "description": "工种名"
+       },
+       "link": {
+        "enum": [
+         "auto",
+         "manual"
+        ]
+       },
+       "order": {
+        "type": "integer",
+        "description": "序列序号（从 1；目录 NN-模块名 的 NN）"
+       },
+       "dir": {
+        "type": "string",
+        "description": "模块产物目录（如 02-方案）"
+       },
+       "caps": {
+        "type": "array",
+        "items": {
+         "type": "string"
+        },
+        "description": "模块全部能力"
+       },
+       "capsEnabled": {
+        "type": "array",
+        "items": {
+         "type": "string"
+        },
+        "description": "已启用能力（flow caps ∪ 骨架覆盖）"
+       },
+       "spine": {
+        "type": "array",
+        "items": {
+         "type": "string"
+        },
+        "description": "启用节点序列（含插件插入后的次序）"
+       },
+       "plugins": {
+        "type": "array",
+        "items": {
+         "type": "string"
+        },
+        "description": "插件节点（非骨架）"
+       }
+      }
+     }
+    },
+    "toolbox": {
+     "type": "object",
+     "description": "工具箱抽屉数据（能力 → 工具映射，含启用态）；形状契约见 contracts/toolbox.schema.json（toolbox@1）"
+    },
+    "files": {
+     "type": "object",
+     "description": "产物文件 { 相对路径: 内容 }（按新目录布局扫描：输入/ 世界书/ NN-模块名/ 交付/）",
+     "additionalProperties": {
+      "type": "string"
+     }
+    },
+    "runstate": {
+     "type": "object",
+     "description": "内核 state.json 运行状态（nodes/gate/policy 等）"
+    },
+    "deliverables": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     },
+     "description": "交付/ 目录清单"
+    },
+    "mtimes": {
+     "type": "object",
+     "description": "文件修改时间 { 相对路径: \"MM-DD HH:MM\" }（生成器注入；live 切片按同格式刷新内核扫描面）",
+     "additionalProperties": {
+      "type": "string"
+     }
+    },
+    "snapshots": {
+     "type": "object",
+     "description": "快照多轮视图 { 节点id: [{round, ts, note, files, content}] }（与内核 readSnapshots 同构；生成器与 live 面均嵌入，画布版本徽标与轮次 diff 的数据底座）",
+     "additionalProperties": {
+      "type": "array"
+     }
+    },
+    "inputs": {
+     "type": "object",
+     "description": "流程输入当前值"
+    },
+    "annos": {
+     "type": "object",
+     "description": "批注与意见（原样保留）"
+    },
+    "projects": {
+     "type": "array",
+     "items": {
+      "type": "object"
+     },
+     "description": "项目切换器清单"
+    },
+    "moduleReports": {
+     "type": "object",
+     "description": "W-04 模块结果报告（module-report@1）：moduleId → 报告。内核在模块收口时落盘 registry/module-report-<mid>.json，生成器注入",
+     "additionalProperties": {
+      "type": "object"
+     }
+    },
+    "moduleFiles": {
+     "type": "array",
+     "description": "模块产物分级视图（W-02/W-04）：每模块 {id,name,dir,deliverable,audience,process[]}——deliverable=io.output.file 落盘件，process=模块目录其余",
+     "items": {
+      "type": "object"
+     }
+    },
+    "kits": {
+     "type": "object",
+     "description": "能力注册表摘要（模板 kitOpOf 消费；协议字段名 kits 保留）：模块 id → {domain,title,ops:{op:{title,knowledge,minitools}}}。source: modules/*/module.json（批D 起唯一事实源）。v5.0：op.asserts 出账，校验面 = io.acceptance{scans,rules} + 扫描器收据。",
+     "additionalProperties": {
+      "type": "object"
+     }
+    },
+    "kbTitles": {
+     "type": "object",
+     "description": "kb id → 中文标题（knowledge/index.json entries）",
+     "additionalProperties": {
+      "type": "string"
+     }
+    },
+    "agentApi": {
+     "type": "string",
+     "description": "StoryHarness agent 脑基址（.storyharness.json agent.base，storyharness web 写入）；空串=同源内核脑。生成器单点注入，页面只消费"
+    }
+   },
+   "additionalProperties": false
+  },
+  "EFF": {
+   "type": "object",
+   "description": "registry/effective.json（effective@2）：生效编排，内核 expandFlow 单点派生落盘，页面只消费不重算；composition 为对象数组（每项含 id/module/name/dir/link/caps/spine/plugins/nodes）",
+   "required": [
+    "format",
+    "policy",
+    "links",
+    "composition",
+    "nodes",
+    "edges"
+   ],
+   "properties": {
+    "format": {
+     "const": "effective@2"
+    },
+    "policy": {
+     "type": "object",
+     "properties": {
+      "link_default": {
+       "enum": [
+        "auto",
+        "manual"
+       ]
+      },
+      "adapt": {
+       "enum": [
+        "off",
+        "propose",
+        "apply"
+       ]
+      },
+      "budget": {
+       "type": "object"
+      }
+     }
+    },
+    "links": {
+     "type": "array",
+     "description": "连接件列表（取代 R5 boundaries）",
+     "items": {
+      "type": "object",
+      "required": [
+       "id",
+       "fromModule",
+       "toModule",
+       "mode"
+      ],
+      "properties": {
+       "id": {
+        "type": "string",
+        "description": "连接件节点 id：<实例id>.link"
+       },
+       "fromModule": {
+        "type": "string"
+       },
+       "toModule": {
+        "type": "string"
+       },
+       "mode": {
+        "enum": [
+         "auto",
+         "manual"
+        ]
+       },
+       "state": {
+        "enum": [
+         "pending",
+         "passed",
+         "rejected"
+        ],
+        "description": "裁决态存 run state，不进图"
+       }
+      }
+     }
+    },
+    "composition": {
+     "type": "object",
+     "description": "逐模块展开结果：{ 实例id: { name, dir, spine[], plugins[], nodes[] } }",
+     "additionalProperties": {
+      "type": "object"
+     }
+    },
+    "nodes": {
+     "type": "object",
+     "description": "派生节点表 { <实例id>.<tool>: node }（id 稳定可引用）",
+     "additionalProperties": {
+      "type": "object"
+     }
+    },
+    "edges": {
+     "type": "array",
+     "description": "派生边（骨架边 + 插件自动接线；无 reject/loop 边）",
+     "items": {
+      "type": "object"
+     }
+    },
+    "artifacts": {
+     "type": "array",
+     "description": "产物注册（原样保留）"
+    }
+   },
+   "additionalProperties": true
+  },
+  "OVERLAY": {
+   "type": "object",
+   "description": "registry/overlay.json（flow-overlay@1）：运行时编排改写。R6 patch kinds 收敛为 set-node / set-op / place-node / remove-node / set-policy / set-input / set-module(caps) / insert-tool(slot)",
+   "required": [
+    "format",
+    "patches"
+   ],
+   "properties": {
+    "format": {
+     "const": "flow-overlay@1"
+    },
+    "patches": {
+     "type": "array",
+     "items": {
+      "type": "object"
+     }
+    },
+    "policy": {
+     "type": "object"
+    }
+   },
+   "additionalProperties": true
+  },
+  "OPTIMIZE": {
+   "type": "object",
+   "description": "registry/optimize.json：优化器提案与待批清单",
+   "required": [
+    "proposals"
+   ],
+   "properties": {
+    "proposals": {
+     "type": "array",
+     "items": {
+      "type": "object"
+     }
+    },
+    "pending": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     },
+     "description": "结构类待人工拍板的提案 id"
+    }
+   },
+   "additionalProperties": true
+  },
+  "METRICS": {
+   "type": "object",
+   "description": "registry/metrics-summary.json（metrics-summary@1）：命中率与 tool 效率聚合；R6 门相位改为 links 相位",
+   "required": [
+    "byNode",
+    "byTool",
+    "knowledge",
+    "links",
+    "window"
+   ],
+   "properties": {
+    "byNode": {
+     "type": "object",
+     "additionalProperties": {
+      "type": "object"
+     }
+    },
+    "byTool": {
+     "type": "object",
+     "description": "tool 聚合：submits / retries（单列）/ ctxOffered / ctxUsed / hitRate / consumedBy / efficiency",
+     "additionalProperties": {
+      "type": "object"
+     }
+    },
+    "knowledge": {
+     "type": "array",
+     "description": "逐知识卡命中率（升序）；glob 通配项不进分母（R6 计量修正）",
+     "items": {
+      "type": "object"
+     }
+    },
+    "links": {
+     "type": "object",
+     "description": "连接件相位指标（取代 gates）"
+    },
+    "window": {
+     "type": "object"
+    },
+    "events": {
+     "type": "integer"
+    }
+   },
+   "additionalProperties": true
+  }
+ }
+}

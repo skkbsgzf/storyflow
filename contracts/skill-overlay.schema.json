@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "skill-overlay@1",
+  "title": "skill-overlay@1 · 提示词补丁层（W-05）：skill 提示词的版本化 patch，改动永远进拍板清单",
+  "type": "object",
+  "required": ["format", "version", "patches"],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "const": "skill-overlay@1" },
+    "version": { "type": "integer", "const": 1 },
+    "note": { "type": "string" },
+    "patches": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "target", "op", "text", "status", "reason"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "description": "补丁 id（全局唯一，如 sp-001）" },
+          "target": { "type": "string", "description": "目标 skill 名（skills/<target>.md）" },
+          "section": { "type": "string", "description": "目标小节标题（如「## 工作流程」）；缺省 = 全文末尾追加" },
+          "op": { "enum": ["append", "replace"], "description": "append=小节末尾追加；replace=整节替换（section 必填）" },
+          "text": { "type": "string", "description": "补丁文本（markdown）" },
+          "status": { "enum": ["proposed", "applied", "rejected"], "description": "只有 applied 参与装载；提示词改动必须人批（proposed 不生效）" },
+          "reason": { "type": "string", "description": "为什么改（必填）" },
+          "origin": { "enum": ["user", "miner", "agent"], "description": "提案来源" },
+          "createdAt": { "type": "string" },
+          "appliedAt": { "type": "string" }
+        }
+      }
+    }
+  }
+}

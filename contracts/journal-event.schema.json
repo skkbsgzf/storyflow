@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miniflow.dev/contracts/journal-event.schema.json",
+  "title": "journal-event · 事件流条目",
+  "description": "projects/<id>/journal.jsonl，append-only，可回放可审计。一行一事件。",
+  "type": "object",
+  "required": ["ts", "runId", "event", "actor"],
+  "additionalProperties": false,
+  "properties": {
+    "ts": { "type": "string" },
+    "runId": { "type": "string" },
+    "nodeId": { "type": "string" },
+    "event": {
+      "type": "string",
+      "enum": ["run-start", "advance", "submit", "reject", "gate-open", "verdict", "rerun", "stale", "snapshot", "intake", "deliver", "run-end", "note", "warn"]
+    },
+    "actor": { "type": "string", "description": "host / kernel / user:<name> / minitool:<id>" },
+    "detail": { "type": "string" },
+    "refs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "关联产物路径 / 快照路径 / 失败断言名"
+    }
+  }
+}

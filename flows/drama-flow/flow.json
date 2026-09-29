@@ -1,0 +1,94 @@
+{
+  "format": "flow@3",
+  "id": "drama-flow",
+  "title": "短剧流 v1（模块化）",
+  "desc": "短剧剧本流 v1.1：选题报告 → 剧本 → 分镜剧本（含旁白/背景快切）。应用户口径：暂不转 docx，把剧本 md 做好。",
+  "version": "1.2.0",
+  "status": "official",
+  "inputs": {
+    "direction": {
+      "type": "string",
+      "required": true,
+      "desc": "题材方向"
+    },
+    "episodes": {
+      "type": "number",
+      "default": 6,
+      "desc": "试稿集数"
+    }
+  },
+  "defaults": {
+    "link": "auto"
+  },
+  "policy": {
+    "link_default": "auto",
+    "adapt": "off"
+  },
+  "modules": [
+    {
+      "id": "m1",
+      "module": "topic",
+      "caps": [
+        "找梗",
+        "素材解剖",
+        "时代情绪锚",
+        "网感文案",
+        "拆书入库"
+      ]
+    },
+    {
+      "id": "m2",
+      "module": "plot",
+      "caps": [
+        "结构",
+        "主线",
+        "人设",
+        "分场",
+        "世界观",
+        "单元剧大纲",
+        "短剧节拍",
+        "暗线",
+        "伏笔",
+        "悬念",
+        "红队评审",
+        "编剧"
+      ]
+    },
+    {
+      "id": "m3",
+      "module": "drama"
+    }
+  ],
+  "outputs": [
+    {
+      "module": "m1",
+      "title": "选题报告",
+      "audience": "作者（选题决策）"
+    },
+    {
+      "module": "m2",
+      "title": "剧本 IR",
+      "audience": "编剧（结构锁定）"
+    },
+    {
+      "module": "m3",
+      "title": "分镜剧本",
+      "audience": "导演/制片（可拍摄）"
+    },
+    {
+      "node": "m2.world-forge",
+      "path": "世界书/总览.md",
+      "title": "世界书（GraphHyperRAG 词条库：世界书/<分类>/<词条>.md + graph.json）",
+      "audience": "写手 agent 直调（worldbook_search）+ pedia 可视化（worldbook.html）"
+    }
+  ],
+  "changelog": [
+    {
+      "version": "1.2.0",
+      "date": "2026-09-22",
+      "changes": [
+        "世界书强制插入（用户拍板）：world-forge 进 plot 实例 caps，outputs 声明 世界书/总览.md——产出 <分类>/<词条>.md 卡片库（frontmatter id/title/tags/links/status）+ graph.json 归纳层；查看层 worldbook.html（pedia），创作时 agent 直调 worldbook_search"
+      ]
+    }
+  ]
+}

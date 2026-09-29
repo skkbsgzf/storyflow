@@ -1,0 +1,9 @@
+flowchart LR
+    m1["m1 底座 · (空骨架)"]:::mod
+    m2["m2 成剧 · scene-breakdown"]:::mod
+    m3["m3 写作 · ghostwrite → novel-deai"]:::mod
+    m4["m4 底座 · (空骨架)"]:::mod
+    m1 -.->|auto| m2
+    m2 ==>|manual| m3
+    m3 -.->|auto| m4
+    classDef mod fill:#1d2430,stroke:#e8b33d,color:#e8b33d

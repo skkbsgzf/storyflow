@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://miniflow.dev/contracts/stage.schema.json",
+  "deprecated": true,
+  "title": "stage@1 · Stage 封装包（命名 / 版本 / 可导入 / 市场分发单元）【已废弃 · module-flow-v3】",
+  "description": "[DEPRECATED 2026-09-18] 由 module@1 取代（contracts/module.schema.json）：「自带子图与验收门的可复用段」演进为「工具箱 + 骨架 + 插槽的模块」，验收门退役为模块间连接件。本文件仅供历史对照。原描述：Stage = 可复用能力段的标准化封装：自带子图与验收门，声明适用品类与输入输出；flow 由 Stage 拼接而成（一个 Stage 也可独立成线）。",
+  "type": "object",
+  "required": ["format", "id", "name", "version", "applicability", "entry", "nodes", "edges"],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "const": "stage@1" },
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "Stage 全局唯一 id（市场分发键）" },
+    "name": { "type": "string", "description": "人读名（中文）" },
+    "version": { "type": "string", "description": "semver；一经发布，同 id 升版本不破坏既有绑定" },
+    "applicability": {
+      "type": "array", "minItems": 1,
+      "items": { "type": "string", "enum": ["drama", "novel", "generic"] },
+      "description": "适用品类：选题可同时适用剧本与小说"
+    },
+    "desc": { "type": "string" },
+    "entry": { "type": "string", "description": "阶段入口节点 id" },
+    "gate": { "type": "string", "description": "阶段验收门 id（kind=gate/srd）；无门 Stage 可省略（以末端节点为出口）" },
+    "nodes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["kind", "title"],
+        "properties": {
+          "kind": { "enum": ["agent", "core", "gate", "srd", "novel-txt"] },
+          "title": { "type": "string" },
+          "skill": { "type": "string", "description": "认知步绑定的技能 id（skills/<id>.md 必须存在）" },
+          "minitool": { "type": "string", "description": "确定性步绑定的 minitool id（必须在 tools/minitools.json 登记）" },
+          "file": { "type": "string" },
+          "desc": { "type": "string" },
+          "iterate": { "type": "object" }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "from", "to"],
+        "properties": {
+          "id": { "type": "string" },
+          "from": { "type": "string" },
+          "to": { "type": "string" },
+          "transform": { "type": "string", "description": "skill.*/core.*/sm.* 三前缀，须符合命名注册表" },
+          "when": { "type": "string" },
+          "loop": { "type": "boolean" }
+        }
+      }
+    },
+    "inputs": {
+      "type": "array",
+      "items": { "type": "object", "required": ["key"], "properties": { "key": { "type": "string" }, "accept": { "type": "array", "items": { "type": "string" } } } }
+    },
+    "outputs": {
+      "type": "array",
+      "items": { "type": "object", "required": ["key", "node"], "properties": { "key": { "type": "string" }, "node": { "type": "string" } } }
+    }
+  }
+}

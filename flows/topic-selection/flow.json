@@ -1,0 +1,64 @@
+{
+  "format": "flow@3",
+  "id": "topic-selection",
+  "title": "短剧成稿生产线（调研 → 结构与方案 → 小纲 → 成稿 → 交付页）",
+  "desc": "id 沿用 v1 历史（当时只做选题），显示名反映真实交付物；命名规则：flow=生产线（端到端交付物），stage=生产线内的段落。四阶段推演：红方以四视角（目标读者/一般读者/资深编剧/甲方）逐段验收、说人话不念指标，机器可查项归扫描器证据、裁决归 agent（v5.0 起提交链无断言闸）；打回指认根因，定点重做。项目级约束：禁原创科幻/架空世界观，设定来源三级制（实事新闻底子首选/市面验证体系次选/原创一票否决），三分钟测试为调研期固定检查项；梗密度约束（热梗素材表 ≥10 条、前三章每集 ≥1 梗点）；成品剧本=连贯剧本（场次头/人物行动/表情/角色台词按角色归组，特殊镜头与旁白中括号），全部对白过 dialogue-polish 强制末环节；内部过程物件（梗卡/意见书/质量扫描收据/对账表）不随对外交付。第一阶段只做剧本：产物到剧本为止，不含分镜/视觉生产（render-prompt-seedance 留库备用）。",
+  "version": "6.0.1",
+  "status": "official",
+  "inputs": {
+    "project": { "type": "project", "required": true, "desc": "项目上下文（产物落点）" },
+    "direction": { "type": "string", "required": true, "desc": "题材方向（自然语言）" },
+    "route": { "type": "enum", "options": ["hot", "calm", "dual"], "desc": "风格路线：爽版/合理版/双版本+基线（R8：选择无默认——显式选或由项目配置 风格/AB测试 推导；dual 时爽版基线件随行，监管增益必须可验证）" },
+    "region": { "type": "enum", "options": ["CN", "NA"], "required": false, "feeds_decision": "region", "desc": "目标市场**先验**（可选）：给了就落 decision:region（by=user.preference）供梗卡池按区过滤；不填则 m1 调研双区都扫、交卷时以盘面证据 set_decision region 定案——市场归属是调研结论，不逼人开口" },
+    "zeitgeist": { "type": "boolean", "default": true, "desc": "是否注入实时热点扫描（调研期必含项，建议开）" }
+  },
+  "defaults": { "link": "auto" },
+  "policy": { "link_default": "auto", "adapt": "off" },
+  "modules": [
+    { "id": "m1", "module": "topic", "caps": ["找梗", "时代情绪锚", "网感文案"] },
+    { "id": "m2", "module": "plan", "caps": ["选题分析", "选题方案", "审美终审"] },
+    { "id": "m3", "module": "plot", "link": "manual", "caps": ["结构", "分场", "红队评审"] },
+    { "id": "m4", "module": "prose", "caps": ["剧本成稿", "对话打磨"] },
+    { "id": "m5", "module": "delivery", "caps": ["交付页"] }
+  ],
+  "outputs": [
+    { "module": "m1", "title": "选题报告（含调研：方向/人群兴趣点/竞品与梗选型/热度数据/约束移交单）", "audience": "甲方决策层" },
+    { "module": "m2", "title": "选题方案（项目背景/梗概/核心人设/大纲与冲突/后续走向 + 约束对账表）", "audience": "甲方与制作团队" },
+    { "module": "m3", "title": "大纲（结构选型+不确定因素注入）与小纲（分镜·行动·台词·创作思路 doc）", "audience": "客户批注回流" },
+    { "module": "m4", "title": "成品剧本试稿（连贯格式·台词已打磨）", "audience": "甲方与导演/演员侧" },
+    { "module": "m5", "title": "交付页（四件套合一，单文件移动版 HTML）", "audience": "甲方决策层" }
+  ],
+  "changelog": [
+    {
+      "version": "6.0.1",
+      "date": "2026-09-21",
+      "changes": [
+        "v5.0 断言退役（工单批B）：desc 口径改写——机器可查项由「断言层」改为「扫描器证据 + agent 裁决」，内部过程物件「断言报告」更名「质量扫描收据」；提交链无断言闸，跨域人工验收门不变"
+      ]
+    },
+    {
+      "version": "6.0.0",
+      "date": "2026-09-21",
+      "changes": [
+        "flow@2 → flow@3（v4.0.0 工单批A·official）：S1→topic[找梗,时代情绪锚,网感文案]，S1 调研报告+S3 方案→plan[选题分析,选题方案,审美终审]（plan 骨架=analysis→proposal 即旧两问），S2+S4→plot[结构,分场,红队评审]，S5→prose[剧本成稿,对话打磨]，交付页→delivery[交付页]",
+        "五处 gate-r1..r5 评审步全部拆除（处决清单#2）：红方评审照跑（plot[红队评审]+plan[审美终审] caps 承载，意见书产物照出）、交卷后自动裁决（R5 §四）；跨域人工验收保留一处——m3 的 kit 边界门（link:manual，进编剧域前用户拍板方案），其余用户拍板点走批注回流",
+        "已知次序粗化：旧流程 analysis(S1)→structure(S2)→proposal(S3) 交错进行，flow@3 模块线性序下 plan 段合并前置——方案与结构的对账改由 m3 打回环（定点重做）承担，不再逐边硬编码回环",
+        "market.loads 六项 kb 与 benchmark filterBy 装载归 op.knowledge/minitools 单点装载（K1）；combo 相性校验（check_trope_combo）随 find-trope op.minitools 承载；intake 批注回流（docx_ingest）暂缺 op 承载，待批D工具箱补全（记录在案，不静默丢）",
+        "delivery 节点 template=delivery-template.html 参数随 render_html op.config 化；route=dual 的爽版无监管基线件（baseline，when route==dual）折算入 plan op.config 与 route 输入 desc，模块级 when 待内核条件派发落地",
+        "stages/engine/roleModel/quality/harness/internalArtifacts/phaseScope/displayName/naming/dataBase 块整体退役：约束与角色模型沉淀入 title/desc/inputs，菱形循环/就绪批/快照/预设语义归内核与 overlay（R5/R6），显示名并入 title"
+      ]
+    },
+    { "version": "5.1.2", "date": "2026-09-17", "changes": ["命名修正：流程名更正为「短剧成稿生产线」——id 保持 topic-selection 稳定"] },
+    { "version": "5.1.1", "date": "2026-09-16", "changes": ["打回语义收敛：send-back 仅回注本阶段入口、失效范围限本阶段；S4/S5 边修正"] },
+    { "version": "5.1.0", "date": "2026-09-16", "changes": ["S1 并行化：找梗∥热点扫描就绪批并行；flow_next AND-join 就绪批调度"] },
+    { "version": "5.0.0", "date": "2026-09-16", "changes": ["架构重构：阶段-菱形循环引擎；删除 11 条硬编码回环边；新增 S4/S5 门"] },
+    { "version": "4.4.0", "date": "2026-09-15", "changes": ["新增 S4 小纲阶段与批注回流可选模块；S5 成品剧本格式重构；交付物四件套"] },
+    { "version": "4.3.0", "date": "2026-09-15", "changes": ["梗密度约束（meme-rules）；梗词典数据源清单入库"] },
+    { "version": "4.2.0", "date": "2026-09-15", "changes": ["S4 强制末环节 dialogue-polish；交付物重构对外三件套"] },
+    { "version": "4.1.0", "date": "2026-09-15", "changes": ["setting-rules：设定来源三级制；三分钟测试入 R1 固定检查项"] },
+    { "version": "4.0.0", "date": "2026-09-15", "changes": ["四阶段 stage-gate 制；红方 v2 视角代入制；不确定因素注入机制"] },
+    { "version": "3.1.0", "date": "2026-09-15", "changes": ["补齐驳回回注与 challenge 回应环；断言基线 66 条"] },
+    { "version": "3.0.0", "date": "2026-09-15", "changes": ["剧本特化产物重构：选题方案五节 + 前三章详细剧本独立产物"] },
+    { "version": "2.0.0", "date": "2026-09-14", "changes": ["找梗·网感·编排升级"] }
+  ]
+}

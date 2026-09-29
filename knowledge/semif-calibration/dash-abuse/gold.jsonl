@@ -1,0 +1,19 @@
+{"id":"dw1-jiushi","gold":"yes","basis":"slop-list S1：叙述层同位解释（「那个把他除名的地方」可独立成句）"}
+{"id":"dw2-qiang","gold":"yes","basis":"slop-list S1：叙述层补充描写，万能胶引出"}
+{"id":"dw3-jing","gold":"yes","basis":"slop-list S1 事故原型：揭示真身（「雷臂晃了出来——聚落的骄傲」同构）"}
+{"id":"dw4-jiaohao","gold":"yes","basis":"slop-list S5 原文例：破折号吊包袱蓄势"}
+{"id":"dw5-men","gold":"yes","basis":"slop-list S1：引出下文式解释"}
+{"id":"dw6-zhinan","gold":"yes","basis":"slop-list S1：复述揭示（指针状态前文已启动，破折号只做抖包袱）"}
+{"id":"dw7-duihua","gold":"yes","basis":"S1 口径严格版：对话内破折号仅「被打断」保留，解释式打回（2026-09-22 出卷人裁定）"}
+{"id":"dw8-gaikuo","gold":"yes","basis":"slop-list S1：列举后总括式补充"}
+{"id":"dw9-gonggao","gold":"yes","basis":"slop-list S1：叙述层补充说明落款"}
+{"id":"dw10-tuozhang","gold":"yes","basis":"争议样张：拖长感叹不属两类保留；口径从严记 yes，报单里单独标出供人裁"}
+{"id":"dl1-xiaoshen","gold":"no","basis":"正文.md:341 真实在案样本：喊名被打断"}
+{"id":"dl2-bepeng","gold":"no","basis":"naturalness #13「有明确打断功能的不算」：被动作打断"}
+{"id":"dl3-haozi","gold":"no","basis":"S1 保留类：号子/韵文断句"}
+{"id":"dl4-tongyao","gold":"no","basis":"S1 保留类：童谣断句"}
+{"id":"dl5-duanhua","gold":"no","basis":"S1 保留类：对话被他人截断"}
+{"id":"dl6-hankou","gold":"no","basis":"S1 保留类：喊叫中断（嗓子劈了）"}
+{"id":"dl7-weiluo","gold":"no","basis":"边缘合法：话自行中止（未说完），按打断类保留；报告标边缘"}
+{"id":"dl8-jia","gold":"no","basis":"S1 保留类：吆喝声拖长，功能性与号子同构"}
+{"id":"di1-poqian","gold":"insufficient","basis":"残信不可辨后半，上下文不足以判断——考判官会不会硬答"}

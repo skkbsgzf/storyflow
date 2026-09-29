@@ -1,0 +1,131 @@
+{
+  "version": "1.0.0",
+  "note": "miniflow 命名注册表（单一事实源）：flow 里出现的每个 transform 代号必须在此登记。三前缀语义：skill.=认知步（宿主执行技能）；core.=确定性步（内核 minitool，零 token）；sm.=编排语义（纯声明，无执行）。新增 id 不登记，flow-lint 即 fail。",
+  "minitools": {
+    "kb_load": {
+      "name": "知识装载",
+      "impl": "kernel",
+      "desc": "按节点 loads 清单聚合知识文件，产出带来源注记的装载件"
+    },
+    "scan_quality": {
+      "name": "质量扫描（证据制）",
+      "impl": "kernel",
+      "desc": "v5.0：原 check_aesthetic_asserts 断言闸退役改造——aesthetic.ts 全量确定性 findings + 收据，只出证据不拦截；判决归验收 agent/人（工单 §一/§三）"
+    },
+    "check_trope_combo": {
+      "name": "梗组合相性校验",
+      "impl": "check-integrity",
+      "desc": "走 check_* integrity 模式：产物存在性/结构完整/断言子集"
+    },
+    "render_html": {
+      "name": "交付页渲染",
+      "impl": "kernel",
+      "desc": "静态单文件交付页生成"
+    },
+    "docx_ingest": {
+      "name": "批注回流解析",
+      "impl": "planned",
+      "desc": "解析客户回传 docx 批注 → 结构化意见清单（批注回流=on 时触达）"
+    },
+    "continuity_slice": {
+      "name": "台账切片",
+      "impl": "kernel",
+      "desc": "世界书 台账/章账 按章切片供写手（M1 已实装，core/src/minitools.ts）"
+    },
+    "continuity_commit": {
+      "name": "台账结算",
+      "impl": "kernel",
+      "desc": "章回写手待登记清单回写世界书词条（状态机 draft/active/retired）（M1 已实装）"
+    },
+    "kb_search": {
+      "name": "知识检索",
+      "impl": "kernel",
+      "desc": "按 tags/关键词检索知识库条目（M1 已实装；dedup 同函数承担）"
+    },
+    "dedup": {
+      "name": "条目去重",
+      "impl": "kernel",
+      "desc": "知识条目去重（M1 已实装，kb_search 同路径）"
+    },
+    "meme_harvest": {
+      "name": "热点素材采集",
+      "impl": "planned",
+      "desc": "外部热点/梗源采集（现由宿主 agent 步承担）"
+    },
+    "kb_read": {
+      "name": "知识条目读取",
+      "impl": "kernel",
+      "desc": "按条目 id 读取知识库内容——agent 节点场景已由 kit 标尺装载统一承担（assembler.loadKnowledge）"
+    },
+    "flow_read_artifact": {
+      "name": "产物读取",
+      "impl": "kernel",
+      "desc": "读取上游产物——已由任务包 context 上游摘录承担（assembler.buildTaskPackage）"
+    },
+    "continuity_check": {
+      "name": "连续性校验",
+      "impl": "planned",
+      "desc": "台账矛盾/知情范围越权/伏笔逾期——当前由 scan_quality 的 AE-CONT-* 承担，待拆为独立 minitool"
+    },
+    "zhuque_check": {
+      "script": "tools/zhuque-check.py",
+      "status": "active",
+      "desc": "朱雀AI检测（官方API）——AI味软信号：softmax/ratio置信度+人工/AI/疑似占比+逐段标注；不设硬阈值退出码，归人审"
+    }
+  },
+  "edgeSemantics": {
+    "sm.review": {
+      "name": "验收交接",
+      "desc": "产物交验收门评审"
+    },
+    "sm.review.reject": {
+      "name": "打回回注",
+      "desc": "验收不通过，定点退回上游节点"
+    },
+    "sm.redline": {
+      "name": "红方复核",
+      "desc": "红队审视上游产物并出具意见"
+    },
+    "sm.topic-analysis": {
+      "name": "调研聚合",
+      "desc": "多路输入汇成选题调研报告"
+    },
+    "sm.topic-proposal": {
+      "name": "方案生成",
+      "desc": "调研结论转写为选题方案"
+    },
+    "sm.topic-delivery": {
+      "name": "交付生成",
+      "desc": "末级验收通过后生成对外交付页"
+    }
+  },
+  "skills": {
+    "deconstruct-book": "拆书师",
+    "dialogue-polish": "台词去AI味打磨",
+    "episodic-outline": "单元剧编排师",
+    "find-trope": "找梗师",
+    "internet-feel": "网感师",
+    "material-dissect": "素材解剖师",
+    "novel-bible": "开书师",
+    "novel-chapter": "章回写手",
+    "novel-deai": "快餐文去AI味终稿师",
+    "plot-choreographer": "剧情编排师",
+    "scene-breakdown": "小纲师·分镜脚本",
+    "script-final": "成品剧本师",
+    "structure-design": "结构选型师",
+    "topic-zeitgeist": "时代情绪锚",
+    "world-forge": "世界观锻造师",
+    "script-drama-beat": "短剧节拍表（场次与卡点）",
+    "topic-delivery-gate": "需求交付·对账清单",
+    "layer-canon": "设定官·设定层稿",
+    "layer-scenes": "场景师·场景层稿",
+    "layer-voices": "台词师·对白层稿",
+    "novel-judge": "终稿评审官·五维锚点评分",
+    "plot-redline": "剧情红队·多方视角评审",
+    "prose-assembler": "成文师·逐段拼装盖章",
+    "render-prompt-seedance": "Seedance 分镜提示词（引用语法）",
+    "topic-analysis-report": "选题分析报告方法论",
+    "topic-chief-aesthetic": "审美总编·选题方案质量观",
+    "topic-proposal": "选题方案方法论"
+  }
+}
