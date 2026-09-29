@@ -77,9 +77,9 @@ export interface ModuleComposition {
   io?: {
     input: { from: string; shape: string };
     output: { file: string; audience: string };
-    // v5.0：acceptance 双清单——scans = 端尾验收必须展示的扫描器证据项（quality-scan findings.name），
-    // rules = 验收 agent 对照裁决的 knowledge/rules 语料卡 id。断言声明层已退役。
-    acceptance: { scans: string[]; rules: string[] };
+    // v0.8：acceptance 可选（审核层退役——验收契约归宿主，docs/PROTOCOL-REVIEW.md）；
+    // 保留声明的模块仍按双清单传播（scans=扫描器证据项，rules=语料卡 id）。
+    acceptance?: { scans: string[]; rules: string[] };
   } | null;
 }
 

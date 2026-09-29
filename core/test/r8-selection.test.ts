@@ -59,7 +59,7 @@ describe("R8 S4 · 拍板②：enum 输入摘除 default（选择发生在开跑
     };
 
   it("六处历史 default 全部清零：enum 输入不再藏默认值", () => {
-    const flows = ["topic-selection", "novel-prose", "episode-script", "outline-production", "book-deconstruct"];
+    const flows = ["topic", "prose", "episode-script", "outline-production", "book-deconstruct"];
     for (const id of flows) {
       for (const [k, spec] of Object.entries(load(id).inputs ?? {})) {
         if (spec.type === "enum") expect(spec, `${id}.${k} 不应带 default`).not.toHaveProperty("default");
@@ -69,7 +69,7 @@ describe("R8 S4 · 拍板②：enum 输入摘除 default（选择发生在开跑
 
   it("region 是可选先验：不表态也开得了跑（缺席≠兜底，等调研步产决策）", async () => {
     const { kernel } = seedKernelLite();
-    const stop = await kernel.flow_run("topic-selection", "p-r8s4", { route: "hot", direction: "x" });
+    const stop = await kernel.flow_run("topic", "p-r8s4", { route: "hot", direction: "x" });
     expect(stop).toBeTruthy();
     // 未表态 = 不猜值：绝不自作主张落一条 CN 决策（那是引擎替作者选市场）
     expect(fs.existsSync(path.join(kernel.projectDir("p-r8s4"), "decisions", "region.json"))).toBe(false);
@@ -77,7 +77,7 @@ describe("R8 S4 · 拍板②：enum 输入摘除 default（选择发生在开跑
 
   it("表态即落决策（by=user.preference 单向桥），但 enum 仍不许带 default", async () => {
     const { kernel } = seedKernelLite();
-    await kernel.flow_run("topic-selection", "p-r8s4b", { route: "hot", region: "CN", direction: "x" });
+    await kernel.flow_run("topic", "p-r8s4b", { route: "hot", region: "CN", direction: "x" });
     const d = JSON.parse(
       fs.readFileSync(path.join(kernel.projectDir("p-r8s4b"), "decisions", "region.json"), "utf-8"),
     );
@@ -90,7 +90,7 @@ describe("R8 S4 · 拍板②：enum 输入摘除 default（选择发生在开跑
 
   it("必表态的 enum（route）缺席照旧抛——可选是显式声明的例外，不是新兜底", async () => {
     const { kernel } = seedKernelLite();
-    await expect(kernel.flow_run("topic-selection", "p-r8s4c", { region: "CN", direction: "x" })).rejects.toThrow(
+    await expect(kernel.flow_run("topic", "p-r8s4c", { region: "CN", direction: "x" })).rejects.toThrow(
       /选择未决.*route/,
     );
   });
@@ -180,9 +180,9 @@ describe("R8 S2 · set_decision/list_decisions：决策事实三面可达", () =
 });
 
 describe("R8 生产端真跑 · 梗卡池接上后两条内容生产线照跑", () => {
-  it("短剧线（topic-selection）：region 缺席照跑到派发，且不猜市场", async () => {
+  it("短剧线（topic）：region 缺席照跑到派发，且不猜市场", async () => {
     const { kernel } = seedKernelLite();
-    const stop = await kernel.flow_run("topic-selection", "p-r8live-a", { route: "hot", direction: "都市逆袭" });
+    const stop = await kernel.flow_run("topic", "p-r8live-a", { route: "hot", direction: "都市逆袭" });
     expect(["awaiting_input", "suspended", "blocked", "completed"]).toContain(stop.status);
     const next = await kernel.flow_next("p-r8live-a");
     expect(next.status, "跑不动就是接线把流程弄死了").toBe("awaiting_input");
@@ -191,9 +191,9 @@ describe("R8 生产端真跑 · 梗卡池接上后两条内容生产线照跑", 
     expect(listDecisions(kernel.projectDir("p-r8live-a")).decisions.map((d) => d.key)).not.toContain("region");
   });
 
-  it("小说线（novel-prose）：新池语义下照常派发到成文步", async () => {
+  it("小说线（prose）：新池语义下照常派发到成文步", async () => {
     const { kernel } = seedKernelLite();
-    await kernel.flow_run("novel-prose", "p-r8live-b", { route: "hot", range: "1-3", direction: "长篇试跑" });
+    await kernel.flow_run("prose", "p-r8live-b", { route: "hot", range: "1-3", direction: "长篇试跑" });
     const next = await kernel.flow_next("p-r8live-b");
     expect(next.status).toBe("awaiting_input");
     expect(next.taskPackage?.outputContract.file).toBeTruthy();

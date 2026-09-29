@@ -28,7 +28,7 @@ import type { FlowPolicy } from "../src/overlay.js";
 
 /** 真实 flow@3：caocao m3 声明了 `iterate`（正是本批要救活的那条声明）。 */
 function caocao(): Record<string, unknown> {
-  return JSON.parse(fs.readFileSync(path.join(ROOT, "flows", "caocao-wudalang", "flow.json"), "utf-8"));
+  return JSON.parse(fs.readFileSync(path.join(ROOT, "flows", "test-dual", "flow.json"), "utf-8"));
 }
 
 describe("OS-02 C#10 · model_tier 缺省 = 不约束（不再默认 high）", () => {
@@ -101,7 +101,7 @@ describe("OS-02 N4 · set-link（per-link 降级通道）", () => {
     expect((expandFlow3(ROOT, flow as never) as { flow: { graph: { nodes: Record<string, { link_mode?: string }> } } })
       .flow.graph.nodes["m2.link"].link_mode).toBe("manual"); // 前置事实
     const ov = {
-      format: "flow-overlay@1", flowId: "caocao-wudalang", origin: "user",
+      format: "flow-overlay@1", flowId: "test-dual", origin: "user",
       patches: [{ kind: "set-link", link: "m2.link", mode: "auto", reason: "连续全过，降噪" }],
     };
     const r = effectiveFlow3(ROOT, flow as never, { overlays: [ov] });
@@ -114,7 +114,7 @@ describe("OS-02 N4 · set-link（per-link 降级通道）", () => {
   it("裸实例 id（不带 .link）也认；实例不存在 / 模式非法 ⇒ 显式 unsupported，不计 applied", () => {
     const flow = caocao() as Record<string, unknown>;
     const mk = (patch: Record<string, unknown>) => ({
-      format: "flow-overlay@1", flowId: "caocao-wudalang", origin: "user", patches: [patch],
+      format: "flow-overlay@1", flowId: "test-dual", origin: "user", patches: [patch],
     });
     const bare = effectiveFlow3(ROOT, flow as never, {
       overlays: [mk({ kind: "set-link", link: "m2", mode: "manual", reason: "t" })],
@@ -332,7 +332,7 @@ describe("OS-02 C#11 · 端到端：项目配置.json 的「阈值预算」→ p
     const pd = mkProj(
       { 项目: "p", 阈值预算: { contextBudget: 30000, chapterBlockChars: 1200 } },
       {
-        format: "flow-overlay@1", flowId: "caocao-wudalang", origin: "user",
+        format: "flow-overlay@1", flowId: "test-dual", origin: "user",
         patches: [{ kind: "set-policy", key: "budget", value: { chapterBlockChars: 2500 }, reason: "t" }],
       },
     );
@@ -345,7 +345,7 @@ describe("OS-02 C#11 · 端到端：项目配置.json 的「阈值预算」→ p
 
   it("flow@3 承认 set-policy{budget}（此前不在 policy 白名单 ⇒ 结构性调不了阈值）", () => {
     const pd = mkProj(undefined, {
-      format: "flow-overlay@1", flowId: "caocao-wudalang", origin: "user",
+      format: "flow-overlay@1", flowId: "test-dual", origin: "user",
       patches: [{ kind: "set-policy", key: "budget", value: { minBeats: 8 }, reason: "t" }],
     });
     const eff = k.effectiveOf(pd, flow3);
@@ -355,7 +355,7 @@ describe("OS-02 C#11 · 端到端：项目配置.json 的「阈值预算」→ p
 
   it("形状错的值（非「键→number」对象）显式 unsupported，不进 policy（绝不静默）", () => {
     const pd = mkProj(undefined, {
-      format: "flow-overlay@1", flowId: "caocao-wudalang", origin: "user",
+      format: "flow-overlay@1", flowId: "test-dual", origin: "user",
       patches: [{ kind: "set-policy", key: "budget", value: 5, reason: "t" }],
     });
     const eff = k.effectiveOf(pd, flow3);

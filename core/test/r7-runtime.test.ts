@@ -280,13 +280,13 @@ function applyBlocked(stop: unknown): void {
  * 除显式声明 when 的节点外，图中节点与计划节点必须一一对应。
  */
 describe("R7 · 真实 flow@3：计划不得在连接件/边界门处截断", () => {
-  it("caocao-wudalang / drama-flow 的派生节点全部进计划", () => {
+  it("test-dual / screenplay 的派生节点全部进计划", () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "miniflow-r7plan-"));
     const pd = path.join(root, "projects", "p-plan");
     fs.mkdirSync(pd, { recursive: true });
     const k = new Kernel({ root });
 
-    for (const flowId of ["caocao-wudalang", "drama-flow"]) {
+    for (const flowId of ["test-dual", "screenplay"]) {
       const eff = k.effectiveOf(pd, loadFlow(flowId));
       const nodes = eff.flow.graph.nodes;
       const order = compilePlan(eff.flow, {}, undefined);

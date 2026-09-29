@@ -4,7 +4,7 @@ import { isBackEdge } from "../src/cond.js";
 import { expandedFlow } from "./helpers.js";
 import type { FlowDescriptor } from "../src/types.js";
 
-const topicFlow = (): FlowDescriptor => expandedFlow("topic-selection");
+const topicFlow = (): FlowDescriptor => expandedFlow("topic");
 
 /** 手写图小夹具：验证 compilePlan 的边谓词/节点开关机制（不绑任何真实 flow 的拓扑）。 */
 function synthFlow(over: Partial<FlowDescriptor> = {}): FlowDescriptor {
@@ -39,7 +39,7 @@ function topoValid(flow: FlowDescriptor, order: string[]): boolean {
   return true;
 }
 
-describe("compilePlan · topic-selection（flow@3 派生图）", () => {
+describe("compilePlan · topic（flow@3 派生图）", () => {
   it("模块链全量进计划，跨模块次序与 link 门位正确", () => {
     const flow = topicFlow();
     const order = compilePlan(flow, { route: "hot", direction: "x" });

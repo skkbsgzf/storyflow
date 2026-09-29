@@ -99,7 +99,7 @@ function writeFixture(root: string): void {
 describe("R6 · 模块展开器（expandFlow3）", () => {
   it("W-01 职责三件套：module.json io 原样传播进 composition（机器消费面）", () => {
     const flow = JSON.parse(
-      fs.readFileSync(path.join(ROOT, "flows", "caocao-wudalang", "flow.json"), "utf-8"),
+      fs.readFileSync(path.join(ROOT, "flows", "test-dual", "flow.json"), "utf-8"),
     );
     const r = expandFlow3(ROOT, flow);
     const m1 = r.modules.find((m) => m.id === "m1");
@@ -183,7 +183,7 @@ describe("R6 · 模块展开器（expandFlow3）", () => {
       ["plot-choreographer", "scene-breakdown"],
       ["scene-breakdown", "script-forge"],
     ]);
-    expect(mod.io.acceptance.scans).toContain("AE-SCRIPT-FIELDS");
+    expect(mod.io?.acceptance?.scans ?? []).toContain("AE-SCRIPT-FIELDS");
     // 落位可达性（诊断 2026-09-19）：插件锚点不在骨架时，also_fits 必须有可用兜底
     const spine = new Set(mod.skeleton.spine);
     for (const [oid2, op2] of Object.entries(mod.ops) as [string, any][]) {
@@ -200,7 +200,7 @@ describe("R6 · 模块展开器（expandFlow3）", () => {
     const topic = JSON.parse(fs.readFileSync(path.join(ROOT, "modules", "topic", "module.json"), "utf-8"));
     expect(topic.skeleton.spine).toEqual(["topic-report"]);
     expect(topic.ops["topic-report"].output).toBe("选题报告.md");
-    expect(topic.io.acceptance.scans).toContain("AE-REPORT-DENSITY");
+    expect(topic.io?.acceptance?.scans ?? []).toContain("AE-REPORT-DENSITY");
     const prose = JSON.parse(fs.readFileSync(path.join(ROOT, "modules", "prose", "module.json"), "utf-8"));
     expect(prose.skeleton.spine).toEqual(["ghostwrite", "novel-deai"]);
     expect(prose.ops["ghostwrite"].output).toBe("正文.md");
@@ -380,7 +380,7 @@ describe("R7 · 生效编排（effectiveFlow3）：声明了就必须生效", ()
 
   it("真仓 flow：policy 声明被读取（此前整个被忽略，adapt 恒为 propose）", () => {
     const flow = JSON.parse(
-      fs.readFileSync(path.join(ROOT, "flows", "caocao-wudalang", "flow.json"), "utf-8"),
+      fs.readFileSync(path.join(ROOT, "flows", "test-dual", "flow.json"), "utf-8"),
     );
     // flow.json 声明 policy = { link_default: "auto", adapt: "off" }
     const r = effectiveFlow3(ROOT, flow);
@@ -390,7 +390,7 @@ describe("R7 · 生效编排（effectiveFlow3）：声明了就必须生效", ()
 
   it("真仓 flow：无 overlay 时 toolOverrides/inputs 为空且无 unsupported（不误报）", () => {
     const flow = JSON.parse(
-      fs.readFileSync(path.join(ROOT, "flows", "caocao-wudalang", "flow.json"), "utf-8"),
+      fs.readFileSync(path.join(ROOT, "flows", "test-dual", "flow.json"), "utf-8"),
     );
     const r = effectiveFlow3(ROOT, flow);
     expect(r.toolOverrides).toEqual({});

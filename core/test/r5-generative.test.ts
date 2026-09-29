@@ -24,7 +24,7 @@ import { artifact, expandedFlow, loadFlow } from "./helpers.js";
 
 // flow@3 不手画 graph——边界裁决由 expandFlow3 派生的「连接件」（kind=gate / gate_role=link）承担。
 // 需要图形态描述符的用例一律走展开单点，拿到与内核 effectiveOf 同源的派生图。
-const TS = expandedFlow("topic-selection");
+const TS = expandedFlow("topic");
 
 // 过 m1「选题报告」AE-REPORT-DENSITY（block）的最小合规正文，供内核端到端各组复用：
 // 梗/话题/对标行 ≥8、竞品引用 ≥2、含「话题」、热度数据（n/万）≥3。
@@ -46,7 +46,7 @@ const REPORT = [
 // flow@3 的边界裁决面 = 模块间「连接件」（expandFlow3 规则 6 派生：kind=gate / gate_role=link）。
 // 老 flow@2 的 injectKitBoundaries 派生 itb-* 已被 links 取代（内核 effectiveOf flow@3 分支 boundaries:[]）。
 // 故本组改断内核实际派生的 links。
-const TS3 = loadFlow("topic-selection");
+const TS3 = loadFlow("topic");
 const DERIVED = expandFlow3(ROOT, TS3 as never);
 
 /** 从派生图里挑出全部连接件门（gate_role=link）。 */
@@ -57,7 +57,7 @@ function linkGates(flow: typeof TS): string[] {
 }
 
 describe("R5 · kit 边界人工验收（唯一的裁决点 = flow@3 连接件）", () => {
-  it("topic-selection 派生 4 个连接件：m1→m2、m2→m3、m3→m4、m4→m5；其中 m2→m3（plot 前）为人工验收", () => {
+  it("topic 派生 4 个连接件：m1→m2、m2→m3、m3→m4、m4→m5；其中 m2→m3（plot 前）为人工验收", () => {
     expect(DERIVED.links.map((l) => l.id)).toEqual(["m2.link", "m3.link", "m4.link", "m5.link"]);
     // 逐模块交界：跨域交接处一个连接件，且裁决模式即「人工 vs 自动」的开关
     expect(DERIVED.links.find((l) => l.id === "m3.link")?.mode).toBe("manual");
@@ -88,7 +88,7 @@ describe("R5 · kit 边界人工验收（唯一的裁决点 = flow@3 连接件�
     // 优先级 inst.link > defaults.link > policy.link_default：本流声明了 defaults.link=auto，
     // 故 link_default=manual 被 defaults 遮蔽（只作最末兜底），m3 的 inst.link=manual 仍胜出。
     const manualDefault = effectiveFlow3(ROOT, TS3 as never, {
-      overlays: [{ format: "flow-overlay@1", flowId: "topic-selection", origin: "user", patches: [
+      overlays: [{ format: "flow-overlay@1", flowId: "topic", origin: "user", patches: [
         { kind: "set-policy", key: "link_default", value: "manual", reason: "全交界转人工（本流被 defaults.link 遮蔽）" },
       ] }],
     });
@@ -97,7 +97,7 @@ describe("R5 · kit 边界人工验收（唯一的裁决点 = flow@3 连接件�
     );
     // set-link 单点把 m3 降回 auto（等价旧 suppress-boundary：这一处交界不再拦人）
     const one = effectiveFlow3(ROOT, TS3 as never, {
-      overlays: [{ format: "flow-overlay@1", flowId: "topic-selection", origin: "user", patches: [
+      overlays: [{ format: "flow-overlay@1", flowId: "topic", origin: "user", patches: [
         { kind: "set-link", link: "m3.link", mode: "auto", reason: "单点放行" },
       ] }],
     });
@@ -117,7 +117,7 @@ describe("R5 · kit 边界人工验收（唯一的裁决点 = flow@3 连接件�
 describe("R5 · overlay 是 tool 位置与内容配置的唯一改写面", () => {
   // applyOverlay 是纯函数（对任意带 .graph 的描述符生效），与 flow@2/@3 无关。
   // 位置改写（set-node/set-op/remove-node/place-node）是这套补丁语义本身的机制测试，
-  // 真实的 topic-selection 已是 flow@3（节点带命名空间前缀、config 由 op 预填），拿它当锚点
+  // 真实的 topic 已是 flow@3（节点带命名空间前缀、config 由 op 预填），拿它当锚点
   // 会把「补丁语义」和「flow@3 派生」两件事混在一起测。故按 r7-runtime.test.ts 的做法，
   // 合成一条干净的小 bootstrap 图，隔离被测面 = applyOverlay 的位置/内容改写语义。
   const SYN = () => ({
@@ -377,7 +377,7 @@ describe("R5 · 内核端到端：连接件自动放行 + 人工交界拦人 + �
   async function walkToBoundary(k: Kernel, pid: string, dir: string) {
     let last: Awaited<ReturnType<Kernel["flow_submit"]>> | undefined;
     for (const n of UPSTREAM) {
-      last = await k.flow_submit(pid, n, { content: artifact("topic-selection", n, REPORT, { projectDir: dir }) });
+      last = await k.flow_submit(pid, n, { content: artifact("topic", n, REPORT, { projectDir: dir }) });
     }
     return last!;
   }
@@ -385,7 +385,7 @@ describe("R5 · 内核端到端：连接件自动放行 + 人工交界拦人 + �
   it("缺省编排：自动交界放行且留痕（不静默跳过）、人工交界 m3.link 拦人挂起", async () => {
     fs.mkdirSync(pd, { recursive: true });
     fs.writeFileSync(path.join(pd, "选题素材.md"), "# 选题素材\n\n甲方点子：老牌发型师。\n", "utf-8");
-    const run = await kernel.flow_run("topic-selection", projectId, { route: "hot", region: "CN", direction: "R5 交界验收用例" });
+    const run = await kernel.flow_run("topic", projectId, { route: "hot", region: "CN", direction: "R5 交界验收用例" });
     expect(run.status).toBe("awaiting_input");
 
     const last = await walkToBoundary(kernel, projectId, pd);
@@ -457,17 +457,17 @@ describe("R5 · 内核端到端：连接件自动放行 + 人工交界拦人 + �
     fs.writeFileSync(
       path.join(pd2, "registry", "overlay.json"),
       JSON.stringify({
-        format: "flow-overlay@1", flowId: "topic-selection", origin: "user",
+        format: "flow-overlay@1", flowId: "topic", origin: "user",
         reason: "测试锁定：m2 交界转人工",
         patches: [{ kind: "set-link", link: "m2.link", mode: "manual", reason: "断言拦人" }],
       }, null, 2) + "\n",
       "utf-8",
     );
-    await k2.flow_run("topic-selection", pid, { route: "hot", region: "CN", direction: "锁定交界" });
+    await k2.flow_run("topic", pid, { route: "hot", region: "CN", direction: "锁定交界" });
     // 交完 m1 认知步 → 撞上被转成 manual 的 m2.link，挂起等人（而不是自动放行）
     let last: Awaited<ReturnType<Kernel["flow_submit"]>> | undefined;
     for (const n of ["m1.topic-report", "m1.find-trope", "m1.topic-zeitgeist", "m1.internet-feel"]) {
-      last = await k2.flow_submit(pid, n, { content: artifact("topic-selection", n, REPORT, { projectDir: pd2 }) });
+      last = await k2.flow_submit(pid, n, { content: artifact("topic", n, REPORT, { projectDir: pd2 }) });
     }
     expect(last?.next?.status).toBe("suspended");
     if (last?.next?.status !== "suspended") return;
@@ -494,7 +494,7 @@ describe("R7 · 缺省 link_default=auto：交界可见、自动放行、下游�
     const pd3 = path.join(root3, "projects", pid);
     fs.mkdirSync(pd3, { recursive: true });
     fs.writeFileSync(path.join(pd3, "选题素材.md"), "# 选题素材\n\n甲方点子：老牌发型师。\n", "utf-8");
-    await k3.flow_run("topic-selection", pid, { route: "hot", region: "CN", direction: "R7 缺省交界策略" });
+    await k3.flow_run("topic", pid, { route: "hot", region: "CN", direction: "R7 缺省交界策略" });
 
     // 缺省 = auto：策略面如实回显（flow@3 用 link_default，不再是 kit_boundary）
     expect(k3.viewEffect(pid).policy.link_default).toBe("auto");
@@ -502,7 +502,7 @@ describe("R7 · 缺省 link_default=auto：交界可见、自动放行、下游�
     // 交完 m1 认知步：跨过 auto 的 m2.link 后照常派发 m2 入口步，而不是 suspended 在 m2.link
     let last: Awaited<ReturnType<Kernel["flow_submit"]>> | undefined;
     for (const n of ["m1.topic-report", "m1.find-trope", "m1.topic-zeitgeist", "m1.internet-feel"]) {
-      last = await k3.flow_submit(pid, n, { content: artifact("topic-selection", n, REPORT, { projectDir: pd3 }) });
+      last = await k3.flow_submit(pid, n, { content: artifact("topic", n, REPORT, { projectDir: pd3 }) });
     }
     expect(last?.next?.status).toBe("awaiting_input");
     if (last?.next?.status !== "awaiting_input") return;
@@ -544,12 +544,12 @@ describe("R5 · 读模型：生效编排与指标汇总只由内核定义一次�
   it("flow_run/flow_status 后落 effective.json：含连接件（links）与逐节点配置值", async () => {
     fs.mkdirSync(pd, { recursive: true });
     fs.writeFileSync(path.join(pd, "选题素材.md"), "# 选题素材\n\n甲方点子：夜市烤串摊主。\n", "utf-8");
-    await kernel.flow_run("topic-selection", projectId, { route: "hot", region: "CN", direction: "读模型用例" });
+    await kernel.flow_run("topic", projectId, { route: "hot", region: "CN", direction: "读模型用例" });
 
     expect(fs.existsSync(effPath)).toBe(true);
     const view = JSON.parse(fs.readFileSync(effPath, "utf-8"));
     expect(view.format).toBe("effective@2");
-    expect(view.flowId).toBe("topic-selection");
+    expect(view.flowId).toBe("topic");
     // 旧「边界清单 boundaries.length>0」⇒ flow@3 的连接件清单（5 模块 → 4 条模块间连接）
     expect(view.links.length).toBe(4);
     // 旧「边界门被显式标记（页面不靠 id 前缀嗅探）」⇒ 现在双处显式：links.mode + nodeConfig.gateRole
@@ -570,8 +570,8 @@ describe("R5 · 读模型：生效编排与指标汇总只由内核定义一次�
 
   it("指标汇总读模型与内核 viewEffect 同值（页面与优化 agent 消费同一份）", async () => {
     // 交卷顺序按派生计划走（flow@3 的 m1 链：topic-report → find-trope）；旧节点 tropes/zeitgeist 已不存在
-    await kernel.flow_submit(projectId, "m1.topic-report", { content: artifact("topic-selection", "m1.topic-report", REPORT, { projectDir: pd }) });
-    await kernel.flow_submit(projectId, "m1.find-trope", { content: artifact("topic-selection", "m1.find-trope", "# 梗卡\n\n炭火 vs 电炉。\n", { projectDir: pd }) });
+    await kernel.flow_submit(projectId, "m1.topic-report", { content: artifact("topic", "m1.topic-report", REPORT, { projectDir: pd }) });
+    await kernel.flow_submit(projectId, "m1.find-trope", { content: artifact("topic", "m1.find-trope", "# 梗卡\n\n炭火 vs 电炉。\n", { projectDir: pd }) });
     const eff = kernel.viewEffect(projectId);
     expect(fs.existsSync(sumPath)).toBe(true);
     const sum = JSON.parse(fs.readFileSync(sumPath, "utf-8"));
@@ -589,7 +589,7 @@ describe("R5 · 读模型：生效编排与指标汇总只由内核定义一次�
     expect(before.applied).toBe(0);
     await kernel.flowOverlay(projectId, {
       patches: [
-        // 旧 kit:"search" ⇒ topic-selection 派生节点的 op 归口是模块 kit 名（"topic.find-trope"）
+        // 旧 kit:"search" ⇒ topic 派生节点的 op 归口是模块 kit 名（"topic.find-trope"）
         { kind: "set-tool", kit: "topic", op: "find-trope", config: { depth: "深" }, reason: "梗选型决定下游一切" },
         { kind: "set-node", id: "m1.find-trope", config: { 不存在的旋钮: 1 }, reason: "故意用 flow@3 不消费的 kind，验证不静默丢弃" },
       ] as never,
@@ -657,9 +657,9 @@ describe("R5 · v5.0 提交链无断言闸（完整性是唯一残留闸，质�
     const pd = path.join(root, "projects", projectId);
     fs.mkdirSync(pd, { recursive: true });
     fs.writeFileSync(path.join(pd, "选题素材.md"), "# 选题素材\n\n甲方点子：老牌发型师。\n", "utf-8");
-    await kernel.flow_run("topic-selection", projectId, { route: "hot", region: "CN", direction });
+    await kernel.flow_run("topic", projectId, { route: "hot", region: "CN", direction });
     await kernel.flow_submit(projectId, "m1.topic-report", {
-      content: artifact("topic-selection", "m1.topic-report", REPORT, { projectDir: pd }),
+      content: artifact("topic", "m1.topic-report", REPORT, { projectDir: pd }),
     });
     return pd;
   }
@@ -670,7 +670,7 @@ describe("R5 · v5.0 提交链无断言闸（完整性是唯一残留闸，质�
     const pd = await openFindTrope(kernel, root, "p-nogate", "无断言闸用例");
     // 首拍「氛围」在扫描器眼里是 AE-HOOK-EVENT block——但提交链只跑确定性完整性（v5.0）
     const ok = await kernel.flow_submit("p-nogate", "m1.find-trope", {
-      content: artifact("topic-selection", "m1.find-trope", beatDoc("氛围"), { projectDir: pd }),
+      content: artifact("topic", "m1.find-trope", beatDoc("氛围"), { projectDir: pd }),
     });
     expect(ok.status).toBe("accepted");
   });
@@ -681,7 +681,7 @@ describe("R5 · v5.0 提交链无断言闸（完整性是唯一残留闸，质�
     const pd = await openFindTrope(kernel, root, "p-integ", "完整性闸用例");
     // 残渣入正文（历史事故形态）：这是确定性完整性，仍然硬拦
     const rej = await kernel.flow_submit("p-integ", "m1.find-trope", {
-      content: artifact("topic-selection", "m1.find-trope", "\nwc -l 输入清单\n", { projectDir: pd }),
+      content: artifact("topic", "m1.find-trope", "\nwc -l 输入清单\n", { projectDir: pd }),
     });
     expect(rej.status).toBe("rejected");
     expect(rej.problems?.some((p) => p.name === "no-debris" && p.status === "block")).toBe(true);
@@ -852,11 +852,11 @@ describe("R5 §六 · 编排挖掘师（质性通道并入提案管道）", () =
     const pd = path.join(root, "projects", "p-mine");
     fs.mkdirSync(pd, { recursive: true });
     fs.writeFileSync(path.join(pd, "选题素材.md"), "# 选题素材\n\n甲方点子：编排挖掘用例。\n", "utf-8");
-    await kernel.flow_run("topic-selection", "p-mine", { route: "hot", region: "CN", direction: "编排挖掘用例" });
+    await kernel.flow_run("topic", "p-mine", { route: "hot", region: "CN", direction: "编排挖掘用例" });
 
     const mine = kernel.flowMine("p-mine");
     expect(mine.package.format).toBe("mine-package@1");
-    expect(mine.package.flowId).toBe("topic-selection");
+    expect(mine.package.flowId).toBe("topic");
     expect(mine.package.sources.journal.events).toBeGreaterThan(0);
     expect(mine.package.sources.evidenceFiles.length).toBeGreaterThan(0);
     expect(mine.package.goals).toContain("上下文命中率（标尺被产物真正引用）");
@@ -874,13 +874,13 @@ describe("R5 §六 · 编排挖掘师（质性通道并入提案管道）", () =
     const pd = path.join(root, "projects", "p-mine2");
     fs.mkdirSync(pd, { recursive: true });
     fs.writeFileSync(path.join(pd, "选题素材.md"), "# 选题素材\n\n甲方点子：findings 并入用例。\n", "utf-8");
-    await kernel.flow_run("topic-selection", "p-mine2", { route: "hot", region: "CN", direction: "findings 并入用例" });
+    await kernel.flow_run("topic", "p-mine2", { route: "hot", region: "CN", direction: "findings 并入用例" });
 
     fs.writeFileSync(
       path.join(pd, "registry", "miner-findings.json"),
       JSON.stringify({
         format: "miner-findings@1",
-        flowId: "topic-selection",
+        flowId: "topic",
         runId: "r-mine2",
         at: new Date().toISOString(),
         findings: [
@@ -911,12 +911,12 @@ describe("R5 §六 · 编排挖掘师（质性通道并入提案管道）", () =
       }),
       "utf-8",
     );
-    // topic-selection 出厂 policy.adapt=off（只观测，N2 显式不落 overlay）——本用例锁的是
+    // topic 出厂 policy.adapt=off（只观测，N2 显式不落 overlay）——本用例锁的是
     // 「apply 边界」，须经 flow@3 的 policy 旋钮 set-policy:adapt 提升为 propose 后再验。
     fs.writeFileSync(
       path.join(pd, "registry", "overlay.json"),
       JSON.stringify({
-        format: "flow-overlay@1", flowId: "topic-selection", origin: "user",
+        format: "flow-overlay@1", flowId: "topic", origin: "user",
         reason: "开启自动提案通道以验 apply 边界",
         patches: [{ kind: "set-policy", key: "adapt", value: "propose", status: "applied", reason: "用例前置" }],
       }, null, 2) + "\n",
@@ -950,7 +950,7 @@ describe("R5 §六 · 编排挖掘师（质性通道并入提案管道）", () =
     const pd = path.join(root, "projects", "p-mine3");
     fs.mkdirSync(pd, { recursive: true });
     fs.writeFileSync(path.join(pd, "选题素材.md"), "# 选题素材\n\n甲方点子：脏 findings 用例。\n", "utf-8");
-    await kernel.flow_run("topic-selection", "p-mine3", { route: "hot", region: "CN", direction: "脏 findings 用例" });
+    await kernel.flow_run("topic", "p-mine3", { route: "hot", region: "CN", direction: "脏 findings 用例" });
 
     const bad = path.join(pd, "registry", "miner-findings.json");
     fs.mkdirSync(path.join(pd, "registry"), { recursive: true });

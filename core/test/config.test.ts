@@ -36,7 +36,7 @@ describe("项目初始化配置 · 合并序与语义映射", () => {
     fs.writeFileSync(path.join(dir, "选题素材.md"), "# 选题素材\n\n甲方点子：老牌发型师。\n", "utf-8");
     fs.writeFileSync(path.join(dir, "项目配置.json"), JSON.stringify(config()), "utf-8");
     // 不传 direction / route —— 全部由配置推导
-    const stop = await kernel.flow_run("topic-selection", "p-cfg", {});
+    const stop = await kernel.flow_run("topic", "p-cfg", {});
     expect(["awaiting_input", "blocked"]).toContain(stop.status);
     state = JSON.parse(fs.readFileSync(path.join(dir, "state.json"), "utf-8"));
   });
@@ -61,7 +61,7 @@ describe("项目初始化配置 · 合并序与语义映射", () => {
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(path.join(dir, "选题素材.md"), "# 选题素材\n\n甲方点子：测试。\n", "utf-8");
     fs.writeFileSync(path.join(dir, "项目配置.json"), JSON.stringify(config({ 项目: "p-ab", AB测试: true })), "utf-8");
-    await kernel.flow_run("topic-selection", "p-ab", {});
+    await kernel.flow_run("topic", "p-ab", {});
     const s = JSON.parse(fs.readFileSync(path.join(dir, "state.json"), "utf-8"));
     expect(s.inputs.route).toBe("dual");
   });
@@ -75,7 +75,7 @@ describe("项目初始化配置 · 合并序与语义映射", () => {
       JSON.stringify(config({ 项目: "p-explicit", AB测试: true })),
       "utf-8",
     );
-    await kernel.flow_run("topic-selection", "p-explicit", { route: "hot" });
+    await kernel.flow_run("topic", "p-explicit", { route: "hot" });
     const s = JSON.parse(fs.readFileSync(path.join(dir, "state.json"), "utf-8"));
     expect(s.inputs.route).toBe("hot");
   });
@@ -103,7 +103,7 @@ describe("项目初始化配置 · 合并序与语义映射", () => {
       JSON.stringify(config({ 项目: "p-bad", 严肃性: "随便" })),
       "utf-8",
     );
-    await expect(kernel.flow_run("topic-selection", "p-bad", {})).rejects.toThrow(/项目配置非法/);
+    await expect(kernel.flow_run("topic", "p-bad", {})).rejects.toThrow(/项目配置非法/);
   });
 
   it("HTTP：GET/PUT config 端点（前端表单直连）", async () => {
@@ -173,7 +173,7 @@ describe("项目初始化配置 · 合并序与语义映射", () => {
       JSON.stringify(config({ 项目: "p-d2", route: "dual", AB测试: false })),
       "utf-8",
     );
-    await kernel.flow_run("topic-selection", "p-d2", {});
+    await kernel.flow_run("topic", "p-d2", {});
     const s = JSON.parse(fs.readFileSync(path.join(dir, "state.json"), "utf-8"));
     expect(s.inputs.route).toBe("dual"); // 此前是 "hot"（被 风格/AB测试 推导覆盖）
   });

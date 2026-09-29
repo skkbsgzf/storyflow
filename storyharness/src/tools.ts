@@ -21,6 +21,35 @@ function text(t: string): { content: [{ type: "text"; text: string }]; details: 
   return { content: [{ type: "text", text: trimmed }], details: undefined };
 }
 
+/** v0.8 目标3 · Skill 即 Tool：kit/skills.tools.json 注册表的全部内置技能以 `skill_<slug>` 工具装载
+ *  （LLM 函数名不允许点号，注册表 id 的 `.` 一律映射 `_`）。调用即返回技能卡全文——名称即功能、
+ *  版本与使用约束在描述里，agent 按需自取；源卡 md 是本地可插拔层，缺卡显式报缺不静默。
+ *  注册表缺失/损坏 = 空数组（kit 未编译时不阻塞工具环）。 */
+function skillTools(kernel: KernelClient): AgentTool<any>[] {
+  const reg = path.join(kernel.workspaceRoot, "kit", "skills.tools.json");
+  if (!fs.existsSync(reg)) return [];
+  let entries: { tool: string; version: number; title: string; summary: string; constraints: Record<string, string | undefined>; source: string }[] = [];
+  try {
+    entries = (JSON.parse(fs.readFileSync(reg, "utf-8")) as { tools?: typeof entries }).tools ?? [];
+  } catch { return []; }
+  return entries.map((e) => ({
+    name: e.tool.replace(/\./g, "_"),
+    label: `${e.title} v${e.version}`,
+    description:
+      `[skill v${e.version}] ${e.title} — ${e.summary}` +
+      Object.entries(e.constraints)
+        .filter(([, v]) => v)
+        .map(([k, v]) => `\n${k}: ${v}`)
+        .join(""),
+    parameters: Type.Object({}),
+    execute: async () => {
+      const abs = path.join(kernel.workspaceRoot, e.source);
+      if (!fs.existsSync(abs)) return text(`技能源卡未安装：${e.source}（md 语料是本地可插拔层，不随仓库分发——把源卡放回该路径即可）`);
+      return text(fs.readFileSync(abs, "utf-8"));
+    },
+  }));
+}
+
 export function buildTools(kernel: KernelClient, project: string, opts: { lifecycle?: boolean } = {}): AgentTool<any>[] {
   const dir = kernel.projectDir(project);
   const tools: AgentTool<any>[] = [
@@ -230,5 +259,7 @@ export function buildTools(kernel: KernelClient, project: string, opts: { lifecy
       },
     );
   }
+  // v0.8 目标3：内置技能强制以 Tool 形态装载（kit/skills.tools.json 注册表）
+  tools.push(...skillTools(kernel));
   return tools;
 }

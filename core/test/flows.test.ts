@@ -149,7 +149,7 @@ describe("flow 描述符 · 全量体检（R4 §5.1 + R6 模块序列）", () =>
 
   it("节点级 when：可选模块随输入进出计划（不再是死声明）", () => {
     // flow@3 派生图上验证机制：给 m5.render_html 挂实例级 when（等价旧 intake 可选旁路）
-    const base = loadAny("topic-selection").flow;
+    const base = loadAny("topic").flow;
     const withSwitch = (): FlowDescriptor => {
       const f = structuredClone(base);
       f.graph.nodes["m5.render_html"].when = { input: "批注回流", eq: "on" };
@@ -165,7 +165,7 @@ describe("flow 描述符 · 全量体检（R4 §5.1 + R6 模块序列）", () =>
   });
 
   it("节点级 when 裁剪后不再作为上游注入上下文", () => {
-    const base = loadAny("topic-selection").flow;
+    const base = loadAny("topic").flow;
     const f = structuredClone(base);
     // export-doc 挂 when=on：开 → 它是 link 的上游；关 → 上游注入里消失
     f.graph.nodes["m5.export-doc"].when = { input: "批注回流", eq: "on" };

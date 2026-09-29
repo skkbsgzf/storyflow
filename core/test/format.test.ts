@@ -202,7 +202,7 @@ describe("when 谓词 · 结构化与兼容（规范 R4 §5.2）", () => {
 
 describe("边角色与派生（规范 R4 §5.1）", () => {
   // flow@3：图由 expandFlow3 派生（与内核同一展开单点），边级契约跑在派生图上
-  const flow = expandedFlow("topic-selection");
+  const flow = expandedFlow("topic");
 
   it("role 单值判别：flow@1 的 optional/loop 布尔折算已处决（不再折算）", () => {
     expect(edgeRole({ id: "x", from: "a", to: "b" })).toBe("flow");

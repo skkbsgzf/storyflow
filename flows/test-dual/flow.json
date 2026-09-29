@@ -1,0 +1,122 @@
+{
+  "format": "flow@3",
+  "id": "test-dual",
+  "title": "双线编排测试线（引擎机制夹具：overlay/iterate/rerun）",
+  "desc": "小说流 v2 精细化：模块职责三件套（输入/输出/验收）——m1 灵感→选题报告；m2 报告→剧本 IR；m3 剧本→正文；m4 交付 docx",
+  "version": "1.3.0",
+  "status": "draft",
+  "inputs": {
+    "direction": {
+      "type": "string",
+      "required": true,
+      "desc": "题材方向"
+    },
+    "chapters": {
+      "type": "number",
+      "default": 3,
+      "desc": "试稿章数"
+    }
+  },
+  "defaults": {
+    "link": "auto"
+  },
+  "policy": {
+    "link_default": "auto",
+    "adapt": "off"
+  },
+  "modules": [
+    {
+      "id": "m1",
+      "module": "topic",
+      "link": "auto",
+      "caps": [
+        "找梗",
+        "素材解剖",
+        "时代情绪锚",
+        "网感文案"
+      ]
+    },
+    {
+      "id": "m2",
+      "module": "plot",
+      "link": "manual",
+      "caps": [
+        "结构",
+        "主线",
+        "人设",
+        "分场",
+        "世界观",
+        "单元剧大纲",
+        "暗线",
+        "伏笔",
+        "悬念",
+        "红队评审",
+        "编剧"
+      ]
+    },
+    {
+      "id": "m3",
+      "module": "prose",
+      "link": "auto",
+      "caps": [
+        "台词层",
+        "场景层",
+        "设定层",
+        "拼装盖章",
+        "对话打磨",
+        "文学评审"
+      ],
+      "iterate": {
+        "unit": "chapter",
+        "over": "大纲",
+        "first": 1
+      }
+    },
+    {
+      "id": "m4",
+      "module": "delivery",
+      "link": "auto",
+      "caps": [
+        "docx交付",
+        "交付页"
+      ]
+    }
+  ],
+  "outputs": [
+    {
+      "module": "m1",
+      "title": "选题报告",
+      "audience": "用户批注回流"
+    },
+    {
+      "module": "m2",
+      "title": "剧本",
+      "audience": "用户批注回流"
+    },
+    {
+      "module": "m3",
+      "title": "正文终稿",
+      "audience": "番茄编辑"
+    },
+    {
+      "module": "m4",
+      "title": "交付 docx",
+      "audience": "番茄编辑"
+    },
+    {
+      "node": "m2.world-forge",
+      "path": "世界书/总览.md",
+      "title": "世界书（GraphHyperRAG 词条库：世界书/<分类>/<词条>.md + graph.json）",
+      "audience": "写手 agent 直调（worldbook_search）+ pedia 可视化（worldbook.html）"
+    }
+  ],
+  "changelog": [
+    {
+      "version": "1.3.0",
+      "date": "2026-09-22",
+      "changes": [
+        "世界书强制插入（用户拍板）：world-forge 进 plot 实例 caps，outputs 声明 世界书/总览.md——产出 <分类>/<词条>.md 卡片库（frontmatter id/title/tags/links/status）+ graph.json 归纳层；查看层 worldbook.html（pedia），创作时 agent 直调 worldbook_search"
+      ]
+    }
+  ]
+}

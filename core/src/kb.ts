@@ -53,10 +53,54 @@ function scanFiles(knowledgeDir: string): string[] {
   return out;
 }
 
+// ── v0.8 目标4 · HyperGraphRAG 装载（kit/hypergraph.rag.json = knowledge 层的 GitHub 发布形态）──
+
+interface GraphEntry { id: string; title: string; domain: string; path: string; tags: string[] }
+interface HyperGraph { format?: string; entries?: GraphEntry[]; relations?: { from: string; to: string; kind: string; weight: number }[] }
+
+/** 编译图定位：<knowledgeDir>/../kit/hypergraph.rag.json；缺失或损坏返回 null（回落扫盘检索）。 */
+export function loadGraph(knowledgeDir: string): HyperGraph | null {
+  const p = path.join(knowledgeDir, "..", "kit", "hypergraph.rag.json");
+  if (!fs.existsSync(p)) return null;
+  try {
+    const g = JSON.parse(fs.readFileSync(p, "utf-8")) as HyperGraph;
+    return Array.isArray(g.entries) ? g : null;
+  } catch { return null; }
+}
+
+function graphSearch(g: HyperGraph, opts: { q: string; dir?: string; k?: number }): { total: number; hits: KbHit[] } {
+  const q = (opts.q ?? "").trim().toLowerCase();
+  const terms = q.split(/[\s,，、;；/]+/).filter(Boolean);
+  const k = Math.min(Math.max(opts.k ?? 8, 1), 30);
+  const hits: KbHit[] = [];
+  for (const e of g.entries ?? []) {
+    if (opts.dir && e.domain !== opts.dir) continue;
+    const title = (e.title ?? "").toLowerCase();
+    const id = (e.id ?? "").toLowerCase();
+    let score = 0;
+    for (const t of terms) {
+      if (title.includes(t)) score += 8;
+      if (id.includes(t)) score += 5;
+      if ((e.tags ?? []).some((x) => x.toLowerCase().includes(t))) score += 4;
+      if (e.domain.toLowerCase().includes(t)) score += 2;
+    }
+    if (score > 0) hits.push({
+      id: e.id, title: e.title, file: e.path, dir: e.domain, score,
+      excerpt: (e.tags ?? []).length ? `标签：${e.tags.join("、")}` : `${e.domain} 域词条`,
+    });
+  }
+  hits.sort((a, b) => b.score - a.score || a.file.localeCompare(b.file, "zh"));
+  return { total: hits.length, hits: hits.slice(0, k) };
+}
+
 export function kbSearch(
   knowledgeDir: string,
   opts: { q: string; dir?: string; k?: number },
 ): { total: number; hits: KbHit[] } {
+  // v0.8 目标4 · HyperGraphRAG 装载：kit/hypergraph.rag.json 在场时检索走编译图（词条/标签/域打分），
+  // 源 md 降级为「本地可插拔层」（不随仓库分发）——图命中但源卡缺失属正常形态。
+  const graph = loadGraph(knowledgeDir);
+  if (graph) return graphSearch(graph, opts);
   const q = (opts.q ?? "").trim().toLowerCase();
   const terms = q.split(/[\s,，、;；/]+/).filter(Boolean);
   const k = Math.min(Math.max(opts.k ?? 8, 1), 30);
@@ -121,7 +165,14 @@ export function kbResolve(knowledgeDir: string, ref: string): string | null {
 
 export function kbRead(knowledgeDir: string, ref: string, maxChars = 16_000): { file: string; content: string } {
   const resolved = kbResolve(knowledgeDir, ref);
-  if (!resolved) throw new Error(`知识卡不存在：${ref}`);
+  if (!resolved) {
+    // v0.8：md 是本地可插拔层（不随仓库分发）——图里有词条但源卡未安装属正常形态，报缺要带指引
+    const g = loadGraph(knowledgeDir);
+    const inGraph = g?.entries?.some((e) => e.id === ref.replace(/\.md$/, "") || e.path === `knowledge/${ref}`.replace(/^knowledge\/knowledge\//, "knowledge/"));
+    throw new Error(inGraph
+      ? `知识卡源文件未安装：${ref}（md 是本地可插拔层——把源卡放回 knowledge/ 对应位置即可读；图内元数据可用 kb_search 查询）`
+      : `知识卡不存在：${ref}`);
+  }
   const content = fs.readFileSync(resolved, "utf-8");
   return { file: path.relative(knowledgeDir, resolved).replaceAll("\\", "/"), content: content.length > maxChars ? content.slice(0, maxChars) + `\n…(截断，全长 ${content.length})` : content };
 }

@@ -86,11 +86,10 @@
     },
     "io": {
       "type": "object",
-      "description": "模块职责三件套（工单 W-01）：输入职责/输出职责/验收职责的声明式契约。spine 非空的模块必填（module-lint E 级强制），expandFlow3 传播进 effective@2 composition，前端模块卡直接渲染。",
+      "description": "模块职责三件套（工单 W-01）：输入职责/输出职责/验收职责的声明式契约。input/output spine 非空必填（module-lint E 级强制）；acceptance v0.8 起可选——审核层退役，验收契约归宿主（docs/PROTOCOL-REVIEW.md），expandFlow3 传播进 effective@2 composition，前端模块卡直接渲染。",
       "required": [
         "input",
-        "output",
-        "acceptance"
+        "output"
       ],
       "additionalProperties": false,
       "properties": {
@@ -234,19 +233,38 @@
           "description": "R8 选择面 · 候选池（规范 R8 §1.3）：从「点名清单」升级为「按决策过滤」。pool=目录池或精确条目 id，where.tags/where.notTags 可写 $decision:<key>.<picked|tags|excluded_tags>（唯一决策引用语法，不新造 DSL）；决策缺失时 onMissingDecision=block（缺省：整池不装+告警，绝不装作选了）或 load-all-with-warning（须明说：全装+「未按决策过滤」回显）。候选无默认生效权（铁律 2）",
           "items": {
             "type": "object",
-            "required": ["pool"],
+            "required": [
+              "pool"
+            ],
             "additionalProperties": false,
             "properties": {
-              "pool": { "type": "string" },
+              "pool": {
+                "type": "string"
+              },
               "where": {
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {
-                  "tags": { "type": "array", "items": { "type": "string" } },
-                  "notTags": { "type": "array", "items": { "type": "string" } }
+                  "tags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "notTags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
                 }
               },
-              "onMissingDecision": { "enum": ["block", "load-all-with-warning"] }
+              "onMissingDecision": {
+                "enum": [
+                  "block",
+                  "load-all-with-warning"
+                ]
+              }
             }
           }
         },

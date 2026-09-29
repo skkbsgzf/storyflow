@@ -14,7 +14,7 @@ function anyProject(): string | undefined {
 }
 
 describe("flow-export · 生效编排导出适配器（单源：内核真身展开）", () => {
-  const g = buildFlowExport("topic-selection");
+  const g = buildFlowExport("topic");
 
   it("模板面：展开自内核真身——节点非空、agent 节点带 kit.op、边齐全", () => {
     expect(g.nodes.length).toBeGreaterThan(0);

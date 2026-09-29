@@ -6,7 +6,7 @@ import { Kernel } from "../src/kernel.js";
 import { artifact } from "./helpers.js";
 
 /**
- * 本套断言的是 **flow@3 link 连接件门语义**（topic-selection v6.0.0，模块序列 m1..m5）：
+ * 本套断言的是 **flow@3 link 连接件门语义**（topic v6.0.0，模块序列 m1..m5）：
  *   - 节点 id = `<模块实例>.<op>`（expandFlow3 派生，与内核同一展开单点，见 helpers.expandedFlow）；
  *   - 模块内无门无打回；模块间 link 连接件只有 pass/reject 两值（core/src/kernel.ts doGate link 分支）：
  *       m2/m4/m5.link = auto（自动放行留痕），m3.link = manual（本项目唯一人工门）；
@@ -40,23 +40,23 @@ const TOPIC_REPORT_BODY = `# 选题报告（e2e 夹具）
 /** m1（选题·线性四步）：旧「tropes∥zeitgeist 并行批」在 flow@3 已是模块内线性链——改断序关系。 */
 async function submitM1(kernel: Kernel, projectId: string, pd: string): Promise<void> {
   const s1 = await kernel.flow_submit(projectId, "m1.topic-report", {
-    content: artifact("topic-selection", "m1.topic-report", TOPIC_REPORT_BODY, { projectDir: pd }),
+    content: artifact("topic", "m1.topic-report", TOPIC_REPORT_BODY, { projectDir: pd }),
   });
   expect(s1.status).toBe("accepted");
   const s2 = await kernel.flow_submit(projectId, "m1.find-trope", {
-    content: artifact("topic-selection", "m1.find-trope", "# 梗卡（e2e）\n\n主梗：快剪 10 分钟 vs 慢工 40 分钟。\n", { projectDir: pd }),
+    content: artifact("topic", "m1.find-trope", "# 梗卡（e2e）\n\n主梗：快剪 10 分钟 vs 慢工 40 分钟。\n", { projectDir: pd }),
   });
   expect(s2.status).toBe("accepted");
   // 序关系断言（承接旧「就绪批」意图）：find-trope 交卷后，下一步派发的正是 topic-zeitgeist
   expect(s2.next?.status).toBe("awaiting_input");
   expect(s2.next?.nodeId).toBe("m1.topic-zeitgeist");
   const s3 = await kernel.flow_submit(projectId, "m1.topic-zeitgeist", {
-    content: artifact("topic-selection", "m1.topic-zeitgeist", "# 时代情绪锚\n\n算法赶人公共讨论。\n", { projectDir: pd }),
+    content: artifact("topic", "m1.topic-zeitgeist", "# 时代情绪锚\n\n算法赶人公共讨论。\n", { projectDir: pd }),
   });
   expect(s3.status).toBe("accepted");
   // 旧 gate 在节点间的「挂起」不再存在于模块内：m1 链末端直连 m2.link（auto 放行）后派发 m2 入口
   const s4 = await kernel.flow_submit(projectId, "m1.internet-feel", {
-    content: artifact("topic-selection", "m1.internet-feel", "# 网感判读\n\n前 3 秒钩：剪一次头等于做一场手术。\n", { projectDir: pd }),
+    content: artifact("topic", "m1.internet-feel", "# 网感判读\n\n前 3 秒钩：剪一次头等于做一场手术。\n", { projectDir: pd }),
   });
   expect(s4.status).toBe("accepted");
   expect(s4.next?.status).toBe("awaiting_input");
@@ -66,17 +66,17 @@ async function submitM1(kernel: Kernel, projectId: string, pd: string): Promise<
 /** m2（方案·三步）：交完 m2.topic-chief-aesthetic 后，m3.link（manual）挂起。 */
 async function submitM2(kernel: Kernel, projectId: string, pd: string): Promise<void> {
   const s1 = await kernel.flow_submit(projectId, "m2.topic-analysis-report", {
-    content: artifact("topic-selection", "m2.topic-analysis-report", "# 选题分析报告\n\n## 五、创作约束移交单\n- 场景 ≤3。\n", {
+    content: artifact("topic", "m2.topic-analysis-report", "# 选题分析报告\n\n## 五、创作约束移交单\n- 场景 ≤3。\n", {
       projectDir: pd,
     }),
   });
   expect(s1.status).toBe("accepted");
   const s2 = await kernel.flow_submit(projectId, "m2.topic-proposal", {
-    content: artifact("topic-selection", "m2.topic-proposal", "# 选题方案\n\n三案取一：快剪店慢手艺单线方案。\n", { projectDir: pd }),
+    content: artifact("topic", "m2.topic-proposal", "# 选题方案\n\n三案取一：快剪店慢手艺单线方案。\n", { projectDir: pd }),
   });
   expect(s2.status).toBe("accepted");
   const s3 = await kernel.flow_submit(projectId, "m2.topic-chief-aesthetic", {
-    content: artifact("topic-selection", "m2.topic-chief-aesthetic", "# 审美总编意见\n\n方案的可信与共鸣双轴成立。\n", { projectDir: pd }),
+    content: artifact("topic", "m2.topic-chief-aesthetic", "# 审美总编意见\n\n方案的可信与共鸣双轴成立。\n", { projectDir: pd }),
   });
   expect(s3.status).toBe("accepted");
   expect(s3.next?.status).toBe("suspended"); // m3.link（唯一人工门）挂起
@@ -91,7 +91,7 @@ function readState(pd: string): RunStateView {
   return JSON.parse(fs.readFileSync(path.join(pd, "state.json"), "utf-8"));
 }
 
-describe("kernel · link 门语义（topic-selection flow@3 @ 临时项目）", () => {
+describe("kernel · link 门语义（topic flow@3 @ 临时项目）", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "miniflow-e2e-"));
   const projectId = "p-e2e-test";
   const kernel = new Kernel({ root });
@@ -107,7 +107,7 @@ describe("kernel · link 门语义（topic-selection flow@3 @ 临时项目）", 
   });
 
   it("flow_run 停在首个认知步 m1.topic-report，任务包带 skill 与产物契约（K1 标尺单点装载）", async () => {
-    const stop = await kernel.flow_run("topic-selection", projectId, { route: "hot", region: "CN", direction: DIRECTION });
+    const stop = await kernel.flow_run("topic", projectId, { route: "hot", region: "CN", direction: DIRECTION });
     expect(stop.status).toBe("awaiting_input");
     if (stop.status !== "awaiting_input") return;
     expect(stop.nodeId).toBe("m1.topic-report");
@@ -194,7 +194,7 @@ describe("kernel · link 门语义（topic-selection flow@3 @ 临时项目）", 
 
   it("重做范围可控：定点 rerun 只波及本模块及下游；跨阶段强行返工走 flow_rerun（旧 force 的语义映射）", async () => {
     const st = await kernel.flow_submit(projectId, "m3.structure-design", {
-      content: artifact("topic-selection", "m3.structure-design", "# 故事框架案\n\n## 一、主矛盾\n\n行业效率 vs 手艺人体面。\n", {
+      content: artifact("topic", "m3.structure-design", "# 故事框架案\n\n## 一、主矛盾\n\n行业效率 vs 手艺人体面。\n", {
         projectDir: pd,
       }),
     });
@@ -217,7 +217,7 @@ describe("kernel · link 门语义（topic-selection flow@3 @ 临时项目）", 
     expect(state.nodes["m1.topic-report"].status).toBe("done");
     // 再交一份结构案，回到 m3 进行中
     const st2 = await kernel.flow_submit(projectId, "m3.structure-design", {
-      content: artifact("topic-selection", "m3.structure-design", `# 故事框架案
+      content: artifact("topic", "m3.structure-design", `# 故事框架案
 
 ## 一、主矛盾
 
