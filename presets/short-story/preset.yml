@@ -1,0 +1,5 @@
+# 短篇速成（生产线预设）
+name: 短篇速成
+description: topic 完整生产线裁掉交付页尾段——选题 → 方案 → 剧本 IR → 剧本成品即终点
+flows:
+  - flowId: topic

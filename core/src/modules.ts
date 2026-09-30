@@ -509,6 +509,19 @@ export function effectiveFlow3(
         notes.push(`set-policy ${k}=${JSON.stringify(policy[k])}`);
         applied++;
       } else if (kind === "set-module") {
+        // PP1：remove=true = 整模块实例裁剪（生产线预设「world-bible / short-story」语义）。
+        // 模块间连接由 expandFlow3 按剩余模块序重派生，无需手工补边。
+        if ((p as any).remove === true) {
+          const before = (flow.modules ?? []).length;
+          flow.modules = (flow.modules ?? []).filter((m) => m.id !== p.id);
+          if (flow.modules.length < before) {
+            notes.push(`set-module ${p.id} removed（模块实例裁剪）`);
+            applied++;
+          } else {
+            unsupported.push(`set-module:${String(p.id)}（模块实例不存在）`);
+          }
+          continue;
+        }
         const inst = (flow.modules ?? []).find((m) => m.id === p.id);
         if (inst) {
           inst.caps = [...((p as any).caps ?? inst.caps ?? [])];

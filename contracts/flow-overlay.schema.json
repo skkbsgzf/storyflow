@@ -155,6 +155,10 @@
           "items": { "type": "string" },
           "description": "set-module：模块实例要启用的能力清单（整体替换该实例的 caps）。消费者 = core/src/modules.ts::effectiveFlow3"
         },
+        "remove": {
+          "type": "boolean",
+          "description": "set-module 专用：true = 从 flow.modules 移除该模块实例（PP1 生产线预设的裁剪语义；模块间连接由展开器按剩余序重派生）。与 caps 互斥。消费者 = core/src/modules.ts::effectiveFlow3"
+        },
         "module": {
           "type": "string",
           "description": "insert-tool：目标模块实例 id（如 m2）。消费者 = core/src/modules.ts::effectiveFlow3"

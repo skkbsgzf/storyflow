@@ -4,7 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "description": "miniflow harness 内核：七动词 / 状态机 / journal / 任务包组装 / CLI+MCP+HTTP 三张脸",
-  "bin": { "miniflow": "./dist/cli.js" },
+  "bin": {
+    "miniflow": "./dist/cli.js"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
@@ -16,9 +18,11 @@
     "@fastify/cors": "^10.0.1",
     "@modelcontextprotocol/sdk": "^1.7.0",
     "ajv": "^8.17.1",
-    "fastify": "^5.2.0"
+    "fastify": "^5.2.0",
+    "js-yaml": "^4.3.2"
   },
   "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.10.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",

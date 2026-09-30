@@ -1,0 +1,5 @@
+# 网文长篇（生产线预设）
+name: 网文长篇
+description: novel 完整流水线——选题 → 剧本 IR（世界观/人设/红队）→ 连续性台账 → 章回正文 → 结算
+flows:
+  - flowId: novel

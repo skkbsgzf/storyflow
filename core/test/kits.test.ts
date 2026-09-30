@@ -29,10 +29,13 @@ describe("能力注册表 · modules/ 单一事实源（批D：kit@1 已清场�
     expect(reg.get("search")!.ops["kb_load"]).toBeTruthy();
   });
 
-  it("bySkill 歧义台账：scene-breakdown 双家（plot 骨架步 + drama 主工具）——W8 记账，不阻断", () => {
+  it("bySkill 歧义台账：scene-breakdown（plot 骨架步 + drama 主工具）+ render-prompt-seedance（prose 原生 + drama 借用，PP1 ComfyUI 预设跨模块插入）——W8 记账，不阻断", () => {
     const reg = kitRegistry(ROOT);
     // 批D 口径：铁律11 =「必有 ≥1 家」；flow@3 派生节点携 kit+op 直查，反查仅兜底。
-    expect(reg.ambiguousSkills()).toEqual(["scene-breakdown"]);
+    // PP1（2026-09-30）：render-prompt-seedance 注册进 drama.ops——screenplay 的
+    // comfyui-script 预设经 insert-tool 在 m3(drama) 追加该 op；prose 原生声明保留，
+    // 双家属有意复用（技能文件 skills/render-prompt-seedance.md 只有一份，kit 只是声明处）。
+    expect(reg.ambiguousSkills().sort()).toEqual(["render-prompt-seedance", "scene-breakdown"].sort());
   });
 
   it("显式 kit+op 解析：返回技能与标尺清单", () => {

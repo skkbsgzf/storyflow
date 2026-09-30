@@ -227,6 +227,8 @@ export interface RunState {
   rejects?: Record<string, number>;
   /** R7（OS-02A）：等待超 `policy.awaitTimeoutMs` 的到点时刻（ISO）；与 status=blocked 同写。 */
   stalledAt?: string;
+  /** 生产线预设（PP1）：flow_run(opts.preset) 选中的预设 id；生效编排 = flow ⊕ 出厂 overlay ⊕ 预设 overlay ⊕ 项目 overlay。 */
+  preset?: string;
 }
 
 // task-package.schema.json
@@ -285,7 +287,8 @@ export interface ArtifactEntry {
 // journal-event.schema.json
 export type JournalEventKind =
   | "run-start" | "advance" | "submit" | "reject" | "gate-open" | "verdict"
-  | "rerun" | "stale" | "snapshot" | "intake" | "deliver" | "run-end" | "note" | "warn";
+  | "rerun" | "stale" | "snapshot" | "intake" | "deliver" | "run-end" | "note" | "warn"
+  | "chain-out" | "chain-in";
 
 export interface JournalEvent {
   ts: string;

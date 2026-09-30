@@ -1,0 +1,68 @@
+# ═══════════════════════════════════════════
+# 断言预设：novel-fanqie（缺省）
+# 番茄快food小说流的门控行为——连续性/章末钩是硬闸（渐进升级），prose 风格是提醒。
+# AE-* 断言在 check_*/scan_quality 节点由注册表执行（registry.ts）；integrity 面
+# （exists/no-debris/…）在提交链与 check_* 节点无条件运行，preset 只做策略。
+# ═══════════════════════════════════════════
+id: novel-fanqie
+trust: system
+defaultGateMode: block-critical
+diagnosticEnabled: true
+progressiveResetMs: 0
+
+groups:
+  - id: integrity
+    gateMode: block-critical
+    assertions:
+      - assertionType: exists
+        gateMode: strict        # 产物缺失没有商量余地
+      - assertionType: no-debris
+      - assertionType: artifact-header
+      - assertionType: glossary
+        warnThreshold: 1
+        blockThreshold: 2
+
+  - id: consistency
+    gateMode: block-critical
+    isolate: true
+    disabled: "!isChapter"      # 非章节产物不跑连续性切片（口径与 aesthetic.ts 路由一致）
+    assertions:
+      - assertionType: AE-CONT-KNOW
+        warnThreshold: 2
+        blockThreshold: 5
+        hintTemplate: 引号专名越权切片第 {{count}} 次命中——登记词汇表 own[] 或改写（语义裁决归红方）
+      - assertionType: AE-CONT-ITEM
+        warnThreshold: 2
+        blockThreshold: 5
+      - assertionType: AE-CONT-FORESHADOW
+        warnThreshold: 2
+        blockThreshold: 5
+        hintTemplate: 到期伏笔未回收第 {{count}} 次命中——补回收场或改台账预期章
+
+  - id: prose
+    gateMode: warn-only
+    isolate: true
+    disabled: "!isChapter"
+    assertions:
+      - assertionType: AE-PROSE-TRIPLET
+        warnThreshold: 2
+        blockThreshold: 5
+      - assertionType: AE-PROSE-NOTBUT
+      - assertionType: AE-PROSE-RHYTHM
+      - assertionType: AE-PROSE-SLOP
+        gateMode: block-critical  # slop 高频词零容忍：1 次警告，3 次起拦
+        warnThreshold: 1
+        blockThreshold: 3
+
+  - id: structure
+    gateMode: block-critical
+    assertions:
+      - assertionType: AE-WNF-HOOK
+        warnThreshold: 3
+        blockThreshold: 10        # 连续 10 章无钩才硬拦——章末钩允许作者节奏取舍
+      - assertionType: AE-CH-LEN
+        gateMode: warn-only
+        warnThreshold: 5
+        blockThreshold: 10
+      - assertionType: AE-OUTPUT-PURITY
+        gateMode: strict          # 会话口吻/工具残留不许进正文

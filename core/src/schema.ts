@@ -41,6 +41,7 @@ const SCHEMA_IDS = [
   "project-config",
   "decision",
   "catalog-entry",
+  "assertion-preset",
 ] as const;
 export type SchemaId = (typeof SCHEMA_IDS)[number];
 

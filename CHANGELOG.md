@@ -1,3 +1,11 @@
+## 0.10.0 · 断言预设 AP1 + 生产线预设 PP1 + 跨流水线级联（2026-09-30）
+
+1. **kernel.ts 拆分**：2280 行单文件 → 489 行门面 + kernel-run/optimize/view/config/base 五文件（free function + kernel 显式传参，公开 API 零变化；KernelError 独立 kernel-base.ts 防运行时环）。
+2. **Assertion Preset（AP1）**：断言预设四层架构（discovery/registry/mount/composition，core/src/assertion-preset/）——gate-preset.yml 声明断言分组、gate 行为（warn-only/block-critical/strict）、progressive 渐进阈值与条件启用；接入 doSubmit 提交链与 check_* 节点两处门点；随包 4 个系统预设（novel-fanqie 缺省/screenplay-audio/prose-light/minimal）；when 条件求值器为无 new Function 的安全子集。
+3. **Production Preset（PP1）**：生产线预设 presets/<id>/（manifest + overlay.<flowId>.json）——flow_run(opts.preset) 选线、state.preset 持久、生效编排 = flow ⊕ 出厂 overlay ⊕ 预设 overlay ⊕ 项目 overlay；set-module 新增 remove 语义（模块实例裁剪，连接按剩余序重派生）；drama 模块注册 render-prompt-seedance op；随包 5 个预设（web-novel/screen-play/world-bible/comfyui-script/short-story）。
+4. **flow_chain 跨流水线级联**：源项目产物确定性搬运到新项目 00-素材/（sourceMaterials「在盘即声明」语义），显式输入开跑目标流水线，双边 journal 接力留痕（chain-out/chain-in 新契约枚举）。
+5. 新依赖：core +js-yaml（预设文件解析）。测试 31 文件/325 用例（+27），tsc 严格模式（含 noUncheckedIndexedAccess）全绿。规范文档：docs/规范-断言预设-AP1.md、docs/规范-生产线预设-PP1.md。
+
 ## 0.9.0 · 推演回归 + 两条运行时接线（2026-09-30）
 
 1. **推演模式随包回归**：packs/deduce（galgame 点点点剧情推演，engine/pages/templates/tools 四件）——挂载表自动装载，/deduce 即玩；模板项目 template-推演 随包（首写落地）。

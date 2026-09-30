@@ -1,0 +1,5 @@
+# ComfyUI 分镜提示词（生产线预设）
+name: ComfyUI 分镜提示词
+description: screenplay 流水线 + 分镜后追加 Seedance 视频提示词（运镜词库/一致性锁图，出厂定档单镜头 5 秒）
+flows:
+  - flowId: screenplay

@@ -12,7 +12,8 @@
     "nodeId": { "type": "string" },
     "event": {
       "type": "string",
-      "enum": ["run-start", "advance", "submit", "reject", "gate-open", "verdict", "rerun", "stale", "snapshot", "intake", "deliver", "run-end", "note", "warn"]
+      "enum": ["run-start", "advance", "submit", "reject", "gate-open", "verdict", "rerun", "stale", "snapshot", "intake", "deliver", "run-end", "note", "warn", "chain-out", "chain-in"],
+      "description": "chain-out/chain-in（PP1 Phase 2）：flow_chain 跨流水线级联的接力留痕——源项目记搬运了哪些产物，目标项目记素材在盘与来源项目。"
     },
     "actor": { "type": "string", "description": "host / kernel / user:<name> / minitool:<id>" },
     "detail": { "type": "string" },

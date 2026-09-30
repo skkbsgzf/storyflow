@@ -1,0 +1,14 @@
+{
+  "format": "flow-overlay@1",
+  "flowId": "topic",
+  "origin": "factory",
+  "reason": "Short Story 预设：选题 → 方案 → 剧本 IR → 剧本成品即止，裁掉可批注交付页尾段",
+  "patches": [
+    {
+      "kind": "set-module",
+      "id": "m5",
+      "remove": true,
+      "reason": "短篇不需要可批注交付页，正文成品即终点"
+    }
+  ]
+}

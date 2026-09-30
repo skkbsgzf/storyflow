@@ -1,0 +1,26 @@
+{
+  "format": "flow-overlay@1",
+  "flowId": "novel",
+  "origin": "factory",
+  "reason": "World Bible 预设：只锻造世界观与剧本 IR——台账切片、章回写作、结算尾段整体裁剪，模块间连接由展开器按剩余序重派生",
+  "patches": [
+    {
+      "kind": "set-module",
+      "id": "m3",
+      "remove": true,
+      "reason": "移除连续性台账切片（不写正文，无连续性可维护）"
+    },
+    {
+      "kind": "set-module",
+      "id": "m4",
+      "remove": true,
+      "reason": "移除章回写作（本预设不写正文）"
+    },
+    {
+      "kind": "set-module",
+      "id": "m5",
+      "remove": true,
+      "reason": "移除结算尾段（无正文可结算）"
+    }
+  ]
+}

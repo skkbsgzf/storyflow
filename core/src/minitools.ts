@@ -7,6 +7,9 @@ import { runIntegrityAsserts, blocked, dedupeValidations } from "./asserts.js";
 import { runAestheticAsserts } from "./aesthetic.js";
 import { isBackEdge } from "./cond.js";
 import { journalAppend } from "./journal.js";
+import type { StandingMount } from "./assertion-preset/types.js";
+import { applyGatePreset, declaredAestheticTypes, gateContext } from "./assertion-preset/executor.js";
+import { runDeclaredAesthetic } from "./assertion-preset/registry.js";
 
 export interface CoreResult {
   ok: boolean;
@@ -53,7 +56,7 @@ export async function runCoreNode(
   flow: FlowDescriptor,
   state: RunState,
   nodeId: string,
-  opts: { timeoutMs?: number; budget?: Record<string, number> } = {},
+  opts: { timeoutMs?: number; budget?: Record<string, number>; presetMount?: StandingMount } = {},
 ): Promise<CoreResult> {
   const node = flow.graph.nodes[nodeId];
   const artifacts: string[] = [];
@@ -165,19 +168,33 @@ export async function runCoreNode(
     const upstream = flow.graph.edges
       .filter((e) => e.to === nodeId && !isBackEdge(e))
       .map((e) => e.from);
-    const results: Validation[] = [];
+    const results: Validation[] = [];      // 原始证据（报告 findings 保持原样，含被策略降级的项）
+    const gatedResults: Validation[] = []; // 策略后结果（integrity 模式的裁决输入）
     const checked: string[] = [];
     for (const up of upstream) {
       for (const rel of artifactPathsOf(flow, up, projectDir)) {
         const abs = path.join(projectDir, rel);
         if (!fs.existsSync(abs)) continue;
         checked.push(rel);
-        results.push(...runIntegrityAsserts(projectDir, rel));
+        const relRaw = [...runIntegrityAsserts(projectDir, rel)];
         if (scan) {
           // 扫描器 = aesthetic.ts 全量确定性检查；其 pass/warn/block 标签只是证据分级，
           // 不构成提交闸——block 证据交由验收人/agent 决断（增补循环的输入）。
-          results.push(...runAestheticAsserts(projectDir, rel, opts.budget));
+          relRaw.push(...runAestheticAsserts(projectDir, rel, opts.budget));
+        } else if (opts.presetMount) {
+          // Assertion Preset v1：preset 声明的 AE-* 断言在 integrity 检查节点由注册表补跑
+          relRaw.push(...runDeclaredAesthetic(declaredAestheticTypes(opts.presetMount), projectDir, rel, opts.budget));
         }
+        results.push(...relRaw);
+        gatedResults.push(
+          ...(opts.presetMount && !scan
+            ? applyGatePreset(
+                opts.presetMount,
+                relRaw,
+                gateContext(projectDir, nodeId, node, rel, (state.nodes[nodeId]?.round ?? 0) + 1),
+              ).problems
+            : relRaw),
+        );
       }
     }
     const reportRel = path
@@ -220,7 +237,8 @@ export async function runCoreNode(
       });
     }
     if (!scan) {
-      const blocks = blocked(finalResults);
+      // 裁决用策略后结果：preset 的降级/升级/progressive 已生效；无 preset = 与原行为一致
+      const blocks = blocked(dedupeValidations(gatedResults));
       if (blocks.length) {
         return { ok: false, artifacts, kind: "assert", reason: `${tool} block ${blocks.length} 项`, problems: blocks };
       }

@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "miniflow/assertion-preset",
+  "title": "assertion-preset@1 (gate-preset.yml)",
+  "description": "断言预设组合文件：声明哪些断言在哪个门点生效、gate 行为（warn-only/block-critical/strict）、progressive 升级阈值与条件启用。对标 DSH Agent Presets 的 composition 层。",
+  "type": "object",
+  "required": ["id", "groups"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "preset id（= 目录名，必须一致）"
+    },
+    "trust": {
+      "enum": ["system", "user"],
+      "description": "信任来源；实际以所在 root 为准，此处仅作声明回显"
+    },
+    "name": { "type": "string", "description": "显示名（缺省 = id）" },
+    "description": { "type": "string" },
+    "defaultGateMode": {
+      "enum": ["warn-only", "block-critical", "strict"],
+      "default": "block-critical",
+      "description": "组/断言未声明 gateMode 时的 fallback"
+    },
+    "diagnosticEnabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "false = 不生成诊断摘要（打回 reason/journal 仍记录原始 blocks）"
+    },
+    "progressiveResetMs": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 0,
+      "description": "progressive 计数回滚周期（ms，自首次触发起算）；0 = 进程内永不重置"
+    },
+    "groups": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/group" }
+    }
+  },
+  "$defs": {
+    "group": {
+      "type": "object",
+      "required": ["id", "assertions"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "description": "组名：consistency / prose / structure…" },
+        "gateMode": { "enum": ["warn-only", "block-critical", "strict"], "description": "组级默认 gate 行为（缺省用顶层 defaultGateMode）" },
+        "isolate": { "type": "boolean", "default": false, "description": "组内 progressive 计数独立命名空间（v1 计数全局按断言类型，isolate 仅作声明回显）" },
+        "disabled": { "type": "string", "description": "条件禁用表达式（成立 = 整组不生效），字段见 when 求值器文档" },
+        "assertions": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/assertion" } }
+      }
+    },
+    "assertion": {
+      "type": "object",
+      "required": ["assertionType"],
+      "additionalProperties": false,
+      "properties": {
+        "assertionType": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Validation.name：integrity 面（exists/nonempty/no-debris/beat-count/ep-title/artifact-header/glossary）或 aesthetic 面（AE-*，在 check_* 节点由注册表执行）"
+        },
+        "gateMode": { "enum": ["warn-only", "block-critical", "strict"], "description": "单条覆盖组默认" },
+        "warnThreshold": { "type": "integer", "minimum": 1, "default": 2, "description": "连续失败达到该次数进入 warning 档" },
+        "blockThreshold": { "type": "integer", "minimum": 1, "default": 5, "description": "连续失败达到该次数进入 blocking 档（block-critical 下 warn 升级为 block）" },
+        "when": { "type": "string", "description": "条件启用表达式；求值为 false = 该断言本轮跳过（结果丢弃）" },
+        "hintTemplate": { "type": "string", "description": "诊断提示模板，{{count}}/{{type}} 占位" }
+      }
+    }
+  }
+}

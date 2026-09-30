@@ -1,0 +1,59 @@
+# ═══════════════════════════════════════════
+# 断言预设：screenplay-audio（短剧/有声剧本流）
+# 拍级契约是硬闸（钩型/三件套/违禁词 strict），连续性切片依赖世界书（when 演示）。
+# ═══════════════════════════════════════════
+id: screenplay-audio
+trust: system
+defaultGateMode: block-critical
+diagnosticEnabled: true
+progressiveResetMs: 0
+
+groups:
+  - id: integrity
+    gateMode: block-critical
+    assertions:
+      - assertionType: exists
+        gateMode: strict
+      - assertionType: no-debris
+      - assertionType: artifact-header
+      - assertionType: beat-count
+      - assertionType: ep-title
+
+  - id: beats
+    gateMode: block-critical
+    isolate: true
+    assertions:
+      - assertionType: AE-HOOK-EVENT
+        gateMode: strict           # 首拍钩型四型契约不宽容
+      - assertionType: AE-BEAT-FORMAT
+        warnThreshold: 2
+        blockThreshold: 5
+      - assertionType: AE-VIS-EMPTY
+        gateMode: strict           # 心理/抒情入分镜 = 不可拍摄，直接拦
+      - assertionType: AE-COMPLIANCE
+        gateMode: strict           # 违禁词命中即拦
+
+  - id: structure
+    gateMode: block-critical
+    assertions:
+      - assertionType: AE-CHOREO-GAP
+      - assertionType: AE-CHOREO-BOUNDS
+      - assertionType: AE-CARD-END
+        gateMode: warn-only
+      - assertionType: AE-MEME-POINT
+        gateMode: warn-only
+        warnThreshold: 2
+        blockThreshold: 5
+
+  - id: consistency
+    gateMode: block-critical
+    isolate: true
+    assertions:
+      - assertionType: AE-CONT-ITEM
+        when: "hasWorldbook"       # 无世界书时切片不适用，结果丢弃
+        warnThreshold: 2
+        blockThreshold: 5
+      - assertionType: AE-CONT-FORESHADOW
+        when: "hasWorldbook"
+        warnThreshold: 2
+        blockThreshold: 5

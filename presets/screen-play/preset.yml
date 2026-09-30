@@ -1,0 +1,5 @@
+# 短剧剧本（生产线预设）
+name: 短剧剧本
+description: screenplay 流水线——选题 → 剧本 IR（结构/分场/短剧节拍/红队）→ 分集分镜剧本
+flows:
+  - flowId: screenplay
