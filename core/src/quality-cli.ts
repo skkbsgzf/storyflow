@@ -13,11 +13,10 @@
  *        [--budget '{"similePerK":2}']   （键须在 R7 §二 C 表白名单内，否则显式回显未生效）
  * 输出：stdout JSON { projectDir, file, budget, validations[], issues[] }
  */
-import fs from "node:fs";
-import path from "node:path";
 import process from "node:process";
 import { runAestheticAsserts } from "./aesthetic.js";
 import { resolveBudget } from "./budget.js";
+import { nodeFs, nodePath } from "./abstraction/adapters/node.js";
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);
@@ -31,9 +30,10 @@ if (!projectDir || !relPath) {
   process.exit(2);
 }
 
-const absProject = path.resolve(projectDir!);
-if (!fs.existsSync(path.join(absProject, relPath!))) {
-  console.error(`文件不存在: ${path.join(absProject, relPath!)}`);
+const absProject = nodePath.resolve(projectDir!);
+const absFile = nodePath.join(absProject, relPath!);
+if (!nodeFs.exists(absFile)) {
+  console.error(`文件不存在: ${absFile}`);
   process.exit(3);
 }
 
@@ -50,7 +50,7 @@ if (budgetArg) {
 }
 const res = resolveBudget(policyLike as never);
 
-const validations = runAestheticAsserts(absProject, relPath!, res.values);
+const validations = runAestheticAsserts(absProject, relPath!, res.values, nodeFs, nodePath);
 
 console.log(
   JSON.stringify(

@@ -2,15 +2,16 @@
 // 配置 = <repoRoot>/.external/agent-mcp.json（gitignore 区，与 agent-model.json 同纪律）：
 //   { "servers": [ { "name": "fetch", "command": "npx", "args": ["-y", "@modelcontextprotocol/server-fetch"], "env": {} } ] }
 // 工具名内联为 mcp__<server>__<tool>，避免与 miniflow 工具撞名。
-import fs from "node:fs";
-import path from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import type { FsIo } from "./abstraction/fs.js";
+import { nodeFs, nodePath } from "./abstraction/defaults.js";
 
 interface McpServerConf { name: string; command: string; args?: string[]; env?: Record<string, string> }
 interface McpConn { client: Client; tools: { name: string; description?: string; inputSchema: unknown }[] }
 
-const CONFIG_FILE = path.join(".external", "agent-mcp.json");
+// 相对 repoRoot 的配置位置，拼接交给注入的 path（模块级不许碰 node:path）
+const CONFIG_REL = ".external/agent-mcp.json";
 
 interface McpToolDef {
   name: string;
@@ -23,10 +24,12 @@ interface McpToolDef {
 export class AgentMcp {
   private conns = new Map<string, McpConn>();
   private loadedFrom: string | null = null;
+  /** 配置读走注入的 io 束，缺省 = Node 适配器；换宿主的连接缓存各自一个实例（连接是进程级态，不跨实例共享）。 */
+  constructor(private readonly io: FsIo = { fs: nodeFs, path: nodePath }) {}
 
   private conf(repoRoot: string): McpServerConf[] {
     try {
-      const raw = JSON.parse(fs.readFileSync(path.join(repoRoot, CONFIG_FILE), "utf-8")) as { servers?: McpServerConf[] };
+      const raw = JSON.parse(this.io.fs.readText(this.io.path.join(repoRoot, CONFIG_REL))) as { servers?: McpServerConf[] };
       return (raw.servers || []).filter((s) => s.name && s.command);
     } catch {
       return [];
@@ -35,9 +38,9 @@ export class AgentMcp {
 
   /** 惰性连接：配置变了（文件 mtime/内容）即重连，否则复用存活连接。 */
   private async ensure(repoRoot: string): Promise<Map<string, McpConn>> {
-    const file = path.join(repoRoot, CONFIG_FILE);
+    const file = this.io.path.join(repoRoot, CONFIG_REL);
     let stamp: string | null = null;
-    try { stamp = fs.readFileSync(file, "utf-8"); } catch { stamp = null; }
+    try { stamp = this.io.fs.readText(file); } catch { stamp = null; }
     if (stamp !== this.loadedFrom) {
       // 配置变了：全部重连（进程级缓存，不追增量）
       for (const [, conn] of this.conns) { try { await conn.client.close(); } catch { /* 幂等 */ } }

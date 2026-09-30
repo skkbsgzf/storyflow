@@ -19,20 +19,20 @@ function tmpRoot(): { root: string; pid: string } {
 describe("pi-agent · 会话存储（projects/<id>/registry/agent-sessions/）", () => {
   it("CRUD 全链：建 → 列 → 改名 → 读 → 删", () => {
     const { root, pid } = tmpRoot();
-    const dir = path.join(root, "projects", pid);
-    const s = createSession(dir, "测试会话");
+    const k = new Kernel({ root });
+    const s = createSession(k, pid, "测试会话");
     expect(s.id).toMatch(/^s-/);
     expect(s.title).toBe("测试会话");
-    expect(listSessions(dir).map((x) => x.id)).toContain(s.id);
-    renameSession(dir, s.id, "改过的名字");
-    expect(getSession(dir, s.id).title).toBe("改过的名字");
-    deleteSession(dir, s.id);
-    expect(listSessions(dir).map((x) => x.id)).not.toContain(s.id);
+    expect(listSessions(k, pid).map((x) => x.id)).toContain(s.id);
+    renameSession(k, pid, s.id, "改过的名字");
+    expect(getSession(k, pid, s.id).title).toBe("改过的名字");
+    deleteSession(k, pid, s.id);
+    expect(listSessions(k, pid).map((x) => x.id)).not.toContain(s.id);
   });
 
   it("读不存在的会话 = 显式报错（不静默空对象）", () => {
     const { root, pid } = tmpRoot();
-    expect(() => getSession(path.join(root, "projects", pid), "s-none")).toThrow(/会话不存在/);
+    expect(() => getSession(new Kernel({ root }), pid, "s-none")).toThrow(/会话不存在/);
   });
 });
 

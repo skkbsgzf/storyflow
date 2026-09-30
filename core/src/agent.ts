@@ -6,11 +6,10 @@
 //  · 本 agent 不碰 run 状态（flow_run/submit/gate/rerun/overlay 不在白名单）——编排推进仍归人会话/内核；
 //    它能读能说能改文件与提示词（skill_patch 走提案审批制），能查编排与证据。
 //  · 工具结果截断入上下文（16KB/条），防对话膨胀把会话拖死。
-import fs from "node:fs";
-import path from "node:path";
-import { execFile } from "node:child_process";
 import { Kernel, KernelError } from "./kernel.js";
 import { VERBS, type VerbDef } from "./verbs.js";
+import type { IFileSystem } from "./abstraction/fs.js";
+import type { JournalEventKind } from "./types.js";
 import { AgentMcp } from "./agent-mcp.js";
 
 // ── 模型配置（env > .external/agent-model.json）──────────────────────────────
@@ -22,9 +21,10 @@ export interface AgentModelConfig {
   temperature?: number;
 }
 
-const EXTERNAL_MODEL_FILE = path.join(".external", "agent-model.json");
+// 模块级不许碰 node:path：相对定位串就地写死，拼接交给注入的 kernel.path
+const EXTERNAL_MODEL_FILE = ".external/agent-model.json";
 
-export function loadModelConfig(repoRoot: string): {
+export function loadModelConfig(kernel: Kernel): {
   cfg: AgentModelConfig | null;
   source: "env" | "file" | "none";
   keyMasked?: string;
@@ -39,7 +39,7 @@ export function loadModelConfig(repoRoot: string): {
     return { cfg, source: "env", keyMasked: maskKey(env.apiKey) };
   }
   try {
-    const raw = JSON.parse(fs.readFileSync(path.join(repoRoot, EXTERNAL_MODEL_FILE), "utf-8"));
+    const raw = JSON.parse(kernel.fs.readText(kernel.path.join(kernel.repoRoot, EXTERNAL_MODEL_FILE)));
     if (raw && raw.baseUrl && raw.model) {
       const cfg: AgentModelConfig = raw;
       return { cfg, source: "file", keyMasked: maskKey(cfg.apiKey) };
@@ -48,10 +48,10 @@ export function loadModelConfig(repoRoot: string): {
   return { cfg: null, source: "none" };
 }
 
-export function saveModelConfig(repoRoot: string, cfg: AgentModelConfig): void {
-  const file = path.join(repoRoot, EXTERNAL_MODEL_FILE);
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  fs.writeFileSync(file, JSON.stringify(cfg, null, 2), "utf-8");
+export function saveModelConfig(kernel: Kernel, cfg: AgentModelConfig): void {
+  const file = kernel.path.join(kernel.repoRoot, EXTERNAL_MODEL_FILE);
+  kernel.fs.mkdir(kernel.path.dirname(file), { recursive: true });
+  kernel.fs.writeText(file, JSON.stringify(cfg, null, 2));
 }
 
 function maskKey(k?: string): string | undefined {
@@ -76,56 +76,56 @@ export interface AgentSession {
   messages: AgentMessage[];
 }
 
-const sessionsDir = (projectDir: string) => path.join(projectDir, "registry", "agent-sessions");
-const sessionFile = (projectDir: string, sid: string) => path.join(sessionsDir(projectDir), `${sid}.json`);
+const sessionsDir = (kernel: Kernel, projectDir: string) => kernel.path.join(projectDir, "registry", "agent-sessions");
+const sessionFile = (kernel: Kernel, projectDir: string, sid: string) => kernel.path.join(sessionsDir(kernel, projectDir), `${sid}.json`);
 const now = () => new Date().toISOString().replace("T", " ").slice(0, 16);
 
-function readSession(projectDir: string, sid: string): AgentSession {
+function readSession(kernel: Kernel, projectDir: string, sid: string): AgentSession {
   try {
-    return JSON.parse(fs.readFileSync(sessionFile(projectDir, sid), "utf-8")) as AgentSession;
+    return JSON.parse(kernel.fs.readText(sessionFile(kernel, projectDir, sid))) as AgentSession;
   } catch {
     throw new KernelError("NO_SESSION", 404, `会话不存在：${sid}`);
   }
 }
 
-function writeSession(projectDir: string, s: AgentSession): void {
-  fs.mkdirSync(sessionsDir(projectDir), { recursive: true });
+function writeSession(kernel: Kernel, projectDir: string, s: AgentSession): void {
+  kernel.fs.mkdir(sessionsDir(kernel, projectDir), { recursive: true });
   s.updatedAt = now();
-  fs.writeFileSync(sessionFile(projectDir, s.id), JSON.stringify(s, null, 1), "utf-8");
+  kernel.fs.writeText(sessionFile(kernel, projectDir, s.id), JSON.stringify(s, null, 1));
 }
 
-export function listSessions(projectDir: string): { id: string; title: string; updatedAt: string; turns: number }[] {
-  const dir = sessionsDir(projectDir);
-  if (!fs.existsSync(dir)) return [];
+export function listSessions(kernel: Kernel, projectId: string): { id: string; title: string; updatedAt: string; turns: number }[] {
+  const dir = sessionsDir(kernel, kernel.projectDir(projectId));
+  if (!kernel.fs.exists(dir)) return [];
   const out = [];
-  for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".json")).sort()) {
+  for (const f of kernel.fs.readDir(dir).filter((x) => x.endsWith(".json")).sort()) {
     try {
-      const s = JSON.parse(fs.readFileSync(path.join(dir, f), "utf-8")) as AgentSession;
+      const s = JSON.parse(kernel.fs.readText(kernel.path.join(dir, f))) as AgentSession;
       out.push({ id: s.id, title: s.title, updatedAt: s.updatedAt, turns: s.messages.filter((m) => m.role === "user").length });
     } catch { /* 坏文件跳过，不拖垮清单 */ }
   }
   return out.sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
 }
 
-export function createSession(projectDir: string, title?: string): AgentSession {
+export function createSession(kernel: Kernel, projectId: string, title?: string): AgentSession {
   const sid = `s-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
   const s: AgentSession = { id: sid, title: title || "新会话", createdAt: now(), updatedAt: now(), messages: [] };
-  writeSession(projectDir, s);
+  writeSession(kernel, kernel.projectDir(projectId), s);
   return s;
 }
 
-export function getSession(projectDir: string, sid: string): AgentSession {
-  return readSession(projectDir, sid);
+export function getSession(kernel: Kernel, projectId: string, sid: string): AgentSession {
+  return readSession(kernel, kernel.projectDir(projectId), sid);
 }
 
-export function deleteSession(projectDir: string, sid: string): void {
-  try { fs.rmSync(sessionFile(projectDir, sid)); } catch { /* 幂等 */ }
+export function deleteSession(kernel: Kernel, projectId: string, sid: string): void {
+  kernel.fs.remove(sessionFile(kernel, kernel.projectDir(projectId), sid), { force: true });
 }
 
-export function renameSession(projectDir: string, sid: string, title: string): AgentSession {
-  const s = readSession(projectDir, sid);
+export function renameSession(kernel: Kernel, projectId: string, sid: string, title: string): AgentSession {
+  const s = readSession(kernel, kernel.projectDir(projectId), sid);
   s.title = title.slice(0, 60) || s.title;
-  writeSession(projectDir, s);
+  writeSession(kernel, kernel.projectDir(projectId), s);
   return s;
 }
 
@@ -178,15 +178,15 @@ function verbTools(kernel: Kernel): AgentTool[] {
   return out;
 }
 
-const withinProject = (projectDir: string, rel: string): string => {
-  const abs = path.resolve(projectDir, rel);
-  if (!abs.startsWith(path.resolve(projectDir) + path.sep) && abs !== path.resolve(projectDir)) {
+const withinProject = (kernel: Kernel, projectDir: string, rel: string): string => {
+  const abs = kernel.path.resolve(projectDir, rel);
+  if (!abs.startsWith(kernel.path.resolve(projectDir) + kernel.path.sep) && abs !== kernel.path.resolve(projectDir)) {
     throw new KernelError("INVALID_INPUT", 400, `路径越出项目：${rel}`);
   }
   return abs;
 };
 
-function fsTools(projectDir: string): AgentTool[] {
+function fsTools(kernel: Kernel, projectDir: string): AgentTool[] {
   const IGNORE = new Set(["node_modules", ".git", "snapshots"]);
   return [
     {
@@ -198,15 +198,15 @@ function fsTools(projectDir: string): AgentTool[] {
         const walk = (dir: string, depth: number) => {
           if (depth > 2) return;
           let items: string[] = [];
-          try { items = fs.readdirSync(dir).filter((x) => !IGNORE.has(x) && !x.startsWith(".")); } catch { return; }
+          try { items = kernel.fs.readDir(dir).filter((x) => !IGNORE.has(x) && !x.startsWith(".")); } catch { return; }
           for (const it of items.sort()) {
-            const abs = path.join(dir, it);
-            if (fs.statSync(abs).isDirectory()) {
-              const cnt = (() => { try { return fs.readdirSync(abs).length; } catch { return 0; } })();
+            const abs = kernel.path.join(dir, it);
+            if (kernel.fs.stat(abs)?.isDirectory) {
+              const cnt = (() => { try { return kernel.fs.readDir(abs).length; } catch { return 0; } })();
               lines.push(`${"  ".repeat(depth)}${it}/ (${cnt})`);
               walk(abs, depth + 1);
             } else {
-              lines.push(`${"  ".repeat(depth)}${it} (${Math.round(fs.statSync(abs).size / 1024)}KB)`);
+              lines.push(`${"  ".repeat(depth)}${it} (${Math.round((kernel.fs.stat(abs)?.size ?? 0) / 1024)}KB)`);
             }
           }
         };
@@ -219,8 +219,8 @@ function fsTools(projectDir: string): AgentTool[] {
       description: "[项目文件系统] 读文件（项目内相对路径；越界拒绝）",
       parameters: { type: "object", properties: { path: { type: "string", description: "项目内相对路径，如 flows/../02-编剧/剧本.md 或 state.json" } }, required: ["path"] },
       exec: async (a) => {
-        const abs = withinProject(projectDir, String(a.path));
-        const txt = fs.readFileSync(abs, "utf-8");
+        const abs = withinProject(kernel, projectDir, String(a.path));
+        const txt = kernel.fs.readText(abs);
         return txt.length > TOOL_RESULT_CAP ? txt.slice(0, TOOL_RESULT_CAP) + `\n…(截断，全长 ${txt.length} 字符)` : txt;
       },
     },
@@ -229,11 +229,11 @@ function fsTools(projectDir: string): AgentTool[] {
       description: "[项目文件系统] 写文件（项目内相对路径；改 flow.json 后须提醒用户跑 flow_effect 生效）",
       parameters: { type: "object", properties: { path: { type: "string" }, content: { type: "string" } }, required: ["path", "content"] },
       exec: async (a) => {
-        const abs = withinProject(projectDir, String(a.path));
+        const abs = withinProject(kernel, projectDir, String(a.path));
         const content = String(a.content ?? "");
         if (content.length > 512_000) throw new KernelError("INVALID_INPUT", 400, "内容超 500KB，拒绝一次写入");
-        fs.mkdirSync(path.dirname(abs), { recursive: true });
-        fs.writeFileSync(abs, content, "utf-8");
+        kernel.fs.mkdir(kernel.path.dirname(abs), { recursive: true });
+        kernel.fs.writeText(abs, content);
         return `已写入 ${a.path}（${content.length} 字符）`;
       },
     },
@@ -246,17 +246,18 @@ function fsTools(projectDir: string): AgentTool[] {
         const hits: string[] = [];
         const walk = (dir: string) => {
           if (hits.length >= 60) return;
-          for (const it of fs.readdirSync(dir).sort()) {
+          for (const it of kernel.fs.readDir(dir).sort()) {
             if (hits.length >= 60) return;
             if (IGNORE.has(it) || it.startsWith(".")) continue;
-            const abs = path.join(dir, it);
-            const st = fs.statSync(abs);
-            if (st.isDirectory()) { walk(abs); continue; }
+            const abs = kernel.path.join(dir, it);
+            const st = kernel.fs.stat(abs);
+            if (!st) continue;
+            if (st.isDirectory) { walk(abs); continue; }
             if (st.size > 400_000) continue;
             try {
-              const txt = fs.readFileSync(abs, "utf-8");
+              const txt = kernel.fs.readText(abs);
               txt.split("\n").forEach((line, idx) => {
-                if (hits.length < 60 && re.test(line)) hits.push(`${path.relative(projectDir, abs)}:${idx + 1}: ${line.trim().slice(0, 160)}`);
+                if (hits.length < 60 && re.test(line)) hits.push(`${kernel.path.relative(projectDir, abs)}:${idx + 1}: ${line.trim().slice(0, 160)}`);
               });
             } catch { /* 二进制/解码失败跳过 */ }
           }
@@ -270,16 +271,20 @@ function fsTools(projectDir: string): AgentTool[] {
       description: "[flow 守门] 跑 python tools/flow-lint.py --json（改过 flows/*/flow.json 后必跑）",
       parameters: { type: "object", properties: { flow: { type: "string", description: "flow id（缺省全量）" } } },
       exec: async (a) => {
-        const repoRoot = path.resolve(projectDir, "..", "..");
+        // cwd 取 kernel.repoRoot：旧写法是 projectDir 上跳两级——默认盘面（root === repoRoot）同值，
+        // 而分离数据根的宿主上只有 repoRoot 才有 tools/flow-lint.py
         const args = ["tools/flow-lint.py"];
         if (a.flow) args.push(String(a.flow));
         args.push("--json");
-        return await new Promise<string>((resolve) => {
-          execFile("python", args, { cwd: repoRoot, timeout: 90_000, maxBuffer: 4 << 20 }, (err, stdout, stderr) => {
-            if (err && !stdout) resolve(`flow-lint 执行失败: ${err.message}\n${stderr.slice(0, 2000)}`);
-            else resolve(String(stdout).slice(0, TOOL_RESULT_CAP) || `exit=${err?.code ?? 0}`);
-          });
+        const r = await kernel.proc.runAsync("python", args, {
+          cwd: kernel.repoRoot,
+          timeoutMs: 90_000,
+          maxBufferBytes: 4 << 20,
         });
+        // 三分支照旧：起不动（原 err.message）／退出非零且无输出（原把 stderr 一并端出来，别缩成干巴巴的 exit=1）／有输出（截断）
+        if (r.error && !r.stdout) return `flow-lint 执行失败: ${r.error}\n${r.stderr.slice(0, 2000)}`;
+        if (!r.stdout && r.status) return `flow-lint 退出码 ${r.status}（无输出）\n${r.stderr.slice(0, 2000)}`;
+        return r.stdout.slice(0, TOOL_RESULT_CAP) || "exit=0";
       },
     },
   ];
@@ -287,7 +292,7 @@ function fsTools(projectDir: string): AgentTool[] {
 
 export async function buildTools(kernel: Kernel, projectId: string, mcp: AgentMcp): Promise<AgentTool[]> {
   const projectDir = kernel.projectDir(projectId);
-  const tools = [...verbTools(kernel), ...fsTools(projectDir)];
+  const tools = [...verbTools(kernel), ...fsTools(kernel, projectDir)];
   try {
     const mcpDefs = await mcp.tools(kernel.repoRoot);
     tools.push(...mcpDefs.map((d) => ({
@@ -316,7 +321,7 @@ export function buildSystemPrompt(kernel: Kernel, projectId: string): string {
   let stateLine = "（无 state.json——项目未开跑）";
   let flowId = "";
   try {
-    const st = JSON.parse(fs.readFileSync(path.join(projectDir, "state.json"), "utf-8"));
+    const st = JSON.parse(kernel.fs.readText(kernel.path.join(projectDir, "state.json")));
     flowId = st.flowId || "";
     const nodes = Object.entries(st.nodes || {});
     const done = nodes.filter(([, v]) => (v as { status?: string }).status === "done").length;
@@ -325,7 +330,7 @@ export function buildSystemPrompt(kernel: Kernel, projectId: string): string {
   } catch { /* 未开跑 */ }
   let wbLine = "无世界书";
   try {
-    const g = JSON.parse(fs.readFileSync(path.join(projectDir, "世界书", "graph.json"), "utf-8"));
+    const g = JSON.parse(kernel.fs.readText(kernel.path.join(projectDir, "世界书", "graph.json")));
     wbLine = `世界书 ${g.stats?.entries ?? 0} 词条 / ${g.stats?.edges ?? 0} 关系边`;
   } catch { /* 无 */ }
   return [
@@ -341,17 +346,13 @@ export function buildSystemPrompt(kernel: Kernel, projectId: string): string {
 
 // ── 回合循环（SSE 事件流）────────────────────────────────────────────────────
 /** 分析手法工具（曲线/人物）：方法论卡自 knowledge/ 动态装载，嵌套补全产结构化 JSON。 */
-function analysisTools(cfg: AgentModelConfig, projectDir: string, repoRoot: string): AgentTool[] {
-  const readIn = (rel: string): string => {
-    const abs = path.resolve(projectDir, rel);
-    if (!abs.startsWith(path.resolve(projectDir) + path.sep) && abs !== path.resolve(projectDir)) {
-      throw new KernelError("INVALID_INPUT", 400, `路径越出项目：${rel}`);
-    }
-    return fs.readFileSync(abs, "utf-8");
-  };
+function analysisTools(cfg: AgentModelConfig, kernel: Kernel, projectDir: string, repoRoot: string): AgentTool[] {
+  // 越界判定收编到 withinProject 单点：原先这里抄了一份同逻辑的 resolve+sep 检查，
+  // 两份判据正是「fs_read 拒了、mf_analyze_curve 放行」那类漂移的来源
+  const readIn = (rel: string): string => kernel.fs.readText(withinProject(kernel, projectDir, rel));
   const readCard = (id: string): string => {
-    const p = path.join(repoRoot, "knowledge", id.replace(/^kb\//, "") + ".md");
-    return fs.readFileSync(p, "utf-8");
+    const p = kernel.path.join(repoRoot, "knowledge", id.replace(/^kb\//, "") + ".md");
+    return kernel.fs.readText(p);
   };
   const chatOnce = async (prompt: string): Promise<string> => {
     const url = cfg.baseUrl.replace(/\/$/, "") + "/chat/completions";
@@ -420,7 +421,14 @@ export type AgentEvent =
   | { type: "tool_result"; id: string; name: string; ok: boolean; content: string }
   | { type: "round"; n: number }
   | { type: "done"; text: string }
-  | { type: "error"; message: string };
+  | { type: "error"; message: string }
+  // 项目级事件（工单 R5）：同一族类型、同一条线格式，由 `project-stream.ts` 从 journal 台账投影；
+  // 对话流不发这五种，项目流不发上面七种。`event` 字段带回台账原 kind，投影不丢溯源。
+  | { type: "node_start"; event: JournalEventKind; ts: string; nodeId?: string; detail?: string }
+  | { type: "node_complete"; event: JournalEventKind; ts: string; nodeId?: string; detail?: string; refs?: string[] }
+  | { type: "node_error"; event: JournalEventKind; ts: string; nodeId?: string; detail?: string }
+  | { type: "gate_pending"; event: JournalEventKind; ts: string; nodeId?: string; detail?: string }
+  | { type: "heartbeat"; ts: string };
 
 const MAX_ROUNDS = 10;
 
@@ -438,7 +446,7 @@ export async function* runTurn(
   mcp: AgentMcp,
 ): AsyncGenerator<AgentEvent> {
   const repoRoot = kernel.repoRoot;
-  const { cfg } = loadModelConfig(repoRoot);
+  const { cfg } = loadModelConfig(kernel);
   const projectDir = kernel.projectDir(projectId);
   if (!cfg) {
     yield {
@@ -447,7 +455,7 @@ export async function* runTurn(
     };
     return;
   }
-  const session = readSession(projectDir, sid);
+  const session = readSession(kernel, projectDir, sid);
   const trimmed = String(userText ?? "").trim();
   if (!trimmed) { yield { type: "error", message: "空消息" }; return; }
   if (session.messages.length === 0) session.title = trimmed.slice(0, 24);
@@ -455,7 +463,7 @@ export async function* runTurn(
 
   const tools = [
     ...await buildTools(kernel, projectId, mcp),
-    ...analysisTools(cfg, projectDir, repoRoot),
+    ...analysisTools(cfg, kernel, projectDir, repoRoot),
   ];
   const llmTools = tools.map((t) => ({ type: "function", function: { name: t.name, description: t.description, parameters: t.parameters } }));
   const systemMsg: AgentMessage = { role: "system", content: buildSystemPrompt(kernel, projectId) };
@@ -473,7 +481,7 @@ export async function* runTurn(
       if (!resp.ok || !resp.body) {
         const body = await resp.text().catch(() => "");
         yield { type: "error", message: `模型端点 ${resp.status}：${body.slice(0, 400) || "无响应体"}` };
-        writeSession(projectDir, session);
+        writeSession(kernel, projectDir, session);
         return;
       }
       // 解析上游 SSE：累积正文与工具调用
@@ -513,7 +521,7 @@ export async function* runTurn(
 
       if (!callList.length) {
         session.messages.push({ role: "assistant", content });
-        writeSession(projectDir, session);
+        writeSession(kernel, projectDir, session);
         yield { type: "done", text: content };
         return;
       }
@@ -537,15 +545,28 @@ export async function* runTurn(
         yield { type: "tool_result", id: c.id, name: c.name, ok, content: result.slice(0, 800) };
         session.messages.push({ role: "tool", tool_call_id: c.id, name: c.name, content: result });
       }
-      writeSession(projectDir, session); // 每轮落盘——流崩不丢上下文
+      writeSession(kernel, projectDir, session); // 每轮落盘——流崩不丢上下文
     }
     yield { type: "error", message: `超过 ${MAX_ROUNDS} 轮工具调用仍未收敛——请拆小问题` };
-    writeSession(projectDir, session);
+    writeSession(kernel, projectDir, session);
   } catch (e) {
     yield { type: "error", message: `agent 回合失败: ${e instanceof Error ? e.message : String(e)}（检查模型端点/密钥/网络）` };
-    writeSession(projectDir, session);
+    writeSession(kernel, projectDir, session);
   }
 }
 
-/** MCP 管理器单例（随 HTTP 面存活；按 .external/agent-mcp.json 惰性连接）。 */
-export const agentMcp = new AgentMcp();
+/**
+ * MCP 管理器按「注入的盘」分桶（R6）。连接是进程级态，跨请求复用；但「配置从哪张盘读」必须跟着内核走——
+ * 原来的模块级单例固定吃 Node 适配器，注入盘（内存盘/浏览器虚拟盘）的宿主会在这一处悄悄回到宿主盘，
+ * 这正是 §四.3 禁的半抽象。默认 Node 适配器只有一位桶客 ⇒ 现网 HTTP 面的行为逐字节不变。
+ */
+const mcpBuckets = new WeakMap<IFileSystem, AgentMcp>();
+
+export function mcpFor(kernel: Kernel): AgentMcp {
+  let mcp = mcpBuckets.get(kernel.fs);
+  if (!mcp) {
+    mcp = new AgentMcp({ fs: kernel.fs, path: kernel.path });
+    mcpBuckets.set(kernel.fs, mcp);
+  }
+  return mcp;
+}

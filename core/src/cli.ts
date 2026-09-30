@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // miniflow CLI —— 内核动词由 `verbs.ts` 唯一声明；本文件只管「参数解析 + 进程面（up/serve/mcp）」。
 // R8-OPS 步骤 3：此前本文件持有一份 13 动词的 switch（动词表的第 1 份副本）。现在**零动词清单**。
-import fs from "node:fs";
-import path from "node:path";
 import process from "node:process";
+import type { IProcessLauncher } from "./abstraction/proc.js";
 import { Kernel, KernelError } from "./kernel.js";
 import { ROOT } from "./schema.js";
 import { VERB_BY_NAME, flagsToArgs, usageFromVerbs } from "./verbs.js";
+import { nodeFs, nodePath } from "./abstraction/adapters/node.js";
 
 type Args = Record<string, string | boolean>;
 
@@ -80,10 +80,10 @@ async function main(): Promise<number> {
           return 1;
         }
         if (chosen !== want) console.error(`[up] 端口 ${want} 被占用，已顺延到 ${chosen}`);
-        if (!fs.existsSync(path.join(kernel.root, "index.html"))) {
+        if (!kernel.fs.exists(kernel.path.join(kernel.root, "index.html"))) {
           console.error("[up] 警告：入口页 index.html 不存在——页面需先由生成器产出（tools/project-pages.py）。");
         }
-        if (flags.open) openBrowser(`http://127.0.0.1:${chosen}/`);
+        if (flags.open) openBrowser(kernel.proc, `http://127.0.0.1:${chosen}/`);
         await startHttp(kernel, chosen);
         return 0; // up 常驻
       }
@@ -126,22 +126,24 @@ async function pickFreePort(from: number, to: number): Promise<number | null> {
   return null;
 }
 
-/** 打开浏览器（仅 `up --open` 时调用）；失败不影响服务本身。 */
-function openBrowser(url: string): void {
-  void import("node:child_process").then(({ spawn }) => {
-    const [cmd, args] =
-      process.platform === "win32"
-        ? ["cmd", ["/c", "start", "", url]]
-        : process.platform === "darwin"
-          ? ["open", [url]]
-          : ["xdg-open", [url]];
-    try {
-      spawn(cmd, args, { detached: true, stdio: "ignore" }).unref();
-    } catch {
-      /* 打开失败不是错误：把 URL 打出来即可 */
-      console.error(`[up] 无法自动打开浏览器，请手动访问 ${url}`);
-    }
-  });
+/**
+ * 打开浏览器（仅 `up --open` 时调用）；失败不影响服务本身。
+ * 选哪条命令是宿主平台知识（留在本入口件里），「分离启动」这个动作本身走注入的 proc——
+ * 抽象层新增 `detach` 形态的普查依据见规范 §3.1。
+ */
+function openBrowser(proc: IProcessLauncher, url: string): void {
+  const [cmd, args] =
+    process.platform === "win32"
+      ? ["cmd", ["/c", "start", "", url]]
+      : process.platform === "darwin"
+        ? ["open", [url]]
+        : ["xdg-open", [url]];
+  try {
+    proc.detach(cmd, args);
+  } catch {
+    /* 打开失败不是错误：把 URL 打出来即可 */
+    console.error(`[up] 无法自动打开浏览器，请手动访问 ${url}`);
+  }
 }
 
 /**
@@ -153,7 +155,7 @@ const T0 = Date.now();
 main().then((code) => {
   process.exitCode = code;
   try {
-    if (!fs.existsSync(path.join(ROOT, "BETA"))) return;
+    if (!nodeFs.exists(nodePath.join(ROOT, "BETA"))) return;
     const { _, flags } = parseArgs(process.argv.slice(2));
     const rec = {
       ts: new Date().toISOString(),
@@ -163,9 +165,9 @@ main().then((code) => {
       exit: code,
       ms: Date.now() - T0,
     };
-    const dir = path.join(ROOT, "trace");
-    fs.mkdirSync(dir, { recursive: true });
-    fs.appendFileSync(path.join(dir, "cli.jsonl"), JSON.stringify(rec) + "\n");
+    const dir = nodePath.join(ROOT, "trace");
+    nodeFs.mkdir(dir, { recursive: true });
+    nodeFs.appendText(nodePath.join(dir, "cli.jsonl"), JSON.stringify(rec) + "\n");
   } catch {
     /* 旁路 */
   }

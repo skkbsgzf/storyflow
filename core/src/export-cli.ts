@@ -15,14 +15,13 @@
  *   tsx src/export-cli.ts --project <pid>  [--target ...] [--out <file>]
  * 输出：stdout（--out 落盘则只打路径），一律 UTF-8。
  */
-import fs from "node:fs";
-import path from "node:path";
 import process from "node:process";
 import { Kernel } from "./kernel.js";
 import { effectiveFlow3 } from "./modules.js";
 import { factoryOverlayPath, readOverlay, type FlowOverlay } from "./overlay.js";
 import { ROOT } from "./schema.js";
 import { loadState } from "./state.js";
+import { nodeFs, nodePath } from "./abstraction/adapters/node.js";
 
 // ---------- 导出图（中性形态，渲染器的唯一输入） ----------
 
@@ -162,7 +161,7 @@ function toExport(eff: any, source: { mode: "project" | "flow"; id: string }): E
 export function buildProjectExport(projectId: string): ExportGraph {
   const k = new Kernel();
   const projectDir = k.projectDir(projectId);
-  const state = loadState(projectDir);
+  const state = loadState(projectDir, k.fs, k.path);
   if (!state) throw new Error(`项目无 state.json（先 flow_run）: ${projectId}`);
   const raw = k.loadFlow(state.flowId);
   const eff = k.effectiveOf(projectDir, raw);
@@ -171,11 +170,11 @@ export function buildProjectExport(projectId: string): ExportGraph {
 
 /** 模板面：flow.json ⊕ 出厂 overlay（无项目层）——给外部消费方看流程形态。 */
 export function buildFlowExport(flowId: string): ExportGraph {
-  const file = path.join(ROOT, "flows", flowId, "flow.json");
-  if (!fs.existsSync(file)) throw new Error(`flow 不存在: ${flowId}`);
-  const flow = JSON.parse(fs.readFileSync(file, "utf-8"));
-  const overlays = [readOverlay(factoryOverlayPath(ROOT, flowId))].filter(Boolean) as FlowOverlay[];
-  const eff = effectiveFlow3(ROOT, flow, { overlays });
+  const file = nodePath.join(ROOT, "flows", flowId, "flow.json");
+  if (!nodeFs.exists(file)) throw new Error(`flow 不存在: ${flowId}`);
+  const flow = JSON.parse(nodeFs.readText(file));
+  const overlays = [readOverlay(factoryOverlayPath(ROOT, flowId, nodePath), nodeFs)].filter(Boolean) as FlowOverlay[];
+  const eff = effectiveFlow3(ROOT, flow, { overlays }, nodeFs, nodePath);
   return toExport(eff, { mode: "flow", id: flowId });
 }
 
@@ -330,8 +329,9 @@ function main(): void {
     const text =
       target === "mermaid" ? renderMermaid(g) : target === "json" ? JSON.stringify(g, null, 2) : renderRunbook(g);
     if (out) {
-      fs.writeFileSync(path.resolve(out), text, "utf-8");
-      console.error(`已写出: ${path.resolve(out)}`);
+      const absOut = nodePath.resolve(out);
+      nodeFs.writeText(absOut, text);
+      console.error(`已写出: ${absOut}`);
     } else {
       console.log(text);
     }

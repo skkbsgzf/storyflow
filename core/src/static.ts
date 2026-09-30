@@ -15,8 +15,8 @@
  *   ④ 文件名命中 `.zhuque-key`/锁文件 → 拒。
  * 拒绝一律返回 404（而不是 403）：不泄露"这里存在一个敏感文件"。
  */
-import fs from "node:fs";
-import path from "node:path";
+import type { IFsPath, IFileSystem } from "./abstraction/fs.js";
+import { nodeFs, nodePath } from "./abstraction/defaults.js";
 
 const ALLOW_SUFFIX = new Set([
   ".html", ".htm", ".md", ".json", ".js", ".mjs", ".css",
@@ -87,7 +87,7 @@ const CONTENT_TYPES: Record<string, string> = {
   ".ttf": "font/ttf",
 };
 
-export function contentTypeOf(absPath: string): string {
+export function contentTypeOf(absPath: string, path: IFsPath = nodePath): string {
   return CONTENT_TYPES[path.extname(absPath).toLowerCase()] ?? "application/octet-stream";
 }
 
@@ -95,7 +95,12 @@ export function contentTypeOf(absPath: string): string {
  * 把 URL 路径解析成可安全发送的绝对路径；不允许则返回 null。
  * 纯函数（只读文件系统判存在），便于单测直接覆盖穿越/敏感文件两类攻击。
  */
-export function resolveStaticPath(root: string, urlPath: string): string | null {
+export function resolveStaticPath(
+  root: string,
+  urlPath: string,
+  fs: IFileSystem = nodeFs,
+  path: IFsPath = nodePath,
+): string | null {
   let rel: string;
   try {
     rel = decodeURIComponent(urlPath.split("?")[0]?.split("#")[0] ?? "");
@@ -114,10 +119,7 @@ export function resolveStaticPath(root: string, urlPath: string): string | null 
   // 包含关系用 sep 收口，避免 /repo-evil 命中 /repo
   if (abs !== rootAbs && !abs.startsWith(rootAbs + path.sep)) return null;
 
-  try {
-    if (!fs.statSync(abs).isFile()) return null;
-  } catch {
-    return null;
-  }
-  return abs;
+  // stat 缺目标返回 undefined（不抛），与旧的「try + statSync 抛错」同判据
+  const st = fs.stat(abs);
+  return st && st.isFile ? abs : null;
 }
