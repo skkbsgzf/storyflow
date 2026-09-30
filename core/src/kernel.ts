@@ -43,7 +43,7 @@ export function deriveProjectName(inputs: Record<string, unknown>): string {
   for (const k of ["direction", "灵感", "需求", "点子", "title", "题材"]) {
     const v = inputs[k];
     if (typeof v === "string" && v.trim().length >= 4) {
-      const first = v.trim().split(/[，。；：,.;:\n！？!?]/)[0].trim() || v.trim();
+      const first = v.trim().split(/[，。；：,.;:\n！？!?]/)[0]?.trim() || v.trim();
       const clean = first.replace(/[/\\:*?"<>|｜「」『』（）()\s]/g, "").slice(0, 16);
       if (clean.length >= 4) return clean;
     }
@@ -186,7 +186,7 @@ export class Kernel {
         } catch (e) {
           // 配置非法绝不静默降级（否则「面板填的阈值没生效」会变成最难查的一类问题）。
           // 错误码/文案沿用既有约定（`flow_run` 侧同一句话），不新造第二套口径。
-          throw new KernelError("INVALID_INPUT", 400, `项目配置非法: ${(e as Error).message}`);
+          throw new KernelError("INVALID_INPUT", 400, `项目配置非法: ${e instanceof Error ? e.message : String(e)}`);
         }
       })();
       const cfgBudgetLayer: FlowOverlay | undefined = cfgB
@@ -232,7 +232,7 @@ export class Kernel {
       return effectiveFlow(this.repoRoot, flow, { projectDir, overlays: cfgBudgetLayer ? [cfgBudgetLayer] : [] });
     } catch (e) {
       if (e instanceof KernelError) throw e; // 已分类的错误原样上抛，不被 BAD_OVERLAY 掩盖
-      throw new KernelError("BAD_OVERLAY", 409, `overlay 非法（拒绝静默降级为 bootstrap 编排）: ${(e as Error).message}`);
+      throw new KernelError("BAD_OVERLAY", 409, `overlay 非法（拒绝静默降级为 bootstrap 编排）: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
@@ -437,7 +437,7 @@ export class Kernel {
     try {
       resolved = resolveInputs(flow, { ...cfgInputs, ...eff.inputs, ...inputs }, { project: projectId }); // type:"project" 的输入由内核注入
     } catch (e) {
-      throw new KernelError("INVALID_INPUT", 400, (e as Error).message);
+      throw new KernelError("INVALID_INPUT", 400, e instanceof Error ? e.message : String(e));
     }
     fs.mkdirSync(projectDir, { recursive: true });
     const state = freshState(flow, projectId, resolved);
@@ -490,7 +490,7 @@ export class Kernel {
     try {
       return loadProjectConfig(projectDir);
     } catch (e) {
-      throw new KernelError("INVALID_INPUT", 400, `项目配置非法: ${(e as Error).message}`);
+      throw new KernelError("INVALID_INPUT", 400, `项目配置非法: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
@@ -878,6 +878,7 @@ export class Kernel {
     }
     const ns = state.nodes[req.nodeId];
     const gateNode = flow.graph.nodes[req.nodeId];
+    if (!ns) throw new KernelError("NO_NODE", 404, `图中无节点 ${req.nodeId}`);
 
     // R6：连接件裁决（gate_role=link）。两值：pass 放行进入本模块 / reject 重跑整个上游模块。
     if (gateNode?.gate_role === "link") {
@@ -1337,15 +1338,16 @@ export class Kernel {
       return { status: "blocked", nodeId: id, reason: `未知节点类型 ${node.kind}` };
     }
 
-    if (batch.length) {
+    if (batch[0]) {
       // 同批节点互不依赖（AND-join 就绪集），宿主可并行执行
+      const head = batch[0];
       const ids = batch.map((b) => b.nodeId);
       for (const b of batch) b.taskPackage.parallelWith = ids.filter((n) => n !== b.nodeId);
       journalAppend(projectDir, state.runId, "advance", {
         detail: `就绪批派发 ${batch.length} 项：${ids.join("、")}（并行）`,
       });
       saveState(projectDir, state);
-      return { status: "awaiting_input", nodeId: ids[0], taskPackage: batch[0].taskPackage, batch };
+      return { status: "awaiting_input", nodeId: head.nodeId, taskPackage: head.taskPackage, batch };
     }
 
     state.status = "completed";
@@ -1689,7 +1691,7 @@ export class Kernel {
         flowId: eff.flow.id,
         moduleId: mid,
         moduleName: mid,
-        title: ids.map((id) => nodes[id].title).filter(Boolean).slice(0, 3).join(" / "),
+        title: ids.map((id) => nodes[id]?.title).filter(Boolean).slice(0, 3).join(" / "),
         closedAt: lastTs ?? nowIso(),
         io: {
           input: Object.keys(state.inputs ?? {}).filter((k) => !["project"].includes(k)),
@@ -1962,7 +1964,7 @@ export class Kernel {
         return loadProjectConfig(projectDir);
       } catch (e) {
         // 配置存在但非法：原样带回让前端标红，而不是 500
-        return { __invalid: true, message: (e as Error).message } as unknown as ProjectConfig;
+        return { __invalid: true, message: e instanceof Error ? e.message : String(e) } as unknown as ProjectConfig;
       }
     })();
     const template = {
@@ -1993,7 +1995,7 @@ export class Kernel {
     try {
       assertSchema("project-config", merged);
     } catch (e) {
-      throw new KernelError("INVALID_INPUT", 400, `项目配置非法: ${(e as Error).message}`);
+      throw new KernelError("INVALID_INPUT", 400, `项目配置非法: ${e instanceof Error ? e.message : String(e)}`);
     }
     fs.mkdirSync(projectDir, { recursive: true });
     atomicWriteText(path.join(projectDir, "项目配置.json"), JSON.stringify(merged, null, 2) + "\n");
@@ -2144,7 +2146,7 @@ export class Kernel {
     const terms = q.toLowerCase().split(/[\s,，、;；/]+/).filter(Boolean);
     const bigrams = (s: string): string[] => {
       const t = [...s.toLowerCase()];
-      return t.length < 2 ? [s.toLowerCase()] : t.slice(0, -1).map((_, i) => t[i] + t[i + 1]);
+      return t.length < 2 ? [s.toLowerCase()] : t.slice(0, -1).map((_, i) => (t[i] ?? "") + (t[i + 1] ?? ""));
     };
     const score = (e: WbEntry): number => {
       let s = 0;

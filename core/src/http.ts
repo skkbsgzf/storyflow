@@ -198,13 +198,13 @@ export function buildHttpApp(kernel: Kernel) {
   app.get("/api/projects/:id/agent/sessions/:sid", async (req, reply) => {
     const { id, sid } = req.params as { id: string; sid: string };
     try { return getSession(kernel.projectDir(id), sid); }
-    catch (e) { reply.code(404); return { error: (e as Error).message }; }
+    catch (e) { reply.code(404); return { error: e instanceof Error ? e.message : String(e) }; }
   });
   app.post("/api/projects/:id/agent/sessions/:sid/rename", async (req, reply) => {
     const { id, sid } = req.params as { id: string; sid: string };
     const b = (req.body ?? {}) as { title?: string };
     try { return renameSession(kernel.projectDir(id), sid, b.title || ""); }
-    catch (e) { reply.code(404); return { error: (e as Error).message }; }
+    catch (e) { reply.code(404); return { error: e instanceof Error ? e.message : String(e) }; }
   });
   app.delete("/api/projects/:id/agent/sessions/:sid", async (req) => {
     const { id, sid } = req.params as { id: string; sid: string };
@@ -226,7 +226,7 @@ export function buildHttpApp(kernel: Kernel) {
         reply.raw.write(`data: ${JSON.stringify(ev)}\n\n`);
       }
     } catch (e) {
-      reply.raw.write(`data: ${JSON.stringify({ type: "error", message: (e as Error).message })}\n\n`);
+      reply.raw.write(`data: ${JSON.stringify({ type: "error", message: e instanceof Error ? e.message : String(e) })}\n\n`);
     }
     reply.raw.write("data: [DONE]\n\n");
     reply.raw.end();
@@ -238,7 +238,7 @@ export function buildHttpApp(kernel: Kernel) {
   // 把 .zhuque-key / .git / src/kakaxing-Json 一起发出去（旧 serve.py 会）。
   // 注册两次是因为 find-my-way 里 `/*` 与 `/` 是两条不同路由，`/`（入口页）不能漏。
   const statics = async (req: FastifyRequest, reply: FastifyReply) => {
-    const url = (req.raw.url ?? "/").split("?")[0];
+    const url = (req.raw.url ?? "/").split("?")[0] ?? "/";
     const abs = resolveStaticPath(kernel.root, url);
     if (!abs) {
       reply.code(404);
@@ -273,7 +273,7 @@ function httpError(reply: { code: (n: number) => { send: (v: unknown) => void } 
   if (e instanceof KernelError) {
     reply.code(e.http).send({ error: e.code, message: e.message });
   } else {
-    reply.code(500).send({ error: "INTERNAL", message: (e as Error).message });
+    reply.code(500).send({ error: "INTERNAL", message: e instanceof Error ? e.message : String(e) });
   }
 }
 

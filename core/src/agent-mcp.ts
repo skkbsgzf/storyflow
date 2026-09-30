@@ -58,7 +58,7 @@ export class AgentMcp {
           this.conns.set(conf.name, { client: null as unknown as Client, tools: [], });
           this.conns.get(conf.name)!.tools = [{
             name: "__unavailable__",
-            description: `MCP server「${conf.name}」连接失败: ${(e as Error).message}`,
+            description: `MCP server「${conf.name}」连接失败: ${e instanceof Error ? e.message : String(e)}`,
             inputSchema: { type: "object", properties: {} },
           }];
         }

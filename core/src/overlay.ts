@@ -423,7 +423,7 @@ export function domainMap(flow: FlowDescriptor): { dom: Map<string, string | und
   }
   for (const id of forwardOrder(flow)) {
     const node = flow.graph.nodes[id];
-    if (!isTransparent(node)) { dom.set(id, node.kit); continue; }
+    if (node && !isTransparent(node)) { dom.set(id, node.kit); continue; }
     const seen: string[] = [];
     for (const p of preds.get(id) ?? []) {
       const d = dom.get(p);
@@ -488,8 +488,8 @@ export function injectKitBoundaries(
   }
 
   for (const [to, edges] of groups) {
-    const T = out.graph.nodes[to].kit as string;
-    const S = dom.get(edges[0].from) as string;
+    const T = out.graph.nodes[to]?.kit as string;
+    const S = dom.get(edges[0]?.from ?? "") as string;
     const id = `${BOUNDARY_PREFIX}${to}`;
     if (out.graph.nodes[id]) continue;    out.graph.nodes[id] = {
       kind: "gate",

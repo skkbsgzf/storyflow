@@ -10,7 +10,7 @@ import { DEFAULT_BUDGET } from "./budget.js";
  * 未传/未覆盖 = 出厂默认。键名与语义见 budget.ts——**不要再在这里写死数字**。
  */
 function th(budget: Record<string, number> | undefined, key: string): number {
-  return budget?.[key] ?? DEFAULT_BUDGET[key].value;
+  return budget?.[key] ?? DEFAULT_BUDGET[key]?.value ?? 0;
 }
 
 /** 中文集数解析：第X集 → 数字（支持 一~九十九 的常见写法） */
@@ -18,9 +18,13 @@ const DIGITS: Record<string, number> = { 零: 0, 一: 1, 二: 2, 两: 2, 三: 3,
 export function cnEpisodeToInt(cn: string): number {
   const s = cn.trim();
   if (/^\d+$/.test(s)) return parseInt(s, 10);
-  if (s.startsWith("十")) return 10 + (DIGITS[s[1]] ?? 0);
+  if (s.startsWith("十")) return 10 + (DIGITS[s[1] ?? ""] ?? 0);
   const m = s.match(/^([一二两三四五六七八九])十([一二三四五六七八九])?$/);
-  if (m) return DIGITS[m[1]] * 10 + (m[2] ? DIGITS[m[2]] : 0);
+  if (m) {
+    const d1 = m[1] ?? "";
+    const d2 = m[2] ?? "";
+    return (DIGITS[d1] ?? NaN) * 10 + (d2 ? DIGITS[d2] ?? NaN : 0);
+  }
   return DIGITS[s] ?? NaN;
 }
 
@@ -49,24 +53,26 @@ function parseBeatStructure(text: string): ParsedEp[] {
   const parts = text.split(/(?=^## 第[一二三四五六七八九十百零]+集)/m);
   for (const part of parts) {
     const hm = part.match(/^## 第([一二三四五六七八九十百零]+)集《([^》]*)》/);
-    if (!hm) continue;
+    if (!hm || !hm[1]) continue;
     const no = cnEpisodeToInt(hm[1]);
     const body = part.slice(part.indexOf("\n") + 1);
     const beats: ParsedBeat[] = [];
     for (const bm of body.matchAll(/\*\*B(\d+)｜([^｜]+)｜(\d+)秒\*\*\n?([\s\S]*?)(?=\*\*B\d+｜|$)/g)) {
+      const hook = bm[2] ?? "";
+      const seg = bm[4] ?? "";
       beats.push({
-        no: parseInt(bm[1], 10),
-        hookType: bm[2].trim(),
-        durationS: parseInt(bm[3], 10),
-        has0_3s: bm[4].includes("【0-3秒】"),
-        hasStoryboard: bm[4].includes("分镜：") || bm[4].includes("行动：") || bm[4].includes("开场画面："),
-        hasDialogue: bm[4].includes("台词："),
-        hasPerformance: bm[4].includes("表演："),
-        hasTailhook: bm[4].includes("尾钩"),
+        no: parseInt(bm[1] ?? "", 10),
+        hookType: hook.trim(),
+        durationS: parseInt(bm[3] ?? "0", 10),
+        has0_3s: seg.includes("【0-3秒】"),
+        hasStoryboard: seg.includes("分镜：") || seg.includes("行动：") || seg.includes("开场画面："),
+        hasDialogue: seg.includes("台词："),
+        hasPerformance: seg.includes("表演："),
+        hasTailhook: seg.includes("尾钩"),
       });
     }
     const first = beats[0];
-    eps.push({ no, head: part.split("\n")[0], body, firstHookType: first?.hookType, beats });
+    eps.push({ no, head: part.split("\n")[0] ?? "", body, firstHookType: first?.hookType, beats });
   }
   return eps;
 }
@@ -99,7 +105,7 @@ function outlineEpisodeBounds(projectDir: string): Set<number> | undefined {
   const text = fs.readFileSync(p, "utf-8");
   const set = new Set<number>();
   for (const m of text.matchAll(/^\|\s*(\d+)(?:\s*-\s*(\d+))?\s*\|/gm)) {
-    const a = parseInt(m[1], 10);
+    const a = parseInt(m[1] ?? "", 10);
     const b = m[2] ? parseInt(m[2], 10) : a;
     if (b >= a && b < 1000) for (let i = a; i <= b; i++) set.add(i);
   }
@@ -187,7 +193,7 @@ export function chapterHookAssert(projectDir: string, relPath: string, text: str
   let extra = "";
   const m = relPath.match(/第(\d+)章/);
   if (m) {
-    const n = parseInt(m[1], 10);
+    const n = parseInt(m[1] ?? "", 10);
     if (n > 1) {
       try {
         const prevText = fs.readFileSync(path.join(path.dirname(path.join(projectDir, relPath)), `第${n - 1}章.md`), "utf-8");
@@ -246,15 +252,18 @@ export function continuityKnownAssert(projectDir: string, text: string): Validat
     for (const f of fs.readdirSync(path.join(projectDir, "世界书"))) {
       if (!f.endsWith(".md")) continue;
       const wt = fs.readFileSync(path.join(projectDir, "世界书", f), "utf-8");
-      for (const m of wt.matchAll(/^#{1,3} (.+)$/gm)) ledger.add(m[1].trim());
-      for (const m of wt.matchAll(/\*\*([^*\n]{2,12})\*\*/g)) ledger.add(m[1].trim());
+      for (const m of wt.matchAll(/^#{1,3} (.+)$/gm)) ledger.add((m[1] ?? "").trim());
+      for (const m of wt.matchAll(/\*\*([^*\n]{2,12})\*\*/g)) ledger.add((m[1] ?? "").trim());
     }
   } catch {
     /* 无世界书目录 */
   }
   const body = text.replace(/^---[\s\S]*?---/, "");
   const counts = new Map<string, number>();
-  for (const m of body.matchAll(/[「『]([^」』]{2,6})[」』]/g)) counts.set(m[1], (counts.get(m[1]) ?? 0) + 1);
+  for (const m of body.matchAll(/[「『]([^」』]{2,6})[」』]/g)) {
+    const t = m[1] ?? "";
+    counts.set(t, (counts.get(t) ?? 0) + 1);
+  }
   const suspicious = [...counts.entries()].filter(([t, n]) => n >= 2 && !ledger.has(t) && !/^\d/.test(t));
   return suspicious.length
     ? {
@@ -274,11 +283,11 @@ export function continuityItemAssert(projectDir: string, text: string): Validati
       if (!f.endsWith(".md")) continue;
       const wt = fs.readFileSync(path.join(projectDir, "世界书", f), "utf-8");
       for (const m of wt.matchAll(factRe)) {
-        const term = m[1].trim();
+        const term = (m[1] ?? "").trim();
         // 只收纯词元（汉字/字母/数字）：markdown 记号、括号等一概不作事实项（事故：'**伏笔无额度**' 入 RegExp 崩掉整段切片检查）
         if (!/^[\u4e00-\u9fffA-Za-z0-9]+$/.test(term)) continue;
         if (/^\d+$/.test(term) || facts.has(term)) continue;
-        facts.set(term, { n: parseFloat(m[2]), unit: m[3], src: f });
+        facts.set(term, { n: parseFloat(m[2] ?? ""), unit: m[3] ?? "", src: f });
       }
     }
   } catch {
@@ -292,7 +301,7 @@ export function continuityItemAssert(projectDir: string, text: string): Validati
   for (const [term, f0] of facts) {
     const re = new RegExp(term + "[^\\n]{0,24}?(\\d+(?:\\.\\d+)?)\\s*" + f0.unit, "g");
     for (const m of body.matchAll(re)) {
-      const v = parseFloat(m[1]);
+      const v = parseFloat(m[1] ?? "");
       if (Number.isFinite(v) && v !== f0.n) {
         conflicts.push(`${term}: 台账 ${f0.n}${f0.unit} vs 正文 ${m[1]}${f0.unit}`);
         break;
@@ -344,7 +353,7 @@ export function foreshadowAssert(projectDir: string, relPath: string): Validatio
     return { name: "AE-CONT-FORESHADOW", status: "warn", detail: "无伏笔台账——逾期切片不适用（语义级判断归红方）" };
   }
   const m = relPath.match(/第(\d+)章/);
-  const cur = m ? parseInt(m[1], 10) : NaN;
+  const cur = m ? parseInt(m[1] ?? "", 10) : NaN;
   if (!Number.isFinite(cur)) {
     return { name: "AE-CONT-FORESHADOW", status: "warn", detail: "非章节产物，逾期切片不适用" };
   }
@@ -399,7 +408,7 @@ export function reportDensityAssert(text: string): Validation {
   const textLines = text.split("\n");
   let heat = 0;
   for (let i = 0; i < textLines.length; i++) {
-    const l = textLines[i];
+    const l = textLines[i] ?? "";
     const direct = l.match(/\d{2,6}(\.\d+)?\s*万/g) ?? [];
     heat += direct.length;
     if (!direct.length && l.includes("|") && /\d{2,6}(\.\d+)?/.test(l)) {
@@ -597,7 +606,9 @@ export function runAestheticAsserts(
   if (epNos.length >= 2) {
     const gaps: string[] = [];
     for (let i = 1; i < epNos.length; i++) {
-      if (epNos[i] - epNos[i - 1] > 1) gaps.push(`缺第 ${epNos[i - 1] + 1}~${epNos[i] - 1} 集`);
+      const prev = epNos[i - 1] ?? 0;
+      const cur = epNos[i] ?? 0;
+      if (cur - prev > 1) gaps.push(`缺第 ${prev + 1}~${cur - 1} 集`);
     }
     add("AE-CHOREO-GAP", gaps.length === 0, gaps.length === 0 ? `集号连续（${epNos[0]}-${epNos[epNos.length - 1]}）` : `集号断档: ${gaps.join("、")}`, "block");
     const bounds = outlineEpisodeBounds(projectDir);
@@ -652,7 +663,7 @@ export function proseAsserts(text: string, budget?: Record<string, number>): Val
   };
   const trips: string[] = [];
   for (let i = 0; i + 2 < sents.length; i++) {
-    const a = shape(sents[i]), b = shape(sents[i + 1]), c = shape(sents[i + 2]);
+    const a = shape(sents[i] ?? ""), b = shape(sents[i + 1] ?? ""), c = shape(sents[i + 2] ?? "");
     if (a.first === b.first && b.first === c.first && a.comma === b.comma && b.comma === c.comma &&
         Math.abs(a.cjk - b.cjk) <= 1 && Math.abs(b.cjk - c.cjk) <= 1)
       trips.push(`${sents[i]}｜${sents[i + 1]}｜${sents[i + 2]}`);
@@ -660,7 +671,7 @@ export function proseAsserts(text: string, budget?: Record<string, number>): Val
   for (const sent of body.split(/[。！？…]+/)) {
     const cs = sent.split(/[，；、]+/).map((s) => s.trim()).filter((s) => s.length >= 2);
     for (let i = 0; i + 2 < cs.length; i++) {
-      const [x, y, z] = [cs[i], cs[i + 1], cs[i + 2]];
+      const x = cs[i] ?? "", y = cs[i + 1] ?? "", z = cs[i + 2] ?? "";
       if (/^(第一|第二|第三)/.test(x)) continue;
       if ((x.slice(0, 2) === y.slice(0, 2) && y.slice(0, 2) === z.slice(0, 2)) ||
           (x.slice(-2) === y.slice(-2) && y.slice(-2) === z.slice(-2)))
@@ -672,7 +683,7 @@ export function proseAsserts(text: string, budget?: Record<string, number>): Val
     "AE-PROSE-TRIPLET",
     trips.length <= parallelQuota,
     trips.length === 0 ? "无三连排比"
-      : trips.length <= parallelQuota ? `三连排比 ${trips.length} 处（配额内，须为笑点/文书本体）: ${trips[0].slice(0, 42)}`
+      : trips.length <= parallelQuota ? `三连排比 ${trips.length} 处（配额内，须为笑点/文书本体）: ${trips[0]?.slice(0, 42)}`
       : `三连排比 ${trips.length} 处超配额(≤${parallelQuota}): ${trips.slice(0, 3).join(" ⋅ ")}`,
   );
 

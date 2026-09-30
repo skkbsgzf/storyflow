@@ -87,7 +87,7 @@ function pathOfUpstream(projectDir: string, flow: FlowDescriptor, up: string): s
   const declared = artifactPathOf(flow, up);
   if (declared) return declared;
   const arts = listArtifacts(projectDir, { node: up, latest: true });
-  return arts.length ? arts[arts.length - 1].path : undefined;
+  return arts.length ? arts[arts.length - 1]?.path : undefined;
 }
 
 /** 穿透门节点：门无产物，上下文/谱系应落到被评审的实质节点（限深防环）。 */
@@ -160,8 +160,8 @@ export function loadKnowledge(
   ids: string[],
   exclude: string[] = [],
   caps: { total: number; card: number } = {
-    total: DEFAULT_BUDGET.kbTotalCap.value,
-    card: DEFAULT_BUDGET.kbCardCap.value,
+    total: DEFAULT_BUDGET.kbTotalCap?.value ?? 9000,
+    card: DEFAULT_BUDGET.kbCardCap?.value ?? 1600,
   },
   pools: PoolDecl[] = [],
   decisions: Record<string, DecisionLite> = {},
@@ -269,8 +269,8 @@ export function buildTaskPackage(
   // OS-02 阶段 C：装载预算改由「出厂默认 + policy.budget 覆盖」决定（此前是四个模块级常量，
   // 项目级改不了 ⇒ 面板无字段可渲染）。未知/越界键由 resolveBudget 显式回显进任务包。
   const budget = resolveBudget(policy);
-  const CONTEXT_BUDGET = budget.values.contextBudget;
-  const SKILL_CAP = budget.values.skillCap;
+  const CONTEXT_BUDGET = budget.values.contextBudget ?? DEFAULT_BUDGET.contextBudget?.value ?? 0;
+  const SKILL_CAP = budget.values.skillCap ?? DEFAULT_BUDGET.skillCap?.value ?? 0;
   const KB_CARD_CAP = budget.values.kbCardCap;
   const KB_TOTAL_CAP = budget.values.kbTotalCap;
 
@@ -318,8 +318,8 @@ export function buildTaskPackage(
     knowledgeIds,
     opRef?.excludeKnowledge ?? [],
     {
-      total: budget.values.kbTotalCap,
-      card: budget.values.kbCardCap,
+      total: budget.values.kbTotalCap ?? DEFAULT_BUDGET.kbTotalCap?.value ?? 9000,
+      card: budget.values.kbCardCap ?? DEFAULT_BUDGET.kbCardCap?.value ?? 1600,
     },
     opRef?.knowledgePools ?? [],
     decisions,

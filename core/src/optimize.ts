@@ -18,7 +18,7 @@ import { DEFAULT_POLICY } from "./overlay.js";
 import { kitRegistry } from "./kits.js";
 import { nowIso } from "./ids.js";
 import { recordDiag } from "./diag.js";
-import { resolveBudget } from "./budget.js";
+import { resolveBudget, DEFAULT_BUDGET } from "./budget.js";
 
 export interface Proposal {
   id: string;
@@ -79,7 +79,7 @@ export function proposeFromMetrics(
   // OS-02 阶段 C：规则阈值不再写死在规则体里，全部从 `policy.budget` 经 `resolveBudget` 取
   // （未知键/越界会进 issues，见 budget.ts）。缺省 = 出厂默认（与改前逐位等价）。
   const b = resolveBudget(policy).values;
-  const minSamples = opts.minSamples ?? b.optMinSamples;
+  const minSamples = opts.minSamples ?? b.optMinSamples ?? DEFAULT_BUDGET.optMinSamples?.value ?? 3;
   const out: Proposal[] = [];
   const kitReg = kitRegistry(opts.root);
   const kbIndex = readKbIndex(opts.root);
@@ -158,7 +158,7 @@ export function proposeFromMetrics(
 
   // ── R3 / R4 档位：打回高则该升档，零打回且贵则该降档 ─────────────
   const costs = Object.values(summary.byTool).map((t) => t.cost).sort((a, b) => a - b);
-  const medianCost = costs.length ? costs[Math.floor(costs.length / 2)] : 0;
+  const medianCost = costs.length ? costs[Math.floor(costs.length / 2)] ?? 0 : 0;
   for (const [key, t] of Object.entries(summary.byTool)) {
     const [kitId, opId] = key.split(".");
     const op = kitReg.resolve(kitId, opId);
@@ -168,7 +168,7 @@ export function proposeFromMetrics(
     // R3「升到 high」在未约束或轻档时都提（那是**收紧**，低风险）。
     const tier = op.modelTier;
     const tierLabel = tier === undefined ? "未约束" : tier === "high" ? "high 档" : "lite 档";
-    if (blockRate(t) >= b.optBlockRateHigh && tier !== "high") {
+    if (blockRate(t) >= (b.optBlockRateHigh ?? DEFAULT_BUDGET.optBlockRateHigh?.value ?? 0.3) && tier !== "high") {
       push({
         id: `R3@${key}`, rule: "R3-tier-up", severity: "high", risk: "low",
         title: `档位偏轻（${tierLabel}）：${key} 升到 high`,
@@ -180,7 +180,7 @@ export function proposeFromMetrics(
           evidence: { rule: "R3-tier-up", metric: "checks.blockRate", value: Number(blockRate(t).toFixed(3)), samples: t.submits },
         },
       });
-    } else if (blockRate(t) === 0 && t.hitRate >= b.optHitRateHigh && t.cost > medianCost && tier === "high") {
+    } else if (blockRate(t) === 0 && t.hitRate >= (b.optHitRateHigh ?? DEFAULT_BUDGET.optHitRateHigh?.value ?? 0.5) && t.cost > (medianCost ?? 0) && tier === "high") {
       push({
         id: `R4@${key}`, rule: "R4-tier-down", severity: "medium", risk: "medium",
         title: `成本偏高：${key} 可试降 lite`,

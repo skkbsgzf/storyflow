@@ -306,6 +306,7 @@ export function resolveToolConfig(
       if (v === undefined || v === null) continue;
       if (!(k in defs)) { unknownKeys.push(`${from}:${k}`); continue; }
       const d = defs[k];
+      if (!d) continue;
       if (d.type === "number" && typeof v !== "number") { unknownKeys.push(`${from}:${k}(需 number，得 ${typeof v})`); continue; }
       if (d.type === "enum" && d.enum && !d.enum.includes(v)) { unknownKeys.push(`${from}:${k}=${String(v)} 不在 ${d.enum.join("/")}`); continue; }
       values[k] = v;

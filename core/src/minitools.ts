@@ -56,8 +56,9 @@ export async function runCoreNode(
   opts: { timeoutMs?: number; budget?: Record<string, number> } = {},
 ): Promise<CoreResult> {
   const node = flow.graph.nodes[nodeId];
-  const tool = node.minitool ?? "";
   const artifacts: string[] = [];
+  if (!node) return { ok: false, artifacts, kind: "missing", reason: `图中无节点 ${nodeId}` };
+  const tool = node.minitool ?? "";
 
   // ── script 执行体（module@1 kind=check 壳，R6 §一.11「script 壳入箱」）──
   // 外部确定性脚本，零 token，内核 spawn。调用约定：
@@ -242,7 +243,7 @@ export async function runCoreNode(
         const h = ln.match(/^(#{1,4}) (.+)$/);
         if (h) {
           if (inList) { out.push("</ul>"); inList = false; }
-          const lv = Math.min(h[1].length + 1, 5);
+          const lv = Math.min((h[1] ?? "#").length + 1, 5);
           out.push(`<h${lv}>${h[2]}</h${lv}>`);
         } else if (/^- /.test(ln)) {
           if (!inList) { out.push("<ul>"); inList = true; }
@@ -318,7 +319,7 @@ ${sections.join("\n")}
         const raw = fs.readFileSync(path.join(charDir, f), "utf-8");
         const name = f.replace(".md", "");
         const status = /状态[：:]\s*(.+)/.exec(raw)?.[1]?.trim() ?? "active";
-        slice.characters.push({ name, status, file: `人物/${f}` });
+        (slice.characters ??= []).push({ name, status, file: `人物/${f}` });
       }
     }
     // 伏笔台账：| fid | 内容 | 埋点 | 预定回收 | 状态 |
@@ -328,8 +329,8 @@ ${sections.join("\n")}
       for (const ln of fs.readFileSync(lp, "utf-8").split("\n")) {
         if (!ln.trim().startsWith("|") || /^[\s|:\-]+$/.test(ln)) continue;
         const cells = ln.split("|").map((c) => c.trim()).filter(Boolean);
-        if (cells.length < 4 || /编号|内容|状态/.test(cells[0])) continue;
-        slice.promises.push({ fid: cells[0], content: cells[1], planted: cells[2], due: cells[3], status: cells[4] ?? "open" });
+        if (cells.length < 4 || /编号|内容|状态/.test(cells[0] ?? "")) continue;
+        (slice.promises ??= []).push({ fid: cells[0] ?? "", content: cells[1] ?? "", planted: cells[2] ?? "", due: cells[3] ?? "", status: cells[4] ?? "open" });
       }
       break;
     }
@@ -394,8 +395,8 @@ ${sections.join("\n")}
       const fp = path.join(projectDir, src);
       if (fs.existsSync(fp)) {
         const txt = fs.readFileSync(fp, "utf-8");
-        for (const m of txt.matchAll(/[「『]([^」』]{2,8})[」』]/g)) keywords.push(m[1]);
-        for (const m of txt.matchAll(/\*\*([^*\n]{2,8})\*\*/g)) keywords.push(m[1]);
+        for (const m of txt.matchAll(/[「『]([^」』]{2,8})[」』]/g)) { if (m[1]) keywords.push(m[1]); }
+        for (const m of txt.matchAll(/\*\*([^*\n]{2,8})\*\*/g)) { if (m[1]) keywords.push(m[1]); }
       }
     }
     const hits: { file: string; title: string; score: number }[] = [];
@@ -455,7 +456,7 @@ export function artifactPathsOf(flow: FlowDescriptor, nodeId: string, projectDir
   if (single) out.add(single);
   const tpl = (node as { iterate?: { artifact?: string } }).iterate?.artifact;
   if (tpl && (tpl.includes("{n}") || tpl.includes("{i}"))) {
-    const head = tpl.split("{")[0];
+    const head = tpl.split("{")[0] ?? "";
     const tail = tpl.slice(tpl.indexOf("}") + 1);
     const dir = path.dirname(head);
     const prefix = path.basename(head);

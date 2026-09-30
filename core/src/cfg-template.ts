@@ -83,7 +83,7 @@ function readTemplate(file: string): { raw: Record<string, unknown>; keys: strin
   try {
     raw = JSON.parse(fs.readFileSync(file, "utf-8"));
   } catch (e) {
-    throw new CfgTemplateError("BAD_TEMPLATE", 409, `模板不是合法 JSON: ${file}（${(e as Error).message}）`);
+    throw new CfgTemplateError("BAD_TEMPLATE", 409, `模板不是合法 JSON: ${file}（${e instanceof Error ? e.message : String(e)}）`);
   }
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
     throw new CfgTemplateError("BAD_TEMPLATE", 409, `模板顶层必须是对象: ${file}`);
@@ -147,7 +147,7 @@ export function listConfigTemplates(scope: CfgTemplateScope): { entries: CfgTemp
           note: "随仓库发布的示例配置，只读",
         });
       } catch (e) {
-        skipped.push(`${f}（${(e as Error).message}）`);
+        skipped.push(`${f}（${e instanceof Error ? e.message : String(e)}）`);
       }
     }
   }
@@ -169,7 +169,7 @@ export function listConfigTemplates(scope: CfgTemplateScope): { entries: CfgTemp
             updatedAt: fs.statSync(f).mtime.toISOString(),
           });
         } catch (e) {
-          skipped.push(`${f}（${(e as Error).message}）`);
+          skipped.push(`${f}（${e instanceof Error ? e.message : String(e)}）`);
         }
       }
     }
@@ -193,7 +193,7 @@ export function saveConfigTemplate(
   try {
     assertSchema("project-config", raw);
   } catch (e) {
-    throw new CfgTemplateError("INVALID_INPUT", 400, `${CONFIG_FILE_NAME} 不合 project-config 契约，拒绝存为模板: ${(e as Error).message}`);
+    throw new CfgTemplateError("INVALID_INPUT", 400, `${CONFIG_FILE_NAME} 不合 project-config 契约，拒绝存为模板: ${e instanceof Error ? e.message : String(e)}`);
   }
   const flowId = req.flowId ?? projectFlowId(kernel, projectId);
   if (!flowId) throw new CfgTemplateError("INVALID_INPUT", 400, `无法判定项目的 flow（无 state.json）：请显式传 --flow`);
@@ -226,7 +226,8 @@ function resolveTemplate(
   }
   if (flowId) {
     const exact = hits.filter((e) => e.flowId === flowId);
-    if (exact.length) return exact[0];
+    const exactHit = exact[0];
+    if (exactHit) return exactHit;
     if (!force) {
       throw new CfgTemplateError(
         "INVALID_INPUT",
@@ -235,7 +236,9 @@ function resolveTemplate(
           `跨 flow 套用请显式传 force=true（输入面/阈值未必兼容，必须由人确认）`,
       );
     }
-    return hits[0];
+    const forcedHit = hits[0];
+    if (!forcedHit) throw new CfgTemplateError("NOT_FOUND", 404, `模板不存在：${name}`);
+    return forcedHit;
   }
   // 项目还没开跑 ⇒ flow 未知。同名多条就要求显式指定，不做「取第一个」这种赌博
   if (hits.length > 1) {
@@ -245,7 +248,9 @@ function resolveTemplate(
       `模板名「${name}」在多个 flow 下都存在（${hits.map((h) => h.flowId).join("、")}）；请显式传 --flow`,
     );
   }
-  return hits[0];
+  const hit = hits[0];
+  if (!hit) throw new CfgTemplateError("NOT_FOUND", 404, `模板不存在：${name}`);
+  return hit;
 }
 
 /**
@@ -279,7 +284,7 @@ export function applyConfigTemplate(
   try {
     assertSchema("project-config", raw);
   } catch (e) {
-    throw new CfgTemplateError("INVALID_INPUT", 400, `模板「${name}」不合 project-config 契约，拒绝写入: ${(e as Error).message}`);
+    throw new CfgTemplateError("INVALID_INPUT", 400, `模板「${name}」不合 project-config 契约，拒绝写入: ${e instanceof Error ? e.message : String(e)}`);
   }
   fs.mkdirSync(projectDir, { recursive: true });
   const dst = path.join(projectDir, CONFIG_FILE_NAME);

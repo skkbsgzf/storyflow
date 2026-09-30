@@ -99,7 +99,7 @@ export function captureSnapshot(
     snapshotIndexPath(projectDir),
   ) ?? { snapshots: {}, inputs: {} };
   const snaps = (idx.snapshots[node] ??= []);
-  const round = snaps.length ? snaps[snaps.length - 1].round + 1 : 1;
+  const round = snaps.length ? (snaps[snaps.length - 1]?.round ?? 0) + 1 : 1;
   const outDir = path.join(snapshotsDir(projectDir), node, `r${round}`);
   fs.mkdirSync(outDir, { recursive: true });
   const entryFiles: Record<string, { hash: string | null; path: string | null }> = {};

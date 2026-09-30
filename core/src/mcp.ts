@@ -76,7 +76,10 @@ export function verbToolSpecs(): { name: string; description: string; inputSchem
     const inputSchema: Record<string, z.ZodTypeAny> = {};
     for (const p of def.params) inputSchema[p.name] = zodOf(p);
     // required 的参数把 desc 挂在 description 上（zod 的 .describe 对 optional 已用，这里对必填补一次）
-    for (const p of def.params) if (p.required) inputSchema[p.name] = inputSchema[p.name].describe(p.desc);
+    for (const p of def.params) {
+      const sch = inputSchema[p.name];
+      if (p.required && sch) inputSchema[p.name] = sch.describe(p.desc);
+    }
     return { name: def.name, description: def.description, inputSchema };
   });
 }
@@ -89,7 +92,7 @@ export function buildMcpServer(kernel: Kernel): McpServer {
   VERBS.forEach((def, i) => {
     server.registerTool(
       def.name,
-      { description: def.description, inputSchema: specs[i].inputSchema as z.ZodRawShape },
+      { description: def.description, inputSchema: specs[i]?.inputSchema as z.ZodRawShape },
       (async (args: Record<string, unknown>) => {
         const t0 = Date.now();
         try {

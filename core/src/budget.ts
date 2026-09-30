@@ -200,8 +200,8 @@ export function resolveBudget(policy?: FlowPolicy | null): BudgetResolution {
   }
   // 交叉校验：`maxContextChars` 是宿主消费的硬上限，而实际装载量由前三项决定。
   // 若三者之和已超上限 ⇒ 声明与实际不符（会静默截断），必须响亮报出来。
-  const loadSum = values.contextBudget + values.skillCap + values.kbTotalCap;
-  if (values.maxContextChars < loadSum) {
+  const loadSum = (values.contextBudget ?? 0) + (values.skillCap ?? 0) + (values.kbTotalCap ?? 0);
+  if ((values.maxContextChars ?? 0) < loadSum) {
     issues.push(
       `budget.maxContextChars=${values.maxContextChars} 小于 contextBudget+skillCap+kbTotalCap=${loadSum}（装载必然被截断；请同步抬高 maxContextChars）`,
     );

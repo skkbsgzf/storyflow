@@ -336,7 +336,7 @@ function main(): void {
       console.log(text);
     }
   } catch (e) {
-    console.error(`[flow-export] 失败: ${(e as Error).message}`);
+    console.error(`[flow-export] 失败: ${e instanceof Error ? e.message : String(e)}`);
     process.exit(1);
   }
 }

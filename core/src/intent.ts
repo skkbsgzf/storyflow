@@ -58,7 +58,7 @@ export function loadIntentGraph(repoRoot: string, uid: string): IntentGraph {
   try {
     g = JSON.parse(fs.readFileSync(p, "utf-8")) as IntentGraph;
   } catch (e) {
-    throw new IntentError("INTENT_INVALID", `JSON 解析失败：${p}（${(e as Error).message}）`);
+    throw new IntentError("INTENT_INVALID", `JSON 解析失败：${p}（${e instanceof Error ? e.message : String(e)}）`);
   }
   if (g.format !== "intent-graph@1") {
     throw new IntentError("INTENT_INVALID", `format≠intent-graph@1（实际 ${String((g as { format?: unknown }).format)}）：${p}`);
@@ -119,7 +119,7 @@ export function syncIntentDecisions(projectDir: string, g: IntentGraph): IntentS
       });
       out.written.push({ key, node: n.id, candidate: cand.id });
     } catch (e) {
-      out.issues.push(`${n.id}: setDecision 拒绝（${(e as Error).message}）`);
+      out.issues.push(`${n.id}: setDecision 拒绝（${e instanceof Error ? e.message : String(e)}）`);
     }
   }
   return out;

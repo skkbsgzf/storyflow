@@ -14,12 +14,12 @@ function parseArgs(argv: string[]): { _: string[]; flags: Args } {
   const _: string[] = [];
   const flags: Args = {};
   for (let i = 0; i < argv.length; i++) {
-    const a = argv[i];
+    const a = argv[i] ?? "";
     if (a.startsWith("--")) {
       const key = a.slice(2);
       const eq = key.indexOf("=");
       if (eq >= 0) flags[key.slice(0, eq)] = key.slice(eq + 1);
-      else if (i + 1 < argv.length && !argv[i + 1].startsWith("--")) flags[key] = argv[++i];
+      else if (i + 1 < argv.length && !(argv[i + 1] ?? "").startsWith("--")) flags[key] = argv[++i] ?? "";
       else flags[key] = true;
     } else {
       _.push(a);
@@ -106,7 +106,7 @@ async function main(): Promise<number> {
       console.error(JSON.stringify({ error: e.code, http: e.http, message: e.message }, null, 2));
       return 1;
     }
-    console.error(JSON.stringify({ error: "INTERNAL", message: (e as Error).message }, null, 2));
+    console.error(JSON.stringify({ error: "INTERNAL", message: e instanceof Error ? e.message : String(e) }, null, 2));
     return 1;
   }
 }

@@ -61,7 +61,7 @@ export function isDeniedRelativePath(rel: string): boolean {
     if (seg.startsWith(".")) return true;
     if (DENY_SEGMENTS.has(seg)) return true;
   }
-  if (DENY_FILES.has(segments[segments.length - 1])) return true;
+  if (DENY_FILES.has(segments[segments.length - 1] ?? "")) return true;
   return denyPrefixes().some((p) => rel.startsWith(p));
 }
 
@@ -98,7 +98,7 @@ export function contentTypeOf(absPath: string): string {
 export function resolveStaticPath(root: string, urlPath: string): string | null {
   let rel: string;
   try {
-    rel = decodeURIComponent(urlPath.split("?")[0].split("#")[0]);
+    rel = decodeURIComponent(urlPath.split("?")[0]?.split("#")[0] ?? "");
   } catch {
     return null;
   }

@@ -302,7 +302,7 @@ export async function buildTools(kernel: Kernel, projectId: string, mcp: AgentMc
   } catch (e) {
     tools.push({
       name: "mcp_unavailable",
-      description: `MCP 内联当前不可用（${(e as Error).message}）——检查 .external/agent-mcp.json`,
+      description: `MCP 内联当前不可用（${e instanceof Error ? e.message : String(e)}）——检查 .external/agent-mcp.json`,
       parameters: { type: "object", properties: {} },
       exec: async () => "MCP 不可用",
     });
@@ -509,7 +509,7 @@ export async function* runTurn(
           }
         }
       }
-      const callList = Object.keys(calls).sort((a, b) => Number(a) - Number(b)).map((k) => calls[Number(k)]);
+      const callList = Object.keys(calls).sort((a, b) => Number(a) - Number(b)).flatMap((k) => calls[Number(k)] ?? []);
 
       if (!callList.length) {
         session.messages.push({ role: "assistant", content });
@@ -529,7 +529,7 @@ export async function* runTurn(
             const args = c.arguments ? (JSON.parse(c.arguments) as Record<string, unknown>) : {};
             result = await tool.exec(args);
           } catch (e) {
-            result = `工具执行失败: ${(e as Error).message}`;
+            result = `工具执行失败: ${e instanceof Error ? e.message : String(e)}`;
             ok = false;
           }
         }
@@ -542,7 +542,7 @@ export async function* runTurn(
     yield { type: "error", message: `超过 ${MAX_ROUNDS} 轮工具调用仍未收敛——请拆小问题` };
     writeSession(projectDir, session);
   } catch (e) {
-    yield { type: "error", message: `agent 回合失败: ${(e as Error).message}（检查模型端点/密钥/网络）` };
+    yield { type: "error", message: `agent 回合失败: ${e instanceof Error ? e.message : String(e)}（检查模型端点/密钥/网络）` };
     writeSession(projectDir, session);
   }
 }

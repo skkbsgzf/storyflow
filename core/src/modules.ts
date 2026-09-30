@@ -297,7 +297,7 @@ export function expandFlow3(
     // 线性主干天然给出「锚点→插件→原后继」语义，无需逐个替换。
     const enabledEdges = new Set<string>();
     const ekey = (f: string, t: string) => `${f}→${t}`;
-    for (let i = 0; i + 1 < seq.length; i++) enabledEdges.add(ekey(seq[i], seq[i + 1]));
+    for (let i = 0; i + 1 < seq.length; i++) enabledEdges.add(ekey(seq[i] ?? "", seq[i + 1] ?? ""));
     for (const [from, to] of mod.skeleton.edges) {
       if (!enabled.has(from) || !enabled.has(to)) continue;
       if (!seq.includes(from) || !seq.includes(to)) continue;
@@ -305,7 +305,7 @@ export function expandFlow3(
       if (seq.indexOf(to) - seq.indexOf(from) !== 1) enabledEdges.add(ekey(from, to));
     }
     for (const key of enabledEdges) {
-      const [f, t] = key.split("→");
+      const [f = "", t = ""] = key.split("→");
       const viaSkill = mod.ops[t]?.skill;
       edges.push({ id: `e-${mid}-${f}-${t}`, from: `${mid}.${f}`, to: `${mid}.${t}`, role: "flow", ...(viaSkill ? { via: `skill.${viaSkill}` } : {}) });
     }
@@ -351,9 +351,9 @@ export function expandFlow3(
       for (const e of midNodes.slice(1)) {
         // 入口首节点由连接件接入；其余成员保持骨架内部边
       }
-      if (midNodes.length) edges.push({ id: `e-link-${mid}`, from: linkId, to: midNodes[0], role: "flow" });
+      if (midNodes.length) edges.push({ id: `e-link-${mid}`, from: linkId, to: midNodes[0] ?? "", role: "flow" });
     }
-    const terminals = midNodes.length ? [midNodes[midNodes.length - 1]] : [];
+    const terminals = midNodes.length ? [midNodes[midNodes.length - 1] ?? ""] : [];
     prev = { mid, terminals, linkId };
   });
 

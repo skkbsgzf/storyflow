@@ -88,7 +88,7 @@ function cardTitleOf(head: string, body: string): string {
     /* frontmatter 非 JSON 时退回正文首标题 */
   }
   const m = body.match(/^#\s+(.+)$/m);
-  return m ? m[1] : "";
+  return m?.[1] ?? "";
 }
 
 /** 从一段文本收集候选词：拉丁词（小写）+ CJK 2..4-gram + 整段 CJK run（≤6 字，权重 +1） */
@@ -133,8 +133,8 @@ function conceptTermsFromCard(text: string): Map<string, number> {
   const { head, body } = stripFrontmatter(text);
   const weighted = new Map<string, number>();
   conceptTermsOfText(cardTitleOf(head, body), weighted, 3);
-  for (const m of body.matchAll(/^#{1,4}\s+(.+)$/gm)) conceptTermsOfText(m[1], weighted, 2);
-  for (const m of body.matchAll(/\*\*([^*\n]+)\*\*/g)) conceptTermsOfText(m[1], weighted, 2);
+  for (const m of body.matchAll(/^#{1,4}\s+(.+)$/gm)) conceptTermsOfText(m[1] ?? "", weighted, 2);
+  for (const m of body.matchAll(/\*\*([^*\n]+)\*\*/g)) conceptTermsOfText(m[1] ?? "", weighted, 2);
   const tfBody = new Map<string, number>();
   const tfAll = new Map<string, number>();
   conceptFreqOfText(body, tfBody);
@@ -293,7 +293,7 @@ const EPS = 1e-6;
  * `budget` 缺省 = 出厂默认（旧口径逐位等价，R5 基线的成本断言不受影响）。
  */
 function th(b: Record<string, number> | undefined, key: string): number {
-  return b?.[key] ?? DEFAULT_BUDGET[key].value;
+  return b?.[key] ?? DEFAULT_BUDGET[key]?.value ?? 0;
 }
 
 function costOf(

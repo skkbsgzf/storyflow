@@ -43,7 +43,7 @@ export function setDecision(projectDir: string, input: Partial<Decision> & { key
   try {
     assertSchema("decision", d);
   } catch (e) {
-    throw new DecisionError("DECISION_INVALID", `${(e as Error).message}（key=${d.key}：by/evidence/picked 必填——无来源的决策=猜）`);
+    throw new DecisionError("DECISION_INVALID", `${e instanceof Error ? e.message : String(e)}（key=${d.key}：by/evidence/picked 必填——无来源的决策=猜）`);
   }
   fs.mkdirSync(decisionsDir(projectDir), { recursive: true });
   atomicWriteText(path.join(decisionsDir(projectDir), `${d.key}.json`), JSON.stringify(d, null, 2) + "\n");
@@ -62,7 +62,7 @@ export function listDecisions(projectDir: string): { decisions: Decision[]; issu
     try {
       raw = JSON.parse(fs.readFileSync(path.join(dir, f), "utf-8"));
     } catch (e) {
-      issues.push(`${rel}: JSON 解析失败（${(e as Error).message}）`);
+      issues.push(`${rel}: JSON 解析失败（${e instanceof Error ? e.message : String(e)}）`);
       continue;
     }
     const d = raw as Decision & { key?: string };

@@ -56,7 +56,7 @@ const REF = /^\$decision:([a-z][a-z0-9-]*)\.(picked|tags|excluded_tags)$/;
 export function expandTagToken(token: string, decisions: Record<string, DecisionLite>): string[] | undefined {
   const m = REF.exec(token.trim());
   if (!m) return [token];
-  const d = decisions[m[1]];
+  const d = decisions[m[1] ?? ""];
   if (!d) return undefined;
   return m[2] === "excluded_tags" ? [...(d.excluded_tags ?? [])] : [...d.picked];
 }
@@ -89,7 +89,7 @@ export function resolveSelection(
     const out: string[] = [];
     for (const t of tokens) {
       const m = REF.exec(t.trim());
-      if (m) refKeys.add(m[1]);
+      if (m?.[1]) refKeys.add(m[1]);
       const v = expandTagToken(t, decisions);
       if (v === undefined) {
         missingKeys.add(m?.[1] ?? t.trim());
@@ -153,7 +153,7 @@ function fmTags(file: string): string[] {
     const raw = fs.readFileSync(file, "utf-8");
     const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(raw);
     if (!m) return [];
-    const fm = JSON.parse(m[1]) as { tags?: unknown; routes?: unknown };
+    const fm = JSON.parse(m[1] ?? "{}") as { tags?: unknown; routes?: unknown };
     const list = (v: unknown): string[] => (Array.isArray(v) ? v.map(String) : []);
     // routes 是旧名（S4 做 routes→tags 迁移）；此处并集读，两条轴都能过滤
     return [...new Set([...list(fm.tags), ...list(fm.routes)])];

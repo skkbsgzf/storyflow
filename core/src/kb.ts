@@ -24,19 +24,19 @@ function parseCard(raw: string): CardMeta {
   const meta: CardMeta = { body: raw };
   const m = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!m) return meta;
-  const head = m[1];
+  const head = m[1] ?? "";
   // 知识卡 frontmatter 是 JSON 风格（键带引号），兼容 YAML 裸键两种写法
   const scalar = (key: string): string | undefined => {
     const j = head.match(new RegExp(`"${key}"\\s*:\\s*"([^"]+)"`));
-    if (j) return j[1].trim();
+    if (j) return (j[1] ?? "").trim();
     const y = head.match(new RegExp(`^${key}:\\s*(.+)$`, "m"));
-    return y ? y[1].trim().replace(/^['"]|['"]$/g, "") : undefined;
+    return y ? (y[1] ?? "").trim().replace(/^['"]|['"]$/g, "") : undefined;
   };
   meta.id = scalar("id");
   meta.title = scalar("title");
   meta.dimension = scalar("dimension");
   const tm = head.match(/"tags"\s*:\s*\[([^\]]*)\]/) ?? head.match(/^tags:\s*\[([^\]]*)\]/m);
-  if (tm) meta.tags = tm[1].split(",").map((x) => x.trim().replace(/^['"]|['"]$/g, "").replace(/^"|"$/g, "")).filter(Boolean);
+  if (tm) meta.tags = (tm[1] ?? "").split(",").map((x) => x.trim().replace(/^['"]|['"]$/g, "").replace(/^"|"$/g, "")).filter(Boolean);
   return meta;
 }
 

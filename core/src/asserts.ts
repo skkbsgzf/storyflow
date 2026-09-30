@@ -163,8 +163,8 @@ export function parseArtifactHeader(text: string): Record<string, unknown> | nul
     }
     const m = line.match(/^([A-Za-z_][A-Za-z0-9_]*):\s*(.*)$/);
     if (!m) continue;
-    const key = m[1];
-    const val = m[2].trim();
+    const key = m[1] ?? "";
+    const val = (m[2] ?? "").trim();
     if (indent === 0) {
       curObj = null;
       curList = null;
@@ -288,7 +288,8 @@ export function runHeaderAsserts(projectDir: string, relPath: string, expect: He
   const lines = after.split("\n").filter((l) => l.trim());
   if (!lines.length) problems.push("正文为空");
   else {
-    if (!/^#\s/.test(lines[0])) problems.push(`正文首行须为一级标题，实为「${lines[0].slice(0, 30)}」`);
+    const firstLine = lines[0] ?? "";
+    if (!/^#\s/.test(firstLine)) problems.push(`正文首行须为一级标题，实为「${firstLine.slice(0, 30)}」`);
     const second = lines[1] ?? "";
     if (second && !second.startsWith(">")) problems.push("标题后须紧接一行 > 摘要（≤60 字）");
     else if (second.startsWith(">") && second.replace(/^>\s*/, "").length > 80) problems.push("摘要超长（>80 字符）");
