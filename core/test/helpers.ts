@@ -1,19 +1,19 @@
 import fs from "node:fs";
 import path from "node:path";
-import { ROOT } from "../src/schema.js";
+import { rootOf } from "../src/schema.js";
 import { expandFlow3, type Flow3Descriptor } from "../src/modules.js";
 import type { FlowDescriptor } from "../src/types.js";
 
 /** 载入真实 flow 描述符（磁盘原样；flow@3 不含手画图，要图用 expandedFlow）。 */
 export function loadFlow(id: string): FlowDescriptor {
-  return JSON.parse(fs.readFileSync(path.join(ROOT, "flows", id, "flow.json"), "utf-8")) as FlowDescriptor;
+  return JSON.parse(fs.readFileSync(path.join(rootOf(), "flows", id, "flow.json"), "utf-8")) as FlowDescriptor;
 }
 
 /** flow@3 → expandFlow3 派生描述符（与内核 effectiveOf 同一展开单点）；flow@2 原样返回。 */
 export function expandedFlow(id: string): FlowDescriptor {
   const j = loadFlow(id) as FlowDescriptor | (Flow3Descriptor & { format: "flow@3" });
   if ((j as { format: string }).format === "flow@3") {
-    return expandFlow3(ROOT, j as Flow3Descriptor).flow as FlowDescriptor;
+    return expandFlow3(rootOf(), j as Flow3Descriptor).flow as FlowDescriptor;
   }
   return j as FlowDescriptor;
 }

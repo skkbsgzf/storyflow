@@ -13,7 +13,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { effectiveFlow3, expandFlow3 } from "../src/modules.js";
-import { ROOT } from "../src/schema.js";
+import { rootOf } from "../src/schema.js";
 
 /** 最小双模块夹具：plot（骨架 3 + 插件 1）+ prose（骨架 1）。 */
 function writeFixture(root: string): void {
@@ -99,9 +99,9 @@ function writeFixture(root: string): void {
 describe("R6 · 模块展开器（expandFlow3）", () => {
   it("W-01 职责三件套：module.json io 原样传播进 composition（机器消费面）", () => {
     const flow = JSON.parse(
-      fs.readFileSync(path.join(ROOT, "flows", "test-dual", "flow.json"), "utf-8"),
+      fs.readFileSync(path.join(rootOf(), "flows", "test-dual", "flow.json"), "utf-8"),
     );
-    const r = expandFlow3(ROOT, flow);
+    const r = expandFlow3(rootOf(), flow);
     const m1 = r.modules.find((m) => m.id === "m1");
     expect(m1?.io).toBeTruthy();
     expect(m1?.io?.output?.file).toBe("选题报告.md");
@@ -176,7 +176,7 @@ describe("R6 · 模块展开器（expandFlow3）", () => {
   });
 
   it("真仓模块：plot 模块对齐钦定形态（v2.1 骨架扩容：四段水线，锚点全可达）", () => {
-    const mod = JSON.parse(fs.readFileSync(path.join(ROOT, "modules", "plot", "module.json"), "utf-8"));
+    const mod = JSON.parse(fs.readFileSync(path.join(rootOf(), "modules", "plot", "module.json"), "utf-8"));
     expect(mod.skeleton.spine).toEqual(["structure-design", "plot-choreographer", "scene-breakdown", "script-forge"]);
     expect(mod.skeleton.edges).toEqual([
       ["structure-design", "plot-choreographer"],
@@ -197,11 +197,11 @@ describe("R6 · 模块展开器（expandFlow3）", () => {
     }
   });
   it("真仓模块：topic/prose v2 精细化（单件交付 spine + 输出职责落盘名）", () => {
-    const topic = JSON.parse(fs.readFileSync(path.join(ROOT, "modules", "topic", "module.json"), "utf-8"));
+    const topic = JSON.parse(fs.readFileSync(path.join(rootOf(), "modules", "topic", "module.json"), "utf-8"));
     expect(topic.skeleton.spine).toEqual(["topic-report"]);
     expect(topic.ops["topic-report"].output).toBe("选题报告.md");
     expect(topic.io?.acceptance).toBeUndefined();  // v0.8：同上
-    const prose = JSON.parse(fs.readFileSync(path.join(ROOT, "modules", "prose", "module.json"), "utf-8"));
+    const prose = JSON.parse(fs.readFileSync(path.join(rootOf(), "modules", "prose", "module.json"), "utf-8"));
     expect(prose.skeleton.spine).toEqual(["ghostwrite", "novel-deai"]);
     expect(prose.ops["ghostwrite"].output).toBe("正文.md");
     expect(prose.ops["novel-deai"].output).toBe("终稿.md");
@@ -380,19 +380,19 @@ describe("R7 · 生效编排（effectiveFlow3）：声明了就必须生效", ()
 
   it("真仓 flow：policy 声明被读取（此前整个被忽略，adapt 恒为 propose）", () => {
     const flow = JSON.parse(
-      fs.readFileSync(path.join(ROOT, "flows", "test-dual", "flow.json"), "utf-8"),
+      fs.readFileSync(path.join(rootOf(), "flows", "test-dual", "flow.json"), "utf-8"),
     );
     // flow.json 声明 policy = { link_default: "auto", adapt: "off" }
-    const r = effectiveFlow3(ROOT, flow);
+    const r = effectiveFlow3(rootOf(), flow);
     expect(r.policy.link_default).toBe("auto");
     expect(r.policy.adapt).toBe("off");
   });
 
   it("真仓 flow：无 overlay 时 toolOverrides/inputs 为空且无 unsupported（不误报）", () => {
     const flow = JSON.parse(
-      fs.readFileSync(path.join(ROOT, "flows", "test-dual", "flow.json"), "utf-8"),
+      fs.readFileSync(path.join(rootOf(), "flows", "test-dual", "flow.json"), "utf-8"),
     );
-    const r = effectiveFlow3(ROOT, flow);
+    const r = effectiveFlow3(rootOf(), flow);
     expect(r.toolOverrides).toEqual({});
     expect(r.inputs).toEqual({});
     expect(r.unsupported).toEqual([]);

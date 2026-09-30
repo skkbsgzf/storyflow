@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
-import { ROOT } from "../src/schema.js";
+import { rootOf } from "../src/schema.js";
 import { compilePlan, upstreamOf } from "../src/plan.js";
 import { edgeVia, edgeRole, isBackEdge, evalWhen, condContextOf, pendingInstancesOf } from "../src/cond.js";
 import { classOfPath } from "../src/asserts.js";
@@ -10,23 +10,23 @@ import { expandFlow3, type Flow3Descriptor } from "../src/modules.js";
 import type { FlowDescriptor } from "../src/types.js";
 
 const FLOW_IDS = fs
-  .readdirSync(path.join(ROOT, "flows"))
-  .filter((d) => fs.existsSync(path.join(ROOT, "flows", d, "flow.json")))
+  .readdirSync(path.join(rootOf(), "flows"))
+  .filter((d) => fs.existsSync(path.join(rootOf(), "flows", d, "flow.json")))
   .sort();
 
 const load = (id: string): FlowDescriptor =>
-  JSON.parse(fs.readFileSync(path.join(ROOT, "flows", id, "flow.json"), "utf-8")) as FlowDescriptor;
+  JSON.parse(fs.readFileSync(path.join(rootOf(), "flows", id, "flow.json"), "utf-8")) as FlowDescriptor;
 
 /**
  * flow@3（模块序列）不携带手画图，图级检查一律跑在 expandFlow3 派生出的
  * flow@2 形态描述符上（与内核 effectiveOf 同一展开单点）。flow@1/@2 存量已随 v4.0.0 处决。
  */
 const loadAny = (id: string): { format: string; flow: FlowDescriptor } => {
-  const j = JSON.parse(fs.readFileSync(path.join(ROOT, "flows", id, "flow.json"), "utf-8")) as
+  const j = JSON.parse(fs.readFileSync(path.join(rootOf(), "flows", id, "flow.json"), "utf-8")) as
     | FlowDescriptor
     | (Flow3Descriptor & { format: "flow@3" });
   if ((j as { format: string }).format === "flow@3") {
-    return { format: "flow@3", flow: expandFlow3(ROOT, j as Flow3Descriptor).flow as FlowDescriptor };
+    return { format: "flow@3", flow: expandFlow3(rootOf(), j as Flow3Descriptor).flow as FlowDescriptor };
   }
   throw new Error(`${id}：存量 flow 必须是 flow@3（flow@1/@2 已处决）`);
 };
@@ -51,7 +51,7 @@ describe("flow 描述符 · 全量体检（R4 §5.1 + R6 模块序列）", () =>
   it("每个 flow 的 format = flow@3（唯一合法存量格式），无重复键、无旧字段名", () => {
     expect(FLOW_IDS.length).toBeGreaterThan(0);
     for (const id of FLOW_IDS) {
-      const raw = fs.readFileSync(path.join(ROOT, "flows", id, "flow.json"), "utf-8");
+      const raw = fs.readFileSync(path.join(rootOf(), "flows", id, "flow.json"), "utf-8");
       strictParseId(raw, id);
       const format = JSON.parse(raw).format;
       expect(format, `${id}：flow@1/@2 已随 v4.0.0 处决，唯一合法格式是 flow@3`).toBe("flow@3");

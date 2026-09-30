@@ -4,7 +4,7 @@
 import process from "node:process";
 import type { IProcessLauncher } from "./abstraction/proc.js";
 import { Kernel, KernelError } from "./kernel.js";
-import { ROOT } from "./schema.js";
+import { rootOf } from "./schema.js";
 import { VERB_BY_NAME, flagsToArgs, usageFromVerbs } from "./verbs.js";
 import { nodeFs, nodePath } from "./abstraction/adapters/node.js";
 
@@ -155,7 +155,7 @@ const T0 = Date.now();
 main().then((code) => {
   process.exitCode = code;
   try {
-    if (!nodeFs.exists(nodePath.join(ROOT, "BETA"))) return;
+    if (!nodeFs.exists(nodePath.join(rootOf(), "BETA"))) return;
     const { _, flags } = parseArgs(process.argv.slice(2));
     const rec = {
       ts: new Date().toISOString(),
@@ -165,7 +165,7 @@ main().then((code) => {
       exit: code,
       ms: Date.now() - T0,
     };
-    const dir = nodePath.join(ROOT, "trace");
+    const dir = nodePath.join(rootOf(), "trace");
     nodeFs.mkdir(dir, { recursive: true });
     nodeFs.appendText(nodePath.join(dir, "cli.jsonl"), JSON.stringify(rec) + "\n");
   } catch {

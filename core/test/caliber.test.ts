@@ -12,7 +12,7 @@ import { summarizeMetrics } from "../src/metrics.js";
 import { bodySkeleton, foreignOwnTerms, headerTemplate } from "../src/asserts.js";
 import { loadKnowledge } from "../src/assembler.js";
 import { kitRegistry } from "../src/kits.js";
-import { ROOT } from "../src/schema.js";
+import { rootOf } from "../src/schema.js";
 
 describe("D1 · 标尺卡命中率口径（dispatch 与 submit 必须同一 id 空间）", () => {
   const ev = (o: Record<string, unknown>): never => ({ ts: "2026-09-18T00:00:00Z", ...o }) as never;
@@ -169,7 +169,7 @@ describe("D4 · 注入收窄（find-trope 的梗族卡：R8 后走决策过滤�
   const CAPS = { total: 60000, card: 1600 };
 
   it("收窄口径搬家：exclude_knowledge 清场，梗卡改由候选池按 decision:region 过滤", () => {
-    const op = kitRegistry(ROOT).resolve("topic", "find-trope")!;
+    const op = kitRegistry(rootOf()).resolve("topic", "find-trope")!;
     // 海外卡不许被静态名单删掉（旧行为：region 隐含 CN 就硬剔 na-*，NA 项目直接选不到梗）
     expect(op.knowledge).not.toContain("kb/trope/*");
     expect(op.excludeKnowledge).toEqual([]);
@@ -180,8 +180,8 @@ describe("D4 · 注入收窄（find-trope 的梗族卡：R8 后走决策过滤�
   });
 
   it("region=CN → 北美卡进「未装载的候选」并带理由；无决策 → 两区全装 + 选择面告警", () => {
-    const op = kitRegistry(ROOT).resolve("topic", "find-trope")!;
-    const cn = loadKnowledge(ROOT, op.knowledge, op.excludeKnowledge ?? [], CAPS, op.knowledgePools, {
+    const op = kitRegistry(rootOf()).resolve("topic", "find-trope")!;
+    const cn = loadKnowledge(rootOf(), op.knowledge, op.excludeKnowledge ?? [], CAPS, op.knowledgePools, {
       region: { key: "region", picked: ["CN"] },
     });
     const ids = cn.cards.map((c) => c.id);
@@ -189,7 +189,7 @@ describe("D4 · 注入收窄（find-trope 的梗族卡：R8 后走决策过滤�
     expect(ids, "region=CN 时北美卡不该进标尺").not.toContain("kb/trope/na-fantasy");
     expect(cn.notSelected.find((x) => x.id === "kb/trope/na-fantasy")?.reason).toContain("不含本次所选");
 
-    const cold = loadKnowledge(ROOT, op.knowledge, [], CAPS, op.knowledgePools, {});
+    const cold = loadKnowledge(rootOf(), op.knowledge, [], CAPS, op.knowledgePools, {});
     expect(cold.cards.map((c) => c.id)).toContain("kb/trope/na-fantasy");
     expect(cold.poolIssues.join("")).toContain("未按决策过滤");
   });

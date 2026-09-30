@@ -1,0 +1,25 @@
+{
+  "name": "@storyflow/adapters",
+  "private": true,
+  "version": "0.10.0",
+  "type": "module",
+  "description": "Storyflow 平台适配器：FS 抽象层契约（IFileSystem/IFsPath/IProcessLauncher/IEnv/IHasher）+ 注册表 + Node/Mock 实现。@storyflow/core 零 node:* 依赖的对应面。",
+  "exports": {
+    ".": "./dist/index.js",
+    "./fs.js": "./dist/fs.js",
+    "./proc.js": "./dist/proc.js",
+    "./env.js": "./dist/env.js",
+    "./hash.js": "./dist/hash.js",
+    "./defaults.js": "./dist/defaults.js",
+    "./node.js": "./dist/node.js",
+    "./mock.js": "./dist/mock.js"
+  },
+  "scripts": {
+    "build": "node ../core/node_modules/typescript/bin/tsc -p tsconfig.json",
+    "prepare": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2"
+  }
+}

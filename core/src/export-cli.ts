@@ -19,7 +19,7 @@ import process from "node:process";
 import { Kernel } from "./kernel.js";
 import { effectiveFlow3 } from "./modules.js";
 import { factoryOverlayPath, readOverlay, type FlowOverlay } from "./overlay.js";
-import { ROOT } from "./schema.js";
+import { rootOf } from "./schema.js";
 import { loadState } from "./state.js";
 import { nodeFs, nodePath } from "./abstraction/adapters/node.js";
 
@@ -170,11 +170,11 @@ export function buildProjectExport(projectId: string): ExportGraph {
 
 /** 模板面：flow.json ⊕ 出厂 overlay（无项目层）——给外部消费方看流程形态。 */
 export function buildFlowExport(flowId: string): ExportGraph {
-  const file = nodePath.join(ROOT, "flows", flowId, "flow.json");
+  const file = nodePath.join(rootOf(), "flows", flowId, "flow.json");
   if (!nodeFs.exists(file)) throw new Error(`flow 不存在: ${flowId}`);
   const flow = JSON.parse(nodeFs.readText(file));
-  const overlays = [readOverlay(factoryOverlayPath(ROOT, flowId, nodePath), nodeFs)].filter(Boolean) as FlowOverlay[];
-  const eff = effectiveFlow3(ROOT, flow, { overlays }, nodeFs, nodePath);
+  const overlays = [readOverlay(factoryOverlayPath(rootOf(), flowId, nodePath), nodeFs)].filter(Boolean) as FlowOverlay[];
+  const eff = effectiveFlow3(rootOf(), flow, { overlays }, nodeFs, nodePath);
   return toExport(eff, { mode: "flow", id: flowId });
 }
 

@@ -4,7 +4,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { runCoreNode } from "../src/minitools.js";
 import type { FlowDescriptor, RunState } from "../src/types.js";
-import { ROOT } from "../src/schema.js";
+import { rootOf } from "../src/schema.js";
 
 /** R6 · 内核 minitool 直测（M1 四件 + 未实现守卫）。项目夹具 = mkdtemp，世界书/稿本手工捏。 */
 function makeProject(): string {

@@ -1,4 +1,4 @@
-import { nodeFs, nodePath } from "./abstraction/defaults.js";
+import { nodeEnv, nodeFs, nodePath } from "./abstraction/defaults.js";
 import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
 import type { Validation } from "./types.js";
 import { recordDiag } from "./diag.js";
@@ -120,7 +120,7 @@ function outlineEpisodeBounds(projectDir: string, fs: IFileSystem, path: IFsPath
  * ==========================================================================*/
 
 function repoRootOf(projectDir: string, path: IFsPath): string {
-  return process.env.MINIFLOW_ROOT ?? path.join(projectDir, "..", "..");
+  return nodeEnv.get("MINIFLOW_ROOT") ?? path.join(projectDir, "..", "..");
 }
 
 let purityReCache: { root: string; re: RegExp[] } | null = null;

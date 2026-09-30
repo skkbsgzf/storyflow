@@ -15,7 +15,7 @@ import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { CONTRACTS_DIR } from "../src/schema.js";
+import { contractsDirOf } from "../src/schema.js";
 import { V1_ROUTES, buildOpenApiV1 } from "../src/api-v1.js";
 import { VERBS } from "../src/verbs.js";
 import { Kernel } from "../src/kernel.js";
@@ -246,7 +246,7 @@ describe("R4 · /api/v1 统一包装（ApiResponse）", () => {
     // 文档自身不套信封（它是文件，不是数据）
     expect(r.body.startsWith("{\"openapi\"")).toBe(true);
 
-    const committed = JSON.parse(fs.readFileSync(path.join(CONTRACTS_DIR, "http-openapi-v1.json"), "utf-8"));
+    const committed = JSON.parse(fs.readFileSync(path.join(contractsDirOf(), "http-openapi-v1.json"), "utf-8"));
     expect(committed).toEqual(buildOpenApiV1());
     expect(served).toEqual(committed);
     await app.close();

@@ -237,3 +237,13 @@ R1–R4 期间现网**零** `fs.watch` 调用，它是为 R5 的 SSE 事件流�
 | D-R7-4 | `tools/batch-edit.py` 升 v2：`--manifest` 多文件同批（逐文件字面校验、任一处不成立 = 整批拒绝零写入、一份合并 diff ＋ per-file sha256 前/后收据） | 28 个文件的同一处 import 行换字面串，按本仓批量纪律是一批，不该摊成 28 次调用（碎片 diff 互不可见、回滚逐处） | 单文件 `--file/--ops` 形态不变，既有调用点零影响；本批收据 `.receipt-r7-1-imports.json`（仓库根） |
 
 **冒烟测试的三条断言就是这三类偏离的验收面**（`core/test/abstraction-smoke.test.ts`）：①`flow_run`→`flow_submit` 全程只写内存盘 + 宿主盘无泄漏目录；②跑完语料逐字节不变（只读承诺）；③改内存里的技能卡，任务包内容跟着变——**读**也走注入适配器（宿主盘同内容时，前两条抓不到静默的宿主盘读）。
+
+---
+
+## 附：R7-2/R7-3 落地销账（2026-10-01）
+
+- §六 D3（schema.ts::ROOT 模块级求值）：**已解**——`rootOf()`/`contractsDirOf()` 惰性化，loadAjv 移入首次 assertSchema；语料根寻址口径不变。
+- §六 D7（宿主面）：`process.env` 归 `IEnv`（get/platform，adapters 包）、`node:crypto` 归 `IHasher.sha1Hex`、库面 `console` 退场（自动命名随 state/journal 可见）、`Buffer` 归 fnv1a。`import.meta.url` 保留（ESM 标准，非 node 专属）。
+- §六 D-R6-6：非 FS 族宿主绑定例外表销账至「三个入口件的 process 面 + cli 的 net」；广谱判据 `node:(fs|path|child_process|crypto|module)` 在 core/src **零命中**。
+- §六 D-R7-3（入口四件请出 core 包）：**偏差执行**——cli/mcp/export-cli/quality-cli 仍留在 core（红线 `core/dist/cli.js` bin 契约 + tsc rootDir 机械约束），以 `tsconfig.pure.json`（types:[] 无 @types/node）划定并证明库面纯净；适配器实现本体已物理迁出至 `@storyflow/adapters`。
+- 新门：`npx tsc -p tsconfig.pure.json`（纯度门）+ 广谱 grep 双判据；`ProcOptions.envDelta` 入册（库面差量、适配器合并）。

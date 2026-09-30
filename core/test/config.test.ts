@@ -5,7 +5,7 @@ import path from "node:path";
 import { Kernel, KernelError } from "../src/kernel.js";
 import { configToInputs } from "../src/project-config.js";
 import { buildHttpApp } from "../src/http.js";
-import { ROOT } from "../src/schema.js";
+import { rootOf } from "../src/schema.js";
 
 /** 用户手编的项目初始化配置（中键） */
 function config(overrides: Record<string, unknown> = {}): Record<string, unknown> {
@@ -30,7 +30,7 @@ describe("项目初始化配置 · 合并序与语义映射", () => {
   let state: Record<string, any>;
 
   beforeAll(async () => {
-    fs.cpSync(path.join(ROOT, "agents"), path.join(root, "agents"), { recursive: true });
+    fs.cpSync(path.join(rootOf(), "agents"), path.join(root, "agents"), { recursive: true });
     const dir = path.join(root, "projects", "p-cfg");
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(path.join(dir, "选题素材.md"), "# 选题素材\n\n甲方点子：老牌发型师。\n", "utf-8");

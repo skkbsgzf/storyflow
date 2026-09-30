@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": [],
+    "noEmit": true
+  },
+  "include": ["src"],
+  "exclude": [
+    "src/cli.ts",
+    "src/mcp.ts",
+    "src/export-cli.ts",
+    "src/quality-cli.ts",
+    "src/http.ts",
+    "src/static.ts",
+    "src/agent-mcp.ts",
+    "src/abstraction/adapters"
+  ]
+}

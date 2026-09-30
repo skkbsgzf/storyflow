@@ -1,3 +1,13 @@
+## Unreleased · 工单 R7-2/R7-3 + R8 主体（2026-10-01）
+
+1. **@storyflow/adapters 物理拆包**：FS 抽象层契约（fs/proc/env/hash 四接口）+ 注册表 + Node/Mock 实现整体迁至 adapters/ 独立包（build 产 dist，core 经 file: 依赖消费）；core/src/abstraction/ 全部变为 re-export shim——旧路径零改动，166 处尾参默认原样可用。
+2. **core 库面净化（R7-2）**：库面 node:* import 清零（ids 的 crypto 归 IHasher、kernel 死码 createRequire 验尸、compat Buffer 归 fnv1a、库面 console 退场、process.env 归 IEnv 含 platform()）；schema.ts::ROOT 惰性化（rootOf()/contractsDirOf()，loadAjv 惰性）；cfg-template 模块级求值收编；api-v1/compat 的 fastify 类型换本地结构化子集（库面不依赖 fastify 类型）。
+3. **纯度门**：core/tsconfig.pure.json——types:[] 无 @types/node 下全库 tsc 0 错；广谱判据 node:(fs|path|child_process|crypto|module) 在 core/src 零命中（含宿主入口）。
+4. **红线修复**：http.ts 自启动守卫只认 http.ts 导致 dist/http.js 静默退出（先于本轮即存在）——对齐 mcp 的 .ts|.js 双认；dist/cli.js flow_list 与 dist/http.js v1/openapi/legacy 弃用头三冒烟全通。
+5. **R8 Auto 预设路由（规则式 v1）**：suggestProductionPreset（关键词+输入形状，可解释回执）+ flow_run(preset:"auto") 接线——state.preset 存解析后 id、journal 留路由理由；kernel.suggestPreset 预览面。模型式路由后置。
+6. **ProcOptions.envDelta**：库面传差量、适配器负责继承合并（verbs.ts 不再展开 process.env）。
+7. 测试 38 文件/426 用例全绿（+5 Auto 路由）；死表守门（R7-1 注册面 / R6 例外表）按「少一处=表过期」设计同步销账。
+
 ## Unreleased · 工单 R7-1（FS Phase 4 前置：平台缺省适配器注册面，2026-10-01）
 
 **一句话**：`@storyflow/core` 侧**不再 import 任何宿主实现**——R3 立下的 166 处尾参默认 `fs: IFileSystem = nodeFs`

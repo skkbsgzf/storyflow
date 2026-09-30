@@ -17,7 +17,7 @@ import { effectiveFlow3, expandFlow3, defaultArtifactTemplate } from "../src/mod
 import { resolveToolConfig } from "../src/kits.js";
 import { overlayFromProposals, proposeFromMetrics, isStructuralPatch, type Proposal } from "../src/optimize.js";
 import { runCoreNode } from "../src/minitools.js";
-import { ROOT } from "../src/schema.js";
+import { rootOf } from "../src/schema.js";
 import { resolveBudget, DEFAULT_BUDGET } from "../src/budget.js";
 import { summarizeMetrics } from "../src/metrics.js";
 import { Kernel } from "../src/kernel.js";
@@ -28,7 +28,7 @@ import type { FlowPolicy } from "../src/overlay.js";
 
 /** 真实 flow@3：caocao m3 声明了 `iterate`（正是本批要救活的那条声明）。 */
 function caocao(): Record<string, unknown> {
-  return JSON.parse(fs.readFileSync(path.join(ROOT, "flows", "test-dual", "flow.json"), "utf-8"));
+  return JSON.parse(fs.readFileSync(path.join(rootOf(), "flows", "test-dual", "flow.json"), "utf-8"));
 }
 
 describe("OS-02 C#10 · model_tier 缺省 = 不约束（不再默认 high）", () => {
@@ -48,7 +48,7 @@ describe("OS-02 C#10 · model_tier 缺省 = 不约束（不再默认 high）", (
 
 describe("OS-02 D#13 · 模块 iterate → 派生节点传播", () => {
   it("caocao m3 的模块级声明落到**交付节点**，并派生单实例产物模板", () => {
-    const r = expandFlow3(ROOT, caocao() as never);
+    const r = expandFlow3(rootOf(), caocao() as never);
     const members = (r.moduleNodes["m3"] ?? []).filter((id) => r.flow.graph.nodes[id]?.output);
     const target = members[members.length - 1]; // 交付节点 = 模块内最后一个有产物节点（与 derivedOutputs 同口径）
     const it = r.flow.graph.nodes[target].iterate;
@@ -65,14 +65,14 @@ describe("OS-02 D#13 · 模块 iterate → 派生节点传播", () => {
   });
 
   it("未声明 iterate 的模块（m1/m4）不产生任何 iterate 节点", () => {
-    const r = expandFlow3(ROOT, caocao() as never);
+    const r = expandFlow3(rootOf(), caocao() as never);
     const stray = (r.moduleNodes["m1"] ?? []).concat(r.moduleNodes["m4"] ?? [])
       .filter((id) => r.flow.graph.nodes[id]?.iterate);
     expect(stray).toEqual([]);
   });
 
   it("生效编排（effectiveFlow3）里派生节点真的带 iterate —— 此前 effective.json 里恒为 it=[]", () => {
-    const r = effectiveFlow3(ROOT, caocao() as never, {});
+    const r = effectiveFlow3(rootOf(), caocao() as never, {});
     const withIt = Object.entries(r.flow.graph.nodes as Record<string, { iterate?: unknown }>)
       .filter(([, n]) => !!n.iterate).map(([id]) => id);
     expect(withIt.length).toBe(1);
@@ -88,7 +88,7 @@ describe("OS-02 D#13 · 模块 iterate → 派生节点传播", () => {
   it("显式 artifact 优先于派生（作者可覆盖）", () => {
     const flow = caocao() as { modules: Array<Record<string, unknown>> };
     flow.modules[2].iterate = { unit: "chapter", over: "大纲", first: 3, artifact: "03-写作/章节正文/第{n}章.md" };
-    const r = expandFlow3(ROOT, flow as never);
+    const r = expandFlow3(rootOf(), flow as never);
     const target = (r.moduleNodes["m3"] ?? []).filter((id) => r.flow.graph.nodes[id]?.output).pop()!;
     expect(r.flow.graph.nodes[target].iterate.artifact).toBe("03-写作/章节正文/第{n}章.md");
     expect(r.flow.graph.nodes[target].iterate.first).toBe(3);
@@ -98,13 +98,13 @@ describe("OS-02 D#13 · 模块 iterate → 派生节点传播", () => {
 describe("OS-02 N4 · set-link（per-link 降级通道）", () => {
   it("flow@3 真的消费 set-link：改连接件模式，计入 appliedCount", () => {
     const flow = caocao() as Record<string, unknown>;
-    expect((expandFlow3(ROOT, flow as never) as { flow: { graph: { nodes: Record<string, { link_mode?: string }> } } })
+    expect((expandFlow3(rootOf(), flow as never) as { flow: { graph: { nodes: Record<string, { link_mode?: string }> } } })
       .flow.graph.nodes["m2.link"].link_mode).toBe("manual"); // 前置事实
     const ov = {
       format: "flow-overlay@1", flowId: "test-dual", origin: "user",
       patches: [{ kind: "set-link", link: "m2.link", mode: "auto", reason: "连续全过，降噪" }],
     };
-    const r = effectiveFlow3(ROOT, flow as never, { overlays: [ov] });
+    const r = effectiveFlow3(rootOf(), flow as never, { overlays: [ov] });
     expect(r.appliedCount).toBe(1);
     expect(r.unsupported).toEqual([]);
     expect((r.flow.graph.nodes["m2.link"] as { link_mode?: string }).link_mode).toBe("auto");
@@ -116,18 +116,18 @@ describe("OS-02 N4 · set-link（per-link 降级通道）", () => {
     const mk = (patch: Record<string, unknown>) => ({
       format: "flow-overlay@1", flowId: "test-dual", origin: "user", patches: [patch],
     });
-    const bare = effectiveFlow3(ROOT, flow as never, {
+    const bare = effectiveFlow3(rootOf(), flow as never, {
       overlays: [mk({ kind: "set-link", link: "m2", mode: "manual", reason: "t" })],
     });
     expect(bare.appliedCount).toBe(1);
 
-    const ghost = effectiveFlow3(ROOT, flow as never, {
+    const ghost = effectiveFlow3(rootOf(), flow as never, {
       overlays: [mk({ kind: "set-link", link: "m9.link", mode: "auto", reason: "t" })],
     });
     expect(ghost.appliedCount).toBe(0);
     expect(ghost.unsupported.join("｜")).toContain("m9.link");
 
-    const badMode = effectiveFlow3(ROOT, flow as never, {
+    const badMode = effectiveFlow3(rootOf(), flow as never, {
       overlays: [mk({ kind: "set-link", link: "m2.link", mode: "sometimes", reason: "t" })],
     });
     expect(badMode.appliedCount).toBe(0);
@@ -157,7 +157,7 @@ describe("OS-02 N4 · set-link（per-link 降级通道）", () => {
       gates: [{ nodeId: "m2.link", phase: "link", passes: 5, sendBacks: 0, samples: 5 }],
       window: {},
     } as never as MetricsSummary;
-    const props = proposeFromMetrics(flow, summary, { root: ROOT, policy: {} as FlowPolicy });
+    const props = proposeFromMetrics(flow, summary, { root: rootOf(), policy: {} as FlowPolicy });
     const r7 = props.find((p) => p.rule === "R7-boundary-auto");
     expect(r7).toBeTruthy();
     expect(r7!.patch.kind).toBe("set-link");
@@ -170,7 +170,7 @@ describe("OS-02 N4 · set-link（per-link 降级通道）", () => {
       graph: { nodes: { "m2.link": { kind: "gate", gate_role: "link", link_mode: "auto" } }, edges: [] },
       outputs: [],
     } as never as FlowDescriptor;
-    expect(proposeFromMetrics(autoFlow, summary, { root: ROOT, policy: {} as FlowPolicy })
+    expect(proposeFromMetrics(autoFlow, summary, { root: rootOf(), policy: {} as FlowPolicy })
       .some((p) => p.rule === "R7-boundary-auto")).toBe(false);
   });
 });
@@ -306,7 +306,7 @@ describe("OS-02 C#11 · 端到端：项目配置.json 的「阈值预算」→ p
     if (overlay) fs.writeFileSync(path.join(pd, "registry", "overlay.json"), JSON.stringify(overlay, null, 2), "utf-8");
     return pd;
   }
-  const k = new Kernel({ root: ROOT, repoRoot: ROOT });
+  const k = new Kernel({ root: rootOf(), repoRoot: rootOf() });
   const flow3 = caocao() as never;
 
   it("项目配置的阈值真的进了 policy.budget，并解开 overridden/sources（此前该键零消费者）", () => {

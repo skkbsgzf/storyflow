@@ -15,7 +15,7 @@
  * 错误分类：**用户能改的错（名字非法/不存在/跨 flow）一律 4xx**，不许被当成「服务器内部错误」上报
  * ——把用户手误报成 500 与「崩掉当没事」是同一种病（HTTP/CLI/MCP 三面共用这套码）。
  */
-import { nodeFs, nodePath } from "./abstraction/adapters/node.js";
+import { nodeFs, nodePath } from "./abstraction/defaults.js";
 import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
 import { assertSchema } from "./schema.js";
 import { loadState } from "./state.js";
@@ -32,7 +32,13 @@ export class CfgTemplateError extends Error {
   }
 }
 
-export const CFG_TEMPLATE_SUBDIR = nodePath.join("templates", "项目配置");
+/**
+ * 配置模板子目录（D-R7-3 模块级求值收编，工单 R7-2）：惰性求值——import 期不再碰注册表，
+ * 宿主未注册适配器时 import 本模块不炸（与 schema.ts::rootOf 同一批账）。
+ */
+export function cfgTemplateSubdir(): string {
+  return nodePath.join("templates", "项目配置");
+}
 export const CONFIG_FILE_NAME = "项目配置.json";
 
 /** 模板名白名单：不允许需要转义的字符 ⇒ **文件名即模板名**，不产生「悄悄改名」。 */
@@ -71,7 +77,7 @@ export interface CfgTemplateScope {
 }
 
 function storeDir(root: string, path: IFsPath): string {
-  return path.join(root, CFG_TEMPLATE_SUBDIR);
+  return path.join(root, cfgTemplateSubdir());
 }
 
 function templatePath(root: string, flowId: string, name: string, path: IFsPath): string {

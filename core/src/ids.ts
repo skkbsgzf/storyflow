@@ -1,4 +1,4 @@
-import crypto from "node:crypto";
+import { nodeHash } from "./abstraction/defaults.js";
 
 export function nowIso(): string {
   return new Date().toISOString();
@@ -9,7 +9,8 @@ export function newId(prefix = "r"): string {
 }
 
 export function sha12(text: string): string {
-  return crypto.createHash("sha1").update(text, "utf-8").digest("hex").slice(0, 12);
+  // 哈希面（R7-2 入册）：sha1 由平台适配器提供（node:crypto / 浏览器自备纯 JS 实现）。
+  return nodeHash.sha1Hex(text).slice(0, 12);
 }
 
 /** 切掉 artifact@1 头部，取正文（头部是元数据，不入指纹）。 */

@@ -5,11 +5,12 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import cors from "@fastify/cors";
 // 宿主面显式登记平台适配器（副作用）：HTTP 面跑在 Node 上，不该靠 schema.ts 的传递 import 侥幸拿到实现
 import "./abstraction/adapters/node.js";
-import { CONTRACTS_DIR, ROOT } from "./schema.js";
+import { contractsDirOf, rootOf } from "./schema.js";
 import { Kernel, KernelError } from "./kernel.js";
 import { recordDiag } from "./diag.js";
 import { registerCompat } from "./compat.js";
 import { registerLegacyMarkers, registerV1, resolveProjectFlowId } from "./api-v1.js";
+import type { RouteRegistrar } from "./api-v1.js";
 import { contentTypeOf, resolveStaticPath } from "./static.js";
 import { closeSignalOf, emitSseEvents, heartbeatMsOf, sseFrame, SSE_FRAME_DONE } from "./sse.js";
 import { VERB_BY_NAME, VERB_NAMES } from "./verbs.js";
@@ -19,11 +20,12 @@ export function buildHttpApp(kernel: Kernel) {
   const app = fastify({ logger: false });
   void app.register(cors, { origin: true });
   // 弃用标记必须在任何路由之前挂（Fastify 的路由在注册时绑定钩子）。
-  registerLegacyMarkers(app);
+  // R7-2：宿主边界把 fastify 实例收窄为库面的结构化子集（同一对象，零包装）。
+  registerLegacyMarkers(app as unknown as RouteRegistrar);
   // v1 面（统一包装 + 自生成 OpenAPI）：路由清单只有一处事实源 = api-v1.ts 的 V1_ROUTES。
-  registerV1(app, kernel);
+  registerV1(app as unknown as RouteRegistrar, kernel);
 
-  const openapiFile = kernel.path.join(CONTRACTS_DIR, "http-openapi.json");
+  const openapiFile = kernel.path.join(contractsDirOf(), "http-openapi.json");
   const openapi = kernel.fs.exists(openapiFile) ? JSON.parse(kernel.fs.readText(openapiFile)) : { openapi: "3.1.0", paths: {} };
 
   app.get("/api/openapi.json", async () => openapi);
@@ -272,7 +274,7 @@ export async function startHttp(kernel: Kernel, port = 8421): Promise<void> {
       `  文档  /api/v1/openapi.json     （由 V1_ROUTES + VERBS 生成，对账：node scripts/gen-openapi.mjs --check）`,
       `  接口  /api/openapi.json        （legacy 冻结契约 v1.2，响应头已标 deprecation）`,
       `  诊断  /api/diagnostics        （仓库级旁路失败；项目级 /api/projects/<id>/diagnostics）`,
-      `  ROOT=${ROOT}`,
+      `  rootOf()=${rootOf()}`,
     ].join("\n"),
   );
 }
@@ -286,7 +288,9 @@ function httpError(reply: { code: (n: number) => { send: (v: unknown) => void } 
 }
 
 // 直接运行：node/tsx src/http.ts [--port 8421]
-if (process.argv[1] && process.argv[1].replace(/\\/g, "/").endsWith("http.ts")) {
+// R7-3 红线：dist/http.js 同样可直跑——旧守卫只认 http.ts，编译产物静默退出
+// （此前 serve 走 tsx src/http.ts 才没踩到；mcp.ts 的守卫本就是 .ts|.js 双认，此处对齐）。
+if (process.argv[1] && /http\.(ts|js)$/.test(process.argv[1].replace(/\\/g, "/"))) {
   const portIdx = process.argv.indexOf("--port");
   startHttp(new Kernel(), portIdx >= 0 ? Number(process.argv[portIdx + 1]) : 8421).catch((e) => {
     console.error(e);

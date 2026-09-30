@@ -1,5 +1,5 @@
 import type { FlowDescriptor, RunState, TaskPackage, Validation } from "./types.js";
-import { ROOT, assertSchema } from "./schema.js";
+import { assertSchema, rootOf } from "./schema.js";
 import { LockDir } from "./abstraction/jsonio.js";
 import { nodeFs, nodePath, nodeProc } from "./abstraction/defaults.js";
 import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
@@ -47,7 +47,7 @@ import { viewConfig, writeConfig } from "./kernel-config.js";
 import { AssertionPresets, DEFAULT_PRESET_ID, defaultPresetRoots } from "./assertion-preset/index.js";
 import { applyAssertionOverrides } from "./assertion-preset/executor.js";
 import type { StandingMount } from "./assertion-preset/types.js";
-import { listProductionPresets, loadPresetOverlay, type ProductionPreset } from "./production-preset.js";
+import { listProductionPresets, loadPresetOverlay, suggestProductionPreset, type ProductionPreset } from "./production-preset.js";
 
 /**
  * W-项目管理 · 灵感提炼命名：从流程输入里提炼可读项目名。
@@ -131,8 +131,8 @@ export class Kernel {
     this.fs = opts.fs ?? nodeFs;
     this.path = opts.path ?? nodePath;
     this.proc = opts.proc ?? nodeProc;
-    this.root = opts.root ?? ROOT;
-    this.repoRoot = opts.repoRoot ?? ROOT;
+    this.root = opts.root ?? rootOf();
+    this.repoRoot = opts.repoRoot ?? rootOf();
     this.flowsDir = opts.flowsDir ?? this.path.join(this.repoRoot, "flows");
     this.hostPreset = opts.assertionPreset;
     this.assertionPresets = new AssertionPresets(
@@ -437,7 +437,15 @@ export class Kernel {
 
   /** PP1：列出生产线预设（presets/<id>/，含 broken 标注）——宿主面板的「生产线」下拉数据源。 */
   listPresets(): ProductionPreset[] {
-    return listProductionPresets(this.repoRoot, this.fs, this.path);
+    return listProductionPresets(this.repoRoot);
+  }
+
+  /**
+   * R8：Auto 预设路由预览（规则式 v1）——不开跑就能看「这组输入会被路由到哪条生产线」。
+   * flow_run(preset:"auto") 内部走的是同一份规则；命中给 {preset, why}，未命中给 undefined（缺省流水线）。
+   */
+  suggestPreset(flowId: string, inputs: Record<string, unknown>): { preset: string; why: string } | undefined {
+    return suggestProductionPreset(flowId, inputs);
   }
   async flow_next(
     projectId: string,
@@ -574,5 +582,3 @@ export class Kernel {
   viewDiagnostics(projectId?: string) { return viewDiagnostics(this, projectId); }
 }
 
-// 供 viewJournal 的惰性 require（ESM 下编译为 createRequire）
-const require = (await import("node:module")).createRequire(import.meta.url);

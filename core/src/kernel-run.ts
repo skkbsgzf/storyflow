@@ -3,7 +3,7 @@
 // Kernel 仅 type 引入——运行时依赖单向（kernel.ts → 本文件），无环。
 
 import type { FlowDescriptor, RunState, TaskPackage, Validation } from "./types.js";
-import { ROOT, assertSchema } from "./schema.js";
+import { assertSchema, rootOf } from "./schema.js";
 import type { LockDir } from "./abstraction/jsonio.js";
 import { listDecisions, setDecision, decisionsDir } from "./decisions.js";
 import { gateToken, nowIso } from "./ids.js";
@@ -22,6 +22,7 @@ import { applyGatePreset, gateContext } from "./assertion-preset/executor.js";
 import { runCoreNode, artifactPathOf, nodeOutput, outputPathOf } from "./minitools.js";
 import { buildTaskPackage, effectiveUpstreams, resolveNodeOp } from "./assembler.js";
 import { effectiveFlow3 } from "./modules.js";
+import { suggestProductionPreset } from "./production-preset.js";
 import { resolveBudget } from "./budget.js";
 import { renderSpawnPrompt } from "./spawn.js";
 import { loadProjectConfig, configToInputs, configBudget, type ProjectConfig } from "./project-config.js";
@@ -77,11 +78,19 @@ export async function flow_run(kernel: Kernel, flowId: string, projectId: string
     if (loadState(projectDir, kernel.fs, kernel.path)) throw new KernelError("RUN_EXISTS", 409, `项目已有 state.json: ${projectId}`);
     // PP1 生产线预设：显式传入时必须存在（大声失败），选定后随 state.preset 持久——
     // 生效编排 = flow ⊕ 出厂 overlay ⊕ 预设 overlay ⊕ 项目 overlay（见 effectiveOf）。
-    if (opts.preset && !kernel.listPresets().some((p) => p.id === opts.preset)) {
-      throw new KernelError("INVALID_INPUT", 400, `生产线预设 "${opts.preset}" 不存在（可用：${kernel.listPresets().map((p) => p.id).join("、") || "无"}）`);
+    // R8：preset="auto" 走规则式路由（拍板点③），解析结果落 journal + state.preset——
+    // state 存**解析后的 id** 而非 "auto" 本身：receipt 要回答「实际生效的是哪条生产线」。
+    let presetId = opts.preset;
+    let autoRouted: string | undefined;
+    if (presetId === "auto") {
+      const hit = suggestProductionPreset(flowId, inputs);
+      presetId = hit?.preset;
+      autoRouted = hit?.why;
+    } else if (presetId && !kernel.listPresets().some((p) => p.id === presetId)) {
+      throw new KernelError("INVALID_INPUT", 400, `生产线预设 "${presetId}" 不存在（可用：${kernel.listPresets().map((p) => p.id).join("、") || "无"}；"auto" = 规则式路由）`);
     }
     // R5：运行编排 = bootstrap ⊕ overlay ⊕ kit 边界派生（项目级 overlay 在此生效）
-    const eff = kernel.effectiveOf(projectDir, bootstrap, opts.preset);
+    const eff = kernel.effectiveOf(projectDir, bootstrap, presetId);
     const flow = eff.flow;
     // K1.5 项目初始化配置：合并序 = 显式入参 > 项目配置.json > flow 默认（配置非法开跑前大声失败）
     const cfg = readProjectConfig(kernel, projectDir);
@@ -92,7 +101,7 @@ export async function flow_run(kernel: Kernel, flowId: string, projectId: string
       const resolved = resolveInputs(flow, { ...cfgInputs, ...inputs }, { project: projectId });
       const { state, seedEvents } = migrateRunState(projectDir, projectId, flow, resolved, kernel.fs, kernel.path);
       if (cfg?.presets) state.presets = { ...state.presets, ...cfg.presets };
-      if (opts.preset) state.preset = opts.preset;
+      if (presetId) state.preset = presetId;
       saveState(projectDir, state, kernel.fs, kernel.path);
       writeJournalSeed(projectDir, seedEvents, kernel.fs, kernel.path);
       journalAppend(kernel, projectDir, state.runId, "run-start", {
@@ -116,13 +125,16 @@ export async function flow_run(kernel: Kernel, flowId: string, projectId: string
     }
     kernel.fs.mkdir(projectDir, { recursive: true });
     const state = freshState(flow, projectId, resolved);
-    if (opts.preset) state.preset = opts.preset;
+    if (presetId) state.preset = presetId;
     seedPreferenceDecisions(kernel, flow, projectDir, resolved, state.runId);
     if (cfg?.presets) state.presets = { ...state.presets, ...cfg.presets };
     state.overlayHash = eff.overlayHash;
     state.policy = eff.policy as Record<string, unknown>;
     state.planHash = planHashOf(kernel, state.plan?.order ?? [], flow, eff.overlayHash);
     journalAppend(kernel, projectDir, state.runId, "run-start", { detail: `${flow.id}@${flow.version} 计划 ${state.plan?.order.length ?? 0} 节点` });
+    if (opts.preset === "auto") {
+      journalAppend(kernel, projectDir, state.runId, "note", { actor: "kernel:preset-route", detail: `Auto 路由（规则式 v1）：${presetId ?? "缺省流水线"}${autoRouted ? "（" + autoRouted + "）" : ""}` });
+    }
     if (eff.notes.length) {
       journalAppend(kernel, projectDir, state.runId, "note", { actor: "kernel:overlay", detail: `生效编排合成：${eff.notes.join(" ｜ ")}` });
     }

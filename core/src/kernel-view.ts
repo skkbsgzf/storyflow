@@ -1,7 +1,7 @@
 // kernel-view.ts —— 只读视图面（view* / worldbookSearch / 工作台 payload / 诊断）（从 kernel.ts 拆出，委托见 kernel.ts）。
 
 import type { FlowDescriptor, RunState, TaskPackage, Validation } from "./types.js";
-import { ROOT, assertSchema } from "./schema.js";
+import { assertSchema, rootOf } from "./schema.js";
 import { readJson } from "./abstraction/jsonio.js";
 import { listDecisions, setDecision, decisionsDir } from "./decisions.js";
 import { gateToken, nowIso } from "./ids.js";

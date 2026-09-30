@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { Kernel } from "../src/kernel.js";
-import { ROOT } from "../src/schema.js";
+import { rootOf } from "../src/schema.js";
 
 describe("K1+K2 · 项目背景卡与派发头", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "miniflow-spawn-"));
@@ -11,7 +11,7 @@ describe("K1+K2 · 项目背景卡与派发头", () => {
   const kernel = new Kernel({ root });
 
   beforeAll(async () => {
-    fs.cpSync(path.join(ROOT, "agents"), path.join(root, "agents"), { recursive: true });
+    fs.cpSync(path.join(rootOf(), "agents"), path.join(root, "agents"), { recursive: true });
     const dir = path.join(root, "projects", projectId);
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(

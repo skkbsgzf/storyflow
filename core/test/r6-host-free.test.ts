@@ -127,8 +127,7 @@ describe("R6 · 普查门：FS 族宿主 import 只在 abstraction/ 豁免区", 
       "cli.ts|node:net", // pickFreePort：端口探测只有 net 有，属进程面
       "cli.ts|node:process", // CLI 入口读 argv / exitCode
       "export-cli.ts|node:process",
-      "ids.ts|node:crypto", // randomUUID：id 生成的熵源
-      "kernel.ts|node:module", // createRequire：读 package.json 版本
+      // R7-2 销账：ids.ts 的 crypto 归哈希面（nodeHash）、kernel.ts 死码 createRequire 已删。
       "quality-cli.ts|node:process",
     ].sort();
     const found: string[] = [];

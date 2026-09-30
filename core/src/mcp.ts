@@ -15,7 +15,7 @@ import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mc
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { ErrorCode, McpError } from "@modelcontextprotocol/sdk/types.js";
 import { Kernel } from "./kernel.js";
-import { ROOT } from "./schema.js";
+import { rootOf } from "./schema.js";
 import { VERBS, verbToolSpecs, zodOf } from "./verbs.js";
 import { loadWorldbookGraph } from "./kernel-view.js";
 import { contentTypeOf } from "./static.js";
@@ -35,13 +35,13 @@ const json = (v: unknown) => ({ content: [{ type: "text" as const, text: JSON.st
  */
 function traceMcp(verb: string, args: Record<string, unknown>, ms: number, exit: number): void {
   try {
-    if (!nodeFs.exists(nodePath.join(ROOT, "BETA"))) return;
+    if (!nodeFs.exists(nodePath.join(rootOf(), "BETA"))) return;
     const argv = [verb];
     for (const [k, v] of Object.entries(args ?? {})) {
       if (v === undefined || v === null || v === false) continue;
       argv.push(`--${k}`, (typeof v === "string" ? v : JSON.stringify(v)).slice(0, 120));
     }
-    const dir = nodePath.join(ROOT, "trace");
+    const dir = nodePath.join(rootOf(), "trace");
     nodeFs.mkdir(dir, { recursive: true });
     nodeFs.appendText(
       nodePath.join(dir, "cli.jsonl"),

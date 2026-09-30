@@ -3,10 +3,9 @@
  *
  * 拆包（工单 R7）要求 `@storyflow/core` 不 import 任何宿主实现，而 FS1 §四第 2 条的
  * 166 处尾参默认 `= nodeFs` 得有个缺省值——两头同时成立只有一招：默认值改成「一次查找」。
- * 数字口径（可复算）：`src` 内四种标注形态（`: IFileSystem = nodeFs` / `: IFsPath = nodePath` /
- * `: IProcessLauncher = nodeProc` / `: FsIo = { fs: nodeFs, path: nodePath }`）字面匹配 167 处，
- * 减 `defaults.ts` 头注释 1 处 = 真默认参数 166 处；其中 10 处在宿主入口 `cfg-template.ts`（仍直连
- * Node 单例，R7-2 的账），余下 156 处分布在 27 个文件，默认值全部取自 `abstraction/defaults.js`。
+ * 数字口径（可复算，R7-2 销账后）：`src` 内四种标注形态字面匹配 167 处，
+ * 减 `defaults.ts` 头注释 1 处 = 真默认参数 166 处；cfg-template 的 10 处已改吃注册表
+ * （不再是宿主例外），166 处分布在 28 个文件，默认值全部取自 `abstraction/defaults.js`。
  * 本文件钉住这招的四件事：① core 侧确实没人再 import Node 适配器（普查双向死表）；
  * ② `defaults.ts` 自身零 `node:*`；③ 没注册就抛、注册了就转发（不静默回落）；
  * ④ 用了尾参默认的文件除宿主入口外一律从 `defaults.js` 取（不许绕过注册表直抓实现）。
@@ -16,7 +15,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { MockFsAdapter, MockPathAdapter, MockProcLauncher } from "../src/abstraction/adapters/mock.js";
+import { MockFsAdapter, MockPathAdapter, MockProcLauncher, mockEnv, mockHash } from "../src/abstraction/adapters/mock.js";
 import { currentAdapters, registerAdapters, nodeFs, nodePath, nodeProc } from "../src/abstraction/defaults.js";
 
 const SRC_DIR = fileURLToPath(new URL("../src/", import.meta.url));
@@ -39,23 +38,20 @@ function srcFiles(): { rel: string; text: string }[] {
 describe("R7-1 · core 与 Node 适配器解绑", () => {
   /**
    * 豁免区（`abstraction/adapters/`）之外仍 import `adapters/node.js` 的文件——逐字死表，双向断言。
-   * `cli.ts` / `mcp.ts` / `export-cli.ts` / `quality-cli.ts` 是宿主入口（CLI/MCP 面与两个入口桥），
-   * 本就跑在 Node 上，平台适配器的登记动作也由它们发起（`cli.ts`/`mcp.ts` 经适配器件 side-effect）；
-   * `schema.ts` / `cfg-template.ts` 是模块级求值（import 期就要真 `path`，R7-2 的账）；
-   * `http.ts` 是显式登记点（宿主面注释见该文件 import 段）。适配器实现自身不算——它在豁免区里，
-   * 普查把它排除掉，免得「注释里提一句适配器路径」也能凑过这条门。
+   * R7-2 后死表缩到五件：`schema.ts` / `cfg-template.ts` 的模块级求值已解（rootOf 惰性 +
+   * defaults.js 注册表），宿主入口剩 `cli.ts` / `mcp.ts` / `export-cli.ts` / `quality-cli.ts`
+   * 与显式登记点 `http.ts`。适配器实现自身不算——它在豁免区里，普查把它排除掉，
+   * 免得「注释里提一句适配器路径」也能凑过这条门。
    */
   const HOST_SIDE = [
-    "cfg-template.ts",
+    "cli.ts",
     "export-cli.ts",
     "http.ts",
     "mcp.ts",
     "quality-cli.ts",
-    "schema.ts",
-    "cli.ts",
   ].sort();
 
-  it("豁免区之外，core/src import Node 适配器的只剩死表这七件（双向：多一处=新尾巴，少一处=表过期）", () => {
+  it("豁免区之外，core/src import Node 适配器的只剩死表这五件（双向：多一处=新尾巴，少一处=表过期）", () => {
     const hits = srcFiles()
       .filter((f) => !f.rel.startsWith("abstraction/adapters/"))
       .filter((f) => /(?:from\s+|^\s*import\s)"[^"]*adapters\/node\.js"/m.test(f.text))
@@ -64,8 +60,8 @@ describe("R7-1 · core 与 Node 适配器解绑", () => {
     expect(hits).toEqual(HOST_SIDE);
   });
 
-  it("defaults.ts 自身零 node:* import，且不 import 任何适配器实现", () => {
-    const text = fs.readFileSync(path.join(SRC_DIR, "abstraction/defaults.ts"), "utf-8");
+  it("defaults.ts 自身零 node:* import，且不 import 任何适配器实现（R7-3 起本体在 @storyflow/adapters 包源）", () => {
+    const text = fs.readFileSync(path.join(SRC_DIR, "../../adapters/src/defaults.ts"), "utf-8");
     expect([...text.matchAll(/(?:from|import\s*\()?\s*["'](node:[a-z_-]+)["']/g)].map((m) => m[1])).toEqual([]);
     // 只查 import 形态，不查裸文本：未注册就抛的那句错误消息**必须**告诉宿主该 import 哪一件，
     // 按裸文本匹配会把这条指路消息判成违规（R7-1 自测时就这样被自己的消息绊了一次）。
@@ -152,7 +148,7 @@ describe("R7-1 · 注册表语义（未注册抛、注册后转发、后注册�
     const dir = root();
     const mock = new MockFsAdapter(dir);
     mock.writeText(path.posix.join(dir, "a.md"), "# A\n");
-    reg({ fs: mock, path: new MockPathAdapter(), proc: new MockProcLauncher() });
+    reg({ fs: mock, path: new MockPathAdapter(), proc: new MockProcLauncher(), env: mockEnv, hash: mockHash });
     expect(fsForward.exists(path.posix.join(dir, "a.md"))).toBe(true);
     expect(fsForward.readText(path.posix.join(dir, "a.md"))).toBe("# A\n");
     expect(fsForward.exists(path.posix.join(dir, "nope.md"))).toBe(false);
@@ -164,10 +160,10 @@ describe("R7-1 · 注册表语义（未注册抛、注册后转发、后注册�
   it("后注册覆盖前注册（宿主换实现、测试换假盘都靠这条），getter 形态一并转发", async () => {
     const { reg, fsForward, pForward } = await freshDefaults();
     const node = await import("../src/abstraction/adapters/node.js");
-    reg({ fs: node.nodeFs, path: node.nodePath, proc: node.nodeProc });
+    reg({ fs: node.nodeFs, path: node.nodePath, proc: node.nodeProc, env: node.nodeEnv, hash: node.nodeHash });
     expect(pForward.sep).toBe(path.sep);
     const mockPath = new MockPathAdapter();
-    reg({ fs: new MockFsAdapter(root()), path: mockPath, proc: new MockProcLauncher() });
+    reg({ fs: new MockFsAdapter(root()), path: mockPath, proc: new MockProcLauncher(), env: mockEnv, hash: mockHash });
     expect(pForward.sep).toBe(mockPath.sep);
     expect(pForward.sep).toBe("/");
   });

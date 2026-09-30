@@ -6,7 +6,7 @@ import { upstreamOf } from "./plan.js";
 import { condContextOf, isBackEdge, type CondContext } from "./cond.js";
 import { artifactPathOf } from "./minitools.js";
 import { listArtifacts } from "./registry.js";
-import { ROOT } from "./schema.js";
+import { rootOf } from "./schema.js";
 import { ProfileRegistry } from "./profiles.js";
 import { kitRegistry, resolveToolConfig, applyToolOverride, type ResolvedOp } from "./kits.js";
 import type { ToolOverride, FlowPolicy } from "./overlay.js";
@@ -65,7 +65,7 @@ export function buildBackgroundCard(projectDir: string, flow: FlowDescriptor, st
       let snapVersion: string | undefined;
       let snapCorpus: number | undefined;
       try {
-        const snap = JSON.parse(fs.readText(path.join(ROOT, "knowledge", "market", "snapshot.json"))) as {
+        const snap = JSON.parse(fs.readText(path.join(rootOf(), "knowledge", "market", "snapshot.json"))) as {
           version?: string;
           source?: { corpus?: number };
         };
@@ -236,7 +236,7 @@ export function loadKnowledge(
  */
 export function resolveNodeOp(
   node: FlowNode,
-  root = ROOT,
+  root = rootOf(),
   overrides?: Record<string, ToolOverride>,
   fs: IFileSystem = nodeFs,
   path: IFsPath = nodePath,
@@ -303,7 +303,7 @@ export function buildTaskPackage(
   }
 
   // kit 标尺（K1 装载复位）：kit/op 声明的判定条款为权威；节点 kb 仅在无 kit 归属时生效
-  const opRef = resolveNodeOp(node, ROOT, toolOverrides, fs, path);
+  const opRef = resolveNodeOp(node, rootOf(), toolOverrides, fs, path);
   // R8 选择面：决策是**运行中事实**（decisions/<key>.json），装载与选技能都读它——
   // 不写回 state.inputs（铁律 6：resolveInputs 只跑一次，写回=伪造历史）。
   const decisions = decisionsMap({ fs, path }, projectDir);
@@ -312,7 +312,7 @@ export function buildTaskPackage(
   if (node.skill) {
     skillId = node.skill; // 节点显式指定：逃生口（有 skill_pool 的 op 上出现即 lint warn「绕过选择面」）
   } else if (opRef?.skillPool) {
-    const picked = resolveSkillFromPool(opRef.skillPool, decisions, (rel) => fs.exists(path.join(ROOT, "skills", rel)));
+    const picked = resolveSkillFromPool(opRef.skillPool, decisions, (rel) => fs.exists(path.join(rootOf(), "skills", rel)));
     skillId = picked.skill;
     skillPoolNote = picked.note;
   } else {
@@ -320,7 +320,7 @@ export function buildTaskPackage(
   }
   const knowledgeIds = [...new Set([...(opRef?.knowledge ?? []), ...(node.knowledge ?? node.kb ?? [])])];
   const kb = loadKnowledge(
-    ROOT,
+    rootOf(),
     knowledgeIds,
     opRef?.excludeKnowledge ?? [],
     {
@@ -341,11 +341,11 @@ export function buildTaskPackage(
   let skillTruncated = false;
   let patchMisses: string[] = [];
   if (skillId) {
-    const skillFile = path.join(ROOT, "skills", `${skillId}.md`);
+    const skillFile = path.join(rootOf(), "skills", `${skillId}.md`);
     if (fs.exists(skillFile)) {
       // W-05 提示词补丁层：只有 status=applied 的 skill-overlay 补丁参与装载；
       // 未命中小节的补丁显式回显（任务包可见），不静默丢弃
-      const patched = applySkillOverlay(fs.readText(skillFile), skillId, appliedPatchesFor(ROOT, skillId, fs, path));
+      const patched = applySkillOverlay(fs.readText(skillFile), skillId, appliedPatchesFor(rootOf(), skillId, fs, path));
       const r = clip(patched.text, SKILL_CAP);
       skillText = r.text;
       skillTruncated = r.truncated;
@@ -416,7 +416,7 @@ export function buildTaskPackage(
   if (node.desc) parts.push(`## 本步要求\n\n${node.desc}`);
   // D5：禁词表前置。与交卷时的 glossary 断言**同源**（他项目 own 词），但用途相反——
   // 开跑前就告诉写手雷在哪，而不是写完了才打回（_918test：glossary 打回 2 次，全是别项目专名）。
-  const banned = foreignOwnTerms(ROOT, projectDir, fs, path);
+  const banned = foreignOwnTerms(rootOf(), projectDir, fs, path);
   if (banned.length) {
     parts.push(
       `## 禁词表（本项目产物中不得出现；出现即 glossary 检查打回）\n\n${banned.map((w) => `- ${w}`).join("\n")}`,
@@ -452,8 +452,8 @@ export function buildTaskPackage(
     };
   }
   // 角色剖面：节点显式声明 > 技能反向匹配 > 角色族缺省
-  const prof = profileRegistry(ROOT, fs, path).resolve({ ...node, ...(skillId ? { skill: skillId } : {}) });
-  const projected = profileRegistry(ROOT, fs, path).project(prof, skillId);
+  const prof = profileRegistry(rootOf(), fs, path).resolve({ ...node, ...(skillId ? { skill: skillId } : {}) });
+  const projected = profileRegistry(rootOf(), fs, path).project(prof, skillId);
   if (projected) pkg.profile = projected;
   // K1 项目背景卡：子代理不再自行考古拼背景
   pkg.background = buildBackgroundCard(projectDir, flow, state, nodeId, fs, path);

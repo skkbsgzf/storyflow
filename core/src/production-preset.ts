@@ -107,3 +107,32 @@ export function loadPresetOverlay(repoRoot: string, presetId: string, flowId: st
   }
   return ov;
 }
+
+// ═══ R8 · Auto 预设路由 v1（规则式，拍板点③采纳「规则式先行」）═══
+/**
+ * 关键词 + 输入形状 → 预设建议。为什么规则式而不是模型式：**可测试、可解释、零模型依赖**——
+ * 每条路由都能在测试里点名校验，路由错了用户能一眼看出是哪条规则；模型式路由的错是黑盒的。
+ * 返回 undefined = 该输入形状下没有比缺省流水线更好的选择（不硬选，缺省即完整流水线）。
+ * 路由依据只取字符串型输入拼接文本（跳过 project 这类结构位），不猜值、不读盘。
+ */
+const AUTO_RULES: { flowId: string; keywords: RegExp; preset: string; why: string }[] = [
+  { flowId: "screenplay", keywords: /分镜提示词|视频提示词|即梦|seedance|comfy|视频/i, preset: "comfyui-script", why: "方向含视频/提示词语义" },
+  { flowId: "novel", keywords: /世界观|世界书|设定集|bible/i, preset: "world-bible", why: "需求只提世界观/设定" },
+  { flowId: "topic", keywords: /短篇|单篇|一次性成稿/i, preset: "short-story", why: "需求明示短篇速成" },
+];
+
+/** Auto 路由的可解释回执：命中规则时给 preset + 一句理由；未命中给 undefined（走缺省流水线）。 */
+export function suggestProductionPreset(
+  flowId: string,
+  inputs: Record<string, unknown>,
+): { preset: string; why: string } | undefined {
+  const text = Object.entries(inputs)
+    .filter(([k]) => k !== "project")
+    .map(([, v]) => (typeof v === "string" ? v : ""))
+    .join(" ");
+  if (!text.trim()) return undefined;
+  for (const r of AUTO_RULES) {
+    if (r.flowId === flowId && r.keywords.test(text)) return { preset: r.preset, why: r.why };
+  }
+  return undefined;
+}

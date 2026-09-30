@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { Kernel } from "../src/kernel.js";
 import { checkGlossary } from "../src/asserts.js";
-import { ROOT } from "../src/schema.js";
+import { rootOf } from "../src/schema.js";
 import { artifact } from "./helpers.js";
 
 /**
@@ -81,7 +81,7 @@ describe("M1.5 · 角色剖面 / 词汇表守卫 / 缓存命中", () => {
   const pd = path.join(root, "projects", projectId);
 
   beforeAll(async () => {
-    fs.cpSync(path.join(ROOT, "agents"), path.join(root, "agents"), { recursive: true });
+    fs.cpSync(path.join(rootOf(), "agents"), path.join(root, "agents"), { recursive: true });
     const dir = path.join(root, "projects", projectId);
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(path.join(dir, "选题素材.md"), "# 选题素材\n\n甲方点子：老牌发型师。\n", "utf-8");

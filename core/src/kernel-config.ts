@@ -1,7 +1,7 @@
 // kernel-config.ts —— 项目配置视图与写入（viewConfig/writeConfig，从 kernel.ts 拆出，委托见 kernel.ts）。
 
 import type { FlowDescriptor, RunState, TaskPackage, Validation } from "./types.js";
-import { ROOT, assertSchema } from "./schema.js";
+import { assertSchema, rootOf } from "./schema.js";
 import { listDecisions, setDecision, decisionsDir } from "./decisions.js";
 import { gateToken, nowIso } from "./ids.js";
 import { compilePlan, PlanCycleError, upstreamOf } from "./plan.js";

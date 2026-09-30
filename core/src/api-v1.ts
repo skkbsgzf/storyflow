@@ -14,7 +14,36 @@
 //   ③ 版本化的正确姿势是**新面可用、旧面标注**：这里给所有 legacy `/api/*` 挂
 //      `deprecation: true` + `successor-version: /api/v1` 响应头（IETF deprecation 草案口径），
 //      载荷逐字节不变。旧面退场由消费方按头迁移，而不是由内核单方面 301。
-import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+// ── fastify 类型形状的本地结构化子集（R7-2）：库面不 import fastify ——
+// 宿主传真 fastify 实例，结构相容即可指派（方法式声明的参数双向协变）。
+// 成员面 = 本文件与 compat.ts 实际用到的成员，不预支 fastify 全 API。
+export interface RawResponseLike {
+  url?: string;
+  once(event: string, listener: () => void): unknown;
+  writeHead(status: number, headers: Record<string, string>): unknown;
+  write(chunk: string): unknown;
+  end(chunk?: string): unknown;
+  destroyed?: boolean;
+}
+export interface RequestLike {
+  readonly raw: RawResponseLike;
+  readonly params: Record<string, unknown>;
+  readonly query: Record<string, unknown>;
+  readonly body: unknown;
+}
+export interface ReplyLike {
+  readonly raw: RawResponseLike;
+  code(status: number): unknown;
+  header(name: string, value: unknown): unknown;
+  type(contentType: string): unknown;
+}
+export interface RouteRegistrar {
+  get(path: string, handler: (req: RequestLike, reply: ReplyLike) => unknown): unknown;
+  post(path: string, handler: (req: RequestLike, reply: ReplyLike) => unknown): unknown;
+  put(path: string, handler: (req: RequestLike, reply: ReplyLike) => unknown): unknown;
+  delete(path: string, handler: (req: RequestLike, reply: ReplyLike) => unknown): unknown;
+  addHook(name: string, hook: (req: RequestLike, reply: ReplyLike, done: () => void) => void): unknown;
+}
 import { Kernel, KernelError } from "./kernel.js";
 import { LEDGER_POLL_DEFAULT_MS, projectEvents, PROJECT_EVENT_TYPES } from "./project-stream.js";
 import { closeSignalOf, emitSseEvents, heartbeatMsOf, DEFAULT_HEARTBEAT_MS, HEARTBEAT_MIN_MS, HEARTBEAT_MAX_MS, SSE_FRAME_DONE, sseFrame, type SseEvent } from "./sse.js";
@@ -350,10 +379,10 @@ function statusOf(e: unknown): number {
   return 500;
 }
 
-export function registerV1(app: FastifyInstance, kernel: Kernel): void {
+export function registerV1(app: RouteRegistrar, kernel: Kernel): void {
   for (const route of V1_ROUTES) {
     if (route.sse) {
-      app.get(route.path, async (req: FastifyRequest, reply: FastifyReply): Promise<unknown> => {
+      app.get(route.path, async (req: RequestLike, reply: ReplyLike): Promise<unknown> => {
         // 断开信号在调用 handler **之前**成型：handler 要把它接进事件源（取消 watchDir）
         const closeSignal = closeSignalOf(reply.raw);
         const ctx: V1Ctx = {
@@ -398,7 +427,7 @@ export function registerV1(app: FastifyInstance, kernel: Kernel): void {
       });
       continue;
     }
-    const handler = async (req: FastifyRequest, reply: FastifyReply): Promise<unknown> => {
+    const handler = async (req: RequestLike, reply: ReplyLike): Promise<unknown> => {
       const ctx: V1Ctx = {
         params: (req.params ?? {}) as Record<string, string>,
         query: (req.query ?? {}) as Record<string, string>,
@@ -431,7 +460,7 @@ export function registerV1(app: FastifyInstance, kernel: Kernel): void {
 }
 
 /** legacy `/api/*`（非 v1）挂弃用标记：载荷逐字节不变，迁移信号走响应头。 */
-export function registerLegacyMarkers(app: FastifyInstance): void {
+export function registerLegacyMarkers(app: RouteRegistrar): void {
   app.addHook("onRequest", (req, reply, done) => {
     const url = (req.raw.url ?? "/").split("?")[0] ?? "/";
     if (url.startsWith("/api/") && !url.startsWith(`/api/${API_VERSION}/`) && url !== `/api/${API_VERSION}`) {

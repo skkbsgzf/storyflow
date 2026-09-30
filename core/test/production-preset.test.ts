@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { Kernel } from "../src/kernel.js";
 import { effectiveFlow3 } from "../src/modules.js";
-import { listProductionPresets, loadPresetOverlay } from "../src/production-preset.js";
+import { listProductionPresets, loadPresetOverlay, suggestProductionPreset } from "../src/production-preset.js";
 import type { FlowDescriptor } from "../src/types.js";
 
 const REPO_ROOT = path.resolve(import.meta.dirname, "..", "..");
@@ -205,5 +205,56 @@ describe("production-preset · flow_chain 跨流水线级联", () => {
     ).rejects.toThrow(/源产物不存在/);
     await kernel.flow_chain(fromId, "screenplay", { inputs: { direction: "第一次级联" } });
     await expect(kernel.flow_chain(fromId, "screenplay", { inputs: { direction: "x" } })).rejects.toThrow(/已有 state/);
+  });
+});
+
+// ═══════════════ R8 · Auto 预设路由（规则式 v1） ═══════════════
+
+describe("production-preset · Auto 路由（规则式 v1）", () => {
+  it("规则点名校验：screenplay 视频语义 → comfyui-script；novel 世界观 → world-bible；topic 短篇 → short-story", () => {
+    expect(suggestProductionPreset("screenplay", { direction: "把这段做成带分镜提示词的短视频" })?.preset).toBe("comfyui-script");
+    expect(suggestProductionPreset("novel", { premise: "修仙世界的世界观与势力设定集" })?.preset).toBe("world-bible");
+    expect(suggestProductionPreset("topic", { direction: "一个短篇速成的小故事" })?.preset).toBe("short-story");
+  });
+
+  it("未命中 = undefined（缺省流水线）；project 结构位不参与路由；非字符串输入忽略", () => {
+    expect(suggestProductionPreset("screenplay", { direction: "霸总短剧" })).toBeUndefined();
+    expect(suggestProductionPreset("novel", { premise: "快剪店慢手艺" })).toBeUndefined();
+    expect(suggestProductionPreset("novel", { project: { note: "世界观" }, premise: "普通长篇" })).toBeUndefined();
+    expect(suggestProductionPreset("novel", { batchSize: 10 })).toBeUndefined();
+    expect(suggestProductionPreset("novel", {})).toBeUndefined();
+  });
+
+  it("flow_run(preset:'auto')：命中 → 编排按解析后预设展开，state.preset 存解析 id（不存 'auto'），journal 留路由理由", async () => {
+    const root = tmpRoot();
+    const kernel = new Kernel({ root });
+    const projectId = "p-auto";
+    fs.mkdirSync(path.join(root, "projects", projectId), { recursive: true });
+    await kernel.flow_run("screenplay", projectId, { direction: "把甲方点子做成分镜提示词视频" }, { preset: "auto" });
+    const state = JSON.parse(fs.readFileSync(path.join(root, "projects", projectId, "state.json"), "utf-8"));
+    expect(state.preset).toBe("comfyui-script");
+    expect(Object.keys(state.nodes)).toContain("m3.render-prompt-seedance");
+    const journal = fs.readFileSync(path.join(root, "projects", projectId, "journal.jsonl"), "utf-8");
+    expect(journal).toContain("preset-route");
+    expect(journal).toMatch(/Auto 路由（规则式 v1）：comfyui-script/);
+  });
+
+  it("flow_run(preset:'auto')：未命中 → 缺省流水线（state.preset 缺省）；显式 preset 不受影响", async () => {
+    const root = tmpRoot();
+    const kernel = new Kernel({ root });
+    const projectId = "p-auto-miss";
+    fs.mkdirSync(path.join(root, "projects", projectId), { recursive: true });
+    await kernel.flow_run("screenplay", projectId, { direction: "霸总短剧" }, { preset: "auto" });
+    const state = JSON.parse(fs.readFileSync(path.join(root, "projects", projectId, "state.json"), "utf-8"));
+    expect(state.preset).toBeUndefined();
+    expect(Object.keys(state.nodes)).not.toContain("m3.render-prompt-seedance");
+    await expect(kernel.flow_run("screenplay", "p-bad", { direction: "x" }, { preset: "no-such" })).rejects.toThrow(/不存在/);
+  });
+
+  it("kernel.suggestPreset 预览面与规则同源", () => {
+    const root = tmpRoot();
+    const kernel = new Kernel({ root });
+    expect(kernel.suggestPreset("screenplay", { direction: "comfy 视频提示词" })?.preset).toBe("comfyui-script");
+    expect(kernel.suggestPreset("novel", { premise: "普通长篇" })).toBeUndefined();
   });
 });

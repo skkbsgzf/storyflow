@@ -2,7 +2,7 @@ import type { FlowDescriptor, RunState, Validation } from "./types.js";
 import { nodeFs, nodePath, nodeProc } from "./abstraction/defaults.js";
 import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
 import type { IProcessLauncher } from "./abstraction/proc.js";
-import { ROOT } from "./schema.js";
+import { rootOf } from "./schema.js";
 import { makeArtifact, inputFingerprint, listArtifacts } from "./registry.js";
 import { runIntegrityAsserts, blocked, dedupeValidations } from "./asserts.js";
 import { runAestheticAsserts } from "./aesthetic.js";
@@ -29,7 +29,7 @@ function resolveLoads(loads: string | string[] | undefined, fs: IFileSystem, pat
   const out: string[] = [];
   for (const item of items) {
     const rel = item.replace(/^kb\//, "").replace(/\/\*$/, "");
-    const base = path.join(ROOT, "knowledge", rel);
+    const base = path.join(rootOf(), "knowledge", rel);
     if (item.endsWith("/*") && fs.stat(base)?.isDirectory) {
       for (const f of fs.readDir(base).sort()) {
         if (fs.stat(path.join(base, f))?.isFile) out.push(path.join(base, f));
@@ -38,8 +38,8 @@ function resolveLoads(loads: string | string[] | undefined, fs: IFileSystem, pat
       out.push(base);
     } else if (fs.exists(base + ".md")) {
       out.push(base + ".md");
-    } else if (fs.exists(path.join(ROOT, item))) {
-      out.push(path.join(ROOT, item));
+    } else if (fs.exists(path.join(rootOf(), item))) {
+      out.push(path.join(rootOf(), item));
     }
   }
   return out;
@@ -71,13 +71,13 @@ export async function runCoreNode(
 
   // ── script 执行体（module@1 kind=check 壳，R6 §一.11「script 壳入箱」）──
   // 外部确定性脚本，零 token，内核 spawn。调用约定：
-  //   <python|node> <ROOT>/<script> <projects/<id>/<src>> <projects/<id>/<out>> --title <首标题> --node <id> --flow <flowId>
+  //   <python|node> <rootOf()>/<script> <projects/<id>/<src>> <projects/<id>/<out>> --title <首标题> --node <id> --flow <flowId>
   //   执行器按脚本扩展名选：.py → python，.js/.cjs/.mjs → node。
   // src = 沿上游边 BFS（跳过 link/gate 等无产物接缝）找到的最近 md 产物；
   // 快照由脚本自带 --node 完成（铁律 7），这里只补 artifact 注册。
   const script = (node as { script?: string }).script;
   if (script) {
-    const scriptPath = path.join(ROOT, script);
+    const scriptPath = path.join(rootOf(), script);
     if (!fs.exists(scriptPath)) {
       return { ok: false, artifacts, kind: "missing", reason: `script 执行体不存在: ${script}` };
     }
@@ -125,7 +125,7 @@ export async function runCoreNode(
        // v5.0.1：JS 壳追加 --config（节点旋钮 JSON），否则 op.config 声明到位却没人读。
        // python 壳（export-doc/prose-scan 等 argparse 件）保持老 argv——多传未知参数会让它们直接退出。
        ...(runner === "node" ? ["--config", JSON.stringify(cfg)] : [])].filter((a) => a !== ""),
-      { cwd: ROOT, maxBufferBytes: 32 * 1024 * 1024, timeoutMs, killSignal: "SIGTERM" },
+      { cwd: rootOf(), maxBufferBytes: 32 * 1024 * 1024, timeoutMs, killSignal: "SIGTERM" },
     );
     // 超时与「退出非零」必须分开报——混在一起就分不清「脚本有 bug」和「脚本跑太久」（原 err.killed/err.signal 同判）
     if (r.timedOut || r.signal === "SIGTERM") {
@@ -151,7 +151,7 @@ export async function runCoreNode(
     }
     let combined = `# KB 装载 · ${nodeId}（${node.title ?? ""}）\n\n> 由 miniflow kernel kb_load 内建装载，来源 ${files.length} 个知识文件。\n`;
     for (const f of files) {
-      const rel = path.relative(ROOT, f).replaceAll("\\", "/");
+      const rel = path.relative(rootOf(), f).replaceAll("\\", "/");
       combined += `\n\n---\n\n<!-- source: ${rel} -->\n\n` + fs.readText(f);
     }
     const outRel = path.join("内部", `kb-${nodeId}.md`).replaceAll("\\", "/");
@@ -394,7 +394,7 @@ ${sections.join("\n")}
   // ── R6 · kb_search（知识库检索 + 查重）──
   // 按 node.knowledge 的 glob 检索知识库条目，按 node.desc 中的关键词打分排序，输出匹配清单。
   if (tool === "kb_search" || tool === "dedup") {
-    const kbDir = path.join(ROOT, "knowledge");
+    const kbDir = path.join(rootOf(), "knowledge");
     const globs: string[] = [];
     for (const n of [node, ...(flow.graph.edges.filter((e) => e.to === nodeId).map((e) => flow.graph.nodes[e.from] ?? {}))]) {
       for (const k of (n as any).loads ?? (n as any).knowledge ?? (n as any).kb ?? []) {
@@ -403,7 +403,7 @@ ${sections.join("\n")}
     }
     const files: string[] = [];
     for (const g of globs) {
-      const base = path.join(ROOT, g.replace(/\/\*$/, ""));
+      const base = path.join(rootOf(), g.replace(/\/\*$/, ""));
       if (fs.stat(base)?.isDirectory) {
         for (const f of fs.readDir(base)) if (f.endsWith(".md")) files.push(path.join(base, f));
       } else if (fs.exists(base)) files.push(base);
@@ -430,7 +430,7 @@ ${sections.join("\n")}
       let score = 0;
       for (const kw of keywords) if (txt.includes(kw)) score += 1;
       const title = /^#\s+(.+)/m.exec(txt)?.[1] ?? path.basename(f);
-      if (score > 0 || keywords.length === 0) hits.push({ file: path.relative(ROOT, f), title, score });
+      if (score > 0 || keywords.length === 0) hits.push({ file: path.relative(rootOf(), f), title, score });
     }
     hits.sort((a, b) => b.score - a.score);
     const outRel = path.join("registry", "receipts", `kb-search-${nodeId}.json`).replaceAll("\\", "/");

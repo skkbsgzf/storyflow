@@ -8,6 +8,7 @@
 //  · 工具结果截断入上下文（16KB/条），防对话膨胀把会话拖死。
 import { Kernel, KernelError } from "./kernel.js";
 import { VERBS, type VerbDef } from "./verbs.js";
+import { nodeEnv } from "./abstraction/defaults.js";
 import type { IFileSystem } from "./abstraction/fs.js";
 import type { JournalEventKind } from "./types.js";
 import { AgentMcp } from "./agent-mcp.js";
@@ -30,9 +31,9 @@ export function loadModelConfig(kernel: Kernel): {
   keyMasked?: string;
 } {
   const env = {
-    baseUrl: process.env.MINIFLOW_AGENT_BASE_URL,
-    model: process.env.MINIFLOW_AGENT_MODEL,
-    apiKey: process.env.MINIFLOW_AGENT_KEY,
+    baseUrl: nodeEnv.get("MINIFLOW_AGENT_BASE_URL"),
+    model: nodeEnv.get("MINIFLOW_AGENT_MODEL"),
+    apiKey: nodeEnv.get("MINIFLOW_AGENT_KEY"),
   };
   if (env.baseUrl && env.model) {
     const cfg: AgentModelConfig = { baseUrl: env.baseUrl, model: env.model, apiKey: env.apiKey };

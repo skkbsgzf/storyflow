@@ -1,4 +1,4 @@
-import { nodeFs, nodePath } from "./abstraction/defaults.js";
+import { nodeEnv, nodeFs, nodePath } from "./abstraction/defaults.js";
 import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
 import type { Validation } from "./types.js";
 
@@ -207,7 +207,7 @@ export function parseArtifactHeader(text: string): Record<string, unknown> | nul
 }
 
 function headerMode(): "block" | "warn" | "off" {
-  const m = (process.env.MINIFLOW_HEADER_MODE ?? "block").toLowerCase();
+  const m = (nodeEnv.get("MINIFLOW_HEADER_MODE") ?? "block").toLowerCase();
   return m === "warn" || m === "off" ? m : "block";
 }
 

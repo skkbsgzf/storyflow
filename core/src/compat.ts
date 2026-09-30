@@ -16,7 +16,8 @@
  * ③ **页面生成显式失败**：`project-pages.py` 需要 python，装不上时返回 `ok:false` + 原因 +
  *    `MINIFLOW_PYTHON` 提示，绝不假装生成成功（"以为有，其实没有"是本仓第一大忌）。
  */
-import { nodeFs, nodePath, nodeProc } from "./abstraction/defaults.js";
+import { nodeEnv, nodeFs, nodePath, nodeProc } from "./abstraction/defaults.js";
+import { fnv1a } from "./ids.js";
 import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
 import type { IProcessLauncher } from "./abstraction/proc.js";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
@@ -66,7 +67,8 @@ function appendHist(root: string, name: string, content: string, label: string, 
   fs.mkdir(hd, { recursive: true });
   const entries = readHistEntries(hd, fs, path) as HistEntry[];
   const stamp = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14);
-  const hash = Buffer.from(content, "utf-8").toString("base64").replace(/[^A-Za-z0-9]/g, "").slice(0, 6);
+  // R7-2：Buffer 属宿主面（FS1 §六 D7）。历史条目 id 只求确定性唯一，fnv1a 指纹足矣。
+  const hash = fnv1a(content).slice(0, 6);
   const id = `${stamp}-${hash}`;
   fs.writeText(path.join(hd, `${id}.md`), content);
   entries.push({ id, ts: new Date().toISOString().slice(0, 19).replace("T", " "), label, file: `${id}.md`, chars: content.length });
@@ -89,8 +91,8 @@ function regenPages(
 ): { ok: boolean; log: string } {
   const script = path.join(root, "tools", "project-pages.py");
   if (!fs.exists(script)) return { ok: false, log: "缺 tools/project-pages.py（页面生成器不在仓库内）" };
-  // 解释器选择留在 env 面：FS1 v1 只抽象磁盘与进程，环境变量不在接口内（规范 §3.1 普查无此项）。
-  const py = process.env.MINIFLOW_PYTHON ?? (process.platform === "win32" ? "python" : "python3");
+  // 解释器选择走环境面（IEnv，R7-2 入册）：MINIFLOW_PYTHON 覆盖 + 平台缺省。
+  const py = nodeEnv.get("MINIFLOW_PYTHON") ?? (nodeEnv.platform() === "win32" ? "python" : "python3");
   const r = proc.run(py, [script, flow, project], { cwd: root });
   if (r.error) {
     return { ok: false, log: `${py} 不可用（${r.error}）；可用环境变量 MINIFLOW_PYTHON 指定解释器` };

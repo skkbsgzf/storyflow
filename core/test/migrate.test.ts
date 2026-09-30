@@ -3,11 +3,11 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { Kernel } from "../src/kernel.js";
-import { ROOT } from "../src/schema.js";
+import { rootOf } from "../src/schema.js";
 
 /** 迁移演练夹具：现网 p-key-soul 的 run-state.json（若在），否则最小旧形夹具。 */
 function legacyFixture(): object {
-  const real = path.join(ROOT, "projects", "p-key-soul", "run-state.json");
+  const real = path.join(rootOf(), "projects", "p-key-soul", "run-state.json");
   if (fs.existsSync(real)) return JSON.parse(fs.readFileSync(real, "utf-8"));
   return {
     nodes: { "m1.topic-report": { status: "done", round: 1 }, "m2.topic-proposal": { status: "done", round: 1 } },

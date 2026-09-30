@@ -12,7 +12,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { Kernel } from "../src/kernel.js";
-import { ROOT } from "../src/schema.js";
+import { rootOf } from "../src/schema.js";
 import { applyOverlay, effectiveFlow, domainMap, isWorkGate, type FlowOverlay } from "../src/overlay.js";
 import { expandFlow3, effectiveFlow3 } from "../src/modules.js";
 import { extractCtxUsage, readMetrics, recordMetric, summarizeMetrics } from "../src/metrics.js";
@@ -51,7 +51,7 @@ const REPORT = [
 // 老 flow@2 的 injectKitBoundaries 派生 itb-* 已被 links 取代（内核 effectiveOf flow@3 分支 boundaries:[]）。
 // 故本组改断内核实际派生的 links。
 const TS3 = loadFlow("topic");
-const DERIVED = expandFlow3(ROOT, TS3 as never);
+const DERIVED = expandFlow3(rootOf(), TS3 as never);
 
 /** 从派生图里挑出全部连接件门（gate_role=link）。 */
 function linkGates(flow: typeof TS): string[] {
@@ -76,7 +76,7 @@ describe("R5 · kit 边界人工验收（唯一的裁决点 = flow@3 连接件�
   });
 
   it("幂等：派生是纯函数，再展开一次节点/连接件/边集合完全一致（不套娃、不漂移）", () => {
-    const twice = expandFlow3(ROOT, TS3 as never);
+    const twice = expandFlow3(rootOf(), TS3 as never);
     expect(twice.links).toEqual(DERIVED.links);
     expect(Object.keys(twice.flow.graph.nodes).sort()).toEqual(Object.keys(DERIVED.flow.graph.nodes).sort());
     expect(twice.flow.graph.edges.length).toBe(DERIVED.flow.graph.edges.length);
@@ -91,7 +91,7 @@ describe("R5 · kit 边界人工验收（唯一的裁决点 = flow@3 连接件�
     );
     // 优先级 inst.link > defaults.link > policy.link_default：本流声明了 defaults.link=auto，
     // 故 link_default=manual 被 defaults 遮蔽（只作最末兜底），m3 的 inst.link=manual 仍胜出。
-    const manualDefault = effectiveFlow3(ROOT, TS3 as never, {
+    const manualDefault = effectiveFlow3(rootOf(), TS3 as never, {
       overlays: [{ format: "flow-overlay@1", flowId: "topic", origin: "user", patches: [
         { kind: "set-policy", key: "link_default", value: "manual", reason: "全交界转人工（本流被 defaults.link 遮蔽）" },
       ] }],
@@ -100,7 +100,7 @@ describe("R5 · kit 边界人工验收（唯一的裁决点 = flow@3 连接件�
       "m2.link:auto,m3.link:manual,m4.link:auto,m5.link:auto",
     );
     // set-link 单点把 m3 降回 auto（等价旧 suppress-boundary：这一处交界不再拦人）
-    const one = effectiveFlow3(ROOT, TS3 as never, {
+    const one = effectiveFlow3(rootOf(), TS3 as never, {
       overlays: [{ format: "flow-overlay@1", flowId: "topic", origin: "user", patches: [
         { kind: "set-link", link: "m3.link", mode: "auto", reason: "单点放行" },
       ] }],
@@ -181,7 +181,7 @@ describe("R5 · overlay 是 tool 位置与内容配置的唯一改写面", () =>
   it("生效优先级：overlay > 节点 config > op.default > 通用默认", () => {
     // set-tool 的 toolOverrides 由 overlay 合成得到（纯函数，与图无关）；
     // resolveToolConfig 是优先级单点，直接喂「op 声明 + 节点 config + overlay config」三层。
-    const eff = effectiveFlow(ROOT, SYN(), {
+    const eff = effectiveFlow(rootOf(), SYN(), {
       overlays: [{ format: "flow-overlay@1", flowId: "ov-syn", origin: "user", patches: [
         { kind: "set-tool", kit: "plot", op: "structure-design", config: { maxChars: 9999 }, reason: "测：op 级默认值覆盖" },
       ] }],
@@ -211,11 +211,11 @@ describe("R5 · overlay 是 tool 位置与内容配置的唯一改写面", () =>
   });
 
   it("全部 tool 都声明了 config（能力必须可调；数量不设限——批D 后事实源=modules/，吸收新 op 仍须全覆盖）", () => {
-    const dirs = fs.readdirSync(path.join(ROOT, "modules"));
+    const dirs = fs.readdirSync(path.join(rootOf(), "modules"));
     let ops = 0;
     const missing: string[] = [];
     for (const k of dirs) {
-      const f = path.join(ROOT, "modules", k, "module.json");
+      const f = path.join(rootOf(), "modules", k, "module.json");
       if (!fs.existsSync(f)) continue;
       const mod = JSON.parse(fs.readFileSync(f, "utf-8")) as { id: string; ops: Record<string, { config?: unknown }> };
       for (const [op, def] of Object.entries(mod.ops)) {
@@ -281,7 +281,7 @@ describe("R5 · 优化器：确定性规则 + 风险分级", () => {
   ];
 
   it("R1 死条款；提案带指标证据", () => {
-    const proposals = proposeFromMetrics(TS, summarizeMetrics(events), { root: ROOT });
+    const proposals = proposeFromMetrics(TS, summarizeMetrics(events), { root: rootOf() });
     const r1 = proposals.find((p) => p.rule === "R1-ctx-dead");
     expect(r1).toBeDefined();
     expect(r1?.patch.kind).toBe("set-tool");
@@ -311,13 +311,13 @@ describe("R5 · 优化器：确定性规则 + 风险分级", () => {
     // ① 纯汇合点：无 skill/op/output → 不是评审步；零样本也提裁（价值为零是构造性的）
     const plain = gateFlow();
     expect(isWorkGate(plain.graph.nodes["gate-plain"])).toBe(false);
-    const p1 = proposeFromMetrics(plain, summarizeMetrics([]), { root: ROOT });
+    const p1 = proposeFromMetrics(plain, summarizeMetrics([]), { root: rootOf() });
     expect(p1.find((p) => p.id === "R6@gate-plain")?.patch).toMatchObject({ kind: "remove-node", id: "gate-plain" });
 
     // ② 评审步（带产活）：isWorkGate=true；零样本不下结论（凭格式猜会删掉有效质量信号）
     const review = gateFlow();
     expect(isWorkGate(review.graph.nodes["gate-review"])).toBe(true);
-    const p2 = proposeFromMetrics(review, summarizeMetrics([]), { root: ROOT });
+    const p2 = proposeFromMetrics(review, summarizeMetrics([]), { root: rootOf() });
     expect(p2.some((p) => p.id === "R6@gate-review")).toBe(false);
 
     // ③ 评审步跑够样本、产物无人消费 → 提裁（红蓝对抗残留）
@@ -325,7 +325,7 @@ describe("R5 · 优化器：确定性规则 + 风险分级", () => {
       ts: `2026-09-17T13:0${i}:00Z`, runId: "r", nodeId: "gate-review", kit: "plot", op: "plot-redline",
       phase: "submit" as const, ctx: { used: 0, hitIds: [] }, checks: { pass: 1, block: 0 },
     }));
-    const p3 = proposeFromMetrics(gateFlow(), summarizeMetrics(cold), { root: ROOT });
+    const p3 = proposeFromMetrics(gateFlow(), summarizeMetrics(cold), { root: rootOf() });
     const r6 = p3.find((p) => p.id === "R6@gate-review");
     expect(r6?.patch).toMatchObject({ kind: "remove-node", id: "gate-review" });
     expect(r6?.reason).toContain("被下游引用 0 次");
@@ -340,12 +340,12 @@ describe("R5 · 优化器：确定性规则 + 风险分级", () => {
         ctx: { used: 1, ids: ["内部/意见/意见书-gate-review.md"], hitIds: ["内部/意见/意见书-gate-review.md"] },
       },
     ];
-    const p4 = proposeFromMetrics(gateFlow(), summarizeMetrics(warm, { pathToNode: { "内部/意见/意见书-gate-review.md": "gate-review" } }), { root: ROOT });
+    const p4 = proposeFromMetrics(gateFlow(), summarizeMetrics(warm, { pathToNode: { "内部/意见/意见书-gate-review.md": "gate-review" } }), { root: rootOf() });
     expect(p4.some((p) => p.id === "R6@gate-review")).toBe(false);
   });
 
   it("adapt=apply 只自动落地 low risk，其余一律待批", () => {
-    const proposals = proposeFromMetrics(TS, summarizeMetrics(events), { root: ROOT });
+    const proposals = proposeFromMetrics(TS, summarizeMetrics(events), { root: rootOf() });
     const ov = overlayFromProposals(proposals, { flowId: TS.id, adapt: "apply" });
     const applied = ov.patches.filter((p) => p.status === "applied");
     expect(applied.length).toBeGreaterThan(0);
@@ -370,7 +370,7 @@ describe("R5 · 内核端到端：连接件自动放行 + 人工交界拦人 + �
   const projectId = "p-r5";
   const kernel = new Kernel({ root });
   const pd = path.join(root, "projects", projectId);
-  process.env.MINIFLOW_ROOT = ROOT; // 断言注册表（AE-REPORT-DENSITY 等）挂在仓库根
+  process.env.MINIFLOW_ROOT = rootOf(); // 断言注册表（AE-REPORT-DENSITY 等）挂在仓库根
   process.env.MINIFLOW_HEADER_MODE = "off"; // 头部契约由 artifact-lint 管，本组只跑编排
 
   // m1 → m2 全部执行步（跨过 m2.link 自动交界后，撞 m3.link 人工交界前需交完的产物）
@@ -710,7 +710,7 @@ describe("R5 · v5.0 提交链无断言闸（完整性是唯一残留闸，质�
 describe("WO-A · 文本层扫描器（证据不裁决；AE-* 只是扫描器收据 id）", () => {
   // 纯净度标记台账挂在仓库根；临时项目目录下没有它 → AE-OUTPUT-PURITY 退化成「不适用」warn，测不到东西。
   // describe 体在收集期执行，早于所有用例，故此处设置对本文件全部用例生效。
-  process.env.MINIFLOW_ROOT = ROOT;
+  process.env.MINIFLOW_ROOT = rootOf();
 
   it("台词密度：别名退役后扫描器直接报真名——360 字超上限 → AE-DENSITY-WORDS warn", () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "miniflow-woa1-"));

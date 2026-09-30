@@ -74,7 +74,7 @@ export function resolveProjectName(kernel: Kernel, inputs: Record<string, unknow
   let i = 2;
   const taken = (id: string) => kernel.fs.exists(kernel.path.join(kernel.root, "projects", id));
   while (taken(name)) name = `${base}-${i++}`;
-  console.error(`[flow_run] 未指定 project，按灵感自动命名: ${name}`);
+  // R7-2：库面不再 console（FS1 §六 D7）——自动命名结果随 state.json / run-start journal 可见。
   return name;
 }
 
@@ -113,7 +113,8 @@ function bridge(kernel: Kernel, cmd: string, args: string[], timeoutMs = 180_000
   try {
     stdout = kernel.proc.exec(cmd, args, {
       cwd: kernel.root, timeoutMs, maxBufferBytes: 32 * 1024 * 1024,
-      env: { ...process.env, PYTHONIOENCODING: "utf-8" },
+      // env 继承 + 差量由适配器合并（ProcOptions.envDelta，R7-2）：库面不再展开 process.env。
+      envDelta: { PYTHONIOENCODING: "utf-8" },
     });
   } catch (e) {
     // env 面（process.env）留在宿主：FS1 v1 只抽象磁盘与进程，规范 §3.1 普查无环境变量注入。
@@ -335,8 +336,8 @@ export const VERBS: VerbDef[] = [
     ],
     run: (kernel, a) => {
       const action = (S(a.action) ?? "add") as "add" | "approve" | "reject" | "list";
-      // skills/ 是**仓库级**资产 ⇒ 落点取 `kernel.repoRoot`（缺省=ROOT；`--root` 重定向时跟随工作区）。
-      // 此前 CLI 硬编码编译期 ROOT —— `--root` 下补丁会写到真实仓库，属静默错位。
+      // skills/ 是**仓库级**资产 ⇒ 落点取 `kernel.repoRoot`（缺省=rootOf()；`--root` 重定向时跟随工作区）。
+      // 此前 CLI 硬编码编译期 rootOf() —— `--root` 下补丁会写到真实仓库，属静默错位。
       const repo = kernel.repoRoot;
       if (action === "list") return skillPatch(repo, { action: "list", target: S(a.target) }, kernel.fs, kernel.path);
       if (action === "approve" || action === "reject") return skillPatch(repo, { action, id: String(a.id) }, kernel.fs, kernel.path);
