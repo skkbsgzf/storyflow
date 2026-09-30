@@ -1,6 +1,7 @@
 # 规范 · FS 抽象层 FS1（v1.0）
 
-> 落地轮：R1（接口 + Node/mock 适配器）→ R3（内核核心迁移）→ R5（世界书/KB + SSE）→ R6（外围）→ R7（拆包）。
+> 落地轮：R1（接口 + Node/mock 适配器）→ R3（内核核心迁移）→ R5（世界书/KB + SSE）→ R6（外围）
+> → R7-1（**平台缺省适配器注册面**，§4.1）→ R7-2（core 包净身）→ R7-3（拆包发布）。
 > 工单：`docs/工单-20261001-预设收尾与FS抽象层.md`。
 > 本规范的接口集合**由现状调用面反推**，不是先画接口再找调用点。§3.1 的普查数字即证据，改接口须先改普查。
 
@@ -8,7 +9,7 @@
 
 ## 一、目标与非目标
 
-**目标**：让内核语义与宿主 IO 解耦，使「同一份内核代码」能跑在三种盘上——真实文件系统（Node）、内存（测试/冒烟）、以及未来的浏览器/WASM（R7 拆包后的 Virtual 适配器）。判定标准只有一条：`core/src` 除 `abstraction/` 外不出现 `node:fs`、`node:path`、`node:child_process`。
+**目标**：让内核语义与宿主 IO 解耦，使「同一份内核代码」能跑在三种盘上——真实文件系统（Node）、内存（测试/冒烟）、以及未来的浏览器/WASM（R7 拆包后的 Virtual 适配器）。判定标准自 R7-1 起是**两条**：① `core/src` 除 `abstraction/` 外不出现 `node:fs`、`node:path`、`node:child_process`；② 除豁免区（`abstraction/adapters/`）与死表所列七个宿主入口件外，core 侧不 import 任何适配器实现——缺省一律走 `abstraction/defaults.ts` 的注册表（§4.1）。只查 ① 会漏掉「import 了 Node 实现但没用 `node:*`」这种半抽象，②就是补这一刀的门。
 
 **非目标**：
 - 不做异步化。现网 100% 同步调用（`*Sync`），抽象层照旧同步；异步是另一笔账，不在本轮混入。
@@ -163,10 +164,11 @@ grep -rn 'from "node:\|import("node:' core/src --include="*.ts" | grep -v abstra
 
 ## 四、注入纪律（R3 起生效）
 
-1. **构造函数注入**：`KernelOptions` 增 `fs?: IFileSystem` / `path?: IFsPath` / `proc?: IProcessLauncher`，缺省 = Node 适配器（`nodeFs` / `nodePath` / `nodeProc`）。
-2. **模块级只读函数不引全局单例**：签名加尾参 `fs: IFileSystem = nodeFs` / `path: IFsPath = nodePath`，调用方从 kernel 透传。理由与 `kernel: Kernel` 传参同构——显式、可测、不留隐式全局态。**写路径不享有这条默认值**（第 6 条）。
+1. **构造函数注入**：`KernelOptions` 增 `fs?: IFileSystem` / `path?: IFsPath` / `proc?: IProcessLauncher`，缺省 = **当前注册的平台缺省适配器**（`abstraction/defaults.ts`，机制见本节末 §4.1）。R7-1 之前这条写的是「Node 适配器（`nodeFs`/`nodePath`/`nodeProc`）」——那个实例现在只属于宿主入口件与注册表里登记的那一家，core 侧拿到的同名对象是查表的转发。
+2. **模块级只读函数不引全局单例**：签名加尾参 `fs: IFileSystem = nodeFs` / `path: IFsPath = nodePath`，调用方从 kernel 透传。理由与 `kernel: Kernel` 传参同构——显式、可测、不留隐式全局态。**写路径不享有这条默认值**（第 6 条）。**R7-1 实测口径**：这类尾参默认全仓 **166 处**（`fs` 78 / `path` 85 / `proc` 2 / `io` 束 1），分布在 **28 个文件**；其中 156 处（27 文件）的默认值自 R7-1 起取自注册表，10 处仍在宿主入口 `cfg-template.ts` 直连 Node 单例（§4.1 末的死表）。数字逐处锁在 `core/test/defaults-registration.test.ts` 的普查用例，改正则口径要连那个断言一起改。
 3. **禁止半抽象**：一个文件进了某批次就必须一次过，不许留 `import fs from "node:fs"` 的尾巴（出口判据按文件计数）。
-4. **适配器之外不许 import `node:*`**（`abstraction/adapters/*` 是唯一豁免区）。R6 后的达成度分两档说：**FS 族（fs / path / child_process）已零**，这是工单 R6 的出口判据；**非 FS 族还剩 6 处**（`node:process` ×3、`node:net` ×1、`node:crypto` ×1、`node:module` ×1，逐条见 §3.1 R6 复普查）。这条纪律的完整达成在 R7 拆包——那儿的门禁是「core 包在无 `@types/node` 的 tsconfig 下 tsc 通过」，届时这 6 处要么进适配器，要么随入口件出 core 包。
+4. **适配器之外不许 import `node:*`**（`abstraction/adapters/*` 是唯一豁免区）。R6 后的达成度分两档说：**FS 族（fs / path / child_process）已零**，这是工单 R6 的出口判据；**非 FS 族还剩 6 处**（`node:process` ×3、`node:net` ×1、`node:crypto` ×1、`node:module` ×1，逐条见 §3.1 R6 复普查）。这条纪律的完整达成在 R7 拆包，但**门禁写法以工单 R7 的「开工前实测」为准**：字面那条「core 包在无 `@types/node` 的 tsconfig 下 tsc 通过」是空转的（fastify/MCP SDK 的 d.ts 带 `/// <reference types="node" />`，传递性把 `@types/node` 拉回类型图），所以能落地的门是两条——**① import 普查双向死表**（`r6-host-free.test.ts` ＋ §4.1 的注册普查）＋ **② 依赖出包**（core 包不留 fastify/MCP SDK，否则「无 node 类型」永远只是自证）。
+   **R7-1 又加一层普查**：豁免区之外仍 import Node 适配器的只剩**七个宿主入口件**（`cli.ts` `mcp.ts` `export-cli.ts` `quality-cli.ts` `http.ts` `schema.ts` `cfg-template.ts`），逐字死表双向断言在 `core/test/defaults-registration.test.ts`。这条是「谁还能碰宿主实现」的名单，与上面「谁还在 import `node:*`」是两张表，别混。
 5. **接口扩容须走普查**：想加方法先在 §3.1 找到调用点；找不到调用点的方法不进 v1。
 6. **台账/写路径用必传首参 `io: FsIo`**（`FsIo = { fs, path }`，`Kernel` 结构上即满足）：`journalAppend(io, dir, …)`、`recordDiag(io, dir, …)`、`readMetrics(io, dir)`、`setDecision(io, …)`。理由不是风格：尾参默认**漏传也编译通过**，结果是台账静默写进真宿主盘——嵌入式宿主上就是数据泄漏。必传首参把这件事交给编译器。
 7. **漏传检查是可复现的门**（R3 实测口径）：把 `src`（除 `abstraction/`）里所有 ` = nodeFs` / ` = nodePath` 尾参默认临时剥掉，再跑 `tsc --noEmit`，报出的 `TS2554` 就是全部漏传调用点（`TS1016` 是剥离动作本身的副产物，与调用点无关）。R3 收口时 **TS2554 = 0**。这条门不是仪式感——它实抓了一处：`kernel.ts::ctx` 的 `loadState(projectDir)` 一直吃宿主盘，由 §六 末的内存盘冒烟逼出来。
@@ -177,6 +179,19 @@ cp -r src .leakcheck/src && sed -i 's/: IFileSystem = nodeFs/: IFileSystem/g; s/
 npx tsc -p .leakcheck/tsconfig.json --noEmit | grep TS2554    # 期望：无输出（=0）
 ```
 按字面粗剥会把常量初始化一起削掉（`const X = nodePath.join(…)` → `const X.join(…)`），满屏 TS1005 假语法错，真漏传反倒被埋掉——R6 第一遍就这么跑的，22 条 TS1005 里一条 TS2554 都没剩下，那条门当场失效。R6 收口：**TS2554 = 0**，TS1016 = 8（副产物：`projectDir?: string` 之后跟一个必需参数，同 R3 口径）。
+
+### 4.1 平台缺省适配器的注册面（R7-1 新增）
+
+拆包要求 `@storyflow/core` 不 import 任何宿主实现，而 §四第 2 条的 166 处尾参默认仍要有一个「缺省值」。两全只有一招：**把「缺省」从一个实例改成一次查找**。
+
+- **表**：`core/src/abstraction/defaults.ts`（零 `node:*`、不 import 任何适配器实现）导出 `registerAdapters({ fs, path, proc })` / `currentAdapters()`，以及三个转发对象 `nodeFs` / `nodePath` / `nodeProc`（`Proxy` 逐次调用查表，方法绑回注册实例）。
+- **谁注册**：Node 宿主 = `adapters/node.ts` 末行的 side-effect（入口件 import 它即完成登记）；core 测试 = `core/vitest.config.ts` 的 `setupFiles: ["./test/setup-adapters.ts"]`；跨包消费者 = 自家 Node 测试里自行 import 适配器件（实测案例：`storyharness/test/kit-wiring.test.ts` 补了这一行）。**这张表同时是「宿主该做什么」的唯一说明面**——浏览器/WASM 宿主照 `setup-adapters.ts` 那行换成自家实现即可，core 侧零改动。
+- **未注册就用 = 抛错点名**，不静默回落。理由同第 6 条：回落任何一家实现都会让「core 不依赖宿主」在运行时被悄悄违背，嵌入式宿主上就是数据写错盘；抛错至多启动失败，写错盘不可追回。
+- **转发对象身份稳定**（进程内 `nodeFs === nodeFs`），所以 D4 的「按适配器身份分桶」缓存语义与 R6-4 的 `mcpFor` WeakMap 分桶不变——注册后的平台缺省仍是一个桶。
+- **重复注册以后者为准**，且表只登记引用、不复制不包装：测试换假盘、宿主换实现都靠这条；换进去的对象行为即转发对象行为。
+- **时机**：尾参默认表达式在**每次调用**时求值，所以注册时机不受 import 顺序约束；入口件先 import 适配器、内核函数随后调用，是本仓所有 CLI/MCP/HTTP 面的实际形态。
+- **名字不改**（仍叫 `nodeFs`/`nodePath`/`nodeProc`）：改名要动 166 处尾参，换来的只是语义纯洁，不值；含义以本节为准，§四第 1/2 条已同步改写。
+- **门**：`core/test/defaults-registration.test.ts` 八例——①豁免区之外的适配器 import 死表（七件，双向）②`defaults.ts` 自身零 `node:*` 且不 import 适配器（只查 import 形态：那句指路的错误消息里必然写着适配器路径，按裸文本匹配会把自己的消息判成违规）③尾参默认去向普查（166 总数 / 156 经注册表 / 10 在 `cfg-template.ts` / 27 个文件，逐数断言）④未注册抛 ⑤注册即转发（宿主盘零泄漏）⑥后注册覆盖（含 `sep` getter）⑦只登记引用不复制 ⑧setup 后状态可用且身份稳定。
 
 ---
 
@@ -216,5 +231,9 @@ R1–R4 期间现网**零** `fs.watch` 调用，它是为 R5 的 SSE 事件流�
 | D-R6-5 | `flow_lint`：`execFileSync` → `proc.runAsync`，cwd 由「projectDir 上跳两级」改 `kernel.repoRoot`，并补「退出非零且无输出」分支 | 分离数据根的宿主上只有 repoRoot 有 `tools/flow-lint.py`；折叠那条分支会把 stderr 诊断缩成一句 `exit=1` | 返回文案四态各有测试逐态锁 |
 | D-R6-6 | 非 FS 族 `node:*` 六处仍留宿主件（process ×3 / net ×1 / crypto ×1 / module ×1） | FS1 v1 只管「盘 + 路径 + 子进程」，env/熵/端口探测/`createRequire` 属宿主面（与 D7 同族） | 完整达成在 R7 拆包；例外表逐条钉在 `r6-host-free.test.ts` |
 | D-R6-7 | 静态面 `readBuffer` 出 `Uint8Array`，出口包一层 `Buffer.from(…)` | Fastify 的二进制出口按 Buffer 走；裸 `Uint8Array` 会被当对象序列化成 JSON | `GET /` 的 200/内容类型/白名单 404 有内存盘测试，另有 `up` 真机冒烟（200，2200 字节）|
+| D-R7-1 | 尾参默认的三个名字 `nodeFs`/`nodePath`/`nodeProc` 从「Node 单例」改指「注册表当前注册的平台缺省」（转发代理）；28 个文件的 import 行由 `adapters/node.js` 改指 `defaults.js` | core 包不许 import 宿主实现，而 §四第 2 条的 166 处默认必须有缺省值；名字保留是因为改名动 166 处而语义不换 | Node 宿主注册的正是那三家 ⇒ 现网行为逐字节不变；**未注册的宿主从「静默吃宿主盘」变「抛错点名」**——跨包消费者 `storyharness/test/kit-wiring.test.ts` 实测被这条拦下、补登记后 94/94 绿 |
+| D-R7-2 | `http.ts` 显式加一行 side-effect import（`import "./abstraction/adapters/node.js"`） | HTTP 面本就跑在 Node 上，登记不该靠 `schema.ts` 的传递 import 侥幸拿到实现——侥幸断在哪天就是启动即抛，且断在运行时不是编译期 | 无行为变化，只把隐式依赖写显；R7-3 拆包后这一行归 `@storyflow/adapters` 的入口件 |
+| D-R7-3 | 七个宿主入口件仍直连 Node 适配器（死表见 §4.1） | `cli.ts`/`mcp.ts`/`export-cli.ts`/`quality-cli.ts` 是入口、本就 Node；`http.ts` 是登记点；`schema.ts::ROOT`（D3 未解）与 `cfg-template.ts` 是模块级求值，import 期就要真 `path` | R7-2 收模块级两件；R7-3 随拆包把入口四件请出 core 包 |
+| D-R7-4 | `tools/batch-edit.py` 升 v2：`--manifest` 多文件同批（逐文件字面校验、任一处不成立 = 整批拒绝零写入、一份合并 diff ＋ per-file sha256 前/后收据） | 28 个文件的同一处 import 行换字面串，按本仓批量纪律是一批，不该摊成 28 次调用（碎片 diff 互不可见、回滚逐处） | 单文件 `--file/--ops` 形态不变，既有调用点零影响；本批收据 `.receipt-r7-1-imports.json`（仓库根） |
 
 **冒烟测试的三条断言就是这三类偏离的验收面**（`core/test/abstraction-smoke.test.ts`）：①`flow_run`→`flow_submit` 全程只写内存盘 + 宿主盘无泄漏目录；②跑完语料逐字节不变（只读承诺）；③改内存里的技能卡，任务包内容跟着变——**读**也走注入适配器（宿主盘同内容时，前两条抓不到静默的宿主盘读）。

@@ -1,0 +1,177 @@
+{
+ "tool": "batch-edit/v2",
+ "at": "2026-10-01T01:06:46",
+ "mode": "manifest",
+ "files": 28,
+ "ops": 28,
+ "entries": [
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\abstraction\\jsonio.ts",
+   "ops": 1,
+   "sha_before": "d79557d518ca",
+   "sha_after": "10b864cf3c4b"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\aesthetic.ts",
+   "ops": 1,
+   "sha_before": "54eb32114a79",
+   "sha_after": "3a465085c5a1"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\agent-mcp.ts",
+   "ops": 1,
+   "sha_before": "11a44f0daf1d",
+   "sha_after": "b4592111617e"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\assembler.ts",
+   "ops": 1,
+   "sha_before": "82093dde8ad7",
+   "sha_after": "1f1d0fbc8287"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\assertion-preset\\discovery.ts",
+   "ops": 1,
+   "sha_before": "6da5de89a80c",
+   "sha_after": "c38d40c19662"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\assertion-preset\\executor.ts",
+   "ops": 1,
+   "sha_before": "21d9bcfb6b41",
+   "sha_after": "0846449ded5a"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\assertion-preset\\index.ts",
+   "ops": 1,
+   "sha_before": "78b7e9fecf96",
+   "sha_after": "5e517ee5097e"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\assertion-preset\\mount.ts",
+   "ops": 1,
+   "sha_before": "21b4de11fee8",
+   "sha_after": "1c52aee73b28"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\assertion-preset\\registry.ts",
+   "ops": 1,
+   "sha_before": "9763e9b10841",
+   "sha_after": "f97d925d5556"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\assertion-preset\\resolver.ts",
+   "ops": 1,
+   "sha_before": "78b19942a9de",
+   "sha_after": "5010afefd090"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\asserts.ts",
+   "ops": 1,
+   "sha_before": "09bafa855c45",
+   "sha_after": "08331b3db1b1"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\compat.ts",
+   "ops": 1,
+   "sha_before": "b012d48c4133",
+   "sha_after": "d2b9d2779288"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\intent.ts",
+   "ops": 1,
+   "sha_before": "24d38b8e004c",
+   "sha_after": "cfc0d5d81d78"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\kb.ts",
+   "ops": 1,
+   "sha_before": "8637a947f5da",
+   "sha_after": "599f584718a9"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\kernel.ts",
+   "ops": 1,
+   "sha_before": "27529bf892d8",
+   "sha_after": "c4e980ab5724"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\kits.ts",
+   "ops": 1,
+   "sha_before": "e6824b710cc2",
+   "sha_after": "c9da8cf464e8"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\minitools.ts",
+   "ops": 1,
+   "sha_before": "feef8e7c7ad5",
+   "sha_after": "a049f2f8e189"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\modules.ts",
+   "ops": 1,
+   "sha_before": "f2ce498840aa",
+   "sha_after": "135264311afa"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\optimize.ts",
+   "ops": 1,
+   "sha_before": "b42ae22b6166",
+   "sha_after": "bef34c348e17"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\overlay.ts",
+   "ops": 1,
+   "sha_before": "53ba1f389d3c",
+   "sha_after": "efbc84cf7684"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\production-preset.ts",
+   "ops": 1,
+   "sha_before": "470012202d1a",
+   "sha_after": "f3d5c2b5c15d"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\profiles.ts",
+   "ops": 1,
+   "sha_before": "d1460f3a3798",
+   "sha_after": "bd15f163c6cc"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\project-config.ts",
+   "ops": 1,
+   "sha_before": "23020816d81c",
+   "sha_after": "07e0ead7724f"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\registry.ts",
+   "ops": 1,
+   "sha_before": "7b729e6b2152",
+   "sha_after": "d57b9065346a"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\selection.ts",
+   "ops": 1,
+   "sha_before": "975fdf4ec41a",
+   "sha_after": "7fa161e297da"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\skills.ts",
+   "ops": 1,
+   "sha_before": "8ea5d96d42b3",
+   "sha_after": "333b0a7d1b63"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\state.ts",
+   "ops": 1,
+   "sha_before": "07cf867aee89",
+   "sha_after": "9b8c6f2b5f6f"
+  },
+  {
+   "file": "D:\\storyflow-kit\\tools\\..\\core\\src\\static.ts",
+   "ops": 1,
+   "sha_before": "90f9e0d0e573",
+   "sha_after": "b3000567c6ae"
+  }
+ ]
+}

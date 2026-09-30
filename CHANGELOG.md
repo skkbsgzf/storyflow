@@ -1,3 +1,56 @@
+## Unreleased · 工单 R7-1（FS Phase 4 前置：平台缺省适配器注册面，2026-10-01）
+
+**一句话**：`@storyflow/core` 侧**不再 import 任何宿主实现**——R3 立下的 166 处尾参默认 `fs: IFileSystem = nodeFs`
+的「缺省」从一个实例改成**一次查找**（新增 `core/src/abstraction/defaults.ts`：注册表＋转发代理）。
+拆包（R7-3）的硬前置就此解开，而**调用点一行没动**：名字保留、含义换掉，Node 宿主注册进去的正是原来那三家。
+
+**行为变更一处**（其余为等价换管道）：**未注册就用 = 抛错点名**，不再有静默回落。以前宿主忘了注入会悄悄写真宿主盘、
+编译照过；现在跨包消费者在 Node 上跑必须先登记（实测抓到 `storyharness/test/kit-wiring.test.ts`，
+补一行 side-effect import 后 storyharness 套件 94/94 绿）。这是 R7-1 唯一的**外溢面**，也是这张表的价值：
+「core 不依赖宿主」这件事从此在运行时也成立，而不只是 grep 上成立。
+
+1. **注册表**（`core/src/abstraction/defaults.ts`，零 `node:*`、不 import 适配器实现）：`registerAdapters({fs,path,proc})`
+   / `currentAdapters()` / 三个 `Proxy` 转发对象。逐次调用查表 ⇒ 注册时机不受 import 顺序约束；转发对象身份稳定
+   ⇒ FS1 D4 的「按适配器身份分桶」缓存语义与 R6-4 的 `mcpFor` WeakMap 分桶都不变；重复注册以后者为准、只登记引用不复制。
+2. **Node 侧登记**：`abstraction/adapters/node.ts` 末行 side-effect 注册自家三家（入口件 import 它即完成）；
+   新增 `core/vitest.config.ts` 把 `test/setup-adapters.ts` 挂成 `setupFiles`——这份 setup 同时是浏览器/WASM 宿主
+   该照抄的那一行（换成自家实现即可）。
+3. **28 个文件的 import 行改指 `defaults.js`**：一次 `tools/batch-edit.py --manifest`（该工具本轮升 v2，支持多文件同批：
+   逐文件字面校验、任一处不成立整批拒绝零写入、per-file sha256 前/后收据），收据 `.receipt-r7-1-imports.json`（仓库根，与 R4 那批收据同一处）。
+   仍直连 Node 适配器的只剩**七个宿主入口件**（`cli.ts` `mcp.ts` `export-cli.ts` `quality-cli.ts` `http.ts` `schema.ts` `cfg-template.ts`）。
+4. **`http.ts` 显式登记**：HTTP 面本就跑 Node，靠 `schema.ts` 的传递 import 侥幸拿到实现的话，断在哪天是运行时启动即抛、
+   编译期拦不住——那一行写成显式副作用 import 并在注释里点名理由。
+5. **新门 `core/test/defaults-registration.test.ts`（8 例）**：双向死表（豁免区之外只剩七件）／`defaults.ts` 自身干净
+   （只查 import 形态——未注册那句错误消息里必然写着该 import 哪一件，按裸文本匹配会把自己的指路消息判成违规，
+   本轮自测就被绊过一次）／尾参默认去向普查逐数（**166 总 / 156 经注册表 / 10 在 `cfg-template.ts` / 27 个文件**）／
+   未注册抛／注册即转发＋宿主盘零泄漏／后注册覆盖（含 `sep` getter）／只登记引用／setup 后身份稳定。
+6. **规范同步改写**（不留第二套真相）：FS1 §四第 1、2、4 条按注册语义重写 ＋ 新增 **§4.1 注册面** ＋ §六 追加
+   D-R7-1…D-R7-4。第 4 条顺手纠正 R7 门禁的写法：工单字面那条「core 包在无 `@types/node` 下 tsc 通过」**跑起来是空转的**
+   （fastify／MCP SDK 的 d.ts 带 `/// <reference types="node" />`，传递性把 `@types/node` 拉回类型图，`types: []` 拦不住），
+   能落地的门是「import 普查双向死表」＋「依赖出包」。
+
+**门禁实测**：`tsc --noEmit` 0 error；`npx vitest run` **38 文件 / 421 用例**全绿（R6 交付基线 37/413 ⇒ ＋1 文件 ＋8 用例）；
+`gen-openapi --check`／`gen-verbs-doc --check` OK（19 路由＋27 动词）；漏传门复跑 **TS2554 = 0 / TS1016 = 8**（`.leakcheck` 已删）；
+入口冒烟复验 `flow_list` 0、`quality-cli` 3 项 0、`export-cli mermaid` 0、`up --port 8498`：`GET /` 200 text/html 2200 字节／
+`/.git/config` 404／`/api/v1/projects` 200／`/api/v1/verbs` `ok:true`（冒烟进程按 CommandLine 核验后自杀，端口已释放）；
+`storyharness` 套件 94/94。**提交状态（2026-10-01 01:19 的实况，不是本会话的动作）**：验收方 ZCode 出的
+`docs/验收回执-R1-R6-20261001.md` 建议「R7 落地前先分轮提交」，随后落了四个切片提交
+（`7b20668e` R1-R3 ／ `97395502` R4 ／ `8be82859` R5 ／ `f48dadf7` R6）——**R7-1 的代码当时正在盘面上，被同一批
+`git add` 一起扫进了切片 1/4 与 4/4**：注册表、两个新测试件、`core/vitest.config.ts`、`tools/batch-edit.py` 与
+28 个 import 换向现在都在 HEAD 里，而提交信息写的是 R1-R3/R6。仍在盘面的只有本轮四份文档改动、
+`storyharness/test/kit-wiring.test.ts` 那一行登记，以及五张收据/回执（untracked）。
+**审计提示**：按提交信息找 R7-1 会找错地方，用 `git log -- core/src/abstraction/defaults.ts`。
+邻会话交接回执：`docs/交接回执-注册面R7-1-20261001.md`（写集逐件 sha256＋mtime、最短验收三命令、行为变更一处、未决 N1–N7）。
+
+**未做/挂账（诚实面）**：① **R7-2 core 包净身**——非 FS 族 `node:*` 六处（`kernel.ts:577-578` 的 `createRequire` 疑似死码，
+先验尸再处置）、`ids.ts::sha12` 同步 sha1、`api-v1.ts`/`compat.ts` 的 fastify 类型形状、`process.env` ×5 文件／`Buffer` ×1／`console` ×1；
+② **R7-3 物理拆包**——`@storyflow/core` ＋ `@storyflow/adapters` 目录拆分与旧路径 re-export，红线是
+`core/dist/cli.js`／`core/dist/mcp.js` 不能断（宿主 MCP 注册指着它们）；③ 模块级求值两件（`schema.ts::ROOT` 即 FS1 D3、
+`cfg-template.ts` 的 10 处尾参默认）本轮**故意没动**——它们在宿主入口死表里，硬推只会把注册表写成第二个真相；
+④ 注册表是**进程级单表**，多宿主并存（同进程两家盘）需要的是显式传 `kernel`，不是靠这张表兜——这一点与 D4 同源，写进 §4.1。
+
+---
+
 ## Unreleased · 工单 R6（FS Phase 3：宿主面清零，2026-09-30）
 
 **一句话**：R3 收口时挂着的那 9 个宿主面文件全部改吃注入，`core/src` 除 `abstraction/adapters/*` 外
@@ -29,6 +82,8 @@
 5. **入口件按纪律显式用 Node 适配器**（不是漏网）：`cli.ts` `mcp.ts` `quality-cli.ts` `export-cli.ts` `schema.ts`
    的 BETA 留痕、包根定位、CLI 进程面本就属宿主职责（§四第 1/2 条），改吃注入反倒会把台账写进内存盘。
    `cli.ts` 的 `openBrowser` 因此收 `proc: IProcessLauncher` 形参——平台选命令留在入口，起进程交给抽象层。
+   （**R7-1 起本条口径更新**：core 侧那 28 个文件的 `nodeFs`/`nodePath` 改从注册表取，本条列的入口件才是直连 Node 实现的一方；
+   名册以 `core/test/defaults-registration.test.ts` 的死表为准，此处不抄第二遍。）
 6. **普查门写成双向测试**：`r6-host-free.test.ts` 走 `core/src/**/*.ts`（排除 `abstraction/`），
    `import` 与 `import("node:x")` 两种形态都算。剩余**非 FS 族**宿主绑定钉成死表六处：
    `node:process` ×3（`cli.ts` `export-cli.ts` `quality-cli.ts`）、`node:net` ×1（`cli.ts` 端口探测）、

@@ -9,6 +9,8 @@ import path from "node:path";
 import { KernelClient } from "../src/kernel.js";
 import { buildTools } from "../src/tools.js";
 import { kbSearch, kbRead } from "../../core/src/kb.js";
+// R7-1 起 core 不 import 宿主实现：本测试跑在 Node 上，须自己登记平台缺省适配器（storyharness 是宿主）
+import "../../core/src/abstraction/adapters/node.js";
 import type { CorpusLayout } from "../src/config.js";
 
 const CORPUS: CorpusLayout = {

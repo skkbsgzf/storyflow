@@ -1,0 +1,15 @@
+{
+ "tool": "batch-edit/v2",
+ "at": "2026-10-01T01:20:24",
+ "mode": "manifest",
+ "files": 1,
+ "ops": 5,
+ "entries": [
+  {
+   "file": "docs/规范-FS抽象层-FS1.md",
+   "ops": 5,
+   "sha_before": "5c353432a89c",
+   "sha_after": "51eecf4fe845"
+  }
+ ]
+}
