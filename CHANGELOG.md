@@ -1,3 +1,237 @@
+## Unreleased · 工单 R6（FS Phase 3：宿主面清零，2026-09-30）
+
+**一句话**：R3 收口时挂着的那 9 个宿主面文件全部改吃注入，`core/src` 除 `abstraction/adapters/*` 外
+**零 `node:fs` / `node:path` / `node:child_process`**——工单 R6 的出口判据达成，M3 的前半（全内核零 `node:fs`）成立。
+证据不是 grep，是**跑**：会话面、`fs_*` 工具族、系统提示、`flow_lint`、静态面 `GET /` 整条跑在内存盘上，
+跑完宿主盘一条都不许多（`core/test/r6-host-free.test.ts`，与 R5 的 `fs-call-matrix.test.ts` 同一把尺）。
+
+**行为变更四处**（其余为等价换管道）：
+① `agent.ts` 七个公开函数的首参由路径字符串改 `kernel`（`loadModelConfig` / `saveModelConfig` /
+`listSessions` / `createSession` / `getSession` / `deleteSession` / `renameSession`）——**破坏性签名变更**，
+但全仓直接 import 者只有 `core/test/agent.test.ts`（已同步改），`storyharness/` 用自有副本、`adapter/` 走 HTTP，外溢面实测为零；
+② `export const agentMcp` 单例下架，改 `mcpFor(kernel)` 按注入盘分桶（默认 Node 盘仍是同一实例 ⇒ 现网 HTTP 逐字节不变）；
+③ `flow_lint` 的子进程 cwd 由「projectDir 上跳两级」改 `kernel.repoRoot`——默认盘面（`root === repoRoot`）同值，
+分离数据根的宿主上这才是对的（只有仓库根有 `tools/flow-lint.py`）；
+④ 静态面读盘改 `kernel.fs.stat` + `readBuffer`，出口按 Fastify 惯例包一层 `Buffer.from(…)`——发出字节不变。
+
+1. **接口扩容两件**（§四第 5 条走的普查，不是加偏好）：`IFsPath.fromFileUrl(url)`（唯一调用点 `schema.ts:15`
+   用 `import.meta.url` 定位包根，此前是宿主件里最后一条 `node:url`）、`IProcessLauncher.detach(cmd, args)`
+   （`cli.ts` 的 `up --open`，不返回结果、失败只以抛错表达）。Node＋Mock 双实现，对表测试进 `abstraction-mock.test.ts`。
+2. **`agent.ts` 整件零 `node:*`**：内部件（`readSession` / `writeSession` / `sessionFile` / `withinProject` / `fsTools` /
+   `analysisTools`）与公开件一律从 `kernel.fs` / `kernel.path` / `kernel.proc` 取管道；`analysisTools` 里那份
+   抄自 `withinProject` 的「resolve + sep」越界判定收编成单点调用（两套真相必然漂移）。
+3. **`flow_lint` 走 `proc.runAsync`，四态返回各有测试**：有输出（截断透传）／启动层错误（`执行失败: …` ＋ stderr）／
+   退出非零且无输出（`退出码 N（无输出）` ＋ stderr）／退出零无输出（`exit=0` 占位）。特意补了第三态：
+   把它折叠进「执行失败」会把 flow-lint 的 stderr 诊断缩成一句干巴巴的 `exit=1`。
+4. **`http.ts` 静态面与 openapi 读取吃 kernel**：`resolveStaticPath(kernel.root, url, kernel.fs, kernel.path)`、
+   `contentTypeOf(abs, kernel.path)`、`Buffer.from(kernel.fs.readBuffer(abs))`；白名单判定（敏感段/敏感前缀/穿越）
+   在内存盘上照样 404，有测试。
+5. **入口件按纪律显式用 Node 适配器**（不是漏网）：`cli.ts` `mcp.ts` `quality-cli.ts` `export-cli.ts` `schema.ts`
+   的 BETA 留痕、包根定位、CLI 进程面本就属宿主职责（§四第 1/2 条），改吃注入反倒会把台账写进内存盘。
+   `cli.ts` 的 `openBrowser` 因此收 `proc: IProcessLauncher` 形参——平台选命令留在入口，起进程交给抽象层。
+6. **普查门写成双向测试**：`r6-host-free.test.ts` 走 `core/src/**/*.ts`（排除 `abstraction/`），
+   `import` 与 `import("node:x")` 两种形态都算。剩余**非 FS 族**宿主绑定钉成死表六处：
+   `node:process` ×3（`cli.ts` `export-cli.ts` `quality-cli.ts`）、`node:net` ×1（`cli.ts` 端口探测）、
+   `node:crypto` ×1（`ids.ts`）、`node:module` ×1（`kernel.ts` 的 `createRequire`）——多一处=新尾巴，少一处=表过期，
+   两样都当场红。这六处属宿主面（FS1 D7 同族），完整达成在 R7 拆包。
+7. **漏传门（§四第 7 条）在 R6 实抓两处**：剥掉类型标注形态的尾参默认后 `TS2554` 点名 `mcp.ts` 的 R4 资源面
+   两处 `contentTypeOf(rel)` 没传 `kernel.path`——正是「尾参默认漏传也编译通过」的现行犯，已修，复跑 TS2554 = **0**。
+   顺带纠正该门的复现命令：按字面 ` = nodeFs` 粗剥会把常量初始化一起削掉，满屏 TS1005 假语法错反倒埋掉真漏传，
+   剥离必须按 `: IFileSystem = nodeFs` 这种**类型标注形态**做（命令已写进 FS1 §四第 7 条）。
+8. **门禁数字**：`npx tsc --noEmit` **0 error**；`vitest run` **37 文件 / 413 用例**全绿（R5 交付基线 36/397 ⇒ ＋1 文件 ＋16 用例）；
+   本轮两件单独跑：`r6-host-free` **15 用例**、`abstraction-mock` **18 用例**（R6 补 `fromFileUrl` 对表与 `detach` 两条）；
+   `gen-openapi --check` OK（**19 路由 ＋ 27 动词**）；
+   `gen-verbs-doc --check` OK（27 动词）；漏传门 TS2554 = 0（TS1016 = 8，剥离副产物，同 R3 口径）。
+   真机冒烟：`cli.ts flow_list` 退 0、`quality-cli` 对临时项目退 0、`export-cli --flow novel --target mermaid` 退 0、
+   `cli.ts up` 起服务后 `GET /` = 200 `text/html` 2200 字节、`/api/projects` 与 `/api/v1/projects` = 200、
+   `/.git/config` = 404（白名单在真盘上照样拦）。
+9. **未做/挂账（诚实面）**：① 非 FS 族 `node:*` 六处仍在宿主件，「core 包在无 `@types/node` 下 tsc 通过」归 R7；
+   ② `schema.ts::ROOT` 仍是宿主字符串（FS1 D3 未解，R7 的真活）；③ `AgentMcp` 的连接缓存仍是进程级
+   （按盘分桶只解决「读哪张盘的配置」，跨宿主复用连接的条件归 R7）；④ 工单卡面 P1/P2 的 15 个文件本轮无写集
+   （R3 已消化），按卡面重跑就是重复施工；⑤ **R7 那道门禁按字面跑是空转的**——`types: []` 编整个 `src` 实测 0 error，
+   因为 fastify／MCP SDK 一路的 d.ts 带 `/// <reference types="node" />`，`@types/node` 传递性进场照样解析 `node:*`；
+   六处里 `kernel.ts:577` 的 `createRequire` 还查无调用点（疑似死码）。R7 的门禁已就地改写为
+   「import 普查双向死表 ＋ core 包把 fastify/MCP SDK 留在包外做真无 node 编译」，实测三条见工单 R7 段。
+
+**偏离记录**：卡面 vs 盘面共七条（D-R6-1…D-R6-7），全文口径见 `docs/规范-FS抽象层-FS1.md` §六表，此处不抄第二遍
+（同一件事在两处各写一遍是本仓的漂移病根）。摘要：P1/P2 无写集／接口扩容两件／`agent.ts` 签名改 kernel／
+`agentMcp` → `mcpFor` 分桶／`flow_lint` cwd 与四态返回／非 FS 族六处留 R7／静态面 Buffer 包装。
+
+---
+
+## Unreleased · 工单 R5（FS Phase 2 核验 ＋ SSE 通用化，2026-09-30）
+
+**行为变更两处**（其余为新增面）：① 两条 SSE 流在静默期都会补一帧 `{"type":"heartbeat","ts":…}`——对旧的对话流客户端是
+**纯增量**，前提是「未知 `type` 忽略」这条兼容底线不破（仓内两个消费方 `adapter/storyflow-client.mjs`、`storyharness/src/home.ts` 实测都忽略）；
+② 对话流的断线检测改挂**响应**（`reply.raw`）而非请求：Node 在请求体读完时就给 `IncomingMessage` 发 `close`，
+旧写法让 POST 回合「刚连上就断开」，实测只有 `open` 帧抵达对端——这是 R5 迁管道时实踩并修掉的既有缺陷，不是新引入的行为。
+
+1. **新增 `core/src/sse.ts`（内核 SSE 的唯一出口）**：`sseFrame` / `SSE_FRAME_DONE` / `emitSseEvents(sink, source, opts)`
+   ＋ 心跳常量与钳制（`DEFAULT_HEARTBEAT_MS = 10_000`、可调区间 `50`–`30_000`、`heartbeatMsOf()` 非正数/非数字回落缺省）
+   ＋ `closeSignalOf(res)`。线格式（`data:` 单字段帧 ＋ `[DONE]` 收口）只在这里抄一份，两条流共用。
+2. **新增 `core/src/project-stream.ts`（台账 → 事件投影）**：`JOURNAL_TO_SSE` 是对 `JournalEventKind` 的**穷举** `Record`
+   （加第 17 种 kind 不补表就编译不过）；`PROJECT_EVENT_TYPES` 是投影出的 4 种；`projectEvents()` 是事件源。
+   投影保留 `event`（台账原 kind）与 `refs`，**不编造 `nodeId`**——事件不许变成第二套真相。
+3. **`AgentEvent` 扩 5 种**（`node_start` / `node_complete` / `node_error` / `gate_pending` / `heartbeat`）：
+   扩的是盘上已有的那一个联合，**没有新建 `FlowEvent`**（工单卡面的名字，见下方偏离 D-R5-①）。
+4. **v1 第 19 条路由 `GET /api/v1/projects/:id/stream`**：`V1Route` 新增 `sse?: true`（handler 返回事件源而非数据），
+   `V1Ctx` 新增 `closeSignal`。**流开始前的校验仍回 JSON 信封**（此刻头未发）——项目不存在 ⇒ `404 NO_PROJECT` 带 `meta.route`，
+   客户端按 `ok` 分支即可，不必为流写第二套错误处理。`buildOpenApiV1()` 为 `sse` 行产 `text/event-stream` 响应与逐字段事件 schema。
+5. **legacy 对话流 `/turn` 迁到统一管道**（卡面第 5 条「行为不变」）：写帧/收口/钳制全部改由 `sse.ts` 承担，
+   线格式逐字节不变（`open` 帧在前、`[DONE]` 收口、错误补一帧 `error`），并由 `test/sse-stream.test.ts` 真握手锁住。
+6. **台账是事件源，不是进程内总线**：内核每个节点动作本来就追加 `journal.jsonl`，加一层 in-process 事件总线等于第二套真相，
+   且跨进程宿主（CLI 起 run、HTTP 在看）收不到。订阅点之前的历史不重放（游标＝台账**行数**，用 ts 会在同毫秒多条事件上漏或重）；
+   台账被整本重写（回滚/清场）时重新对齐末尾。重读节拍与心跳**分家**（`LEDGER_POLL_DEFAULT_MS = 1_000`）：心跳保活可以慢，
+   事件延迟上限 = `min(1s, heartbeatMs)`；`watchDir` 命中只提前唤醒，**正确性不依赖它**（FS1 §五）。
+7. **句柄不泄漏的形状**：泵 `finally` 里只把 `it.return()` **递进**源、**不等**它——异步生成器只在 yield 点处理关闭请求，
+   卡在长 await（LLM 请求、节拍 sleep）里的源会让那个 await 永挂并把 HTTP 连接钉死。需要确定性释放的源自己接同一把信号
+   （`projectEvents({stopSignal})` ⇒ `finally { cancel() }`），HTTP 面在调用 handler **之前**成型信号并共用。
+   回归锁：`watch`/`cancel` 计数各 1（含真 HTTP 握手那条）。
+8. **对账脚本扩容**：`scripts/gen-openapi.mjs --check` 现在按 `V1_ROUTES` 逐行校验 200 响应的 **media**
+   （`sse` 行必须 `text/event-stream`，其余 `application/json`）——「文档说有、代码没有」的那类坑，面/表/文档三方对账多一根轴。
+9. **门禁数字**：`npx tsc -p tsconfig.json --noEmit` **0 error**；`vitest run` **36 文件 / 397 用例**全绿（+2 文件 +13 用例：
+   `sse-stream` 10、`fs-call-matrix` 3）；`gen-verbs-doc --check` OK（27 动词）；`gen-openapi --write/--check` OK
+   （**19 路由 ＋ 27 动词**，47 个操作）；宿主面普查仍 **9 个文件**，与 R3 收口时逐字相同——R5 两个新文件零 `node:*`。
+   卡面门禁「worldbook_search / continuity_slice / kb_search verb 全通」的落点＝`fs-call-matrix.test.ts` 在 `MockFsAdapter` 上跑通三条链并断言宿主盘无泄漏目录。
+10. **未做/挂账（诚实面）**：① agent 会话面（含 `/turn`）仍未进 v1 契约，剩下的活是载荷形状（线格式已同源）；
+    ② 断线重连的续传（`?since=`）未做，中间断掉那段只能回查 `GET /api/v1/projects/{id}/journal`；
+    ③ `run-start`/`run-end`/`verdict`/`rerun`/`snapshot`/`note`/`warn`/`chain-out`/`chain-in` 九种 kind **不投影**，
+    是 `JOURNAL_TO_SSE` 里逐条 `null` 的显式表态，扩词汇表归 owner 拍板；④ 多项目聚合流未做。
+
+**偏离记录（工单卡面 vs 盘面）**：
+
+| # | 卡面 | 盘面 | 为什么 |
+|---|---|---|---|
+| D-R5-① | 「`FlowEvent` 增 5 种」 | 扩的是 `agent.ts::AgentEvent` | 盘上没有 `FlowEvent` 这个类型；`docs/integration/sse-events.md` 早在 R4 前就写了这条提醒。建第二个类型 = 两套事件词汇表必然漂移 |
+| D-R5-② | 写集含 `verbs.ts`（VerbContext） | **未动** `verbs.ts` | 事件源选了 journal 台账（见第 6 条），不需要把「发事件的能力」塞进动词执行上下文；真那么做就是内存总线，跨进程宿主收不到 |
+| D-R5-③ | 写集含 `kb.ts`（全 FS 化）/`kernel-view.ts`/`minitools.ts` | 三者在 **R3 已迁完**（复普查查无它们） | 卡面按 R1 时的 44 文件普查排的批次，R3 提前合并 P0+P1+P2 已覆盖。R5 补的是**运行时证据**（`fs-call-matrix.test.ts`），不是重复劳动 |
+| D-R5-④ | 门禁「规范 §3.2/§4.2 调用矩阵全销账」 | FS1 **没有 §4.2** | 章节号到 §3.3 语义对表，其后是「四、注入纪律」（无子节）。口径按 §3.2 ＋ §3.3，已在 §3.2 末补 R5 复核段说明 |
+| D-R5-⑤ | 写集只列 6 个文件 | 新增 2 个文件（`sse.ts` `project-stream.ts`）＋改 4 个（`agent.ts` `api-v1.ts` `http.ts` `gen-openapi.mjs`） | 卡面第 4 条要求「emitSseEvents 通用 helper」——通用件必须有家；投影表与 FS1 §3.2 同理由放独立文件，`http.ts` 排在 R6 批三，塞进去等于把要退役的宿主面当新家的地基 |
+| D-R5-⑥ | 「pi-agent SSE 迁到统一 helper（行为不变）」 | 行为不变，但**多修了两处既有缺陷** | ① `req.raw` 的 `close` 在 POST 上过早触发（连接被静掐）；② 源收尾靠 `await it.return()` 会永挂。两处都是迁管道时暴露的，留着不叫「行为不变」，叫「行为不变地坏着」 |
+| D-R5-⑦ | — | `worldbookSearch` 的 `expansion[].via` 恒等于同条目的 `id` | 顺手发现、**未改**（载荷形状不属本卡）。语义看着应是「经由哪个命中词条扩展」，而那个信息已在 `from` 里；`via` 目前是冗余字段。归 owner 裁定是修字段还是改文档 |
+
+## Unreleased · 工单 R4（四件套：MCP 资源/提示 + REST 标准化，2026-09-30）
+
+**行为变更两处**（其余为新增面）：① `core/src/mcp.ts` 的自启动守卫由 `/mcp\.(ts|js)$/` 改为 `/(^|\/)mcp\.(ts|js)$/`
+——旧正则把 `agent-mcp.ts` 也算成自己，任何以该名运行的入口都会误抢 stdout；② OpenAPI 的形状派生点从 `mcp.ts` 上移到 `verbs.ts`
+（`mcp.ts` 转出保持旧 import 面，`core/test/r8-*.test.ts` 的引用不因此断裂）。
+
+1. **MCP 资源面 ×4（新增 `MCP_RESOURCES` 表）**：`wb://{project}/graph`（世界书归纳图全图）、
+   `wb://{project}/entry/{id}`（单词条＋全部一跳关系，按 weight 降序、带证据 `src`）、
+   `flow://{project}/state`（运行态切片，与 HTTP `/api/projects/<id>/live` 同源同形，走 `kernel.viewLive`）、
+   `artifact://{project}/{+path}`（**只读 `registry/artifacts.json` 登记过的**产物正文）。
+   注册、`resources/list`、文档、测试四处读同一张表；`LIST_CAP = 300` 超限**不静默裁**，`truncated` 如实标注。
+2. **MCP 提示面 ×2（新增 `MCP_PROMPTS` 表）**：`review-worldbook`（分类分布／孤儿词条／缺摘要词条／检索命中＋一跳扩展）、
+   `gate-assist`（门悬置时长与凭据、被裁节点生效编排声明、本轮登记产物与完整性结果、旁路诊断、四种裁决后果）。
+   两个模板**只摆事实不下结论**（语义判决归评审者对照 `knowledge/rules/`，数值证据只记账不构成打回闸）；
+   未开跑的项目返回一行说明而不是抛错。
+3. **偏离记录（工单卡面 vs 盘面）**：① 卡面写 SDK 1.7，实装 **1.30.0**（`package.json` 声明 `^1.7.0`），
+   API 按 1.30 真实签名落（`registerResource` 四参重载、`ResourceTemplate` 的 `list` 必填位、`registerPrompt` 的 `argsSchema`）；
+   ② 卡面写 `wb://graph` 这类前缀名，落地为**按项目寻址的 URI 模板**（世界书/运行态/产物全是项目级数据），
+   变量进出走 `encodeURIComponent`，中文项目 id 往返有测试；③ `{path}` 匹配不到带 `/` 的产物路径，改用 RFC 6570 保留展开 `{+path}`。
+4. **REST v1（新增 `core/src/api-v1.ts`）**：`V1_ROUTES` 18 条路由 ＋ 统一信封
+   `ApiResponse {ok,data,meta{apiVersion,route,at,verb?}}` / `ApiError {ok:false,error{code,message,detail?},meta}`，
+   状态码源于错误本体（`ApiError.http` / `KernelError.http`，兜底 500）。
+   动词直通 `POST /api/v1/verbs/:verb` 执行前跑 `verbArgIssues()`（zod，派生自动词表）⇒ `400 VALIDATION` 逐条点名；
+   legacy `/api/verbs/:verb` **不加校验**（形状已冻结）。
+5. **偏离记录（旧路由不做 301）**：legacy `/api/*` 载荷**逐字节不变**，改由 `registerLegacyMarkers` 挂
+   `deprecation: true` ＋ `successor-version: /api/v1` 响应头。理由：`POST` 走 301 会被降级成 GET（写操作静默改语义），
+   且 legacy 载荷被仓内 **11 个文件**按字段直读（`grep '/api/projects|/api/verbs|/api/openapi'` 命中：`adapter/storyflow-client.mjs`、
+   `storyharness/` 多处、`tools/workflow-page-template.html`、`tools/page-lint.mjs`）。
+6. **OpenAPI 生成（新增 `scripts/gen-openapi.mjs` ＋ `contracts/http-openapi-v1.json`）**：文档派生自 `V1_ROUTES` ⊕ `VERBS`，
+   27 个动词各出一条 `/api/v1/verbs/{name}`（通配符那条做不到 grep 对账），运行时 `GET /api/v1/openapi.json` 同一函数产出。
+   `--check` 查四件事：生成物与提交文件逐字节一致／每条路由有对应 method／无表外孤儿路径／动词必填参数进 `schema.required`。
+   legacy `contracts/http-openapi.json` 冻结 v1.2 不回改。
+7. **修一处共用单点**：legacy `/api/projects/:id/graph` 的 flowId 寻源（state 优先、回落首个可读 flow）上移为
+   `resolveProjectFlowId()`，两个面共用；顺带把「state.json 损坏 → 500」改为「回落 → 报 NO_FLOW」，
+   让报出来的错是**能修的那个**（记为偏离 D-R4-④）。
+8. **文档同步**：`docs/Agent.md`（§一 派生图加 v1/资源/提示；§六 诚实面五行改写；§七 加 gen-openapi 门禁），
+   `docs/integration/mcp-reference.md`（新增 六 资源面／七 提示面／八 握手，纪律补两条「不在注册处硬写 URI」），
+   `docs/integration/rest-api-reference.md`（新增 二 v1 面四小节，错误形状拆 legacy/v1 两套，九 诚实面），
+   `docs/integration/embedding-modes.md`（**销 R3 欠账**：接线状态表 5 行改 ✅，"可嵌入只是接口就位"一句改写为「核心已能在假 FS 上跑通整条 flow，但换宿主仍未齐」）。
+9. **测试**：34 文件 / **384 用例**（+16：`r8-verbs` +9 MCP in-memory 真握手，`r8-server` +7 v1 信封与 legacy 零回归）。
+   `npx tsc --noEmit` 0 error；`gen-verbs-doc --check` OK（27 动词）；`gen-openapi --check` OK（18 路由＋27 动词）。
+   宿主 API 普查仍为 **9 个文件**（R4 新增的 `api-v1.ts` 只经 `kernel.fs/path`，未进名单）。
+10. **未做/挂账（诚实面）**：① agent 会话面（含 SSE `/turn`）未进 v1 也不在任何契约——补它要先定 SSE 的 v1 表达，属 R5；
+    ② 资源变更通知 `list_changed`/订阅未做（R5 走 `watchDir`）；③ `zod` 被 `verbs.ts`/`mcp.ts` 直接 import，
+    但仍是 MCP SDK 的**传递依赖**、未列入 `core/package.json`——拆包（R7）与外部依赖轮（R8）必须显式处理，否则新环境 `npm ci` 后可能悬空。
+
+## Unreleased · 工单 R3（FS 抽象层 Phase 1：内核核心迁移，2026-09-30）
+
+**行为变更**：内核的读写管道全面改走注入适配器（缺省 = Node 适配器 ⇒ 宿主使用路径不变）；
+`extractCtxUsage` 新增一条抛错（给了 `root` 没给 `io`）；`decisions`/`journal`/`diag`/`metrics` 的公开签名
+由「尾参默认」改为「必传首参 `io`」——**这是 breaking 的内部签名变更**，仓内调用点已全量透传，外部消费者需同步。
+
+1. **注入位落位**：`KernelOptions` 增 `fs?: IFileSystem` / `path?: IFsPath` / `proc?: IProcessLauncher`，
+   `Kernel` 上 `readonly fs/path/proc` 三件套；`Kernel` 结构上即满足 `FsIo = { fs, path }`，故台账调用写成 `journalAppend(kernel, dir, …)`。
+2. **语义件收编**：新增 `core/src/abstraction/jsonio.ts`（`readJson` / `writeJsonAtomic` / `appendJsonl` / `readJsonl` / `LockDir`，
+   尾参 `fs`/`path`），退役件 `core/src/fsio.ts` 删除（无 import 者，`git rm`）——「原子写 + 锁目录」只留一个家。
+3. **写集 = P0 + P1 + P2 共 33 个源文件**（工单原排 R3 只做 P0 18 个，提前合并的理由与后果记在 `docs/规范-FS抽象层-FS1.md` §3.2）：
+   `kernel*.ts` `state` `registry` `asserts` `minitools` `compat` `kb` `project-config` `assertion-preset/*`
+   ＋ `modules` `overlay` `assembler` `aesthetic` ＋ `metrics` `diag` `decisions` `skills` `kits` `optimize` `selection`
+   `intent` `cfg-template` `profiles` `production-preset` `journal` `verbs`。三面（CLI/HTTP/MCP）与两个入口桥的动词调用一并改为显式适配器。
+4. **台账 io 束化（FS1 §四 第 6 条）**：写路径函数改必传首参 `io: FsIo`，`src`（除 `abstraction/`）内 **104 处调用**全量透传——
+   `journalAppend/journalQuery` 58、`recordDiag/readDiags/summarizeDiags/diagPath` 27、
+   `readMetrics/recordMetric/metricsPath` 8、`setDecision/listDecisions/decisionsMap/decisionsDir` 11，外加 `syncIntentDecisions`。理由写在 fs.ts 头注：
+   尾参默认漏传**编译照过**、台账静默写进真宿主盘；必传首参把这件事交给编译器。
+5. **`runAsync` 进 v1**（FS1 §2.2 追加）：`minitools.ts` 脚本壳本就是 `promisify(execFile)`（超时 60s + SIGTERM），
+   同步化会冻住 HTTP/MCP 宿主；`ProcResult` 的 `signal`/`timedOut` 与「退非零」分开建模，`verbs.ts` 的 `bridge()` 改吃 `kernel.proc.exec`。
+6. **可复现的漏传门**（FS1 §四 第 7 条）：临时剥掉 `src`（除 `abstraction/`）全部 ` = nodeFs` / ` = nodePath` 尾参默认后跑
+   `tsc --noEmit`，`TS2554` 即全部漏传点。R3 首轮报 **28 处 / 9 个文件**（`kernel` 6、`verbs` 7、`export-cli` 4、
+   `kernel-optimize` 3、`kernel-run` 3、`minitools` 2、`assertion-preset/registry` 1、`kernel-view` 1、`quality-cli` 1），收口时 **0 处**。
+   其中 `kernel.ts::ctx` 的 `loadState(projectDir)` 是内存盘冒烟第一条逼出来的——它让 `flow_submit` 直接报「项目无 state.json」。
+7. **内存盘端到端冒烟**（新增 `core/test/abstraction-smoke.test.ts`，4 用例）：`flow_run`→`flow_submit` 全程跑在 `MockFsAdapter`
+   ＋ `MockProcLauncher` 上——①任务包来自内存语料、②产物/注册表/journal/metrics 全落内存盘且宿主盘无泄漏目录、
+   ③跑完语料逐字节不变（只读承诺）、④改内存里的技能卡任务包跟着变（证明**读**也走注入适配器）。假进程 `calls` 为空 = agent 步没起子进程。
+8. **规范同步**：`docs/规范-FS抽象层-FS1.md` §2.2（`runAsync` 与 `signal/timedOut`）、§3.1（R3 复普查：`node:(fs|path|child_process)` 文件 44 → **9**）、
+   §3.2（实际写集口径）、§3.3（新增 6 行语义对表：`runAsync`/`writeTextAtomic`/`exists+stat` 合并/`remove`/`stat()` 布尔字段/`path.posix`）、
+   §四（第 6、7 条注入纪律）、**新增 §六 偏离清单 D1–D8**（含 `schema.ts::ROOT` 仍是宿主字符串、缓存按适配器身份分桶、
+   `node:crypto`/`process.env`/console 不在 v1 范围）。
+9. 测试 **34 文件 / 368 用例**（+1 文件 +4 用例；`r8-verbs` 的 `fromFlags` 负样本改为真内核——它现在真的读盘）。
+   tsc 严格模式全绿；`node scripts/gen-verbs-doc.mjs --check` OK（27 动词逐行一致）。
+
+## Unreleased · 工单 R2（AP1 收尾：断言覆盖 + 预设三级链 + 诊断注入，2026-10-01）
+
+**行为变更三处**（其余为新增声明面）：门点取挂载改走 `Kernel.assertionMount()` 单点；
+`applyGatePreset` 的诊断行追加现场证据；`policy.defaultPreset` 参与 `overlayHash` 因而可触发 replan。
+
+1. **三类断言覆盖 patch 进 overlay**（`set-assertion-preset` / `disable-assertion` / `insert-assertion`）：
+   契约 `contracts/flow-overlay.schema.json` kind 枚举 14→17 ＋ 新字段 `presetId/assertions/assertion/patch/group`；
+   解析 `core/src/modules.ts::effectiveFlow3`（`FLOW3_KINDS` 同步，形状非法→`unsupported`，存在性判定推迟到挂载期）；
+   合成 `core/src/assertion-preset/executor.ts::applyAssertionOverrides`——深复制派生挂载（原挂载干净 = 跨项目不污染），
+   progressive 计数与原挂载共享同一个 Map，四类「引用不到」全落 `ignored` 并进诊断通道。
+   `disable-assertion` 语义定为**免拦人不免检查**：证据留、status 降 warn、不计数。
+2. **预设选择三级链**（§九）：`KernelOptions.assertionPreset` > `flow.policy.defaultPreset` ⊕ `set-policy:defaultPreset`
+   > `novel-fanqie`；`POLICY_KEYS` 增 `defaultPreset`（非空串校验），`contracts/flow.schema.json` 同步声明。
+   坏 id 仍静默不激活 = **无调制**，确定性完整性照拦（预设是调制器，不是闸门总开关）。
+3. **诊断摘要注入**（§十）：两处门点写 `state.diagnosticSummary`/`diagnosticFrom`（`run-state.schema.json` 同步），
+   `buildTaskPackage` 随任务包下发 `pkg.diagnosticSummary`（`task-package.schema.json` 同步）；
+   check_\* 节点摘要按产物前缀路径并落检查报告 `gateSummary`（收据）。摘要行含现场证据，
+   三态口径分明：缺省=没走过门点 / 空串=走过但无调制 / 非空=有事实。
+4. **规范补写**：`docs/规范-断言预设-AP1.md` 增 §七/§九/§十（设计稿编号，实现先于成文；§八 工单未要求、磁盘无实现，
+   编号留空不虚构），并显式标注两处偏离设计稿：`applyAssertionOverrides` 返回 `OverrideReceipt` 而非裸挂载、
+   `defaultPreset` 走既有 `overlayHash` 指纹不豁免 replan。
+5. 测试 33 文件/364 用例（+20：`core/test/ap1-override.test.ts` —— 执行器合成 8 项、编排解析 5 项、
+   端到端三级链与注入 7 项；验收线「阈值提高后同输入不再 block」在 e2e 可见）。
+   tsc 严格模式全绿；R1 四门禁复跑不变（`gen-verbs-doc --check` OK；`abstraction/` 外 `node:*` 仍 44 文件）。
+
+## Unreleased · 工单 R1（FS 抽象层 Phase 0 + 集成文档四件套，2026-10-01）
+
+**零行为变更**：本轮全部为新增文件，内核现有代码一行未改。
+
+1. **FS/进程抽象层接口落库**（`core/src/abstraction/`）：`fs.ts`（`IFileSystem`/`IFsPath`）、`proc.ts`（`IProcessLauncher`）、
+   `adapters/node.ts`（原子写沿用 `fsio.ts` 语义）、`adapters/mock.ts`（内存实现，带 errno 形状异常）。
+   接口方法集由调用面普查反推，规范：`docs/规范-FS抽象层-FS1.md`（含 §3.2 迁移矩阵——修正了工单 R3/R6 的文件计数，
+   并点名工单未列的 `agent-mcp.ts` `export-cli.ts` `journal.ts` `quality-cli.ts`）。
+2. **`IFileSystem.watchDir` 进 v1**（拍板点①）：为 R5 的项目级 SSE 预留，缺省 `persistent:false`，正确性不得依赖 watch。
+3. **集成文档四件套**：`docs/Agent.md`（入口 + 生成动词表）与 `docs/integration/{mcp-reference,rest-api-reference,sse-events,embedding-modes}.md`。
+   三份文档如实标注现状缺口：MCP 无 resources/prompts、REST 无 `/api/v1` 与统一包装、SSE 只有 agent 对话流、
+   **抽象层尚未接线**（`KernelOptions` 无 `fs/path/proc` 注入位，R3 才注入）——"可嵌入"目前是接口就位，不是能力。
+4. **动词表文档生成器** `scripts/gen-verbs-doc.mjs`（`--write` / `--check`）：文档成为动词表的第四个派生面，
+   `--check` 入门禁。经 core 自带 tsx 直读 `core/src/verbs.ts`，无需先 build（`MINIFLOW_VERBS_FROM_DIST=1` 走 dist）。
+5. 测试 32 文件/344 用例（+17：`core/test/abstraction-mock.test.ts` —— mock 自测 + Node/mock 同语义对表 + proc 脚本化），
+   tsc 严格模式全绿；`abstraction/` 之外 `node:fs|path|child_process` 文件数不变（44）。
+
 ## 0.10.0 · 断言预设 AP1 + 生产线预设 PP1 + 跨流水线级联（2026-09-30）
 
 1. **kernel.ts 拆分**：2280 行单文件 → 489 行门面 + kernel-run/optimize/view/config/base 五文件（free function + kernel 显式传参，公开 API 零变化；KernelError 独立 kernel-base.ts 防运行时环）。

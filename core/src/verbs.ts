@@ -11,12 +11,13 @@
 //   · CLI  —— `usage()` 由表生成 + 按表分派（`cli.ts`）
 // 禁止在任何一面再手抄一份动词清单；也禁止某一面「只有专用端点、不在表里」。
 //
-// 依赖方向：本文件只依赖 `kernel.ts`（的值 `deriveProjectName` 与类型）/`skills.ts`/`schema.js`，
+// 依赖方向：本文件只依赖 `kernel.ts`（的值 `deriveProjectName` 与类型）/`skills.ts`/`schema.js` 与 `zod`，
 // **不得** import cli/http/mcp —— 否则成环。
-import fs from "node:fs";
-import path from "node:path";
-import { execFileSync } from "node:child_process";
+// R4：三面共用的 schema 形状（zod / JSON Schema）在本文件末尾**派生** —— 动词表是唯一台账，
+// schema 只是它的投影；把 zodOf 放在 mcp.ts 会让 http.ts 反向依赖 MCP 模块（还把 SDK 拖进 HTTP 面）。
+import { z } from "zod";
 import { deriveProjectName } from "./kernel.js";
+import { ProcExecutionError } from "./abstraction/proc.js";
 import type { Kernel } from "./kernel.js";
 import { skillPatch } from "./skills.js";
 import { cfgTemplate, CfgTemplateError } from "./cfg-template.js";
@@ -71,7 +72,7 @@ export function resolveProjectName(kernel: Kernel, inputs: Record<string, unknow
   const base = deriveProjectName(inputs) || `project-${new Date().toISOString().slice(0, 16).replace(/[-:T]/g, "")}`;
   let name = base;
   let i = 2;
-  const taken = (id: string) => fs.existsSync(path.join(kernel.root, "projects", id));
+  const taken = (id: string) => kernel.fs.exists(kernel.path.join(kernel.root, "projects", id));
   while (taken(name)) name = `${base}-${i++}`;
   console.error(`[flow_run] 未指定 project，按灵感自动命名: ${name}`);
   return name;
@@ -80,9 +81,9 @@ export function resolveProjectName(kernel: Kernel, inputs: Record<string, unknow
 /** 生成 `项目配置.json` 模板（`flow_init` 的落点；HTTP/MCP 亦可达）。 */
 function writeConfigTemplate(kernel: Kernel, projectId: string): Record<string, unknown> {
   const dir = kernel.projectDir(projectId);
-  fs.mkdirSync(dir, { recursive: true });
-  const file = path.join(dir, "项目配置.json");
-  if (fs.existsSync(file)) return { exists: true, file };
+  kernel.fs.mkdir(dir, { recursive: true });
+  const file = kernel.path.join(dir, "项目配置.json");
+  if (kernel.fs.exists(file)) return { exists: true, file };
   const template = {
     项目: projectId,
     题材: "",
@@ -94,7 +95,7 @@ function writeConfigTemplate(kernel: Kernel, projectId: string): Record<string, 
     市场预估: "",
     presets: {},
   };
-  fs.writeFileSync(file, JSON.stringify(template, null, 2) + "\n", "utf-8");
+  kernel.fs.writeText(file, JSON.stringify(template, null, 2) + "\n");
   return { created: file, hint: "填写后 flow_run 自动装载；显式入参 > 项目配置 > flow 默认" };
 }
 
@@ -110,12 +111,13 @@ const G_BRIDGE = "底座工具桥（挂表）";
 function bridge(kernel: Kernel, cmd: string, args: string[], timeoutMs = 180_000): unknown {
   let stdout: string;
   try {
-    stdout = execFileSync(cmd, args, {
-      cwd: kernel.root, encoding: "utf-8", timeout: timeoutMs, maxBuffer: 32 * 1024 * 1024, shell: false,
+    stdout = kernel.proc.exec(cmd, args, {
+      cwd: kernel.root, timeoutMs, maxBufferBytes: 32 * 1024 * 1024,
       env: { ...process.env, PYTHONIOENCODING: "utf-8" },
     });
   } catch (e) {
-    const err = e as { stderr?: unknown; message?: string; status?: number };
+    // env 面（process.env）留在宿主：FS1 v1 只抽象磁盘与进程，规范 §3.1 普查无环境变量注入。
+    const err = e as ProcExecutionError;
     throw new KernelError("BRIDGE_FAIL", 502, `${cmd} ${args.slice(0, 2).join(" ")} 失败(exit=${err.status ?? "?"}): ${String(err.stderr || err.message || e).slice(0, 1200)}`);
   }
   const text = stdout.trim();
@@ -147,8 +149,8 @@ export const VERBS: VerbDef[] = [
       const cfg = S(a.config);
       if (cfg) {
         const dir = kernel.projectDir(project);
-        fs.mkdirSync(dir, { recursive: true });
-        fs.copyFileSync(cfg, path.join(dir, "项目配置.json"));
+        kernel.fs.mkdir(dir, { recursive: true });
+        kernel.fs.copy(cfg, kernel.path.join(dir, "项目配置.json"));
       }
       return kernel.flow_run(String(a.flow), project, inputs);
     },
@@ -187,14 +189,19 @@ export const VERBS: VerbDef[] = [
     ],
     run: (kernel, a) => {
       try {
-        return cfgTemplate(kernel, {
-          action: String(a.action),
-          project: a.project === undefined ? undefined : String(a.project),
-          name: a.name === undefined ? undefined : String(a.name),
-          flowId: a.flow === undefined ? undefined : String(a.flow),
-          overwrite: B(a.overwrite),
-          force: B(a.force),
-        });
+        return cfgTemplate(
+          kernel,
+          {
+            action: String(a.action),
+            project: a.project === undefined ? undefined : String(a.project),
+            name: a.name === undefined ? undefined : String(a.name),
+            flowId: a.flow === undefined ? undefined : String(a.flow),
+            overwrite: B(a.overwrite),
+            force: B(a.force),
+          },
+          kernel.fs,
+          kernel.path,
+        );
       } catch (e) {
         // 用户在模板库里能改的错（名字非法/不存在/跨 flow/已存在）必须原样带着 4xx 码出去，
         // 不许被三面当成「服务器内部错误」——把用户手误报成 500 与「崩掉当没事」是同一种病。
@@ -237,10 +244,10 @@ export const VERBS: VerbDef[] = [
         notes: S(a.notes),
         seal: B(a.seal),
       }),
-    fromFlags: (_kernel, flags) => ({
+    fromFlags: (kernel, flags) => ({
       project: flags.project,
       node: flags.node,
-      content: flags["content-file"] ? fs.readFileSync(String(flags["content-file"]), "utf-8") : undefined,
+      content: flags["content-file"] ? kernel.fs.readText(String(flags["content-file"])) : undefined,
       file: flags.file,
       seal: flags.seal,
     }),
@@ -331,17 +338,22 @@ export const VERBS: VerbDef[] = [
       // skills/ 是**仓库级**资产 ⇒ 落点取 `kernel.repoRoot`（缺省=ROOT；`--root` 重定向时跟随工作区）。
       // 此前 CLI 硬编码编译期 ROOT —— `--root` 下补丁会写到真实仓库，属静默错位。
       const repo = kernel.repoRoot;
-      if (action === "list") return skillPatch(repo, { action: "list", target: S(a.target) });
-      if (action === "approve" || action === "reject") return skillPatch(repo, { action, id: String(a.id) });
-      return skillPatch(repo, {
-        action: "add",
-        target: String(a.target),
-        text: String(a.text),
-        reason: String(a.reason),
-        section: S(a.section),
-        op: S(a.op) as "append" | "replace" | undefined,
-        origin: S(a.origin) as "user" | "miner" | "agent" | undefined,
-      });
+      if (action === "list") return skillPatch(repo, { action: "list", target: S(a.target) }, kernel.fs, kernel.path);
+      if (action === "approve" || action === "reject") return skillPatch(repo, { action, id: String(a.id) }, kernel.fs, kernel.path);
+      return skillPatch(
+        repo,
+        {
+          action: "add",
+          target: String(a.target),
+          text: String(a.text),
+          reason: String(a.reason),
+          section: S(a.section),
+          op: S(a.op) as "append" | "replace" | undefined,
+          origin: S(a.origin) as "user" | "miner" | "agent" | undefined,
+        },
+        kernel.fs,
+        kernel.path,
+      );
     },
     // CLI 保留原旗标面：--approve <id> / --reject <id> / --list / 否则 add
     fromFlags: (_kernel, flags) => ({
@@ -399,10 +411,10 @@ export const VERBS: VerbDef[] = [
         replan: B(a.replan) ?? false,
       });
     },
-    fromFlags: (_kernel, flags) => {
+    fromFlags: (kernel, flags) => {
       const file = S(flags.patches);
       const raw: { patches?: unknown } | unknown[] | undefined = file
-        ? JSON.parse(fs.readFileSync(file, "utf-8"))
+        ? JSON.parse(kernel.fs.readText(file))
         : undefined;
       const patches = Array.isArray(raw) ? raw : raw?.patches;
       return { project: flags.project, patches, approve: flags.approve, actor: flags.actor, reason: flags.reason, replan: flags.replan };
@@ -433,7 +445,7 @@ export const VERBS: VerbDef[] = [
       const projectDir = kernel.projectDir(String(a.project));
       let d;
       try {
-        d = setDecision(projectDir, {
+        d = setDecision(kernel, projectDir, {
           key: String(a.key),
           picked: split(a.picked) ?? [],
           by: String(a.by ?? ""),
@@ -447,8 +459,8 @@ export const VERBS: VerbDef[] = [
         throw e;
       }
       try {
-        const st = loadState(projectDir);
-        journalAppend(projectDir, st?.runId ?? "-", "note", {
+        const st = loadState(projectDir, kernel.fs, kernel.path);
+        journalAppend(kernel, projectDir, st?.runId ?? "-", "note", {
           actor: S(a.actor) ?? "user",
           detail: `决策落盘 decision:${d.key} ← picked[${d.picked.join(",")}]${d.excluded_tags?.length ? ` 排除[${d.excluded_tags.join(",")}]` : ""}（by=${d.by}，evidence=${d.evidence}）`,
         });
@@ -463,7 +475,7 @@ export const VERBS: VerbDef[] = [
     description: "读项目全部决策事实（坏条目进 issues 不静默）——回答「这一步凭什么这么选」",
     group: G_CHOICE,
     params: [{ name: "project", type: "string", required: true, desc: "项目 id" }],
-    run: (kernel, a) => listDecisions(kernel.projectDir(String(a.project))),
+    run: (kernel, a) => listDecisions(kernel, kernel.projectDir(String(a.project))),
   },
   {
     name: "kb_search",
@@ -474,11 +486,11 @@ export const VERBS: VerbDef[] = [
       { name: "dir", type: "string", desc: "限定子目录（aesthetic/craft/market/structure/rules/trope…）" },
       { name: "k", type: "number", desc: "条数上限（默认 8）" },
     ],
-    run: (kernel, a) => kbSearch(path.join(kernel.repoRoot, "knowledge"), {
+    run: (kernel, a) => kbSearch(kernel.path.join(kernel.repoRoot, "knowledge"), {
       q: String(a.q ?? ""),
       dir: a.dir === undefined ? undefined : String(a.dir),
       k: a.k === undefined ? undefined : Number(a.k),
-    }),
+    }, kernel.fs, kernel.path),
   },
   {
     name: "kb_read",
@@ -488,7 +500,7 @@ export const VERBS: VerbDef[] = [
       { name: "ref", type: "string", required: true, desc: "卡片 id 或相对路径" },
       { name: "max_chars", flag: "max-chars", type: "number", desc: "截断上限（默认 16000）" },
     ],
-    run: (kernel, a) => kbRead(path.join(kernel.repoRoot, "knowledge"), String(a.ref ?? ""), a.max_chars === undefined ? undefined : Number(a.max_chars)),
+    run: (kernel, a) => kbRead(kernel.path.join(kernel.repoRoot, "knowledge"), String(a.ref ?? ""), a.max_chars === undefined ? undefined : Number(a.max_chars), kernel.fs, kernel.path),
   },
   {
     name: "worldbook_search",
@@ -589,17 +601,17 @@ export const VERBS: VerbDef[] = [
     run: (kernel, a) => {
       let g;
       try {
-        g = loadIntentGraph(kernel.root, String(a.universe));
+        g = loadIntentGraph(kernel.root, String(a.universe), kernel.fs, kernel.path);
       } catch (e) {
         if (e instanceof IntentError) throw new KernelError(e.code, e.code === "INTENT_MISSING" ? 404 : 400, e.message);
         throw e;
       }
       const projectDir = kernel.projectDir(String(a.project));
-      const res = syncIntentDecisions(projectDir, g);
+      const res = syncIntentDecisions(projectDir, g, kernel);
       if (res.written.length) {
         try {
-          const st = loadState(projectDir);
-          journalAppend(projectDir, st?.runId ?? "-", "note", {
+          const st = loadState(projectDir, kernel.fs, kernel.path);
+          journalAppend(kernel, projectDir, st?.runId ?? "-", "note", {
             actor: S(a.actor) ?? "user",
             detail: `立意图同步 decision:[${res.written.map((w) => w.key).join(",")}] ← universe:${g.universe}（单向桥，已存在不回填）`,
           });
@@ -704,4 +716,85 @@ export function usageFromVerbs(): string {
     lines.push("");
   }
   return lines.join("\n");
+}
+
+// ── R4 · 三面共用的 schema 派生（MCP inputSchema ∷ HTTP 入参前置校验 ∷ OpenAPI 组件）────
+
+/** 动词参数 → zod（MCP tool 的 inputSchema 与 HTTP 前置校验共用同一份形状）。 */
+export function zodOf(p: VerbParam): z.ZodTypeAny {
+  let base: z.ZodTypeAny;
+  switch (p.type) {
+    case "number":
+      base = z.number();
+      break;
+    case "boolean":
+      base = z.boolean();
+      break;
+    case "record":
+      base = z.record(z.string(), z.unknown());
+      break;
+    case "string[]":
+      base = z.array(z.string());
+      break;
+    default:
+      base = p.enum ? z.enum(p.enum as [string, ...string[]]) : z.string();
+  }
+  return p.required ? base : base.optional().describe(p.desc);
+}
+
+/** 动词表 → MCP tool 形状（`mcp.ts` 逐条 registerTool 用；测试据此断言「MCP 面 = 表」）。 */
+export function verbToolSpecs(): { name: string; description: string; inputSchema: Record<string, z.ZodTypeAny> }[] {
+  return VERBS.map((def) => {
+    const inputSchema: Record<string, z.ZodTypeAny> = {};
+    for (const p of def.params) inputSchema[p.name] = zodOf(p);
+    // required 的参数把 desc 挂在 description 上（zod 的 .describe 对 optional 已用，这里对必填补一次）
+    for (const p of def.params) {
+      const sch = inputSchema[p.name];
+      if (p.required && sch) inputSchema[p.name] = sch.describe(p.desc);
+    }
+    return { name: def.name, description: def.description, inputSchema };
+  });
+}
+
+/** 动词参数 → JSON Schema（OpenAPI 生成脚本用；与 `zodOf` 同一张表同一判据，不许两份漂移）。 */
+export function jsonSchemaOf(p: VerbParam): Record<string, unknown> {
+  const s: Record<string, unknown> =
+    p.type === "number"
+      ? { type: "number" }
+      : p.type === "boolean"
+        ? { type: "boolean" }
+        : p.type === "record"
+          ? { type: "object", additionalProperties: true }
+          : p.type === "string[]"
+            ? { type: "array", items: { type: "string" } }
+            : p.enum
+              ? { type: "string", enum: [...p.enum] }
+              : { type: "string" };
+  s.description = p.desc;
+  return s;
+}
+
+/** 动词 → OpenAPI 请求体的 JSON Schema（properties 用归一化键名，与 HTTP body 同名）。 */
+export function verbJsonSchema(def: VerbDef): Record<string, unknown> {
+  const properties: Record<string, unknown> = {};
+  const required: string[] = [];
+  for (const p of def.params) {
+    properties[p.name] = jsonSchemaOf(p);
+    if (p.required) required.push(p.name);
+  }
+  const schema: Record<string, unknown> = { type: "object", properties };
+  if (required.length) schema.required = required;
+  return schema;
+}
+
+/**
+ * 动词入参前置校验（R4）：脏参数在门口拦下，不再灌进内核换一句业务错。
+ * 返回 issues 数组（空 = 通过）——响应形状由调用方定（REST 出 400 VALIDATION 包装，MCP 由 SDK 自己校验）。
+ */
+export function verbArgIssues(def: VerbDef, args: Record<string, unknown>): string[] {
+  const shape: Record<string, z.ZodTypeAny> = {};
+  for (const p of def.params) shape[p.name] = zodOf(p);
+  const parsed = z.object(shape).safeParse(args ?? {});
+  if (parsed.success) return [];
+  return parsed.error.issues.map((i) => `${i.path.join(".") || "<body>"}: ${i.message}`);
 }
