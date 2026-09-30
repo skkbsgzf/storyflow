@@ -1,7 +1,5 @@
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import AjvModule from "ajv/dist/2020.js";
+import { nodeFs, nodePath } from "./abstraction/adapters/node.js";
 
 interface ValidateFn {
   (data: unknown): boolean;
@@ -14,10 +12,10 @@ interface AjvInstance {
 // ajv/dist/2020 的 CJS interop 类型不完整，收窄为实际用到的面
 const Ajv2020 = AjvModule as unknown as new (opts: Record<string, unknown>) => AjvInstance;
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-export const CORE_DIR = path.resolve(__dirname, "..");
-export const ROOT = path.resolve(CORE_DIR, "..");
-export const CONTRACTS_DIR = process.env.MINIFLOW_CONTRACTS_DIR ?? path.join(ROOT, "contracts");
+const __dirname = nodePath.dirname(nodePath.fromFileUrl(import.meta.url));
+export const CORE_DIR = nodePath.resolve(__dirname, "..");
+export const ROOT = nodePath.resolve(CORE_DIR, "..");
+export const CONTRACTS_DIR = process.env.MINIFLOW_CONTRACTS_DIR ?? nodePath.join(ROOT, "contracts");
 
 const SCHEMA_IDS = [
   "run-state",
@@ -50,9 +48,9 @@ const validators = new Map<SchemaId, ValidateFn>();
 function loadAjv(): void {
   const ajv = new Ajv2020({ allErrors: true, strict: false });
   for (const id of SCHEMA_IDS) {
-    const file = path.join(CONTRACTS_DIR, `${id}.schema.json`);
-    if (!fs.existsSync(file)) continue;
-    const schema = JSON.parse(fs.readFileSync(file, "utf-8"));
+    const file = nodePath.join(CONTRACTS_DIR, `${id}.schema.json`);
+    if (!nodeFs.exists(file)) continue;
+    const schema = JSON.parse(nodeFs.readText(file));
     ajv.addSchema(schema, `miniflow/${id}`);
   }
   for (const id of SCHEMA_IDS) {

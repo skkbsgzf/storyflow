@@ -3,6 +3,10 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { extractCtxUsage, conceptTermsOf } from "../src/metrics.js";
+import { nodeFs, nodePath } from "../src/abstraction/adapters/node.js";
+
+/** 测试走宿主盘：FS1 §四的 io 首参用这套默认适配器。 */
+const io = { fs: nodeFs, path: nodePath };
 
 /** 临时知识库夹具：两张卡（CJK 概念词 + 拉丁缩写），验证概念命中层与字面层的分工。 */
 function makeKbRoot(): string {
@@ -45,27 +49,27 @@ describe("命中率 · 概念词命中层（extractCtxUsage）", () => {
   it("字面层照旧：头部引用即命中，与 root 无关", () => {
     const t = artifact("正文随便写。", ["kb/test/redline"]);
     expect(extractCtxUsage(t, ["kb/test/redline"]).used).toBe(1);
-    expect(extractCtxUsage(t, ["kb/test/redline"], { root: makeKbRootSafe() }).used).toBe(1);
+    expect(extractCtxUsage(t, ["kb/test/redline"], { root: makeKbRootSafe(), io }).used).toBe(1);
   });
 
   it("概念层：正文吃了卡的知识（弃书点）但没抄路径 → 计命中", () => {
     const root = makeKbRoot();
     const t = artifact("他深知蒙辱不还手是读者的弃书点，但他忍了。");
     expect(extractCtxUsage(t, ["kb/test/redline"]).used).toBe(0); // 无 root = 旧口径
-    expect(extractCtxUsage(t, ["kb/test/redline"], { root }).used).toBe(1);
-    expect(conceptTermsOf(root, "kb/test/redline")).toContain("弃书点");
+    expect(extractCtxUsage(t, ["kb/test/redline"], { root, io }).used).toBe(1);
+    expect(conceptTermsOf(io, root, "kb/test/redline")).toContain("弃书点");
   });
 
   it("正文与卡无关 → 不误报", () => {
     const root = makeKbRoot();
     const t = artifact("武大郎把炊饼进了炉，烤得两面金黄。");
-    expect(extractCtxUsage(t, ["kb/test/redline"], { root }).used).toBe(0);
+    expect(extractCtxUsage(t, ["kb/test/redline"], { root, io }).used).toBe(0);
   });
 
   it("拉丁签名词按词边界匹配：natural 不得命中 NA 卡", () => {
     const root = makeKbRoot();
-    expect(extractCtxUsage(artifact("it feels natural here"), ["kb/test/market-na"], { root }).used).toBe(0);
-    expect(extractCtxUsage(artifact("对标 NA 市场的深海题材"), ["kb/test/market-na"], { root }).used).toBe(1);
+    expect(extractCtxUsage(artifact("it feels natural here"), ["kb/test/market-na"], { root, io }).used).toBe(0);
+    expect(extractCtxUsage(artifact("对标 NA 市场的深海题材"), ["kb/test/market-na"], { root, io }).used).toBe(1);
   });
 });
 

@@ -21,6 +21,10 @@ import { resolveToolConfig } from "../src/kits.js";
 import { runAestheticAsserts } from "../src/aesthetic.js";
 import { runCoreNode } from "../src/minitools.js";
 import { artifact, expandedFlow, loadFlow } from "./helpers.js";
+import { nodeFs, nodePath } from "../src/abstraction/adapters/node.js";
+
+/** 测试走宿主盘：FS1 §四的 io 首参用这套默认适配器。 */
+const io = { fs: nodeFs, path: nodePath };
 
 // flow@3 不手画 graph——边界裁决由 expandFlow3 派生的「连接件」（kind=gate / gate_role=link）承担。
 // 需要图形态描述符的用例一律走展开单点，拿到与内核 effectiveOf 同源的派生图。
@@ -250,8 +254,8 @@ describe("R5 · 指标：tool 效率 与 上下文命中率", () => {
 
   it("指标落盘后内核能读回（旁路不影响流水线）", () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "miniflow-metrics-"));
-    recordMetric(dir, { runId: "r1", nodeId: "n1", kit: "plot", op: "plot-redline", phase: "dispatch", ctx: { offered: 2, ids: ["kb/x", "kb/y"] } });
-    const back = readMetrics(dir);
+    recordMetric(io, dir, { runId: "r1", nodeId: "n1", kit: "plot", op: "plot-redline", phase: "dispatch", ctx: { offered: 2, ids: ["kb/x", "kb/y"] } });
+    const back = readMetrics(io, dir);
     expect(back).toHaveLength(1);
     expect(back[0].nodeId).toBe("n1");
   });
@@ -396,7 +400,7 @@ describe("R5 · 内核端到端：连接件自动放行 + 人工交界拦人 + �
     expect(last.next.gate.title).toContain("连接");
     expect(last.next.gate.title).toContain("编剧");
 
-    const metrics = readMetrics(pd);
+    const metrics = readMetrics(io, pd);
     // 自动交界照跑并留痕：m2.link 有 phase=link、verdict=pass 的指标（旧「评审步不静默断路」在 flow@3 的表达）
     const autoLink = metrics.filter((m) => m.nodeId === "m2.link" && m.phase === "link");
     expect(autoLink.length).toBeGreaterThan(0);
@@ -419,7 +423,7 @@ describe("R5 · 内核端到端：连接件自动放行 + 人工交界拦人 + �
     expect(g.applied).toBe(true);
     expect(g.next?.status).toBe("awaiting_input");
     expect(g.next?.nodeId).toBe("m3.structure-design");
-    expect(readMetrics(pd).some((m) => m.phase === "link" && m.nodeId === "m3.link" && m.verdict === "pass")).toBe(true);
+    expect(readMetrics(io, pd).some((m) => m.phase === "link" && m.nodeId === "m3.link" && m.verdict === "pass")).toBe(true);
     const eff = kernel.viewEffect(projectId);
     // flow@3 的「边界清单」就是 links（内核 boundaries 恒空，改由 links 表达）
     expect(eff.boundaries).toEqual([]);
@@ -524,7 +528,7 @@ describe("R7 · 缺省 link_default=auto：交界可见、自动放行、下游�
     expect(st.plan.order.length).toBeGreaterThanOrEqual(22);
 
     // ② 指标照记 link 相（旧实现连 phase 都漏在契约 enum 外，被 catch{} 吞成 0 行）
-    expect(readMetrics(pd3).some((m) => m.phase === "link" && m.nodeId === "m2.link")).toBe(true);
+    expect(readMetrics(io, pd3).some((m) => m.phase === "link" && m.nodeId === "m2.link")).toBe(true);
   });
 });
 
@@ -688,7 +692,7 @@ describe("R5 · v5.0 提交链无断言闸（完整性是唯一残留闸，质�
     // 「flow_submit 路径上无 AE-」验收口径的测试面：打回单里全部是完整性检查名
     expect((rej.problems ?? []).filter((p) => p.name.startsWith("AE-"))).toEqual([]);
     // 打回必须落指标——否则 R5 成本口径（checkBlock 溢价）永远是 0，优化器看不到返工
-    const rejMetric = readMetrics(pd).find((m) => m.nodeId === "m1.find-trope" && m.verdict === "rejected");
+    const rejMetric = readMetrics(io, pd).find((m) => m.nodeId === "m1.find-trope" && m.verdict === "rejected");
     expect(rejMetric?.checks?.block).toBeGreaterThan(0);
   });
 

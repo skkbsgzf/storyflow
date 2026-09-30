@@ -1,24 +1,24 @@
-import fs from "node:fs";
-import path from "node:path";
 import type { FlowDescriptor, RunState, NodeState, JournalEvent } from "./types.js";
-import { writeJsonAtomic, readJson, atomicWriteText } from "./fsio.js";
+import { writeJsonAtomic, readJson, appendJsonl } from "./abstraction/jsonio.js";
+import { nodeFs, nodePath } from "./abstraction/defaults.js";
+import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
 import { assertSchema } from "./schema.js";
 import { newId, nowIso, flowHashOf, gateToken } from "./ids.js";
 import { compilePlan } from "./plan.js";
 
-export function statePath(projectDir: string): string {
+export function statePath(projectDir: string, path: IFsPath = nodePath): string {
   return path.join(projectDir, "state.json");
 }
-export function legacyStatePath(projectDir: string): string {
+export function legacyStatePath(projectDir: string, path: IFsPath = nodePath): string {
   return path.join(projectDir, "run-state.json");
 }
-export function journalPath(projectDir: string): string {
+export function journalPath(projectDir: string, path: IFsPath = nodePath): string {
   return path.join(projectDir, "journal.jsonl");
 }
-export function registryPath(projectDir: string): string {
+export function registryPath(projectDir: string, path: IFsPath = nodePath): string {
   return path.join(projectDir, "registry", "artifacts.json");
 }
-export function snapshotsDir(projectDir: string): string {
+export function snapshotsDir(projectDir: string, path: IFsPath = nodePath): string {
   return path.join(projectDir, "snapshots");
 }
 
@@ -51,13 +51,13 @@ export function focusOf(state: RunState): string | undefined {
   return order.find((id) => (state.nodes[id]?.status ?? "none") !== "done");
 }
 
-export function saveState(projectDir: string, state: RunState): void {
+export function saveState(projectDir: string, state: RunState, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): void {
   state.focus = focusOf(state);
-  writeJsonAtomic(statePath(projectDir), state, (o) => assertSchema("run-state", o));
+  writeJsonAtomic(statePath(projectDir, path), state, (o) => assertSchema("run-state", o), fs);
 }
 
-export function loadState(projectDir: string): RunState | undefined {
-  return readJson<RunState>(statePath(projectDir));
+export function loadState(projectDir: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): RunState | undefined {
+  return readJson<RunState>(statePath(projectDir, path), fs);
 }
 
 // ---------- v1.0.1 迁移器：现网 run-state.json → state.json ----------
@@ -82,8 +82,10 @@ export function migrateRunState(
   projectId: string,
   flow: FlowDescriptor,
   resolvedInputs: Record<string, unknown>,
+  fs: IFileSystem = nodeFs,
+  path: IFsPath = nodePath,
 ): MigrationResult {
-  const legacy = readJson<Record<string, any>>(legacyStatePath(projectDir));
+  const legacy = readJson<Record<string, any>>(legacyStatePath(projectDir, path), fs);
   if (!legacy) throw new Error(`无 run-state.json 可迁移: ${projectDir}`);
 
   const nodes: Record<string, NodeState> = {};
@@ -165,13 +167,12 @@ export function migrateRunState(
   return { state, seedEvents };
 }
 
-export function writeJournalSeed(projectDir: string, events: JournalEvent[]): void {
-  for (const e of events) appendSeed(projectDir, e);
+export function writeJournalSeed(projectDir: string, events: JournalEvent[], fs: IFileSystem = nodeFs, path: IFsPath = nodePath): void {
+  for (const e of events) appendSeed(projectDir, e, fs, path);
 }
-function appendSeed(projectDir: string, e: JournalEvent): void {
+function appendSeed(projectDir: string, e: JournalEvent, fs: IFileSystem, path: IFsPath): void {
   // 直接追加（避免循环依赖 journal.ts）
-  fs.mkdirSync(path.dirname(journalPath(projectDir)), { recursive: true });
-  fs.appendFileSync(journalPath(projectDir), JSON.stringify(e) + "\n", "utf-8");
+  appendJsonl(journalPath(projectDir, path), e, fs, path);
 }
 
 export { gateToken };

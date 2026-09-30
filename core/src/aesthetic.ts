@@ -1,5 +1,5 @@
-import fs from "node:fs";
-import path from "node:path";
+import { nodeFs, nodePath } from "./abstraction/defaults.js";
+import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
 import type { Validation } from "./types.js";
 import { recordDiag } from "./diag.js";
 import { DEFAULT_BUDGET } from "./budget.js";
@@ -78,9 +78,9 @@ function parseBeatStructure(text: string): ParsedEp[] {
 }
 
 /** 项目级配置：词汇表.json 扩展字段（memes/banned），缺省空。 */
-function projectConfig(projectDir: string): { memes: string[]; banned: string[] } {
+function projectConfig(projectDir: string, fs: IFileSystem, path: IFsPath): { memes: string[]; banned: string[] } {
   try {
-    const g = JSON.parse(fs.readFileSync(path.join(projectDir, "词汇表.json"), "utf-8")) as {
+    const g = JSON.parse(fs.readText(path.join(projectDir, "词汇表.json"))) as {
       memes?: unknown;
       banned?: unknown;
     };
@@ -92,17 +92,17 @@ function projectConfig(projectDir: string): { memes: string[]; banned: string[] 
     // 区分「没配」与「坏了」：词汇表是可选项，ENOENT 是合法常态（检查本就不适用），
     // 只有**存在但读不出来**才是真故障——那意味着去机味/禁忌检查静默失效却仍报"通过"。
     if ((e as NodeJS.ErrnoException)?.code !== "ENOENT") {
-      recordDiag(projectDir, "aesthetic", "projectConfig:词汇表.json", e);
+      recordDiag({ fs, path }, projectDir, "aesthetic", "projectConfig:词汇表.json", e);
     }
     return { memes: [], banned: [] };
   }
 }
 
 /** 大纲编排表声明的合法集数集合（对外交付/02-大纲.md 的 `| n-m |` 行）；无大纲 → undefined。 */
-function outlineEpisodeBounds(projectDir: string): Set<number> | undefined {
+function outlineEpisodeBounds(projectDir: string, fs: IFileSystem, path: IFsPath): Set<number> | undefined {
   const p = path.join(projectDir, "对外交付", "02-大纲.md");
-  if (!fs.existsSync(p)) return undefined;
-  const text = fs.readFileSync(p, "utf-8");
+  if (!fs.exists(p)) return undefined;
+  const text = fs.readText(p);
   const set = new Set<number>();
   for (const m of text.matchAll(/^\|\s*(\d+)(?:\s*-\s*(\d+))?\s*\|/gm)) {
     const a = parseInt(m[1] ?? "", 10);
@@ -119,17 +119,17 @@ function outlineEpisodeBounds(projectDir: string): Set<number> | undefined {
  * 台账：纯净度标记 = knowledge/aesthetic/purity-markers.json（与 tools/check-purity.py 共享）。
  * ==========================================================================*/
 
-function repoRootOf(projectDir: string): string {
+function repoRootOf(projectDir: string, path: IFsPath): string {
   return process.env.MINIFLOW_ROOT ?? path.join(projectDir, "..", "..");
 }
 
 let purityReCache: { root: string; re: RegExp[] } | null = null;
-function purityRegexps(projectDir: string): RegExp[] {
-  const root = repoRootOf(projectDir);
+function purityRegexps(projectDir: string, fs: IFileSystem, path: IFsPath): RegExp[] {
+  const root = repoRootOf(projectDir, path);
   if (purityReCache && purityReCache.root === root) return purityReCache.re;
   const out: RegExp[] = [];
   try {
-    const j = JSON.parse(fs.readFileSync(path.join(root, "knowledge", "aesthetic", "purity-markers.json"), "utf-8")) as {
+    const j = JSON.parse(fs.readText(path.join(root, "knowledge", "aesthetic", "purity-markers.json"))) as {
       regex?: string[];
     };
     for (const s of j.regex ?? []) {
@@ -137,21 +137,21 @@ function purityRegexps(projectDir: string): RegExp[] {
         out.push(new RegExp(s));
       } catch (e) {
         // 台账里的坏正则：跳过是对的（不拖垮整检），但"一条标记静默失效"必须可见。
-        recordDiag(projectDir, "aesthetic", `purityRegexps:bad-regex`, `${s} :: ${String(e)}`);
+        recordDiag({ fs, path }, projectDir, "aesthetic", `purityRegexps:bad-regex`, `${s} :: ${String(e)}`);
       }
     }
   } catch (e) {
     // 台账缺失 ⇒ 纯净度检查**整项不适用**（返回空表，调用方视作"无需检查"）。
     // 与 check-purity.py 共享同一份台账，缺失时两边都不报——最典型的"静默不设防"。
-    recordDiag(projectDir, "aesthetic", "purityRegexps:knowledge/aesthetic/purity-markers.json", e);
+    recordDiag({ fs, path }, projectDir, "aesthetic", "purityRegexps:knowledge/aesthetic/purity-markers.json", e);
   }
   purityReCache = { root, re: out };
   return out;
 }
 
 /** AE-OUTPUT-PURITY（block）：执行元数据不得进入成文产物正文（标记台账共享，见 purity-markers.json）。 */
-export function purityAssert(projectDir: string, text: string): Validation {
-  const res = purityRegexps(projectDir);
+export function purityAssert(projectDir: string, text: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): Validation {
+  const res = purityRegexps(projectDir, fs, path);
   if (!res.length) {
     return { name: "AE-OUTPUT-PURITY", status: "warn", detail: "纯净度标记台账缺失（knowledge/aesthetic/purity-markers.json）——本检查不适用" };
   }
@@ -178,7 +178,7 @@ export function purityAssert(projectDir: string, text: string): Validation {
 const VIS_BAD_RE = /(心理描写|内心独白|心想|暗想|心中暗道|暗自思忖|内心[：:]|百感交集|思绪万千|不禁感慨|抒情)/;
 
 /** AE-WNF-HOOK（block）：长篇每章结尾必须留钩；连续同型钩判 major（四型轮换，读上一章尾判定）。 */
-export function chapterHookAssert(projectDir: string, relPath: string, text: string): Validation {
+export function chapterHookAssert(projectDir: string, relPath: string, text: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): Validation {
   const body = text.replace(/^---[\s\S]*?---/, "");
   const paras = body.split("\n").map((s) => s.trim()).filter(Boolean);
   const near = paras.slice(-3).join("").slice(-260);
@@ -196,7 +196,7 @@ export function chapterHookAssert(projectDir: string, relPath: string, text: str
     const n = parseInt(m[1] ?? "", 10);
     if (n > 1) {
       try {
-        const prevText = fs.readFileSync(path.join(path.dirname(path.join(projectDir, relPath)), `第${n - 1}章.md`), "utf-8");
+        const prevText = fs.readText(path.join(path.dirname(path.join(projectDir, relPath)), `第${n - 1}章.md`));
         const prev = tailHookTypeOf(prevText.replace(/^---[\s\S]*?---/, ""));
         if (prev && prev === t) {
           status = "warn";
@@ -219,9 +219,9 @@ function tailHookTypeOf(text: string): string {
   return "";
 }
 
-function projectOwnTerms(projectDir: string): string[] {
+function projectOwnTerms(projectDir: string, fs: IFileSystem, path: IFsPath): string[] {
   try {
-    const g = JSON.parse(fs.readFileSync(path.join(projectDir, "词汇表.json"), "utf-8")) as { own?: unknown };
+    const g = JSON.parse(fs.readText(path.join(projectDir, "词汇表.json"))) as { own?: unknown };
     return Array.isArray(g.own) ? g.own.map(String) : [];
   } catch {
     return [];
@@ -230,28 +230,28 @@ function projectOwnTerms(projectDir: string): string[] {
 
 /** 连续性切片三件套（AE-CONT-KNOW/ITEM/FORESHADOW）：audit 步对成文产物声明的机器可查层。
  *  只在成文产物路径上生效（小纲/大纲是过程件，合法承载流程词汇，切片不适用 → 返回空）。 */
-function ledgerSliceAsserts(projectDir: string, relPath: string, text: string): Validation[] {
+function ledgerSliceAsserts(projectDir: string, relPath: string, text: string, fs: IFileSystem, path: IFsPath): Validation[] {
   const rel = relPath.replaceAll("\\", "/");
   const prosePath = /章节正文|第\d+章|正文|终稿|剧本|试稿|对外交付/.test(rel) && !/小纲|大纲|意见书/.test(rel);
   if (!prosePath) return [];
   return [
-    continuityKnownAssert(projectDir, text),
-    continuityItemAssert(projectDir, text),
-    foreshadowAssert(projectDir, relPath),
+    continuityKnownAssert(projectDir, text, fs, path),
+    continuityItemAssert(projectDir, text, fs, path),
+    foreshadowAssert(projectDir, relPath, fs, path),
   ];
 }
 
 /** AE-CONT-KNOW（启发式切片）：正文引号词条 ×（词汇表 own ∪ 世界书词条）比对，未登记高频词判 warn。 */
-export function continuityKnownAssert(projectDir: string, text: string): Validation {
-  const own = projectOwnTerms(projectDir);
+export function continuityKnownAssert(projectDir: string, text: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): Validation {
+  const own = projectOwnTerms(projectDir, fs, path);
   if (!own.length) {
     return { name: "AE-CONT-KNOW", status: "warn", detail: "项目未登记词汇表.json own[]——越权专名切片不适用（语义级越权归红方）" };
   }
   const ledger = new Set(own);
   try {
-    for (const f of fs.readdirSync(path.join(projectDir, "世界书"))) {
+    for (const f of fs.readDir(path.join(projectDir, "世界书"))) {
       if (!f.endsWith(".md")) continue;
-      const wt = fs.readFileSync(path.join(projectDir, "世界书", f), "utf-8");
+      const wt = fs.readText(path.join(projectDir, "世界书", f));
       for (const m of wt.matchAll(/^#{1,3} (.+)$/gm)) ledger.add((m[1] ?? "").trim());
       for (const m of wt.matchAll(/\*\*([^*\n]{2,12})\*\*/g)) ledger.add((m[1] ?? "").trim());
     }
@@ -275,13 +275,13 @@ export function continuityKnownAssert(projectDir: string, text: string): Validat
 }
 
 /** AE-CONT-ITEM（启发式切片）：世界书数字事实（岁/年/万…）vs 正文同专名不同数值 → warn。 */
-export function continuityItemAssert(projectDir: string, text: string): Validation {
+export function continuityItemAssert(projectDir: string, text: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): Validation {
   const facts = new Map<string, { n: number; unit: string; src: string }>();
   const factRe = /([^\s：:，,。｜|]{2,8})[^\n]{0,16}?(\d+(?:\.\d+)?)\s*(岁|周年|年|万元|亿元|万|亿|米|层|天|小时|公斤|人)/g;
   try {
-    for (const f of fs.readdirSync(path.join(projectDir, "世界书"))) {
+    for (const f of fs.readDir(path.join(projectDir, "世界书"))) {
       if (!f.endsWith(".md")) continue;
-      const wt = fs.readFileSync(path.join(projectDir, "世界书", f), "utf-8");
+      const wt = fs.readText(path.join(projectDir, "世界书", f));
       for (const m of wt.matchAll(factRe)) {
         const term = (m[1] ?? "").trim();
         // 只收纯词元（汉字/字母/数字）：markdown 记号、括号等一概不作事实项（事故：'**伏笔无额度**' 入 RegExp 崩掉整段切片检查）
@@ -329,17 +329,17 @@ export function continuityItemAssert(projectDir: string, text: string): Validati
 const FORESHADOW_DONE_RE = /(已回收|已兑现|已关闭|已废弃|已完成|^已|完成)/;
 
 /** AE-CONT-FORESHADOW：伏笔台账到期未回收（当前章 ≥ 预期回收章 且状态未回收）；卡点级判 block。 */
-export function foreshadowAssert(projectDir: string, relPath: string): Validation {
+export function foreshadowAssert(projectDir: string, relPath: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): Validation {
   let tf: string | null = null;
   for (const c of ["世界书/伏笔台账.md", "伏笔台账.md"]) {
-    if (fs.existsSync(path.join(projectDir, c))) {
+    if (fs.exists(path.join(projectDir, c))) {
       tf = c;
       break;
     }
   }
   if (!tf) {
     try {
-      for (const f of fs.readdirSync(path.join(projectDir, "世界书"))) {
+      for (const f of fs.readDir(path.join(projectDir, "世界书"))) {
         if (/伏笔/.test(f) && f.endsWith(".md")) {
           tf = "世界书/" + f;
           break;
@@ -357,7 +357,7 @@ export function foreshadowAssert(projectDir: string, relPath: string): Validatio
   if (!Number.isFinite(cur)) {
     return { name: "AE-CONT-FORESHADOW", status: "warn", detail: "非章节产物，逾期切片不适用" };
   }
-  const text = fs.readFileSync(path.join(projectDir, tf), "utf-8");
+  const text = fs.readText(path.join(projectDir, tf));
   const rows = text.split("\n").filter((l) => l.trim().startsWith("|")).filter((l) => !/^[\s|:\-]+$/.test(l));
   const bodyRows = rows.filter((r) => !/(编号|状态|内容|说明|回收章|埋设章)/.test(r.split("|")[1] ?? ""));
   if (!bodyRows.length) {
@@ -495,11 +495,13 @@ export function runAestheticAsserts(
   projectDir: string,
   relPath: string,
   budget?: Record<string, number>,
+  fs: IFileSystem = nodeFs,
+  path: IFsPath = nodePath,
 ): Validation[] {
   const results: Validation[] = [];
   let text: string;
   try {
-    text = fs.readFileSync(path.join(projectDir, relPath), "utf-8");
+    text = fs.readText(path.join(projectDir, relPath));
   } catch {
     return [{ name: "AE-EXISTS", status: "block", detail: `产物缺失: ${relPath}` }];
   }
@@ -507,15 +509,15 @@ export function runAestheticAsserts(
   // 路由用 R6 精确路径——老 flow@2 的 对外交付/01-选题报告.md 不适用此验收（职责契约不同，勿误伤）
   const relNorm = relPath.replaceAll("\\", "/");
   if (/^01-选题\/选题报告\.md$/.test(relNorm)) {
-    return [reportDensityAssert(text), ...ledgerSliceAsserts(projectDir, relPath, text)];
+    return [reportDensityAssert(text), ...ledgerSliceAsserts(projectDir, relPath, text, fs, path)];
   }
   // 剧本 IR（小说流 v2·m2 模块交付）：验收职责 = 每场 5W1H/行动/台词/价值/钩 字段齐备
   if (/^02-编剧\/剧本\.md$/.test(relNorm) && /###\s*场/.test(text)) {
-    return [scriptFieldsAssert(text, budget), ...ledgerSliceAsserts(projectDir, relPath, text)];
+    return [scriptFieldsAssert(text, budget), ...ledgerSliceAsserts(projectDir, relPath, text, fs, path)];
   }
   // 剧本类产物（成品剧本/试稿）：脚本格式专项断言（M2.5，客户版式契约）+ 连续性切片
   if (/剧本|试稿/.test(relPath) && !/\*\*B\d{4}｜/.test(text)) {
-    return [...scriptFormatAsserts(text, projectDir), ...ledgerSliceAsserts(projectDir, relPath, text)];
+    return [...scriptFormatAsserts(text, projectDir, fs, path), ...ledgerSliceAsserts(projectDir, relPath, text, fs, path)];
   }
   // 非拍级且非剧本：小说正文走 prose 断言表（K7/R2 事故后接入，规则同 tools/prose-scan.py）
   // + WO-A② 文本层校验器：章末钩/越权切片/台账矛盾切片/伏笔逾期/纯净度
@@ -524,15 +526,15 @@ export function runAestheticAsserts(
     if (/章节正文|第\d+章|正文|终稿/.test(relPath)) {
       return [
         ...proseAsserts(text, budget),
-        chapterHookAssert(projectDir, relPath, text),
-        ...ledgerSliceAsserts(projectDir, relPath, text),
-        purityAssert(projectDir, text),
+        chapterHookAssert(projectDir, relPath, text, fs, path),
+        ...ledgerSliceAsserts(projectDir, relPath, text, fs, path),
+        purityAssert(projectDir, text, fs, path),
       ];
     }
     return [{ name: "AE-SKIP-NON-BEAT", status: "warn", detail: "非拍级产物，美学断言不适用（转红方视角层）" }];
   }
   const eps = parseBeatStructure(text);
-  const cfg = projectConfig(projectDir);
+  const cfg = projectConfig(projectDir, fs, path);
   const add = (id: string, ok: boolean, detail: string, level: "block" | "major" | "minor" = "major") =>
     results.push({ name: id, status: ok ? "pass" : level === "block" ? "block" : "warn", detail });
 
@@ -611,7 +613,7 @@ export function runAestheticAsserts(
       if (cur - prev > 1) gaps.push(`缺第 ${prev + 1}~${cur - 1} 集`);
     }
     add("AE-CHOREO-GAP", gaps.length === 0, gaps.length === 0 ? `集号连续（${epNos[0]}-${epNos[epNos.length - 1]}）` : `集号断档: ${gaps.join("、")}`, "block");
-    const bounds = outlineEpisodeBounds(projectDir);
+    const bounds = outlineEpisodeBounds(projectDir, fs, path);
     if (bounds) {
       const outside = epNos.filter((n) => !bounds.has(n));
       add(
@@ -636,7 +638,7 @@ export function runAestheticAsserts(
   );
 
   // 连续性切片（成文产物路径生效；小纲/大纲过程件自动跳过）
-  results.push(...ledgerSliceAsserts(projectDir, relPath, text));
+  results.push(...ledgerSliceAsserts(projectDir, relPath, text, fs, path));
   // 章长下限（AE-CH-LEN）：自门控——文本含 ≥2 章节头才生效
   results.push(chapterLengthAssert(text, budget));
 
@@ -711,7 +713,7 @@ export function proseAsserts(text: string, budget?: Record<string, number>): Val
  * 2) 零元词：过程标注（拍号/钩型/尾钩/卡点体检/切片梗点/质检/流程说明）不得出现（AE-OUTPUT-PURITY）
  * 3) 【】规范：场景与动作提示用全角【】包裹
  */
-export function scriptFormatAsserts(text: string, projectDir?: string): Validation[] {
+export function scriptFormatAsserts(text: string, projectDir?: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): Validation[] {
   const results: Validation[] = [];
   const head = text.split("\n").slice(0, 60).join("\n");
   const frontMissing = ["背景", "主角", "剧情概括"].filter((k) => !head.includes(k));
@@ -754,6 +756,6 @@ export function scriptFormatAsserts(text: string, projectDir?: string): Validati
   );
 
   // AE-OUTPUT-PURITY（block）：与 AE-SCRIPT-PURITY 同证据、按注册表 id 另发一条（声明名精确匹配）
-  if (projectDir) results.push(purityAssert(projectDir, text));
+  if (projectDir) results.push(purityAssert(projectDir, text, fs, path));
   return results;
 }

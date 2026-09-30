@@ -2,10 +2,8 @@
 // 决策是**运行中产生的事实**：只长在 <项目>/decisions/<key>.json，
 // 铁律 6——不许写回 flow.inputs（resolveInputs 只在 flow_run 算一次，写回=伪造历史）。
 // 本模块不 import kernel.ts（kernel 要 import 本模块做读模型，避免成环——同 cfg-template 惯例）。
-import fs from "node:fs";
-import path from "node:path";
+import type { FsIo } from "./abstraction/fs.js";
 import { assertSchema } from "./schema.js";
-import { atomicWriteText } from "./fsio.js";
 
 export interface Decision {
   format: "decision@1";
@@ -24,12 +22,12 @@ export class DecisionError extends Error {
   }
 }
 
-export function decisionsDir(projectDir: string): string {
-  return path.join(projectDir, "decisions");
+export function decisionsDir(io: FsIo, projectDir: string): string {
+  return io.path.join(projectDir, "decisions");
 }
 
 /** 落一条决策：契约校验（by/evidence 必填，无来源的决策=猜即拒）→ 原子写 → 返回落盘件。 */
-export function setDecision(projectDir: string, input: Partial<Decision> & { key: string }): Decision {
+export function setDecision(io: FsIo, projectDir: string, input: Partial<Decision> & { key: string }): Decision {
   const d: Decision = {
     format: "decision@1",
     key: input.key,
@@ -45,22 +43,22 @@ export function setDecision(projectDir: string, input: Partial<Decision> & { key
   } catch (e) {
     throw new DecisionError("DECISION_INVALID", `${e instanceof Error ? e.message : String(e)}（key=${d.key}：by/evidence/picked 必填——无来源的决策=猜）`);
   }
-  fs.mkdirSync(decisionsDir(projectDir), { recursive: true });
-  atomicWriteText(path.join(decisionsDir(projectDir), `${d.key}.json`), JSON.stringify(d, null, 2) + "\n");
+  // mkdir + 原子写合并为 writeTextAtomic（父目录由它负责建，字节序列与改前一致）
+  io.fs.writeTextAtomic(io.path.join(decisionsDir(io, projectDir), `${d.key}.json`), JSON.stringify(d, null, 2) + "\n");
   return d;
 }
 
 /** 读全部决策：坏文件不静默——进 issues，合法条目照常回。 */
-export function listDecisions(projectDir: string): { decisions: Decision[]; issues: string[] } {
-  const dir = decisionsDir(projectDir);
+export function listDecisions(io: FsIo, projectDir: string): { decisions: Decision[]; issues: string[] } {
+  const dir = decisionsDir(io, projectDir);
   const out: Decision[] = [];
   const issues: string[] = [];
-  if (!fs.existsSync(dir)) return { decisions: out, issues };
-  for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".json")).sort()) {
+  if (!io.fs.exists(dir)) return { decisions: out, issues };
+  for (const f of io.fs.readDir(dir).filter((x) => x.endsWith(".json")).sort()) {
     const rel = `decisions/${f}`;
     let raw: unknown;
     try {
-      raw = JSON.parse(fs.readFileSync(path.join(dir, f), "utf-8"));
+      raw = JSON.parse(io.fs.readText(io.path.join(dir, f)));
     } catch (e) {
       issues.push(`${rel}: JSON 解析失败（${e instanceof Error ? e.message : String(e)}）`);
       continue;
@@ -84,6 +82,6 @@ export function listDecisions(projectDir: string): { decisions: Decision[]; issu
 }
 
 /** 求值用快照：key → Decision（坏条目由调用方经 issues 可见）。 */
-export function decisionsMap(projectDir: string): Record<string, Decision> {
-  return Object.fromEntries(listDecisions(projectDir).decisions.map((d) => [d.key, d]));
+export function decisionsMap(io: FsIo, projectDir: string): Record<string, Decision> {
+  return Object.fromEntries(listDecisions(io, projectDir).decisions.map((d) => [d.key, d]));
 }

@@ -64,9 +64,12 @@
             "set-input",
             "set-module",
             "insert-tool",
-            "set-link"
+            "set-link",
+            "set-assertion-preset",
+            "disable-assertion",
+            "insert-assertion"
           ],
-          "description": "R7 勘误：此前 schema 只列 11 种，而 flow@3 展开器实际只消费 set-policy/set-module/insert-tool——契约与实现各有对方没有的 kind（交集仅 set-policy），已把 13 种统一进本枚举。R7+N4：补第 14 种 `set-link`（per-link 降级通道）——`R7-boundary-auto` 此前产 `set-policy{key:kit_boundary}`，而 R6 已退役该键 ⇒ flow@3 结构性无法表达「只把某一处交界降为 auto」。每种 kind 的『消费者』见 docs/规范-开源部署与可调面-R7.md §二。"
+          "description": "R7 勘误：此前 schema 只列 11 种，而 flow@3 展开器实际只消费 set-policy/set-module/insert-tool——契约与实现各有对方没有的 kind（交集仅 set-policy），已把 13 种统一进本枚举。R7+N4：补第 14 种 `set-link`（per-link 降级通道）——`R7-boundary-auto` 此前产 `set-policy{key:kit_boundary}`，而 R6 已退役该键 ⇒ flow@3 结构性无法表达「只把某一处交界降为 auto」。每种 kind 的『消费者』见 docs/规范-开源部署与可调面-R7.md §二。AP1-§七（本轮补）：再补 3 种**断言覆盖** kind（set-assertion-preset 改阈值/门档、disable-assertion 禁用、insert-assertion 组内插入），字段用 presetId/assertions/assertion/patch/group，消费者 = core/src/assertion-preset/executor.ts::applyAssertionOverrides（经 EffectiveFlow.assertionOverrides 透传）；这三条**不改图结构**，属内容类覆盖，与 set-tool 同级。"
         },
         "reason": { "type": "string", "description": "为什么改（必填，优化器还须给 evidence）" },
         "evidence": {
@@ -178,6 +181,37 @@
         "mode": {
           "enum": ["auto", "manual"],
           "description": "set-link：该处交界的裁决模式。auto = 自动放行（仅在跨界风险升高时才拦人）；manual = 每次跨此交界都挂人工门。**改的是人工裁决的位置 = 结构类改动，永远只 proposed、不会自动落地**"
+        },
+
+        "presetId": {
+          "type": "string",
+          "description": "AP1-§七 三条断言覆盖 kind 共用：本条覆盖针对哪个断言预设。缺省 = 当前挂载预设（挂载链见 AP1 §九）。**引用不存在的预设 = 整条覆盖不生效并显式回显**（executor 侧 ignored 清单 → 诊断通道），不静默套用到别的预设上。"
+        },
+        "assertions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "description": "set-assertion-preset：目标断言类型清单（integrity 面的 exists/no-debris/… 或 aesthetic 面的 AE-*），逐条套用 `patch`。清单里引用该预设未声明的断言类型 = 该条回显 not-declared（不新增，新增走 insert-assertion）。"
+        },
+        "assertion": {
+          "type": "string",
+          "description": "disable-assertion = 要禁用的断言类型；insert-assertion = 要新增的断言类型。单值键，与复数 `assertions` 不混用（一个字段一个意思）。"
+        },
+        "patch": {
+          "type": "object",
+          "description": "set-assertion-preset / insert-assertion 的配置载荷（键 = gate-preset.yml 的 config 面）。",
+          "properties": {
+            "gateMode": { "enum": ["warn-only", "block-critical", "strict"] },
+            "warnThreshold": { "type": "integer", "minimum": 1, "description": "连续失败达到该次数进入 warning 档（缺省 2）" },
+            "blockThreshold": { "type": "integer", "minimum": 1, "description": "连续失败达到该次数进入 blocking 档（缺省 5）。**数值只调制门的行为，不构成新增验收闸**——阈值线的清剿口径见仓储 AGENTS.md" },
+            "when": { "type": "string", "description": "条件启用表达式（求值 false = 该断言本轮跳过）；求值失败 fail-open" },
+            "hintTemplate": { "type": "string", "description": "诊断提示模板（{{count}}/{{type}} 占位）" }
+          },
+          "additionalProperties": false
+        },
+        "group": {
+          "type": "string",
+          "description": "insert-assertion：目标断言组 id（gate-preset.yml 的 groups[].id）。**引用不存在的组 = 显式回显，不落半条断言**。"
         }
       }
     }

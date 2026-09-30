@@ -57,56 +57,85 @@ def validate(text, ops):
 
 def main():
     ap = argparse.ArgumentParser(description="同文件多处修改的原子批量器")
-    ap.add_argument("--file", required=True)
-    ap.add_argument("--ops", required=True, help="JSON 数组文件：[{old,new,count}]")
+    ap.add_argument("--file", help="单文件模式：目标文件（与 --ops 配对）")
+    ap.add_argument("--ops", help="JSON 数组文件：[{old,new,count}]")
+    ap.add_argument("--manifest", help="多文件模式：JSON 数组 [{file, ops:[...]}]，任一处不成立=整批拒绝零写入")
     ap.add_argument("--dry-run", action="store_true", help="只校验不落盘")
     ap.add_argument("--receipt", help="收据 JSON 落盘路径")
     a = ap.parse_args()
 
+    multi = bool(a.manifest)
+    if multi == bool(a.file or a.ops):
+        print("[用法错误] 二选一：--file + --ops ｜ --manifest", file=sys.stderr)
+        return 2
+
     try:
-        text, bom = load_file(a.file)
-        ops = json.load(open(a.ops, encoding="utf-8"))
-        assert isinstance(ops, list) and ops
+        if multi:
+            entries = json.load(open(a.manifest, encoding="utf-8"))
+            assert isinstance(entries, list) and entries
+            items = [(e["file"], e["ops"]) for e in entries]
+        else:
+            items = [(a.file, json.load(open(a.ops, encoding="utf-8")))]
+        units = []
+        for path, ops in items:
+            text, bom = load_file(path)
+            assert isinstance(ops, list) and ops
+            units.append({"file": path, "text": text, "bom": bom, "ops": ops})
     except Exception as e:
         print(f"[用法/读盘错误] {e}", file=sys.stderr)
         return 2
 
-    errs = validate(text, ops)
-    if errs:
-        print(f"[整批拒绝·零写入] {a.file} 共 {len(ops)} 项，{len(errs)} 项不成立：", file=sys.stderr)
-        for e in errs:
-            print("  - " + e, file=sys.stderr)
+    all_diffs, rejected = [], False
+    for u in units:
+        errs = validate(u["text"], u["ops"])
+        if errs:
+            rejected = True
+            print(f"[不成立] {u['file']} 共 {len(u['ops'])} 项，{len(errs)} 项：", file=sys.stderr)
+            for e in errs:
+                print("  - " + e, file=sys.stderr)
+            continue
+        new_text = u["text"]
+        for op in u["ops"]:
+            new_text = new_text.replace(op["old"], op.get("new", ""), op.get("count", 1))
+        u["new_text"] = new_text
+        all_diffs.append("\n".join(difflib.unified_diff(
+            u["text"].splitlines(), new_text.splitlines(),
+            fromfile=u["file"], tofile=u["file"] + " (batch)", lineterm="")))
+
+    if rejected:
+        print(f"[整批拒绝·零写入] {len(units)} 个文件，{sum(1 for u in units if 'new_text' not in u)} 个不成立", file=sys.stderr)
         return 1
 
-    new_text = text
-    for op in ops:
-        new_text = new_text.replace(op["old"], op.get("new", ""), op.get("count", 1))
-
-    diff = "\n".join(difflib.unified_diff(
-        text.splitlines(), new_text.splitlines(),
-        fromfile=a.file, tofile=a.file + " (batch)", lineterm=""))
-    print(diff if diff else "(无行级差异——整段替换恰好落在同一行)")
+    for d in all_diffs:
+        print(d if d else "(无行级差异——整段替换恰好落在同一行)")
 
     if a.dry_run:
-        print(f"[dry-run] {len(ops)} 项全部成立，未写入。")
+        print(f"[dry-run] {len(units)} 个文件、{sum(len(u['ops']) for u in units)} 项全部成立，未写入。")
         return 0
 
-    data = new_text.encode("utf-8")
-    if bom:
-        data = b"\xef\xbb\xbf" + data
-    with open(a.file, "wb") as f:
-        f.write(data)
-    print(f"[已写入] {a.file} ｜ {len(ops)} 项 ｜ diff {sum(1 for l in diff.splitlines() if l.startswith(('+', '-')) and not l.startswith(('+++', '---')))} 行变动")
+    receipt_entries = []
+    for u in units:
+        data = u["new_text"].encode("utf-8")
+        if u["bom"]:
+            data = b"\xef\xbb\xbf" + data
+        with open(u["file"], "wb") as f:
+            f.write(data)
+        receipt_entries.append({
+            "file": u["file"],
+            "ops": len(u["ops"]),
+            "sha_before": hashlib.sha256(u["text"].encode("utf-8")).hexdigest()[:12],
+            "sha_after": hashlib.sha256(u["new_text"].encode("utf-8")).hexdigest()[:12],
+        })
+        print(f"[已写入] {u['file']} ｜ {len(u['ops'])} 项")
 
     if a.receipt:
         rec = {
-            "tool": "batch-edit/v1",
+            "tool": "batch-edit/v2",
             "at": dt.datetime.now().isoformat(timespec="seconds"),
-            "file": a.file,
-            "ops": len(ops),
-            "sha_before": hashlib.sha256(text.encode("utf-8")).hexdigest()[:12],
-            "sha_after": hashlib.sha256(new_text.encode("utf-8")).hexdigest()[:12],
-            "diff_lines": diff.count("\n") + 1,
+            "mode": "manifest" if multi else "single",
+            "files": len(units),
+            "ops": sum(len(u["ops"]) for u in units),
+            "entries": receipt_entries,
         }
         with open(a.receipt, "w", encoding="utf-8") as f:
             json.dump(rec, f, ensure_ascii=False, indent=1)

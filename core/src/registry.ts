@@ -1,7 +1,7 @@
-import fs from "node:fs";
-import path from "node:path";
 import type { ArtifactEntry } from "./types.js";
-import { readJson, writeJsonAtomic } from "./fsio.js";
+import { readJson, writeJsonAtomic } from "./abstraction/jsonio.js";
+import { nodeFs, nodePath } from "./abstraction/defaults.js";
+import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
 import { assertSchema } from "./schema.js";
 import { registryPath, snapshotsDir } from "./state.js";
 import { sha12, contentSha12, nowIso } from "./ids.js";
@@ -10,25 +10,25 @@ interface RegistryFile {
   artifacts: ArtifactEntry[];
 }
 
-function loadRegistry(projectDir: string): RegistryFile {
-  const reg = readJson<RegistryFile>(registryPath(projectDir));
+function loadRegistry(projectDir: string, fs: IFileSystem, path: IFsPath): RegistryFile {
+  const reg = readJson<RegistryFile>(registryPath(projectDir, path), fs);
   return reg?.artifacts ? reg : { artifacts: [] };
 }
 
-function saveRegistry(projectDir: string, reg: RegistryFile): void {
-  writeJsonAtomic(registryPath(projectDir), reg);
+function saveRegistry(projectDir: string, reg: RegistryFile, fs: IFileSystem, path: IFsPath): void {
+  writeJsonAtomic(registryPath(projectDir, path), reg, undefined, fs);
 }
 
-export function registerArtifact(projectDir: string, entry: ArtifactEntry): ArtifactEntry {
+export function registerArtifact(projectDir: string, entry: ArtifactEntry, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): ArtifactEntry {
   assertSchema("artifact", entry);
-  const reg = loadRegistry(projectDir);
+  const reg = loadRegistry(projectDir, fs, path);
   reg.artifacts.push(entry);
-  saveRegistry(projectDir, reg);
+  saveRegistry(projectDir, reg, fs, path);
   return entry;
 }
 
-export function listArtifacts(projectDir: string, opts: { node?: string; latest?: boolean } = {}): ArtifactEntry[] {
-  let arts = loadRegistry(projectDir).artifacts;
+export function listArtifacts(projectDir: string, opts: { node?: string; latest?: boolean } = {}, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): ArtifactEntry[] {
+  let arts = loadRegistry(projectDir, fs, path).artifacts;
   if (opts.node) arts = arts.filter((a) => a.node === opts.node);
   if (opts.latest) {
     const last = new Map<string, ArtifactEntry>();
@@ -38,26 +38,26 @@ export function listArtifacts(projectDir: string, opts: { node?: string; latest?
   return arts;
 }
 
-export function findRegistered(projectDir: string, relPath: string): ArtifactEntry | undefined {
-  return loadRegistry(projectDir).artifacts.find((a) => a.path === relPath);
+export function findRegistered(projectDir: string, relPath: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): ArtifactEntry | undefined {
+  return loadRegistry(projectDir, fs, path).artifacts.find((a) => a.path === relPath);
 }
 
-export function readRegisteredText(projectDir: string, relPath: string): string | undefined {
-  const entry = findRegistered(projectDir, relPath);
+export function readRegisteredText(projectDir: string, relPath: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): string | undefined {
+  const entry = findRegistered(projectDir, relPath, fs, path);
   if (!entry) return undefined; // 未注册 = 不可读
   try {
-    return fs.readFileSync(path.join(projectDir, relPath), "utf-8");
+    return fs.readText(path.join(projectDir, relPath));
   } catch {
     return undefined;
   }
 }
 
 /** 输入指纹：{相对路径: 正文指纹前 12 位}——头部元数据不入指纹（规范 R4 §二）。 */
-export function inputFingerprint(projectDir: string, files: string[]): Record<string, string | null> {
+export function inputFingerprint(projectDir: string, files: string[], fs: IFileSystem = nodeFs, path: IFsPath = nodePath): Record<string, string | null> {
   const fp: Record<string, string | null> = {};
   for (const f of files) {
     try {
-      fp[f] = contentSha12(fs.readFileSync(path.join(projectDir, f), "utf-8"));
+      fp[f] = contentSha12(fs.readText(path.join(projectDir, f)));
     } catch {
       fp[f] = null;
     }
@@ -68,11 +68,13 @@ export function inputFingerprint(projectDir: string, files: string[]): Record<st
 export function makeArtifact(
   projectDir: string,
   partial: Omit<ArtifactEntry, "ts" | "sha1" | "round"> & { round?: number },
+  fs: IFileSystem = nodeFs,
+  path: IFsPath = nodePath,
 ): ArtifactEntry {
   const abs = path.join(projectDir, partial.path);
-  const sha1 = contentSha12(fs.readFileSync(abs, "utf-8"));
+  const sha1 = contentSha12(fs.readText(abs));
   const entry: ArtifactEntry = { ...partial, round: partial.round ?? 1, sha1, ts: nowIso() };
-  return registerArtifact(projectDir, entry);
+  return registerArtifact(projectDir, entry, fs, path);
 }
 
 // ---------- 快照（与 tools/snapshot.py 的 index.json 完全同源） ----------
@@ -84,8 +86,8 @@ export interface SnapshotEntry {
   files: Record<string, { hash: string | null; path: string | null }>;
 }
 
-function snapshotIndexPath(projectDir: string): string {
-  return path.join(snapshotsDir(projectDir), "index.json");
+function snapshotIndexPath(projectDir: string, path: IFsPath): string {
+  return path.join(snapshotsDir(projectDir, path), "index.json");
 }
 
 /** 文本产物不可变副本；index.json 与 python 端同构互读。 */
@@ -94,37 +96,39 @@ export function captureSnapshot(
   node: string,
   files: Record<string, string>, // {项目内相对路径: 文本内容}
   note = "",
+  fs: IFileSystem = nodeFs,
+  path: IFsPath = nodePath,
 ): SnapshotEntry {
   const idx = readJson<{ snapshots: Record<string, SnapshotEntry[]>; inputs: Record<string, unknown> }>(
-    snapshotIndexPath(projectDir),
+    snapshotIndexPath(projectDir, path), fs,
   ) ?? { snapshots: {}, inputs: {} };
   const snaps = (idx.snapshots[node] ??= []);
   const round = snaps.length ? (snaps[snaps.length - 1]?.round ?? 0) + 1 : 1;
-  const outDir = path.join(snapshotsDir(projectDir), node, `r${round}`);
-  fs.mkdirSync(outDir, { recursive: true });
+  const outDir = path.join(snapshotsDir(projectDir, path), node, `r${round}`);
+  fs.mkdir(outDir, { recursive: true });
   const entryFiles: Record<string, { hash: string | null; path: string | null }> = {};
   for (const [name, content] of Object.entries(files)) {
     const safe = name.replaceAll("\\", "/").replace(/^projects\/[^/]+\//, "");
     const dst = path.join(outDir, safe);
-    fs.mkdirSync(path.dirname(dst), { recursive: true });
-    fs.writeFileSync(dst, content, "utf-8");
+    fs.mkdir(path.dirname(dst), { recursive: true });
+    fs.writeText(dst, content);
     entryFiles[safe] = { hash: contentSha12(content), path: `snapshots/${node}/r${round}/${safe}` };
   }
   const entry: SnapshotEntry = { round, ts: nowIso(), note, files: entryFiles };
   snaps.push(entry);
-  writeJsonAtomic(snapshotIndexPath(projectDir), idx);
+  writeJsonAtomic(snapshotIndexPath(projectDir, path), idx, undefined, fs);
   return entry;
 }
 
-export function readSnapshots(projectDir: string, node: string): Array<SnapshotEntry & { content?: Record<string, string> }> {
-  const idx = readJson<{ snapshots: Record<string, SnapshotEntry[]> }>(snapshotIndexPath(projectDir));
+export function readSnapshots(projectDir: string, node: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): Array<SnapshotEntry & { content?: Record<string, string> }> {
+  const idx = readJson<{ snapshots: Record<string, SnapshotEntry[]> }>(snapshotIndexPath(projectDir, path), fs);
   const snaps = idx?.snapshots[node] ?? [];
   return snaps.map((s) => {
     const content: Record<string, string> = {};
     for (const [name, meta] of Object.entries(s.files)) {
       if (!meta.path) continue;
       try {
-        content[name] = fs.readFileSync(path.join(snapshotsDir(projectDir), node, `r${s.round}`, name), "utf-8");
+        content[name] = fs.readText(path.join(snapshotsDir(projectDir, path), node, `r${s.round}`, name));
       } catch {
         /* missing file */
       }

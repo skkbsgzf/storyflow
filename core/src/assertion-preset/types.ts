@@ -57,6 +57,13 @@ export interface AssertionConfig {
   blockThreshold?: number;
   /** 条件启用表达式；求值 false = 该断言本轮跳过（结果丢弃） */
   when?: string;
+  /**
+   * AP1 §七（disable-assertion 覆盖落点）：true = 该断言不再拦人。
+   * **不是「不检查」**：确定性检查照跑、证据照出（status 降级为 warn，progressive 不计数），
+   * AE-* 类则连执行一起免（见 declaredAestheticTypes）。
+   * 与组级 `disabled` 表达式的区别：表达式是「按现场条件临时不生效」，本字段是「人明确点名免掉」。
+   */
+  disabled?: boolean;
   /** 诊断提示模板（{{count}}/{{type}} 占位） */
   hintTemplate?: string;
 }
@@ -106,3 +113,30 @@ export interface GateOutcome {
   triggerCount: number;
   diagnostic: string;
 }
+
+// ═══════════════════════════════════════════
+// 断言覆盖（AP1 §七）：overlay patch → 挂载预设的派生调制
+// ═══════════════════════════════════════════
+
+/** `patch` 载荷：gate-preset.yml 的 config 面去掉身份键（assertionType）后的可调子集。 */
+export interface AssertionPatch {
+  gateMode?: GateMode;
+  warnThreshold?: number;
+  blockThreshold?: number;
+  when?: string;
+  hintTemplate?: string;
+}
+
+/**
+ * 三类覆盖的判别联合（一 kind 一形状，字段名与 contracts/flow-overlay.schema.json 逐字相同——
+ * 契约键、内部结构、面板读到的三者不许各有名字）。
+ * 由 `modules.ts::effectiveFlow3` 从 overlay patch 解析进 `EffectiveFlow.assertionOverrides`，
+ * 门点经 `executor.ts::applyAssertionOverrides` 合成到挂载上——**不改图，只改策略**。
+ */
+export type AssertionOverride =
+  /** 改阈值/门档：对 `assertions` 里每一条断言套用同一份 `patch` */
+  | { kind: "set-assertion-preset"; presetId?: string; assertions: string[]; patch: AssertionPatch }
+  /** 禁用：该断言在本挂载上整轮不生效（原 preset 声明保留，换挂载即复原） */
+  | { kind: "disable-assertion"; presetId?: string; assertion: string }
+  /** 组内插入：往指定组追加一条 preset 里没有的断言配置 */
+  | { kind: "insert-assertion"; presetId?: string; group: string; assertion: string; patch?: AssertionPatch };

@@ -6,8 +6,8 @@
  * 补丁语义：section 缺省 = 全文末尾追加；section 给定 + op:append = 小节末尾追加；
  * section + op:replace = 整节替换（从该节标题到下一节标题之前）。
  */
-import fs from "node:fs";
-import path from "node:path";
+import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
+import { nodeFs, nodePath } from "./abstraction/defaults.js";
 import { assertSchema } from "./schema.js";
 
 export interface SkillPatch {
@@ -30,24 +30,26 @@ export interface SkillOverlay {
   patches: SkillPatch[];
 }
 
-export const SKILL_OVERLAY_FILE = path.join("skills", "skill-overlay.json");
+/** 规范相对路径（posix 形态常量）。模块顶层的 path.join 无法注入，且 win32 下会产出反斜杠形值；
+ *  写死 "/" 分隔后由注入的 path.join 归一——node 适配器与 posix/mock 适配器拼出的绝对路径与原先一致。 */
+export const SKILL_OVERLAY_FILE = "skills/skill-overlay.json";
 
-export function skillOverlayPath(root: string): string {
+export function skillOverlayPath(root: string, path: IFsPath = nodePath): string {
   return path.join(root, SKILL_OVERLAY_FILE);
 }
 
 /** 读补丁层；文件缺失 = 空层（无补丁），损坏 = 显式报错（不静默降级） */
-export function loadSkillOverlay(root: string): SkillOverlay {
-  const p = skillOverlayPath(root);
-  if (!fs.existsSync(p)) return { format: "skill-overlay@1", version: 1, patches: [] };
-  const raw = JSON.parse(fs.readFileSync(p, "utf-8")) as SkillOverlay;
+export function loadSkillOverlay(root: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): SkillOverlay {
+  const p = skillOverlayPath(root, path);
+  if (!fs.exists(p)) return { format: "skill-overlay@1", version: 1, patches: [] };
+  const raw = JSON.parse(fs.readText(p)) as SkillOverlay;
   assertSchema("skill-overlay", raw);
   return raw;
 }
 
 /** 只取「对某个 skill 生效」的已应用补丁（proposed/rejected 不参与装载） */
-export function appliedPatchesFor(root: string, skillName: string): SkillPatch[] {
-  const ov = loadSkillOverlay(root);
+export function appliedPatchesFor(root: string, skillName: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): SkillPatch[] {
+  const ov = loadSkillOverlay(root, fs, path);
   return ov.patches.filter((p) => p.target === skillName && p.status === "applied");
 }
 
@@ -104,12 +106,14 @@ export function skillPatch(
     | { action: "add"; target: string; text: string; reason: string; section?: string; op?: "append" | "replace"; origin?: SkillPatch["origin"] }
     | { action: "approve" | "reject"; id: string }
     | { action: "list"; target?: string },
+  fs: IFileSystem = nodeFs,
+  path: IFsPath = nodePath,
 ): SkillPatch[] {
-  const p = skillOverlayPath(root);
-  const ov = loadSkillOverlay(root);
+  const p = skillOverlayPath(root, path);
+  const ov = loadSkillOverlay(root, fs, path);
   if (req.action === "add") {
     const skillFile = path.join(root, "skills", `${req.target}.md`);
-    if (!fs.existsSync(skillFile)) throw new Error(`目标 skill 不存在: skills/${req.target}.md`);
+    if (!fs.exists(skillFile)) throw new Error(`目标 skill 不存在: skills/${req.target}.md`);
     const id = `sp-${String(ov.patches.length + 1).padStart(3, "0")}`;
     ov.patches.push({
       id,
@@ -127,7 +131,7 @@ export function skillPatch(
     if (!patch) throw new Error(`补丁不存在: ${req.id}`);
     if (patch.status !== "proposed") throw new Error(`补丁 ${req.id} 状态为 ${patch.status}，仅 proposed 可批准`);
     if (patch.section) {
-      const raw = fs.readFileSync(path.join(root, "skills", `${patch.target}.md`), "utf-8");
+      const raw = fs.readText(path.join(root, "skills", `${patch.target}.md`));
       if (sectionStart(raw, patch.section) === -1) throw new Error(`目标小节不存在: ${patch.target} § ${patch.section}`);
     }
     patch.status = "applied";
@@ -138,7 +142,7 @@ export function skillPatch(
     if (patch.status !== "proposed") throw new Error(`补丁 ${req.id} 状态为 ${patch.status}，仅 proposed 可驳回`);
     patch.status = "rejected";
   }
-  fs.mkdirSync(path.dirname(p), { recursive: true });
-  fs.writeFileSync(p, JSON.stringify(ov, null, 2) + "\n", "utf-8");
+  fs.mkdir(path.dirname(p), { recursive: true });
+  fs.writeText(p, JSON.stringify(ov, null, 2) + "\n");
   return ov.patches;
 }

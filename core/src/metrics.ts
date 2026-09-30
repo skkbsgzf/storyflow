@@ -8,10 +8,9 @@
  * 命中率的机器可读信号来自 artifact@1 头部（R4 已把 upstream 带 sha 写进头部），
  * 因此「装了的条款有没有被用上」不需要任何人肉声明。
  */
-import fs from "node:fs";
-import path from "node:path";
+import type { FsIo, IFileSystem } from "./abstraction/fs.js";
 import type { RunMetric } from "./types.js";
-import { appendJsonl, readJsonl } from "./fsio.js";
+import { appendJsonl, readJsonl } from "./abstraction/jsonio.js";
 import { assertSchema } from "./schema.js";
 import { nowIso } from "./ids.js";
 import { recordDiag } from "./diag.js";
@@ -24,19 +23,19 @@ export interface CtxUsage {
   hitIds: string[];
 }
 
-export function metricsPath(projectDir: string): string {
-  return path.join(projectDir, "registry", "metrics.jsonl");
+export function metricsPath(io: FsIo, projectDir: string): string {
+  return io.path.join(projectDir, "registry", "metrics.jsonl");
 }
 
-export function recordMetric(projectDir: string, m: Omit<RunMetric, "ts"> & { ts?: string }): RunMetric {
+export function recordMetric(io: FsIo, projectDir: string, m: Omit<RunMetric, "ts"> & { ts?: string }): RunMetric {
   const e: RunMetric = { ts: m.ts ?? nowIso(), ...m } as RunMetric;
   assertSchema("metrics", e);
-  appendJsonl(metricsPath(projectDir), e);
+  appendJsonl(metricsPath(io, projectDir), e, io.fs, io.path);
   return e;
 }
 
-export function readMetrics(projectDir: string): RunMetric[] {
-  return readJsonl<RunMetric>(metricsPath(projectDir));
+export function readMetrics(io: FsIo, projectDir: string): RunMetric[] {
+  return readJsonl<RunMetric>(metricsPath(io, projectDir), io.fs);
 }
 
 // ---------------- 概念词命中层 ----------------
@@ -55,7 +54,8 @@ interface ConceptIndex {
   builtAt: number;
 }
 
-const CONCEPT_CACHE = new Map<string, ConceptIndex>();
+/** 按注入的 fs 适配器分桶：MockFs 与宿主盘用同一个 root 字符串时，缓存不得互串（FS1 §四）。 */
+const CONCEPT_CACHE = new Map<IFileSystem, Map<string, ConceptIndex>>();
 const CONCEPT_TTL_MS = 5 * 60 * 1000;
 const CONCEPT_MAX_DF_RATIO = 0.35;
 const CONCEPT_TERM_CAP = 14;
@@ -170,26 +170,28 @@ function keepSignatureTerms(sig: Map<string, number>, df: Map<string, number>, t
   return kept.slice(0, CONCEPT_TERM_CAP).map((k) => k.term);
 }
 
-function buildConceptIndex(root: string): ConceptIndex | null {
-  const cached = CONCEPT_CACHE.get(root);
+function buildConceptIndex(io: FsIo, root: string): ConceptIndex | null {
+  const byRoot = CONCEPT_CACHE.get(io.fs) ?? new Map<string, ConceptIndex>();
+  CONCEPT_CACHE.set(io.fs, byRoot);
+  const cached = byRoot.get(root);
   if (cached && Date.now() - cached.builtAt < CONCEPT_TTL_MS) return cached;
-  const indexPath = path.join(root, "knowledge", "index.json");
-  if (!fs.existsSync(indexPath)) return null;
+  const indexPath = io.path.join(root, "knowledge", "index.json");
+  if (!io.fs.exists(indexPath)) return null;
   let entries: { id: string; file: string }[] = [];
   try {
-    entries = (JSON.parse(fs.readFileSync(indexPath, "utf-8")).entries ?? []) as { id: string; file: string }[];
+    entries = (JSON.parse(io.fs.readText(indexPath)).entries ?? []) as { id: string; file: string }[];
   } catch (e) {
     // 索引读不到 ⇒ 概念层整体跳过（extractCtxUsage 只在 idx 非空时做概念匹配）⇒
     // 「命中率崩了」这个结论本身不可信，而它正是要不要动编排的判据。必须留痕。
-    recordDiag(root, "kb", "buildConceptIndex:knowledge/index.json", e);
+    recordDiag(io, root, "kb", "buildConceptIndex:knowledge/index.json", e);
     return null;
   }
   const df = new Map<string, number>();
   const raws = new Map<string, string>();
   for (const e of entries) {
-    const p = path.join(root, "knowledge", e.file ?? "");
-    if (!e.file || !fs.existsSync(p)) continue;
-    const text = fs.readFileSync(p, "utf-8");
+    const p = io.path.join(root, "knowledge", e.file ?? "");
+    if (!e.file || !io.fs.exists(p)) continue;
+    const text = io.fs.readText(p);
     raws.set(e.id, text);
     for (const term of conceptCorpusSet(text)) df.set(term, (df.get(term) ?? 0) + 1);
   }
@@ -198,19 +200,19 @@ function buildConceptIndex(root: string): ConceptIndex | null {
     byCard.set(id, keepSignatureTerms(conceptTermsFromCard(text), df, raws.size));
   }
   const idx: ConceptIndex = { byCard, df, total: raws.size, builtAt: Date.now() };
-  CONCEPT_CACHE.set(root, idx);
+  byRoot.set(root, idx);
   return idx;
 }
 
 /** 诊断出口：某张卡当前的签名词表（recheck 工具用它解释「凭什么算命中」） */
-export function conceptTermsOf(root: string, id: string): string[] {
-  const idx = buildConceptIndex(root);
+export function conceptTermsOf(io: FsIo, root: string, id: string): string[] {
+  const idx = buildConceptIndex(io, root);
   if (!idx) return [];
   const known = idx.byCard.get(id);
   if (known) return known;
-  const p = path.join(root, "knowledge", id.replace(/^kb\//, "") + ".md");
-  if (!fs.existsSync(p)) return [];
-  return keepSignatureTerms(conceptTermsFromCard(fs.readFileSync(p, "utf-8")), idx.df, idx.total + 1);
+  const p = io.path.join(root, "knowledge", id.replace(/^kb\//, "") + ".md");
+  if (!io.fs.exists(p)) return [];
+  return keepSignatureTerms(conceptTermsFromCard(io.fs.readText(p)), idx.df, idx.total + 1);
 }
 
 /**
@@ -222,21 +224,26 @@ export function conceptTermsOf(root: string, id: string): string[] {
 export function extractCtxUsage(
   artifactText: string,
   ids: string[],
-  opts: { root?: string } = {},
+  opts: { root?: string; io?: FsIo } = {},
 ): CtxUsage {
   const { head, body } = stripFrontmatter(artifactText);
   const hitIds = ids.filter((id) => {
     const short = id.replace(/^kb\//, "");
     return head.includes(id) || head.includes(short) || body.includes(id) || (short.length > 3 && body.includes(short));
   });
-  if (opts.root) {
-    const idx = buildConceptIndex(opts.root);
+  if (opts.root !== undefined && opts.io === undefined) {
+    // root 给了却拿不出 io = 注入面漏传。概念层会静默跳过 ⇒ 命中率假崩，
+    // 而命中率正是改编排的判据。宁可抛错，不交一份不可信的指标。
+    throw new Error("extractCtxUsage: opts.root 必须与 opts.io 成对传入（FS1 §四）");
+  }
+  if (opts.root && opts.io) {
+    const idx = buildConceptIndex(opts.io, opts.root);
     if (idx) {
       const lowerBody = body.toLowerCase();
       const latinHit = (t: string) => new RegExp(`\\b${t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`).test(lowerBody);
       for (const id of ids) {
         if (hitIds.includes(id) || !id.startsWith("kb/")) continue;
-        const terms = conceptTermsOf(opts.root, id);
+        const terms = conceptTermsOf(opts.io, opts.root, id);
         // 纯拉丁词按词边界匹配（「na」不得命中「natural」），CJK 词子串匹配
         if (terms.some((t) => (/^[a-z0-9'-]+$/.test(t) ? latinHit(t) : lowerBody.includes(t)))) hitIds.push(id);
       }

@@ -1,10 +1,7 @@
 // kernel-optimize.ts —— 效果视图 / 优化提案落地 / 挖矿 / overlay 变更（从 kernel.ts 拆出，委托见 kernel.ts）。
 
-import fs from "node:fs";
-import path from "node:path";
 import type { FlowDescriptor, RunState, TaskPackage, Validation } from "./types.js";
 import { ROOT, assertSchema } from "./schema.js";
-import { atomicWriteText, LockDir } from "./fsio.js";
 import { listDecisions, setDecision, decisionsDir } from "./decisions.js";
 import { gateToken, nowIso } from "./ids.js";
 import { compilePlan, PlanCycleError, upstreamOf } from "./plan.js";
@@ -40,20 +37,20 @@ import { KernelError } from "./kernel-base.js";
 import { advance } from "./kernel-run.js";
 export function viewEffect(kernel: Kernel, projectId: string) {
     const projectDir = kernel.projectDir(projectId);
-    const state = loadState(projectDir);
+    const state = loadState(projectDir, kernel.fs, kernel.path);
     if (!state) throw new KernelError("NO_RUN", 404, `项目无 state.json: ${projectId}`);
     const raw = kernel.loadFlow(state.flowId);
     const eff = kernel.effectiveOf(projectDir, raw, state.preset);
     kernel.persistEffective(projectDir, eff, state);
     kernel.persistMetricsSummary(projectDir, state, eff);
-    const events = readMetrics(projectDir);
+    const events = readMetrics(kernel, projectDir);
     const pathToNode: Record<string, string> = {};
     for (const id of Object.keys(eff.flow.graph.nodes)) {
       const p = artifactPathOf(eff.flow, id);
       if (p) pathToNode[p] = id;
     }
     const summary = summarizeMetrics(events, { pathToNode, budget: resolveBudget(eff.policy).values });
-    const overlay = readOverlay(projectOverlayPath(projectDir));
+    const overlay = readOverlay(projectOverlayPath(projectDir, kernel.path), kernel.fs);
     // 编排挖掘提示（R5 §六 质性通道）：距上次挖掘又积累了一轮运行 → 建议跑 flow_mine
     let mine: { due: boolean; events: number; eventsAtLastMine: number; lastMinedAt?: string } = {
       due: false,
@@ -61,7 +58,7 @@ export function viewEffect(kernel: Kernel, projectId: string) {
       eventsAtLastMine: 0,
     };
     try {
-      const ms = JSON.parse(fs.readFileSync(path.join(projectDir, "registry", "miner-state.json"), "utf-8")) as {
+      const ms = JSON.parse(kernel.fs.readText(kernel.path.join(projectDir, "registry", "miner-state.json"))) as {
         eventsAtMine?: number;
         lastMinedAt?: string;
       };
@@ -75,7 +72,7 @@ export function viewEffect(kernel: Kernel, projectId: string) {
     const gatesDue: { nodeId: string; openAt: string; hours: number }[] = [];
     if (state.status !== "completed") {
       try {
-        const jlines = fs.readFileSync(path.join(projectDir, "journal.jsonl"), "utf-8").split("\n");
+        const jlines = kernel.fs.readText(kernel.path.join(projectDir, "journal.jsonl")).split("\n");
         const lastOpenAt: Record<string, string> = {};
         for (const l of jlines) {
           if (!l.trim()) continue;
@@ -101,7 +98,7 @@ export function viewEffect(kernel: Kernel, projectId: string) {
     }
     // R8-OPS 诊断通道：旁路失败不再静默——指标/扫描器/知识库台账的读取失败在此汇总暴露。
     // 页面与 flow_effect 都消费它；`count > 0` 意味着"本项目的某个结论可能不可信"。
-    const diagnostics = summarizeDiags(projectDir);
+    const diagnostics = summarizeDiags(kernel, projectDir);
     return {
       projectId,
       flowId: eff.flow.id,
@@ -125,7 +122,7 @@ export function viewEffect(kernel: Kernel, projectId: string) {
 
 export function flowOptimize(kernel: Kernel, projectId: string, opts: { apply?: boolean; actor?: string } = {}) {
     const projectDir = kernel.projectDir(projectId);
-    const state = loadState(projectDir);
+    const state = loadState(projectDir, kernel.fs, kernel.path);
     if (!state) throw new KernelError("NO_RUN", 404, `项目无 state.json: ${projectId}`);
     const raw = kernel.loadFlow(state.flowId);
     const eff = kernel.effectiveOf(projectDir, raw, state.preset);
@@ -134,11 +131,11 @@ export function flowOptimize(kernel: Kernel, projectId: string, opts: { apply?: 
       const p = artifactPathOf(eff.flow, id);
       if (p) pathToNode[p] = id;
     }
-    const summary = summarizeMetrics(readMetrics(projectDir), { pathToNode, budget: resolveBudget(eff.policy).values });
-    const proposals = proposeFromMetrics(eff.flow, summary, { root: kernel.repoRoot, policy: eff.policy });
+    const summary = summarizeMetrics(readMetrics(kernel, projectDir), { pathToNode, budget: resolveBudget(eff.policy).values });
+    const proposals = proposeFromMetrics(eff.flow, summary, { root: kernel.repoRoot, policy: eff.policy }, kernel.fs, kernel.path);
     let sources: ("metrics" | "miner")[] = ["metrics"];
     let mineStructural: ReturnType<typeof minerToProposals>["structural"] = [];
-    const mine = readMinerFindings(kernel.repoRoot, eff.flow.id) ?? readMinerFindings(projectDir, eff.flow.id);
+    const mine = readMinerFindings(kernel.repoRoot, eff.flow.id, kernel.fs, kernel.path) ?? readMinerFindings(projectDir, eff.flow.id, kernel.fs, kernel.path);
     if (mine) {
       const mp = minerToProposals(mine.file);
       const known = new Set(proposals.map((p) => p.id));
@@ -146,18 +143,18 @@ export function flowOptimize(kernel: Kernel, projectId: string, opts: { apply?: 
       mineStructural = mp.structural;
       sources = ["metrics", "miner"];
       // 消费游标：findings 已并入提案，挖掘状态推进到 consumed
-      atomicWriteText(
-        path.join(projectDir, "registry", "miner-state.json"),
+      kernel.fs.writeTextAtomic(
+        kernel.path.join(projectDir, "registry", "miner-state.json"),
         JSON.stringify({ eventsAtMine: summary.events, lastMinedAt: nowIso(), phase: "consumed", findings: mine.file.findings.length }, null, 2) + "\n",
       );
     }
     // W-06 批注接线：用户批注是负反馈的证据源——并入报告供优化 agent 消费（内核不做 LLM 转译）
     let userFeedback: { count: number; items: { id: string; node?: string; text: string }[] } | undefined;
     try {
-      const annoPath = path.join(projectDir, "内部", "批注与意见.json");
+      const annoPath = kernel.path.join(projectDir, "内部", "批注与意见.json");
       const items: { id: string; node?: string; text: string }[] = [];
-      if (fs.existsSync(annoPath)) {
-        const aj = JSON.parse(fs.readFileSync(annoPath, "utf-8")) as { annos?: Record<string, unknown>; comments?: Record<string, unknown> };
+      if (kernel.fs.exists(annoPath)) {
+        const aj = JSON.parse(kernel.fs.readText(annoPath)) as { annos?: Record<string, unknown>; comments?: Record<string, unknown> };
         for (const [k, v] of Object.entries(aj.annos ?? {})) {
           const t = typeof v === "string" ? v : ((v as { text?: string }).text ?? "");
           if (t) items.push({ id: k, node: typeof v === "object" ? (v as { node?: string }).node : undefined, text: String(t).slice(0, 200) });
@@ -177,21 +174,20 @@ export function flowOptimize(kernel: Kernel, projectId: string, opts: { apply?: 
       ...buildReport(eff.flow, summary, eff.policy, proposals, { sources, mineStructural }),
       ...(userFeedback ? { userFeedback } : {}),
     };
-    fs.mkdirSync(path.join(projectDir, "registry"), { recursive: true });
-    atomicWriteText(path.join(projectDir, "registry", "optimize.json"), JSON.stringify(report, null, 2) + "\n");
+    kernel.fs.writeTextAtomic(kernel.path.join(projectDir, "registry", "optimize.json"), JSON.stringify(report, null, 2) + "\n");
     let written: string | undefined;
     const adaptMode = eff.policy.adapt ?? "propose";
     if (opts.apply && proposals.length && adaptMode !== "off") {
       const ov = overlayFromProposals(proposals, { flowId: eff.flow.id, adapt: eff.policy.adapt });
-      written = writeProjectOverlay(projectDir, ov, opts.actor ?? "optimizer", state.overlayHash, undefined);
-      journalAppend(projectDir, state.runId, "note", {
+      written = writeProjectOverlay(projectDir, ov, opts.actor ?? "optimizer", state.overlayHash, undefined, kernel.fs, kernel.path);
+      journalAppend(kernel, projectDir, state.runId, "note", {
         actor: opts.actor ?? "optimizer",
         detail: `优化提案落地 ${ov.patches.filter((p) => p.status === "applied").length} 条（adapt=${adaptMode}），其余 ${ov.patches.filter((p) => p.status === "proposed").length} 条待批；来源 ${sources.join("+")}；挖掘师结构类拍板项 ${mineStructural.length} 条未入 overlay`,
       });
     } else if (opts.apply && proposals.length && adaptMode === "off") {
       // N2：`adapt=off` = 只观测。**不落 overlay、也不许静默** —— 显式记一条 journal，
       // 否则「0 条落地」和「跑失败」在日志里长得一样。
-      journalAppend(projectDir, state.runId, "note", {
+      journalAppend(kernel, projectDir, state.runId, "note", {
         actor: opts.actor ?? "optimizer",
         detail: `adapt=off：只观测，不产出提案（观测到 ${proposals.length} 条，已记入 registry/optimize.json，未落 overlay）；来源 ${sources.join("+")}`,
       });
@@ -207,7 +203,7 @@ export function flowOptimize(kernel: Kernel, projectId: string, opts: { apply?: 
 
 export function flowMine(kernel: Kernel, projectId: string) {
     const projectDir = kernel.projectDir(projectId);
-    const state = loadState(projectDir);
+    const state = loadState(projectDir, kernel.fs, kernel.path);
     if (!state) throw new KernelError("NO_RUN", 404, `项目无 state.json: ${projectId}`);
     const raw = kernel.loadFlow(state.flowId);
     const eff = kernel.effectiveOf(projectDir, raw, state.preset);
@@ -215,14 +211,14 @@ export function flowMine(kernel: Kernel, projectId: string) {
     kernel.persistMetricsSummary(projectDir, state, eff);
 
     const journalRels: string[] = [];
-    const journalEvents = journalQuery(projectDir, { limit: 400 });
+    const journalEvents = journalQuery(kernel, projectDir, { limit: 400 });
     // 打回与裁决事件是挖掘的高价值区，单独归组
     const sendBacks = journalEvents.filter((e) => e.detail?.includes("打回") || e.detail?.includes("send-back"));
-    const metricsEvents = readMetrics(projectDir);
-    const minerStatePath = path.join(projectDir, "registry", "miner-state.json");
+    const metricsEvents = readMetrics(kernel, projectDir);
+    const minerStatePath = kernel.path.join(projectDir, "registry", "miner-state.json");
     let eventsAtMine = 0;
     try {
-      eventsAtMine = (JSON.parse(fs.readFileSync(minerStatePath, "utf-8")) as { eventsAtMine?: number }).eventsAtMine ?? 0;
+      eventsAtMine = (JSON.parse(kernel.fs.readText(minerStatePath)) as { eventsAtMine?: number }).eventsAtMine ?? 0;
     } catch {
       /* 首次挖掘 */
     }
@@ -230,23 +226,22 @@ export function flowMine(kernel: Kernel, projectId: string) {
     // 证据文件清单：中间文件（内部/对外交付/世界书）+ 质量扫描/检查报告 + 批注（都给相对路径，挖掘师自行取阅）
     const evidence: string[] = [];
     const scan = (dir: string, cap: number): void => {
-      const base = path.join(projectDir, dir);
-      if (!fs.existsSync(base)) return;
+      const base = kernel.path.join(projectDir, dir);
+      if (!kernel.fs.exists(base)) return;
       const walk = (d: string): void => {
-        for (const f of fs.readdirSync(d)) {
-          const abs = path.join(d, f);
-          const st = fs.statSync(abs);
-          if (st.isDirectory()) walk(abs);
-          else if (/\.(md|json)$/i.test(f) && evidence.length < cap) evidence.push(path.relative(projectDir, abs).replaceAll("\\", "/"));
+        for (const f of kernel.fs.readDir(d)) {
+          const abs = kernel.path.join(d, f);
+          if (kernel.fs.stat(abs)?.isDirectory) { walk(abs); continue; }
+          if (/\.(md|json)$/i.test(f) && evidence.length < cap) evidence.push(kernel.path.relative(projectDir, abs).replaceAll("\\", "/"));
         }
       };
       walk(base);
     };
-    scan(path.join("内部"), 120);
-    scan(path.join("对外交付"), 60);
-    scan(path.join("世界书"), 40);
-    for (const extra of ["梗卡.md", "选题素材.md", "项目配置.json", path.join("内部", "批注与意见.json"), "registry/metrics-summary.json", "registry/effective.json", "registry/optimize.json"]) {
-      if (fs.existsSync(path.join(projectDir, extra)) && !evidence.includes(extra)) evidence.unshift(extra);
+    scan(kernel.path.join("内部"), 120);
+    scan(kernel.path.join("对外交付"), 60);
+    scan(kernel.path.join("世界书"), 40);
+    for (const extra of ["梗卡.md", "选题素材.md", "项目配置.json", kernel.path.join("内部", "批注与意见.json"), "registry/metrics-summary.json", "registry/effective.json", "registry/optimize.json"]) {
+      if (kernel.fs.exists(kernel.path.join(projectDir, extra)) && !evidence.includes(extra)) evidence.unshift(extra);
     }
 
     const pkg = {
@@ -275,11 +270,10 @@ export function flowMine(kernel: Kernel, projectId: string) {
         "不自动落地：落地权在 flow_overlay 的人批",
       ],
     };
-    fs.mkdirSync(path.join(projectDir, "registry"), { recursive: true });
-    atomicWriteText(path.join(projectDir, "registry", "mine-package.json"), JSON.stringify(pkg, null, 2) + "\n");
+    kernel.fs.writeTextAtomic(kernel.path.join(projectDir, "registry", "mine-package.json"), JSON.stringify(pkg, null, 2) + "\n");
     // 挖掘游标：组装即记账，flow_effect 的 mine.due 据此判断「又积累了一轮」
-    atomicWriteText(minerStatePath, JSON.stringify({ eventsAtMine: metricsEvents.length, lastMinedAt: nowIso(), phase: "packaged", runId: state.runId }, null, 2) + "\n");
-    journalAppend(projectDir, state.runId, "note", {
+    kernel.fs.writeTextAtomic(minerStatePath, JSON.stringify({ eventsAtMine: metricsEvents.length, lastMinedAt: nowIso(), phase: "packaged", runId: state.runId }, null, 2) + "\n");
+    journalAppend(kernel, projectDir, state.runId, "note", {
       actor: "kernel:mine",
       detail: `编排挖掘包已组装（journal ${journalEvents.length} 事件 / 证据文件 ${evidence.length} 件 / 打回记录 ${sendBacks.length} 条）`,
       refs: ["registry/mine-package.json"],
@@ -304,10 +298,10 @@ export async function flowOverlay(kernel: Kernel,
     req: { patches?: OverlayPatch[]; approve?: string[]; actor?: string; reason?: string; replan?: boolean },
   ): Promise<{ file?: string; applied: number; proposed: number; stop?: AdvanceStop }> {
     const projectDir = kernel.projectDir(projectId);
-    const state = loadState(projectDir);
+    const state = loadState(projectDir, kernel.fs, kernel.path);
     if (!state) throw new KernelError("NO_RUN", 404, `项目无 state.json: ${projectId}`);
     const raw = kernel.loadFlow(state.flowId);
-    const prev = readOverlay(projectOverlayPath(projectDir));
+    const prev = readOverlay(projectOverlayPath(projectDir, kernel.path), kernel.fs);
     const hashBefore = state.overlayHash;
 
     const next: FlowOverlay = {
@@ -328,8 +322,8 @@ export async function flowOverlay(kernel: Kernel,
 
     const applied = next.patches.filter((p) => !p.status || p.status === "applied").length;
     const proposed = next.patches.length - applied;
-    const file = writeProjectOverlay(projectDir, next, req.actor ?? "user", hashBefore, undefined);
-    journalAppend(projectDir, state.runId, "note", {
+    const file = writeProjectOverlay(projectDir, next, req.actor ?? "user", hashBefore, undefined, kernel.fs, kernel.path);
+    journalAppend(kernel, projectDir, state.runId, "note", {
       actor: req.actor ?? "user",
       detail: `编排改写：applied ${applied} / proposed ${proposed}${req.reason ? `｜${req.reason}` : ""}`,
     });

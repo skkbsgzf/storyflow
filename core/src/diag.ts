@@ -28,8 +28,7 @@
  * （仓库级台账如 `knowledge/index.json` 的失败记在 `<root>/registry/`——与 `optimize.ts`
  * 读 `<root>/registry/miner-findings.json` 的既有约定一致）。
  */
-import fs from "node:fs";
-import path from "node:path";
+import type { FsIo } from "./abstraction/fs.js";
 
 export const DIAG_FORMAT = "diag@1";
 
@@ -54,14 +53,14 @@ const MAX_DETAIL = 500;
 /** 进程内 stderr 去重：同一 (kind, scope) 只喊一次，避免长跑刷屏（文件仍逐条落盘）。 */
 const seen = new Set<string>();
 
-export function diagPath(dir: string): string {
-  return path.join(dir, "registry", "diagnostics.jsonl");
+export function diagPath(io: FsIo, dir: string): string {
+  return io.path.join(dir, "registry", "diagnostics.jsonl");
 }
 
 /**
  * 记录一条旁路失败。返回落盘记录（便于测试断言）。**不抛异常。**
  */
-export function recordDiag(dir: string, kind: DiagKind, scope: string, detail: unknown): DiagRecord {
+export function recordDiag(io: FsIo, dir: string, kind: DiagKind, scope: string, detail: unknown): DiagRecord {
   const msg = detail instanceof Error ? detail.message : String(detail);
   const rec: DiagRecord = {
     ts: new Date().toISOString(),
@@ -80,19 +79,19 @@ export function recordDiag(dir: string, kind: DiagKind, scope: string, detail: u
     }
   }
   try {
-    fs.mkdirSync(path.dirname(diagPath(dir)), { recursive: true });
-    fs.appendFileSync(diagPath(dir), JSON.stringify(rec) + "\n", "utf-8");
+    io.fs.mkdir(io.path.dirname(diagPath(io, dir)), { recursive: true });
+    io.fs.appendText(diagPath(io, dir), JSON.stringify(rec) + "\n");
   } catch {
     /* 记账自身失败：已尽力外显，不再级联 */
   }
   return rec;
 }
 
-/** 坏行容错读（与 `fsio.readJsonl` 同纪律：一行坏不炸整读）。 */
-export function readDiags(dir: string, limit = 500): DiagRecord[] {
+/** 坏行容错读（与 `abstraction/jsonio.readJsonl` 同纪律：一行坏不炸整读）。 */
+export function readDiags(io: FsIo, dir: string, limit = 500): DiagRecord[] {
   let raw = "";
   try {
-    raw = fs.readFileSync(diagPath(dir), "utf-8");
+    raw = io.fs.readText(diagPath(io, dir));
   } catch {
     return [];
   }
@@ -110,8 +109,8 @@ export function readDiags(dir: string, limit = 500): DiagRecord[] {
 }
 
 /** 汇总：总数 + 分类计数 + 最近若干条（供 `flow_effect` / HTTP 面 / 页面展示）。 */
-export function summarizeDiags(dir: string, recentLimit = 10): DiagSummary {
-  const all = readDiags(dir, 0);
+export function summarizeDiags(io: FsIo, dir: string, recentLimit = 10): DiagSummary {
+  const all = readDiags(io, dir, 0);
   const byKind: Record<string, number> = {};
   const byScope: Record<string, number> = {};
   for (const d of all) {

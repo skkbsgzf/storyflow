@@ -9,6 +9,10 @@ import * as os from "node:os";
 import * as path from "node:path";
 import { describe, expect, it } from "vitest";
 import { loadIntentGraph, syncIntentDecisions, IntentError } from "../src/intent.js";
+import { nodeFs, nodePath } from "../src/abstraction/adapters/node.js";
+
+/** 测试走宿主盘：FS1 §四的 io 首参用这套默认适配器。 */
+const io = { fs: nodeFs, path: nodePath };
 
 function tmpRoot(): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), "intent-"));
@@ -47,7 +51,7 @@ describe("syncIntentDecisions", () => {
     writeGraph(root, BASE);
     const proj = path.join(root, "projects", "p-demo");
     fs.mkdirSync(proj, { recursive: true });
-    const res = syncIntentDecisions(proj, loadIntentGraph(root, "u-demo"));
+    const res = syncIntentDecisions(proj, loadIntentGraph(root, "u-demo"), io);
     expect(res.written).toHaveLength(1);
     expect(res.written[0]).toMatchObject({ key: "intent-liyi", node: "liyi-main", candidate: "c-a" });
     const d = JSON.parse(fs.readFileSync(path.join(proj, "decisions", "intent-liyi.json"), "utf-8"));
@@ -65,7 +69,7 @@ describe("syncIntentDecisions", () => {
     const proj = path.join(root, "projects", "p-demo");
     fs.mkdirSync(path.join(proj, "decisions"), { recursive: true });
     fs.writeFileSync(path.join(proj, "decisions", "intent-liyi.json"), '{"format":"decision@1","key":"intent-liyi","by":"调研步","at":"x","picked":["已有的"],"evidence":"先到先得"}', "utf-8");
-    const res = syncIntentDecisions(proj, loadIntentGraph(root, "u-demo"));
+    const res = syncIntentDecisions(proj, loadIntentGraph(root, "u-demo"), io);
     expect(res.written).toHaveLength(0);
     expect(res.skipped).toContainEqual({ key: "intent-liyi", reason: "决策已存在（单向桥不回填）" });
   });
@@ -75,7 +79,7 @@ describe("syncIntentDecisions", () => {
     writeGraph(root, BASE);
     const proj = path.join(root, "projects", "p-demo");
     fs.mkdirSync(proj, { recursive: true });
-    const res = syncIntentDecisions(proj, loadIntentGraph(root, "u-demo"));
+    const res = syncIntentDecisions(proj, loadIntentGraph(root, "u-demo"), io);
     expect(res.written).toHaveLength(1); // 只有 liyi-main 落
     expect(res.skipped).toContainEqual({ key: "renwu-zhujue", reason: "无 decision_key（节点未声明决策落点）" });
   });
@@ -87,7 +91,7 @@ describe("syncIntentDecisions", () => {
     writeGraph(root, g);
     const proj = path.join(root, "projects", "p-demo");
     fs.mkdirSync(proj, { recursive: true });
-    const res = syncIntentDecisions(proj, loadIntentGraph(root, "u-demo"));
+    const res = syncIntentDecisions(proj, loadIntentGraph(root, "u-demo"), io);
     expect(res.written).toHaveLength(0);
     expect(res.issues[0]).toContain("无 committed 候选");
   });

@@ -1,10 +1,8 @@
 // kernel-view.ts —— 只读视图面（view* / worldbookSearch / 工作台 payload / 诊断）（从 kernel.ts 拆出，委托见 kernel.ts）。
 
-import fs from "node:fs";
-import path from "node:path";
 import type { FlowDescriptor, RunState, TaskPackage, Validation } from "./types.js";
 import { ROOT, assertSchema } from "./schema.js";
-import { atomicWriteText, LockDir } from "./fsio.js";
+import { readJson } from "./abstraction/jsonio.js";
 import { listDecisions, setDecision, decisionsDir } from "./decisions.js";
 import { gateToken, nowIso } from "./ids.js";
 import { compilePlan, PlanCycleError, upstreamOf } from "./plan.js";
@@ -71,16 +69,16 @@ function fingerprint(parts: unknown[]): string {
 
 
 export function viewProjects(kernel: Kernel) {
-    const projectsDir = path.join(kernel.root, "projects");
-    if (!fs.existsSync(projectsDir)) return [];
+    const projectsDir = kernel.path.join(kernel.root, "projects");
+    if (!kernel.fs.exists(projectsDir)) return [];
     const out: Array<Record<string, unknown>> = [];
-    for (const d of fs.readdirSync(projectsDir).sort()) {
+    for (const d of kernel.fs.readDir(projectsDir).sort()) {
       const dir = kernel.projectDir(d);
-      if (!fs.statSync(dir).isFile?.() && !fs.statSync(dir).isDirectory()) continue;
-      const state = loadState(dir);
-      const legacy = state ? undefined : (() => {
-        try { return JSON.parse(fs.readFileSync(legacyStatePath(dir), "utf-8")); } catch { return undefined; }
-      })();
+      // stat 缺失（目录在扫描瞬间消失）= 跳过，不再像 statSync 那样把整个项目列表炸掉。
+      const st = kernel.fs.stat(dir);
+      if (!st || (!st.isFile && !st.isDirectory)) continue;
+      const state = loadState(dir, kernel.fs, kernel.path);
+      const legacy = state ? undefined : readJson<RunState>(legacyStatePath(dir, kernel.path), kernel.fs);
       const raw: RunState | undefined = state ?? legacy;
       const nodes = raw?.nodes ?? {};
       const order = raw?.plan?.order ?? Object.keys(nodes);
@@ -101,22 +99,22 @@ export function viewProjects(kernel: Kernel) {
 
 
 export function viewArtifacts(kernel: Kernel, projectId: string, opts: { node?: string; latest?: boolean }) {
-    return listArtifacts(kernel.projectDir(projectId), opts);
+    return listArtifacts(kernel.projectDir(projectId), opts, kernel.fs, kernel.path);
   }
 
 
 export function viewArtifactContent(kernel: Kernel, projectId: string, relPath: string): string | undefined {
-    return readRegisteredText(kernel.projectDir(projectId), relPath);
+    return readRegisteredText(kernel.projectDir(projectId), relPath, kernel.fs, kernel.path);
   }
 
 
 export function viewJournal(kernel: Kernel, projectId: string, q: { since?: string; limit?: number; node?: string }) {
-    return journalQuery(kernel.projectDir(projectId), q);
+    return journalQuery(kernel, kernel.projectDir(projectId), q);
   }
 
 
 export function viewSnapshots(kernel: Kernel, projectId: string, node: string) {
-    return readSnapshots(kernel.projectDir(projectId), node);
+    return readSnapshots(kernel.projectDir(projectId), node, kernel.fs, kernel.path);
   }
 
   /** 初始化配置读取：无文件时返回模板（前端表单直接绑定中键字段）。 */
@@ -125,19 +123,19 @@ export function viewLive(kernel: Kernel, projectId: string, opts: { files?: bool
     const projectDir = kernel.projectDir(projectId);
     const readJson = (rel: string): unknown => {
       try {
-        return JSON.parse(fs.readFileSync(path.join(projectDir, rel), "utf-8"));
+        return JSON.parse(kernel.fs.readText(kernel.path.join(projectDir, rel)));
       } catch {
         return null;
       }
     };
-    const state = loadState(projectDir) ?? readJson("run-state.json");
-    const eff = readJson(path.join("registry", "effective.json")) as { overlayHash?: string; planHash?: string } | null;
-    const overlay = readJson(path.join("registry", "overlay.json"));
-    const optimize = readJson(path.join("registry", "optimize.json"));
-    const metrics = readJson(path.join("registry", "metrics-summary.json"));
-    const diagnostics = summarizeDiags(projectDir);
+    const state = loadState(projectDir, kernel.fs, kernel.path) ?? readJson("run-state.json");
+    const eff = readJson(kernel.path.join("registry", "effective.json")) as { overlayHash?: string; planHash?: string } | null;
+    const overlay = readJson(kernel.path.join("registry", "overlay.json"));
+    const optimize = readJson(kernel.path.join("registry", "optimize.json"));
+    const metrics = readJson(kernel.path.join("registry", "metrics-summary.json"));
+    const diagnostics = summarizeDiags(kernel, projectDir);
     // R8 选择面：决策事实是运行中数据，随 live 切片现读现回（坏条目进 issues，不静默）
-    const decisions = listDecisions(projectDir);
+    const decisions = listDecisions(kernel, projectDir);
 
     const s = state as { status?: string; gate?: { verdict?: string; node?: string }; nodes?: Record<string, { status?: string; round?: number; verdict?: string }> } | null;
 
@@ -147,7 +145,7 @@ export function viewLive(kernel: Kernel, projectId: string, opts: { files?: bool
     let configTemplates: { entries: unknown[]; skipped: string[] } | null = null;
     if (stateFlowId) {
       try {
-        const { entries, skipped } = listConfigTemplates({ dataRoot: kernel.root, repoRoot: kernel.repoRoot, flowId: stateFlowId });
+        const { entries, skipped } = listConfigTemplates({ dataRoot: kernel.root, repoRoot: kernel.repoRoot, flowId: stateFlowId }, kernel.fs, kernel.path);
         configTemplates = { entries, skipped };
       } catch {
         configTemplates = null; // 扫描失败 ⇒ 面板显式降级，不编造一份空清单
@@ -172,15 +170,11 @@ export function viewLive(kernel: Kernel, projectId: string, opts: { files?: bool
     ]);
 
     // 产物指纹：只取「路径 + 大小 + mtime」，不读正文——重活留给 files=true 那一次
-    const artifacts = listArtifacts(projectDir, { latest: true });
+    const artifacts = listArtifacts(projectDir, { latest: true }, kernel.fs, kernel.path);
     const filesRevision = fingerprint(
       artifacts.map((a) => {
-        try {
-          const st = fs.statSync(path.join(projectDir, a.path));
-          return [a.path, st.size, Math.round(st.mtimeMs)];
-        } catch {
-          return [a.path, -1, -1];
-        }
+        const st = kernel.fs.stat(kernel.path.join(projectDir, a.path));
+        return st ? [a.path, st.size, Math.round(st.mtimeMs)] : [a.path, -1, -1];
       }),
     );
 
@@ -205,10 +199,10 @@ export function viewLive(kernel: Kernel, projectId: string, opts: { files?: bool
     const mtimes: Record<string, string> = {};
     const two = (n: number) => String(n).padStart(2, "0");
     for (const rel of Object.keys(wb.files)) {
-      try {
-        const d = new Date(fs.statSync(path.join(projectDir, rel)).mtimeMs);
-        mtimes[rel] = `${two(d.getMonth() + 1)}-${two(d.getDate())} ${two(d.getHours())}:${two(d.getMinutes())}`;
-      } catch { /* stat 失败该文件不显时间，卡片降级 */ }
+      const st = kernel.fs.stat(kernel.path.join(projectDir, rel));
+      if (!st) continue; // stat 缺失该文件不显时间，卡片降级
+      const d = new Date(st.mtimeMs);
+      mtimes[rel] = `${two(d.getMonth() + 1)}-${two(d.getDate())} ${two(d.getHours())}:${two(d.getMinutes())}`;
     }
     return { ...base, files: wb.files, snapshots: wb.snapshots, mtimes };
   }
@@ -216,10 +210,10 @@ export function viewLive(kernel: Kernel, projectId: string, opts: { files?: bool
   /** GraphHyperRAG 世界书词条（graph.json 条目形状的最小子集）。 */
 
 export function loadWorldbookGraph(kernel: Kernel, projectId: string): { entries: WbEntry[]; relations: WbRel[]; built_at?: string } {
-    const file = path.join(kernel.projectDir(projectId), "世界书", "graph.json");
+    const file = kernel.path.join(kernel.projectDir(projectId), "世界书", "graph.json");
     let raw: unknown;
     try {
-      raw = JSON.parse(fs.readFileSync(file, "utf-8"));
+      raw = JSON.parse(kernel.fs.readText(file));
     } catch {
       throw new KernelError(
         "NO_WORLDBOOK",
@@ -304,11 +298,11 @@ export function worldbookSearch(kernel: Kernel, projectId: string, opts: { q: st
 
 export function viewWorkbenchPayload(kernel: Kernel, projectId: string) {
     const projectDir = kernel.projectDir(projectId);
-    const state = loadState(projectDir);
+    const state = loadState(projectDir, kernel.fs, kernel.path);
     let flowId: string | undefined = state?.flowId;
     if (!flowId) {
       // 旧 run-state 项目：按 whereami 同款重叠度匹配
-      for (const d of fs.existsSync(kernel.flowsDir) ? fs.readdirSync(kernel.flowsDir) : []) {
+      for (const d of kernel.fs.exists(kernel.flowsDir) ? kernel.fs.readDir(kernel.flowsDir) : []) {
         try {
           const f = kernel.loadFlow(d);
           // flow@3 的原始描述符没有 graph（节点由 modules 派生）⇒ 用 modules 长度兜底。
@@ -326,12 +320,12 @@ export function viewWorkbenchPayload(kernel: Kernel, projectId: string) {
     const wanted = new Set<string>(
       (flow?.outputs ?? []).map((o) => (flow ? outputPathOf(flow, o) : undefined)).filter((p): p is string => !!p),
     );
-    for (const a of listArtifacts(projectDir, { latest: true })) wanted.add(a.path); // 注册产物并入（旧页面 extra+glob 语义）
+    for (const a of listArtifacts(projectDir, { latest: true }, kernel.fs, kernel.path)) wanted.add(a.path); // 注册产物并入（旧页面 extra+glob 语义）
     for (const rel of wanted) {
-      const abs = path.join(projectDir, rel);
-      if (!fs.existsSync(abs)) continue;
-      if (fs.statSync(abs).size > 512 * 1024) continue;
-      files[rel] = fs.readFileSync(abs, "utf-8");
+      const abs = kernel.path.join(projectDir, rel);
+      const st = kernel.fs.stat(abs);
+      if (!st || st.size > 512 * 1024) continue;
+      files[rel] = kernel.fs.readText(abs);
       total += files[rel].length;
       if (total > 2_000_000) break;
     }
@@ -340,7 +334,7 @@ export function viewWorkbenchPayload(kernel: Kernel, projectId: string) {
     // （此前直接读 `flow?.graph.nodes`：flow@3 项目一进本函数就 500 —— 已实测 p-wxl-001。）
     const effRaw = (() => {
       try {
-        return JSON.parse(fs.readFileSync(path.join(projectDir, "registry", "effective.json"), "utf-8")) as { nodes?: Record<string, unknown> };
+        return JSON.parse(kernel.fs.readText(kernel.path.join(projectDir, "registry", "effective.json"))) as { nodes?: Record<string, unknown> };
       } catch {
         return null;
       }
@@ -351,19 +345,19 @@ export function viewWorkbenchPayload(kernel: Kernel, projectId: string) {
       ...Object.keys(effRaw?.nodes ?? {}),
     ]);
     for (const nodeId of snapshotNodes) {
-      const snaps = readSnapshots(projectDir, nodeId);
+      const snaps = readSnapshots(projectDir, nodeId, kernel.fs, kernel.path);
       if (snaps.length) snapshots[nodeId] = snaps;
     }
     return {
       flow,
       files,
-      runstate: state ?? (() => { try { return JSON.parse(fs.readFileSync(legacyStatePath(projectDir), "utf-8")); } catch { return {}; } })(),
+      runstate: state ?? (() => { try { return JSON.parse(kernel.fs.readText(legacyStatePath(projectDir, kernel.path))); } catch { return {}; } })(),
       project: projectId,
       snapshots,
       // R8-OPS：旁路失败的可见面。页面据此显示「本项目有 N 条诊断」——能力必须有家的第③环（UI 可见）。
-      diagnostics: summarizeDiags(projectDir),
+      diagnostics: summarizeDiags(kernel, projectDir),
       // R8 选择面：决策三问（选了哪个/凭什么/排除了啥）的 UI 可见环
-      decisions: listDecisions(projectDir),
+      decisions: listDecisions(kernel, projectDir),
     };
   }
 
@@ -373,7 +367,7 @@ export function viewWorkbenchPayload(kernel: Kernel, projectId: string) {
    */
 
 export function viewDiagnostics(kernel: Kernel, projectId?: string) {
-    if (!projectId) return { scope: "repo" as const, dir: kernel.repoRoot, ...summarizeDiags(kernel.repoRoot, 20) };
+    if (!projectId) return { scope: "repo" as const, dir: kernel.repoRoot, ...summarizeDiags(kernel, kernel.repoRoot, 20) };
     const projectDir = kernel.projectDir(projectId);
-    return { scope: "project" as const, projectId, dir: projectDir, ...summarizeDiags(projectDir, 20) };
+    return { scope: "project" as const, projectId, dir: projectDir, ...summarizeDiags(kernel, projectDir, 20) };
   }

@@ -7,7 +7,8 @@
  * progressive 状态随新 generation 清零）。
  */
 
-import path from "node:path";
+import { nodeFs, nodePath } from "../abstraction/defaults.js";
+import type { IFileSystem, IFsPath } from "../abstraction/fs.js";
 import { discoverPresets } from "./discovery.js";
 import { MountCache } from "./mount.js";
 import type { AssertionPreset, PresetRoot, StandingMount } from "./types.js";
@@ -16,7 +17,7 @@ import { CompositionError } from "./resolver.js";
 export const DEFAULT_PRESET_ID = "novel-fanqie";
 
 /** 组装默认 roots：system（repoRoot）在前，user（数据根）在后。 */
-export function defaultPresetRoots(repoRoot: string, dataRoot: string): PresetRoot[] {
+export function defaultPresetRoots(repoRoot: string, dataRoot: string, path: IFsPath = nodePath): PresetRoot[] {
   return [
     { path: path.join(repoRoot, "assertion-presets"), trust: "system" },
     { path: path.join(dataRoot, "assertion-presets"), trust: "user" },
@@ -29,11 +30,13 @@ export class AssertionPresets {
   constructor(
     private readonly roots: PresetRoot[],
     private readonly defaultId: string = DEFAULT_PRESET_ID,
+    private readonly fs: IFileSystem = nodeFs,
+    private readonly path: IFsPath = nodePath,
   ) {}
 
   /** 全量列出（含 broken——broken 字段写明原因）。 */
   list(): AssertionPreset[] {
-    return discoverPresets(this.roots);
+    return discoverPresets(this.roots, this.fs, this.path);
   }
 
   /** 按 id 解析；缺失抛错（含可用清单）。 */
@@ -51,7 +54,7 @@ export class AssertionPresets {
   mount(id?: string): StandingMount {
     const preset = this.resolve(id);
     if (preset.broken) throw new Error(`preset "${preset.id}" is broken: ${preset.broken}`);
-    return this.cache.mountFor(preset);
+    return this.cache.mountFor(preset, this.fs);
   }
 
   /**
@@ -63,7 +66,7 @@ export class AssertionPresets {
     try {
       const preset = this.resolve(id ?? this.defaultId);
       if (preset.broken) return undefined;
-      return this.cache.mountFor(preset);
+      return this.cache.mountFor(preset, this.fs);
     } catch (e) {
       if (e instanceof CompositionError) return undefined;
       return undefined;

@@ -229,6 +229,14 @@ export interface RunState {
   stalledAt?: string;
   /** 生产线预设（PP1）：flow_run(opts.preset) 选中的预设 id；生效编排 = flow ⊕ 出厂 overlay ⊕ 预设 overlay ⊕ 项目 overlay。 */
   preset?: string;
+  /**
+   * AP1 §十：最近一次门点的**断言策略摘要**（preset 调制后仍未过的条款 + 门档/渐进档）。
+   * 由 doSubmit 与 check_* 两处门点写入，下游任务包经 `task-package.diagnosticSummary` 消费。
+   * 与 `lastRejectReason` 分工：那条只记打回根因，这条记调制结果（哪怕最终放行）。
+   */
+  diagnosticSummary?: string;
+  /** AP1 §十：上面那份摘要出自哪个节点（成对写入，读侧据此知道是不是自己上游）。 */
+  diagnosticFrom?: string;
 }
 
 // task-package.schema.json
@@ -254,6 +262,12 @@ export interface TaskPackage {
   kitRef?: { kit: string; op: string; domain: string; skill: string; kind: string };
   /** artifact@1 头部模板（规范 R4 §二）：agent 须以它开头写产物，否则内核 block */
   headerTemplate?: string;
+  /**
+   * AP1 §十：上游门点的策略摘要（preset 调制后仍未过的条款 + 门档/渐进档）。
+   * 空串 = 本轮门点没有触发任何条款，或预设不可用（特性不激活）；未定义 = 本项目还没走过门点。
+   * 只作提示，不是判决——质量裁决归 agent 与人。
+   */
+  diagnosticSummary?: string;
 }
 
 export interface KnowledgeCard {

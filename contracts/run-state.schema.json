@@ -83,6 +83,14 @@
     "preset": {
       "type": "string",
       "description": "生产线预设（PP1）：flow_run(opts.preset) 选中的预设 id（presets/<id>/）。生效编排 = flow ⊕ 出厂 overlay ⊕ 预设 overlay ⊕ 项目 overlay；跨 run 持久，计划漂移检测随 overlayHash 自动覆盖。"
+    },
+    "diagnosticSummary": {
+      "type": "string",
+      "description": "AP1 §十：最近一次门点（提交链 / check_* 内建节点）的**策略摘要**——preset 调制后仍未过的断言条款（含门档/渐进档/触发次数）。运行时事实，随 state 持久，供下游任务包注入（`task-package.diagnosticSummary`）；`composition.diagnosticEnabled=false` 时内核不写本字段。与 `lastRejectReason`（只记打回根因）不是一回事：本字段记『谁被调制成了什么档』，哪怕最终没打回。"
+    },
+    "diagnosticFrom": {
+      "type": "string",
+      "description": "AP1 §十：上面那份摘要出自哪个节点（同一次写入的成对字段，读侧据此判断是不是自己上游传来的）。"
     }
   }
 }

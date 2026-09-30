@@ -10,11 +10,12 @@
  *
  * 一切应用都是纯函数：applyOverlay(flow, overlays) 幂等、可审计、结果只取决于输入。
  */
-import fs from "node:fs";
-import path from "node:path";
+import { nodeFs, nodePath } from "./abstraction/defaults.js";
+import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
 import type { FlowDescriptor, FlowEdge, FlowNode } from "./types.js";
 import { fnv1a, stableStringify } from "./ids.js";
 import { isBackEdge } from "./cond.js";
+import type { AssertionOverride, AssertionPatch } from "./assertion-preset/types.js";
 
 export type BoundaryPolicy = "always" | "auto" | "off";
 export type GateMode = "auto" | "manual";
@@ -31,6 +32,8 @@ export interface FlowPolicy {
   /** R7（OS-02A）：同一门累计驳回上限 / 等待态超时毫秒。见 kernel.ts 的 blocked 出口。 */
   maxRounds?: number;
   awaitTimeoutMs?: number;
+  /** AP1 §九：缺省断言预设 id。挂载优先级 = KernelOptions.assertionPreset > 本键 > novel-fanqie。 */
+  defaultPreset?: string;
 }
 
 export interface OverlayEvidence {
@@ -42,16 +45,18 @@ export interface OverlayEvidence {
 
 export interface OverlayPatch {
   /**
-   * 14 种 kind，**逐项对齐** `contracts/flow-overlay.schema.json`。
+   * 17 种 kind，**逐项对齐** `contracts/flow-overlay.schema.json`。
    * R7/N4 勘误：TS 联合此前只有 11 种，而 `modules.ts::effectiveFlow3` 早已消费
    * `set-module`/`insert-tool`（靠 `as any` 绕类型）——契约、实现、类型三方各说一套。
    * 现补齐并加 `set-link`（per-link 降级通道）。
+   * AP1 §七：再加 3 种**断言覆盖** kind（改阈值 / 禁用 / 组内插入），只由 flow@3 路径消费。
    */
   kind:
     | "set-node" | "set-op" | "place-node" | "remove-node"
     | "set-edge" | "add-edge" | "remove-edge"
     | "set-tool" | "set-policy" | "suppress-boundary" | "set-input"
-    | "set-module" | "insert-tool" | "set-link";
+    | "set-module" | "insert-tool" | "set-link"
+    | "set-assertion-preset" | "disable-assertion" | "insert-assertion";
   reason: string;
   evidence?: OverlayEvidence;
   status?: "applied" | "proposed" | "rejected";
@@ -88,6 +93,16 @@ export interface OverlayPatch {
   mode?: "auto" | "manual";
   /** 来源提案 id（优化器产出时带上；人可凭它批准 proposed → applied） */
   proposal?: string;
+  /** AP1 §七 三条断言覆盖 kind 共用：针对哪个预设（缺省 = 当前挂载预设） */
+  presetId?: string;
+  /** set-assertion-preset：目标断言类型清单 */
+  assertions?: string[];
+  /** disable-assertion / insert-assertion：单条断言类型 */
+  assertion?: string;
+  /** set-assertion-preset / insert-assertion：配置载荷（gateMode/阈值/when/hintTemplate） */
+  patch?: AssertionPatch;
+  /** insert-assertion：目标断言组 id（gate-preset.yml 的 groups[].id） */
+  group?: string;
 }
 
 export interface FlowOverlay {
@@ -113,6 +128,13 @@ export interface EffectiveFlow {
   inputs: Record<string, unknown>;
   /** 生效的 tool 级改写，key = `<kit>.<op>`；由 assembler 装载时叠加 */
   toolOverrides: Record<string, ToolOverride>;
+  /**
+   * AP1 §七：生效的断言覆盖清单（改阈值 / 禁用 / 组内插入），由门点经
+   * `assertion-preset/executor.ts::applyAssertionOverrides` 叠在挂载上。
+   * 与 `toolOverrides` 同属「内容类覆盖」——不改图结构、不进 replan 影响面。
+   * flow@2 legacy 路径无断言覆盖面（恒 `[]`）。
+   */
+  assertionOverrides: AssertionOverride[];
   /** 本次自动派生的 kit 边界验收节点 id（R5；R6 下恒为 []，改由 links 表达） */
   boundaries: string[];
   /** R6：模块间连接件（取代 boundaries）；展开器派生 */
@@ -169,18 +191,18 @@ export function isWorkGate(node: FlowNode | undefined): boolean {
   return !!node && node.kind === "gate" && !!(node.output || node.skill || node.op || node.minitool);
 }
 
-export function factoryOverlayPath(root: string, flowId: string): string {
+export function factoryOverlayPath(root: string, flowId: string, path: IFsPath = nodePath): string {
   return path.join(root, "flows", flowId, "overlay.default.json");
 }
 
-export function projectOverlayPath(projectDir: string): string {
+export function projectOverlayPath(projectDir: string, path: IFsPath = nodePath): string {
   return path.join(projectDir, "registry", "overlay.json");
 }
 
 /** 读一份 overlay（不存在返回 undefined；非法抛——坏编排不许静默降级）。 */
-export function readOverlay(file: string): FlowOverlay | undefined {
-  if (!fs.existsSync(file)) return undefined;
-  const raw = JSON.parse(fs.readFileSync(file, "utf-8")) as FlowOverlay;
+export function readOverlay(file: string, fs: IFileSystem = nodeFs): FlowOverlay | undefined {
+  if (!fs.exists(file)) return undefined;
+  const raw = JSON.parse(fs.readText(file)) as FlowOverlay;
   if (raw.format !== "flow-overlay@1") throw new Error(`overlay 格式非法: ${file}（format=${raw.format}）`);
   if (!Array.isArray(raw.patches)) throw new Error(`overlay 缺 patches: ${file}`);
   for (const [i, p] of raw.patches.entries()) {
@@ -530,12 +552,14 @@ export function effectiveFlow(
   root: string,
   flow: FlowDescriptor,
   opts: { projectDir?: string; overlays?: (FlowOverlay | undefined)[] } = {},
+  fs: IFileSystem = nodeFs,
+  path: IFsPath = nodePath,
 ): EffectiveFlow {
   const list: FlowOverlay[] = [];
   if (opts.overlays) list.push(...(opts.overlays.filter(Boolean) as FlowOverlay[]));
-  const factory = readOverlay(factoryOverlayPath(root, flow.id));
+  const factory = readOverlay(factoryOverlayPath(root, flow.id, path), fs);
   if (factory) list.unshift(factory);                      // 出厂建议先应用（项目层可覆盖）
-  const project = opts.projectDir ? readOverlay(projectOverlayPath(opts.projectDir)) : undefined;
+  const project = opts.projectDir ? readOverlay(projectOverlayPath(opts.projectDir, path), fs) : undefined;
   if (project) list.push(project);
 
   const res = applyOverlay(flow, list);
@@ -547,6 +571,8 @@ export function effectiveFlow(
     // R7：两个可中断旋钮对 flow@2 同样生效（此前只在 flow@3 的 policy 白名单里，flow@2 静默丢弃）
     ...(res.policy.maxRounds !== undefined ? { maxRounds: res.policy.maxRounds } : {}),
     ...(res.policy.awaitTimeoutMs !== undefined ? { awaitTimeoutMs: res.policy.awaitTimeoutMs } : {}),
+    // AP1 §九：断言预设旋钮对 flow@2 同样可读（门点在 kernel 侧统一取 eff.policy.defaultPreset）。
+    ...(typeof res.policy.defaultPreset === "string" ? { defaultPreset: res.policy.defaultPreset } : {}),
   };
   const b = injectKitBoundaries(res.flow, { policy: policy.kit_boundary, suppressed: res.suppressed });
   return {
@@ -554,6 +580,9 @@ export function effectiveFlow(
     policy,
     inputs: res.inputs,
     toolOverrides: res.toolOverrides,
+    // 断言覆盖只在 flow@3 解析（legacy 手工图不产该面）；空数组而非 undefined，
+    // 免得消费方每处都要 `?? []`（漏一处 = 覆盖静默失效）。
+    assertionOverrides: [],
     boundaries: b.gates,
     notes: [...res.notes, ...b.notes],
     overlayHash: overlayHashOf(list, b.gates),
@@ -562,9 +591,9 @@ export function effectiveFlow(
 }
 
 /** 写回项目 overlay（人 / 优化 agent 共用的落地点）。 */
-export function writeProjectOverlay(projectDir: string, overlay: FlowOverlay, actor: string, hashBefore?: string, hashAfter?: string): string {
-  const file = projectOverlayPath(projectDir);
-  const prev = readOverlay(file);
+export function writeProjectOverlay(projectDir: string, overlay: FlowOverlay, actor: string, hashBefore?: string, hashAfter?: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): string {
+  const file = projectOverlayPath(projectDir, path);
+  const prev = readOverlay(file, fs);
   const history = [...(prev?.history ?? []), {
     at: new Date().toISOString(),
     actor,
@@ -573,7 +602,7 @@ export function writeProjectOverlay(projectDir: string, overlay: FlowOverlay, ac
     note: overlay.reason ?? "",
   }];
   const merged: FlowOverlay = { ...overlay, history };
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  fs.writeFileSync(file, JSON.stringify(merged, null, 2) + "\n", "utf-8");
+  fs.mkdir(path.dirname(file), { recursive: true });
+  fs.writeText(file, JSON.stringify(merged, null, 2) + "\n");
   return file;
 }

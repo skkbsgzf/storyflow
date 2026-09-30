@@ -1,11 +1,12 @@
-import path from "node:path";
+import type { FsIo } from "./abstraction/fs.js";
 import type { JournalEvent, JournalEventKind } from "./types.js";
-import { appendJsonl, readJsonl } from "./fsio.js";
+import { appendJsonl, readJsonl } from "./abstraction/jsonio.js";
 import { assertSchema } from "./schema.js";
 import { journalPath } from "./state.js";
 import { nowIso } from "./ids.js";
 
 export function journalAppend(
+  io: FsIo,
   projectDir: string,
   runId: string,
   event: JournalEventKind,
@@ -21,7 +22,7 @@ export function journalAppend(
     ...(opts.refs ? { refs: opts.refs } : {}),
   };
   assertSchema("journal-event", e);
-  appendJsonl(journalPath(projectDir), e);
+  appendJsonl(journalPath(projectDir, io.path), e, io.fs, io.path);
   return e;
 }
 
@@ -32,8 +33,8 @@ export interface JournalQuery {
   event?: JournalEventKind;
 }
 
-export function journalQuery(projectDir: string, q: JournalQuery = {}): JournalEvent[] {
-  let events = readJsonl<JournalEvent>(journalPath(projectDir));
+export function journalQuery(io: FsIo, projectDir: string, q: JournalQuery = {}): JournalEvent[] {
+  let events = readJsonl<JournalEvent>(journalPath(projectDir, io.path), io.fs);
   if (q.since) events = events.filter((e) => e.ts >= q.since!);
   if (q.node) events = events.filter((e) => e.nodeId === q.node);
   if (q.event) events = events.filter((e) => e.event === q.event);

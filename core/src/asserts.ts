@@ -1,5 +1,5 @@
-import fs from "node:fs";
-import path from "node:path";
+import { nodeFs, nodePath } from "./abstraction/defaults.js";
+import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
 import type { Validation } from "./types.js";
 
 /**
@@ -9,15 +9,15 @@ import type { Validation } from "./types.js";
  * 经 tools/quality-scan.py / scan_quality 消费），语义判定归 agent 与人。
  * 本文件只剩**确定性完整性**：存在性/空文/残渣/计数一致 + artifact@1 头部 + 词汇表守卫。
  */
-export function runIntegrityAsserts(projectDir: string, relPath: string): Validation[] {
+export function runIntegrityAsserts(projectDir: string, relPath: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): Validation[] {
   const results: Validation[] = [];
   const abs = path.join(projectDir, relPath);
   const name = path.basename(relPath);
 
-  if (!fs.existsSync(abs)) {
+  if (!fs.exists(abs)) {
     return [{ name: "exists", status: "block", detail: `产物文件缺失: ${relPath}` }];
   }
-  const text = fs.readFileSync(abs, "utf-8");
+  const text = fs.readText(abs);
   results.push({ name: "exists", status: "pass", detail: `${text.length} chars` });
   if (!text.trim()) {
     return [...results, { name: "nonempty", status: "block", detail: "产物为空" }];
@@ -215,7 +215,7 @@ function headerMode(): "block" | "warn" | "off" {
  * 过程交付件头部校验。返回空数组 = 文件不在管辖范围（或模式 off）。
  * 结果名 `artifact-header`：block = 缺头部/字段不全/目录错配/命名违规/正文污染。
  */
-export function runHeaderAsserts(projectDir: string, relPath: string, expect: HeaderExpect = {}): Validation[] {
+export function runHeaderAsserts(projectDir: string, relPath: string, expect: HeaderExpect = {}, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): Validation[] {
   if (headerMode() === "off") return [];
   const rel = relPath.replaceAll("\\", "/");
   if (!rel.endsWith(".md")) return [];
@@ -240,8 +240,8 @@ export function runHeaderAsserts(projectDir: string, relPath: string, expect: He
   const mode = headerMode();
   const sev = (detail: string): Validation => ({ name: "artifact-header", status: mode === "warn" ? "warn" : "block", detail });
   const abs = path.join(projectDir, rel);
-  if (!fs.existsSync(abs)) return [];
-  const text = fs.readFileSync(abs, "utf-8");
+  if (!fs.exists(abs)) return [];
+  const text = fs.readText(abs);
 
   const head = parseArtifactHeader(text);
   if (!head) {
@@ -378,9 +378,9 @@ export function headerTemplate(opts: {
  * 他项目的 own 词即本项目违禁词；该词若被本项目 own 词包含则豁免（青川 ⊂ 青川河）。
  * 本项目未登记词汇表 → 守卫未启用（返回 undefined）。
  */
-function readProjectOwn(projectsDir: string, id: string): string[] {
+function readProjectOwn(projectsDir: string, id: string, fs: IFileSystem, path: IFsPath): string[] {
   try {
-    const g = JSON.parse(fs.readFileSync(path.join(projectsDir, id, "词汇表.json"), "utf-8")) as { own?: unknown };
+    const g = JSON.parse(fs.readText(path.join(projectsDir, id, "词汇表.json"))) as { own?: unknown };
     return Array.isArray(g.own) ? g.own.map(String) : [];
   } catch {
     return [];
@@ -394,14 +394,14 @@ function readProjectOwn(projectsDir: string, id: string): string[] {
  * 让写手开跑前就知道雷在哪，而不是写完了才被打回。_918test 实证：glossary 打回 2 次
  * （老周 / 思维链 / 魏峥——都是别的项目的专名），写手事前无从得知。
  */
-export function foreignOwnTerms(root: string, projectDir: string): string[] {
+export function foreignOwnTerms(root: string, projectDir: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): string[] {
   const projectsDir = path.join(root, "projects");
   const me = path.basename(projectDir);
-  const myOwn = readProjectOwn(projectsDir, me);
+  const myOwn = readProjectOwn(projectsDir, me, fs, path);
   if (!myOwn.length) return [];
   let dirs: string[];
   try {
-    dirs = fs.readdirSync(projectsDir);
+    dirs = fs.readDir(projectsDir);
   } catch {
     return [];
   }
@@ -409,11 +409,11 @@ export function foreignOwnTerms(root: string, projectDir: string): string[] {
   for (const dir of dirs) {
     if (dir === me) continue;
     try {
-      if (!fs.statSync(path.join(projectsDir, dir)).isDirectory()) continue;
+      if (!fs.stat(path.join(projectsDir, dir))?.isDirectory) continue;
     } catch {
       continue;
     }
-    for (const term of readProjectOwn(projectsDir, dir)) {
+    for (const term of readProjectOwn(projectsDir, dir, fs, path)) {
       if (!term || myOwn.some((o) => o.includes(term))) continue;
       out.add(term);
     }
@@ -421,28 +421,28 @@ export function foreignOwnTerms(root: string, projectDir: string): string[] {
   return [...out].sort();
 }
 
-export function checkGlossary(root: string, projectDir: string, relPath: string): Validation | undefined {
+export function checkGlossary(root: string, projectDir: string, relPath: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): Validation | undefined {
   const projectsDir = path.join(root, "projects");
   let text: string;
   try {
-    text = fs.readFileSync(path.join(projectDir, relPath), "utf-8");
+    text = fs.readText(path.join(projectDir, relPath));
   } catch {
     return undefined;
   }
   const me = path.basename(projectDir);
-  const myOwn = readProjectOwn(projectsDir, me);
+  const myOwn = readProjectOwn(projectsDir, me, fs, path);
   if (!myOwn.length) return undefined;
   const hits: string[] = [];
-  for (const dir of fs.readdirSync(projectsDir)) {
+  for (const dir of fs.readDir(projectsDir)) {
     if (dir === me) continue;
     let isDir = false;
     try {
-      isDir = fs.statSync(path.join(projectsDir, dir)).isDirectory();
+      isDir = fs.stat(path.join(projectsDir, dir))?.isDirectory ?? false;
     } catch {
       continue;
     }
     if (!isDir) continue;
-    for (const term of readProjectOwn(projectsDir, dir)) {
+    for (const term of readProjectOwn(projectsDir, dir, fs, path)) {
       if (!term || myOwn.some((o) => o.includes(term))) continue;
       if (text.includes(term)) hits.push(`${term}（来自 ${dir}）`);
     }

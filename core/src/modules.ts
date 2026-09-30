@@ -8,11 +8,12 @@
  * 的节点（模块内无门无打回；模块间 auto 放行 / manual 挂人；reject = 重跑上游模块）。
  * 派生只算一次，落 registry/effective.json（kernel.persistEffective，effective@2）。
  */
-import fs from "node:fs";
-import path from "node:path";
+import { nodeFs, nodePath } from "./abstraction/defaults.js";
+import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
 import { assertSchema } from "./schema.js";
 // 仅类型导入（编译期擦除，不构成运行时循环依赖）——set-tool 的生效结果与 legacy 路径同一形状。
 import type { ToolOverride } from "./overlay.js";
+import type { AssertionOverride } from "./assertion-preset/types.js";
 
 export interface Flow3ModuleInstance {
   id: string;
@@ -96,13 +97,13 @@ export interface ExpandResult {
 /** 模块注册表（进程内缓存；modules/<id>/module.json，module@1 契约校验）。 */
 const modCache = new Map<string, { root: string; raw: any }>();
 
-export function loadModule(root: string, moduleId: string): any {
+export function loadModule(root: string, moduleId: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): any {
   const key = `${root}::${moduleId}`;
   const hit = modCache.get(key);
   if (hit) return hit.raw;
   const file = path.join(root, "modules", moduleId, "module.json");
-  if (!fs.existsSync(file)) throw new Error(`模块不存在: modules/${moduleId}/module.json`);
-  const raw = JSON.parse(fs.readFileSync(file, "utf-8"));
+  if (!fs.exists(file)) throw new Error(`模块不存在: modules/${moduleId}/module.json`);
+  const raw = JSON.parse(fs.readText(file));
   if (raw.format !== "module@1") throw new Error(`模块格式非法（须 module@1）: ${file}`);
   assertSchema("module", raw);
   modCache.set(key, { root, raw });
@@ -136,9 +137,9 @@ const UNIT_FILE_STYLE: Record<string, string> = {
  * 与 `flows/novel-fanqie` 的既有约定、以及页面前端 iterate 槽位区的候选路径一致
  * （前端 `it.artifact || "章节正文/第{n}章.md"` 的硬编码兜底正是这条规则的影子）。
  */
-export function defaultArtifactTemplate(output: string, unit: string): string {
-  const dir = path.posix.dirname(output);
-  const base = path.posix.basename(output);
+export function defaultArtifactTemplate(output: string, unit: string, path: IFsPath = nodePath): string {
+  const dir = path.dirname(output);
+  const base = path.basename(output);
   const stem = base.replace(/\.[^.]+$/, "");
   const ext = base.slice(stem.length) || ".md";
   const label = UNIT_FILE_STYLE[unit] ?? "{n}";
@@ -153,6 +154,8 @@ export function expandFlow3(
   root: string,
   flow3: Flow3Descriptor,
   opts: { policy?: { link_default?: "auto" | "manual" } } = {},
+  fs: IFileSystem = nodeFs,
+  path: IFsPath = nodePath,
 ): ExpandResult {
   const modules: ModuleComposition[] = [];
   const links: LinkDef[] = [];
@@ -166,7 +169,7 @@ export function expandFlow3(
   let prev: { mid: string; terminals: string[]; linkId: string } | null = null;
 
   flow3.modules.forEach((inst, idx) => {
-    const mod = loadModule(root, inst.module);
+    const mod = loadModule(root, inst.module, fs, path);
     const order = idx + 1;
     const dir = moduleDirOf(order, mod.name);
     dirs[inst.id] = dir;
@@ -395,7 +398,7 @@ export function expandFlow3(
       unit,
       ...(inst.iterate.over ? { over: inst.iterate.over } : {}),
       first: inst.iterate.first ?? 1,
-      artifact: inst.iterate.artifact ?? defaultArtifactTemplate(String(nodes[target].output), unit),
+      artifact: inst.iterate.artifact ?? defaultArtifactTemplate(String(nodes[target].output), unit, path),
     };
     nodes[target].iterate = iter;
     notes.push(
@@ -435,6 +438,8 @@ export function effectiveFlow3(
   root: string,
   flow3: Flow3Descriptor,
   opts: { projectDir?: string; overlays?: any[] } = {},
+  fs: IFileSystem = nodeFs,
+  path: IFsPath = nodePath,
 ): ExpandResult & {
   policy: Record<string, unknown>;
   notes: string[];
@@ -443,6 +448,7 @@ export function effectiveFlow3(
   toolOverrides: Record<string, ToolOverride>;
   inputs: Record<string, unknown>;
   unsupported: string[];
+  assertionOverrides: AssertionOverride[];
 } {
   let flow: Flow3Descriptor = JSON.parse(JSON.stringify(flow3));
   const notes: string[] = [];
@@ -455,6 +461,10 @@ export function effectiveFlow3(
     adapt: declared.adapt ?? "propose",
   };
   if (declared.budget) policy.budget = declared.budget;
+  // AP1 §九：缺省断言预设可写在 flow.policy（模板层），KernelOptions 与 overlay 各在其上。
+  if (typeof declared.defaultPreset === "string" && declared.defaultPreset.trim()) {
+    policy.defaultPreset = declared.defaultPreset;
+  }
   for (const k of ["maxRounds", "awaitTimeoutMs"]) {
     if (declared[k] !== undefined) policy[k] = declared[k];
   }
@@ -467,13 +477,38 @@ export function effectiveFlow3(
   const toolOverrides: Record<string, ToolOverride> = {};
   const inputs: Record<string, unknown> = {};
   const unsupported: string[] = [];
+  /** AP1 §七：断言覆盖（改阈值 / 禁用 / 组内插入）。与 toolOverrides 并列——都是内容类覆盖，不改图。 */
+  const assertionOverrides: AssertionOverride[] = [];
 
   /** flow@3 展开器真正消费的 kind。其余（手工图语义）须显式回显，不许静默丢弃。 */
-  const FLOW3_KINDS = new Set(["set-policy", "set-module", "insert-tool", "set-tool", "set-input", "set-link"]);
+  const FLOW3_KINDS = new Set([
+    "set-policy", "set-module", "insert-tool", "set-tool", "set-input", "set-link",
+    "set-assertion-preset", "disable-assertion", "insert-assertion",
+  ]);
   /** flow@3 允许被 set-policy 改写的 policy 键（白名单，对齐 contracts/flow.schema.json）。
    *  OS-02 阶段 C：补 `budget`——项目配置层与运行时的阈值覆盖都经 `set-policy{budget}` 表达，
    *  此前不在白名单 ⇒ 结构性无法调阈值（面板填了也静默 unsupported）。 */
-  const POLICY_KEYS = new Set(["link_default", "adapt", "maxRounds", "awaitTimeoutMs", "budget"]);
+  const POLICY_KEYS = new Set(["link_default", "adapt", "maxRounds", "awaitTimeoutMs", "budget", "defaultPreset"]);
+
+  /** `patch` 载荷的形状校验（键与 gate-preset.yml 的 config 面同集）。返回错误句，undefined = 合法。 */
+  const patchError = (raw: unknown): string | undefined => {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return "须为对象";
+    const p = raw as Record<string, unknown>;
+    const bad: string[] = [];
+    if (p.gateMode !== undefined && !["warn-only", "block-critical", "strict"].includes(String(p.gateMode))) {
+      bad.push(`gateMode=${String(p.gateMode)}（须 warn-only|block-critical|strict）`);
+    }
+    for (const k of ["warnThreshold", "blockThreshold"] as const) {
+      if (p[k] !== undefined && (typeof p[k] !== "number" || !Number.isInteger(p[k]) || (p[k] as number) < 1)) {
+        bad.push(`${k}=${String(p[k])}（须 ≥1 的整数）`);
+      }
+    }
+    if (p.when !== undefined && typeof p.when !== "string") bad.push("when 须为字符串表达式");
+    if (p.hintTemplate !== undefined && typeof p.hintTemplate !== "string") bad.push("hintTemplate 须为字符串");
+    const unknownKeys = Object.keys(p).filter((k) => !["gateMode", "warnThreshold", "blockThreshold", "when", "hintTemplate"].includes(k));
+    if (unknownKeys.length) bad.push(`未识别键 ${unknownKeys.join("、")}`);
+    return bad.length ? bad.join("；") : undefined;
+  };
 
   const list = (opts.overlays ?? []).filter(Boolean);
   for (const ov of list) {
@@ -492,6 +527,10 @@ export function effectiveFlow3(
         }
         if (k === "link_default" && p.value !== "auto" && p.value !== "manual") {
           unsupported.push(`set-policy:link_default=${String(p.value)}（须 auto|manual）`);
+          continue;
+        }
+        if (k === "defaultPreset" && (typeof p.value !== "string" || !p.value.trim())) {
+          unsupported.push(`set-policy:defaultPreset=${JSON.stringify(p.value)}（须非空预设 id 字符串；实际挂载仍过 mountFor 静默校验，坏 id 不拦流水线）`);
           continue;
         }
         if (k === "budget") {
@@ -583,11 +622,50 @@ export function effectiveFlow3(
           notes.push(`set-link ${inst.id}.link=${mode}`);
           applied++;
         }
+      } else if (kind === "set-assertion-preset" || kind === "disable-assertion" || kind === "insert-assertion") {
+        // AP1 §七：断言覆盖。这里只做**形状**校验并收集；「预设/组/断言类型存不存在」要到挂载
+        // 现场才知道（composition 在预设文件里），由 executor::applyAssertionOverrides 回显 ignored。
+        const presetId = typeof p.presetId === "string" && p.presetId.trim() ? p.presetId : undefined;
+        if (kind === "disable-assertion") {
+          const one = typeof p.assertion === "string" ? p.assertion : "";
+          if (!one) unsupported.push("disable-assertion（缺 assertion）");
+          else {
+            assertionOverrides.push({ kind, ...(presetId ? { presetId } : {}), assertion: one });
+            notes.push(`disable-assertion ${one}${presetId ? ` @${presetId}` : ""}`);
+            applied++;
+          }
+          continue;
+        }
+        if (kind === "set-assertion-preset") {
+          const list = Array.isArray(p.assertions) ? p.assertions.map(String).filter(Boolean) : [];
+          const err = patchError(p.patch);
+          if (!list.length) unsupported.push("set-assertion-preset（缺 assertions 或为空数组）");
+          else if (err) unsupported.push(`set-assertion-preset:${list.join("、")} patch ${err}`);
+          else {
+            assertionOverrides.push({ kind, ...(presetId ? { presetId } : {}), assertions: list, patch: p.patch as never });
+            notes.push(`set-assertion-preset [${list.join("、")}] ${JSON.stringify(p.patch)}${presetId ? ` @${presetId}` : ""}`);
+            applied++;
+          }
+          continue;
+        }
+        const group = typeof p.group === "string" ? p.group : "";
+        const one = typeof p.assertion === "string" ? p.assertion : "";
+        const err = p.patch === undefined ? undefined : patchError(p.patch);
+        if (!group || !one) unsupported.push(`insert-assertion（缺 ${!group ? "group" : "assertion"}）`);
+        else if (err) unsupported.push(`insert-assertion:${group}/${one} patch ${err}`);
+        else {
+          assertionOverrides.push({
+            kind, ...(presetId ? { presetId } : {}), group, assertion: one,
+            ...(p.patch ? { patch: p.patch as never } : {}),
+          });
+          notes.push(`insert-assertion ${group}/${one}${presetId ? ` @${presetId}` : ""}`);
+          applied++;
+        }
       }
     }
   }
 
-  const res = expandFlow3(root, flow, { policy: policy as any });
+  const res = expandFlow3(root, flow, { policy: policy as any }, fs, path);
   // 展开期的事实回显（如 iterate 传播落点）并入 notes：展开器内部发生的事不许静默。
   notes.push(...(res.notes ?? []));
   let hash = 0;
@@ -609,6 +687,7 @@ export function effectiveFlow3(
     appliedCount: applied,
     toolOverrides,
     inputs,
+    assertionOverrides,
     unsupported: [...new Set(unsupported)],
   };
 }

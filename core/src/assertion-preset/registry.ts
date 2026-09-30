@@ -9,6 +9,8 @@
 
 import type { Validation } from "../types.js";
 import { runAestheticAsserts } from "../aesthetic.js";
+import type { IFileSystem, IFsPath } from "../abstraction/fs.js";
+import { nodeFs, nodePath } from "../abstraction/defaults.js";
 
 /** 跑一次 aesthetic 断言全集，只保留 preset 声明的 AE-* 类型。 */
 export function runDeclaredAesthetic(
@@ -16,9 +18,11 @@ export function runDeclaredAesthetic(
   projectDir: string,
   relPath: string,
   budget?: Record<string, number>,
+  fs: IFileSystem = nodeFs,
+  path: IFsPath = nodePath,
 ): Validation[] {
   const wanted = new Set(types.filter((t) => t.startsWith("AE-")));
   if (!wanted.size) return [];
-  const all = runAestheticAsserts(projectDir, relPath, budget);
+  const all = runAestheticAsserts(projectDir, relPath, budget, fs, path);
   return all.filter((v) => wanted.has(v.name));
 }

@@ -4,8 +4,8 @@
 // 没有「因与本次决策不符而主动不选」这一格。excluded 必须带理由（铁律 4）。
 //
 // 依赖纪律：本文件不 import kernel/assembler（selection 被 assembler 调用，不得成环）。
-import fs from "node:fs";
-import path from "node:path";
+import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
+import { nodeFs, nodePath } from "./abstraction/defaults.js";
 
 /** 候选库条目（求值用最小投影；完整形状见 contracts/catalog-entry.schema.json）。 */
 export interface CatalogEntryLite {
@@ -148,9 +148,9 @@ export function resolveSelection(
 // ── IO 适配器：候选库条目的磁盘读法（出厂候选在 repoRoot——两个根纪律，铁律 5）──
 
 /** 读 knowledge md 的 JSON frontmatter（`---` 包裹）；解析失败 = 无标签，不炸。 */
-function fmTags(file: string): string[] {
+function fmTags(file: string, fs: IFileSystem): string[] {
   try {
-    const raw = fs.readFileSync(file, "utf-8");
+    const raw = fs.readText(file);
     const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(raw);
     if (!m) return [];
     const fm = JSON.parse(m[1] ?? "{}") as { tags?: unknown; routes?: unknown };
@@ -163,20 +163,21 @@ function fmTags(file: string): string[] {
 }
 
 /** 展开一个 pool 的候选条目（id 口径与 resolveKbPaths 的 toId 一致：kb/<相对路径去 .md>）。 */
-export function poolEntries(root: string, pool: string): CatalogEntryLite[] {
+export function poolEntries(root: string, pool: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): CatalogEntryLite[] {
   const kbRoot = path.join(root, "knowledge");
   const rel = pool.replace(/^kb\//, "").replace(/\/\*$/, "");
   const base = path.join(kbRoot, rel);
   const toId = (f: string): string => "kb/" + path.relative(kbRoot, f).replaceAll("\\", "/").replace(/\.md$/, "");
   const out: CatalogEntryLite[] = [];
   const pushFile = (f: string): void => {
-    if (f.endsWith(".md")) out.push({ id: toId(f), tags: fmTags(f) });
+    if (f.endsWith(".md")) out.push({ id: toId(f), tags: fmTags(f, fs) });
   };
-  if (!fs.existsSync(base)) return out;
-  if (fs.statSync(base).isDirectory()) {
-    for (const f of fs.readdirSync(base).sort()) {
+  const st = fs.stat(base);
+  if (!st) return out;
+  if (st.isDirectory) {
+    for (const f of fs.readDir(base).sort()) {
       const p = path.join(base, f);
-      if (fs.statSync(p).isFile()) pushFile(p);
+      if (fs.stat(p)?.isFile) pushFile(p);
     }
   } else {
     pushFile(base);

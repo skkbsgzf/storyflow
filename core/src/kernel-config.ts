@@ -1,10 +1,7 @@
 // kernel-config.ts —— 项目配置视图与写入（viewConfig/writeConfig，从 kernel.ts 拆出，委托见 kernel.ts）。
 
-import fs from "node:fs";
-import path from "node:path";
 import type { FlowDescriptor, RunState, TaskPackage, Validation } from "./types.js";
 import { ROOT, assertSchema } from "./schema.js";
-import { atomicWriteText, LockDir } from "./fsio.js";
 import { listDecisions, setDecision, decisionsDir } from "./decisions.js";
 import { gateToken, nowIso } from "./ids.js";
 import { compilePlan, PlanCycleError, upstreamOf } from "./plan.js";
@@ -41,7 +38,7 @@ export function viewConfig(kernel: Kernel, projectId: string): { exists: boolean
     const projectDir = kernel.projectDir(projectId);
     const cfg = (() => {
       try {
-        return loadProjectConfig(projectDir);
+        return loadProjectConfig(projectDir, kernel.fs, kernel.path);
       } catch (e) {
         // 配置存在但非法：原样带回让前端标红，而不是 500
         return { __invalid: true, message: e instanceof Error ? e.message : String(e) } as unknown as ProjectConfig;
@@ -61,7 +58,7 @@ export function viewConfig(kernel: Kernel, projectId: string): { exists: boolean
     const exists = !!cfg && !(cfg as { __invalid?: boolean }).__invalid;
     const out: ReturnType<Kernel["viewConfig"]> = { exists, template };
     if (cfg) out.config = cfg;
-    if (loadState(projectDir)) {
+    if (loadState(projectDir, kernel.fs, kernel.path)) {
       out.boundWarning =
         "当前 run 已绑定 route/direction 等输入；本次修改对已绑定字段在本 run 内不生效，将在重跑或下一次 flow_run 时生效";
     }
@@ -78,13 +75,12 @@ export function writeConfig(kernel: Kernel, projectId: string, body: Record<stri
     } catch (e) {
       throw new KernelError("INVALID_INPUT", 400, `项目配置非法: ${e instanceof Error ? e.message : String(e)}`);
     }
-    fs.mkdirSync(projectDir, { recursive: true });
-    atomicWriteText(path.join(projectDir, "项目配置.json"), JSON.stringify(merged, null, 2) + "\n");
+    kernel.fs.writeTextAtomic(kernel.path.join(projectDir, "项目配置.json"), JSON.stringify(merged, null, 2) + "\n");
     const out: { saved: boolean; file: string; boundWarning?: string } = {
       saved: true,
-      file: path.join(projectDir, "项目配置.json"),
+      file: kernel.path.join(projectDir, "项目配置.json"),
     };
-    if (loadState(projectDir)) out.boundWarning = "当前 run 已绑定部分输入；修改在重跑或下一次 flow_run 时生效";
+    if (loadState(projectDir, kernel.fs, kernel.path)) out.boundWarning = "当前 run 已绑定部分输入；修改在重跑或下一次 flow_run 时生效";
     return out;
   }
 

@@ -85,6 +85,11 @@
         "type": "integer",
         "minimum": 10000,
         "description": "R7 新增：等待人工/代理提交的最长毫秒数。到点 → run 置 stalled 并写 journal（只标记，不自动推进、不自动裁决）。缺省不声明 = 不设超时"
+      },
+      "defaultPreset": {
+        "type": "string",
+        "minLength": 1,
+        "description": "AP1 §九 新增：本 flow 缺省挂载哪个断言预设（assertion-presets/<id>/）。挂载优先级 = KernelOptions.assertionPreset > flow.policy.defaultPreset（可被 set-policy:defaultPreset 覆盖）> novel-fanqie。值不做枚举约束（预设随包扩展），但引用不存在的预设 = 门控静默不激活 + 诊断留痕，不拦流水线。消费者 = core/src/kernel.ts::assertionMount"
       }
     }
   },

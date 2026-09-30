@@ -4,7 +4,8 @@
  * progressive 阈值缺省 warn=2 / block=5。
  */
 
-import fs from "node:fs";
+import { nodeFs } from "../abstraction/defaults.js";
+import type { IFileSystem } from "../abstraction/fs.js";
 import { load } from "js-yaml";
 import { assertSchema, SchemaViolation } from "../schema.js";
 import type {
@@ -20,10 +21,10 @@ const GATE_MODES: GateMode[] = ["warn-only", "block-critical", "strict"];
 export class CompositionError extends Error {}
 
 /** 解析组合文件；形状/取值非法抛 CompositionError（discovery 侧转成 broken，不静默）。 */
-export function loadPresetComposition(gatePath: string, trust: PresetTrust, dirId: string): AssertionPresetComposition {
+export function loadPresetComposition(gatePath: string, trust: PresetTrust, dirId: string, fs: IFileSystem = nodeFs): AssertionPresetComposition {
   let parsed: unknown;
   try {
-    parsed = load(fs.readFileSync(gatePath, "utf8"));
+    parsed = load(fs.readText(gatePath));
   } catch (e) {
     throw new CompositionError(`invalid YAML: ${e instanceof Error ? e.message.split("\n")[0] : String(e)}`);
   }

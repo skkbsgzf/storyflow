@@ -1,5 +1,5 @@
-import fs from "node:fs";
-import path from "node:path";
+import { nodeFs, nodePath } from "./abstraction/defaults.js";
+import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
 import { assertSchema } from "./schema.js";
 
 export interface AgentProfile {
@@ -29,13 +29,13 @@ export class ProfileRegistry {
   private byId = new Map<string, AgentProfile>();
   private bySkill = new Map<string, AgentProfile>();
 
-  constructor(root: string) {
+  constructor(root: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath) {
     const dir = path.join(root, "agents");
-    if (!fs.existsSync(dir)) return;
-    for (const f of fs.readdirSync(dir).sort()) {
+    if (!fs.exists(dir)) return;
+    for (const f of fs.readDir(dir).sort()) {
       if (!f.endsWith(".profile.json")) continue;
       try {
-        const raw = JSON.parse(fs.readFileSync(path.join(dir, f), "utf-8"));
+        const raw = JSON.parse(fs.readText(path.join(dir, f)));
         assertSchema("agent-profile", raw);
         const p = raw as AgentProfile;
         if (p.status && p.status !== "active") continue;

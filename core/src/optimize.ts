@@ -9,8 +9,8 @@
  *
  * agent 的角色是**使用**这些提案（挑哪条、为什么、批不批），而不是凭感觉重画流程图。
  */
-import fs from "node:fs";
-import path from "node:path";
+import { nodeFs, nodePath } from "./abstraction/defaults.js";
+import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
 import type { FlowDescriptor } from "./types.js";
 import type { MetricsSummary, NodeStats } from "./metrics.js";
 import { BOUNDARY_PREFIX, isBoundaryGate, type FlowOverlay, type FlowPolicy, type OverlayPatch, isWorkGate } from "./overlay.js";
@@ -50,13 +50,13 @@ export function isStructuralPatch(patch: { kind: string }): boolean {
   return STRUCTURAL_KINDS.has(patch.kind);
 }
 
-function readKbIndex(root: string): KbIndexEntry[] {
+function readKbIndex(root: string, fs: IFileSystem, path: IFsPath): KbIndexEntry[] {
   try {
-    const raw = JSON.parse(fs.readFileSync(path.join(root, "knowledge", "index.json"), "utf-8")) as { entries?: KbIndexEntry[] };
+    const raw = JSON.parse(fs.readText(path.join(root, "knowledge", "index.json"))) as { entries?: KbIndexEntry[] };
     return raw.entries ?? [];
   } catch (e) {
     // 索引读不到 ⇒ 提案基于"零知识卡" ⇒ 优化器给的结论是假的。留痕（仓库级）。
-    recordDiag(root, "kb", "readKbIndex:knowledge/index.json", e);
+    recordDiag({ fs, path }, root, "kb", "readKbIndex:knowledge/index.json", e);
     return [];
   }
 }
@@ -74,6 +74,8 @@ export function proposeFromMetrics(
   flow: FlowDescriptor,
   summary: MetricsSummary,
   opts: { root: string; policy?: FlowPolicy; minSamples?: number } = { root: "." },
+  fs: IFileSystem = nodeFs,
+  path: IFsPath = nodePath,
 ): Proposal[] {
   const policy = opts.policy ?? {};
   // OS-02 阶段 C：规则阈值不再写死在规则体里，全部从 `policy.budget` 经 `resolveBudget` 取
@@ -81,8 +83,8 @@ export function proposeFromMetrics(
   const b = resolveBudget(policy).values;
   const minSamples = opts.minSamples ?? b.optMinSamples ?? DEFAULT_BUDGET.optMinSamples?.value ?? 3;
   const out: Proposal[] = [];
-  const kitReg = kitRegistry(opts.root);
-  const kbIndex = readKbIndex(opts.root);
+  const kitReg = kitRegistry(opts.root, fs, path);
+  const kbIndex = readKbIndex(opts.root, fs, path);
   const totalSubmits = Object.values(summary.byNode).reduce((a, s) => a + s.submits, 0);
   const anyConsumed = Object.values(summary.byNode).some((s) => s.consumedBy > 0);
   // 消费信号可用性：没有任何节点被下游引用过 = 指标还没积累，裁撤类规则一律不出
@@ -422,12 +424,12 @@ export interface MinerFindingsFile {
   findings: MinerFinding[];
 }
 
-export function readMinerFindings(root: string, flowId: string): { file: MinerFindingsFile; path: string } | null {
+export function readMinerFindings(root: string, flowId: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): { file: MinerFindingsFile; path: string } | null {
   const p = path.join(root, "registry", "miner-findings.json");
-  if (!fs.existsSync(p)) return null;
+  if (!fs.exists(p)) return null;
   let raw: MinerFindingsFile;
   try {
-    raw = JSON.parse(fs.readFileSync(p, "utf-8")) as MinerFindingsFile;
+    raw = JSON.parse(fs.readText(p)) as MinerFindingsFile;
   } catch {
     throw new Error(`miner-findings.json 不可解析（须为 findings@1 JSON）`);
   }

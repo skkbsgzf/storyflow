@@ -20,6 +20,10 @@ import { Kernel } from "../src/kernel.js";
 import { assertSchema } from "../src/schema.js";
 import { diagPath, readDiags, recordDiag, summarizeDiags } from "../src/diag.js";
 import { extractCtxUsage } from "../src/metrics.js";
+import { nodeFs, nodePath } from "../src/abstraction/adapters/node.js";
+
+/** 测试走宿主盘：FS1 §四的 io 首参用这套默认适配器。 */
+const io = { fs: nodeFs, path: nodePath };
 
 process.env.MINIFLOW_HEADER_MODE = "off";
 
@@ -64,19 +68,19 @@ function setup(projectId = "p-diag") {
 describe("R8 · 诊断通道：旁路失败必须留痕", () => {
   it("recordDiag 合规 diagnostics@1，可读回，且坏行不炸整读", () => {
     const { pd } = setup();
-    const rec = recordDiag(pd, "metric", "a/dispatch", new Error("EISDIR: illegal operation on a directory"));
+    const rec = recordDiag(io, pd, "metric", "a/dispatch", new Error("EISDIR: illegal operation on a directory"));
 
     expect(() => assertSchema("diagnostics", rec)).not.toThrow();
 
     // 坏行容错（与 fsio.readJsonl 同纪律：一行坏不炸整读）
-    fs.appendFileSync(diagPath(pd), "{ 这不是 json\n", "utf-8");
+    fs.appendFileSync(diagPath(io, pd), "{ 这不是 json\n", "utf-8");
 
-    const all = readDiags(pd);
+    const all = readDiags(io, pd);
     expect(all.length).toBe(1);
     expect(all[0].kind).toBe("metric");
     expect(all[0].detail).toContain("EISDIR");
 
-    const sum = summarizeDiags(pd);
+    const sum = summarizeDiags(io, pd);
     expect(sum.count).toBe(1);
     expect(sum.byKind.metric).toBe(1);
     expect(sum.byScope["a/dispatch"]).toBe(1);
@@ -91,7 +95,7 @@ describe("R8 · 诊断通道：旁路失败必须留痕", () => {
     const run = await k.flow_run(FLOW_ID, pid, {});
     expect(run.status).toBe("awaiting_input"); // 旁路：流水线照走，不因指标失败而中断
 
-    const diags = readDiags(pd);
+    const diags = readDiags(io, pd);
     const metricDiags = diags.filter((d) => d.kind === "metric");
     expect(metricDiags.length).toBeGreaterThan(0);
     expect(metricDiags[0].detail).toContain("EISDIR");
@@ -109,10 +113,10 @@ describe("R8 · 诊断通道：旁路失败必须留痕", () => {
     fs.writeFileSync(path.join(root, "knowledge", "index.json"), "{ 坏索引", "utf-8");
 
     // 不抛异常（命中率检查本身不该炸），但概念层会整体跳过 ⇒ 结论不可信 ⇒ 必须留痕
-    const usage = extractCtxUsage("# 正文\n\n这里是一些内容。\n", ["kb/trope/saturation"], { root });
+    const usage = extractCtxUsage("# 正文\n\n这里是一些内容。\n", ["kb/trope/saturation"], { root, io });
     expect(usage.offered).toBe(1);
 
-    const diags = readDiags(root); // 仓库级诊断：<root>/registry/diagnostics.jsonl
+    const diags = readDiags(io, root); // 仓库级诊断：<root>/registry/diagnostics.jsonl
     const kbDiags = diags.filter((d) => d.kind === "kb");
     expect(kbDiags.length).toBe(1);
     expect(kbDiags[0].scope).toContain("buildConceptIndex");
@@ -128,8 +132,8 @@ describe("R8 · 诊断通道：旁路失败必须留痕", () => {
     expect(k.viewDiagnostics().scope).toBe("repo");
     expect(k.viewDiagnostics("p-scope").scope).toBe("project");
 
-    recordDiag(root, "kb", "repo-scope", "仓库级台账失败");
-    recordDiag(pd, "metric", "proj-scope", "项目级指标失败");
+    recordDiag(io, root, "kb", "repo-scope", "仓库级台账失败");
+    recordDiag(io, pd, "metric", "proj-scope", "项目级指标失败");
 
     expect(k.viewDiagnostics().byScope["repo-scope"]).toBe(1);
     expect(k.viewDiagnostics().byScope["proj-scope"]).toBeUndefined();

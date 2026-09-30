@@ -1,5 +1,5 @@
-import fs from "node:fs";
-import path from "node:path";
+import { nodeFs, nodePath } from "./abstraction/defaults.js";
+import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
 import { assertSchema } from "./schema.js";
 
 export interface ProjectConfig {
@@ -24,10 +24,11 @@ export interface ProjectConfig {
 export const CONFIG_FILE = "项目配置.json";
 
 /** 读取并校验项目初始化配置；不存在返回 undefined，存在但非法抛错（开跑前大声失败）。 */
-export function loadProjectConfig(projectDir: string): ProjectConfig | undefined {
+export function loadProjectConfig(projectDir: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): ProjectConfig | undefined {
   const file = path.join(projectDir, CONFIG_FILE);
-  if (!fs.existsSync(file)) return undefined;
-  const raw = JSON.parse(fs.readFileSync(file, "utf-8"));
+  if (!fs.exists(file)) return undefined;
+  // 坏 JSON 必须大声抛（不套 readJson 的静默容错）：非法配置要在开跑前拦住，不能退化成「没配」。
+  const raw = JSON.parse(fs.readText(file));
   assertSchema("project-config", raw);
   const cfg = raw as ProjectConfig;
   const dirName = path.basename(projectDir);

@@ -1,8 +1,9 @@
-import fs from "node:fs";
-import path from "node:path";
 import type { FlowDescriptor, RunState, TaskPackage, Validation } from "./types.js";
 import { ROOT, assertSchema } from "./schema.js";
-import { atomicWriteText, LockDir } from "./fsio.js";
+import { LockDir } from "./abstraction/jsonio.js";
+import { nodeFs, nodePath, nodeProc } from "./abstraction/defaults.js";
+import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
+import type { IProcessLauncher } from "./abstraction/proc.js";
 import { listDecisions, setDecision, decisionsDir } from "./decisions.js";
 import { gateToken, nowIso } from "./ids.js";
 import { compilePlan, PlanCycleError, upstreamOf } from "./plan.js";
@@ -44,6 +45,8 @@ import {
 } from "./kernel-view.js";
 import { viewConfig, writeConfig } from "./kernel-config.js";
 import { AssertionPresets, DEFAULT_PRESET_ID, defaultPresetRoots } from "./assertion-preset/index.js";
+import { applyAssertionOverrides } from "./assertion-preset/executor.js";
+import type { StandingMount } from "./assertion-preset/types.js";
 import { listProductionPresets, loadPresetOverlay, type ProductionPreset } from "./production-preset.js";
 
 /**
@@ -89,6 +92,10 @@ export interface KernelOptions {
   flowsDir?: string;
   /** 活跃断言预设 id（缺省 novel-fanqie；预设不可用时门控特性静默不激活） */
   assertionPreset?: string;
+  /** FS1 §四.1 构造注入：盘 / 路径 / 子进程三件套，缺省 = Node 适配器（真实文件系统）。 */
+  fs?: IFileSystem;
+  path?: IFsPath;
+  proc?: IProcessLauncher;
 }
 
 export class Kernel {
@@ -106,34 +113,53 @@ export class Kernel {
    * mountFor() 是门点的静默入口——预设缺失/损坏返回 undefined，门控退化为透传。
    */
   readonly assertionPresets: AssertionPresets;
+  /**
+   * 宿主显式指定的预设 id（AP1 §九 优先级链的最高一格）。
+   * 只记「宿主有没有点名」这件事：没点名 = undefined，让位给 flow.policy.defaultPreset；
+   * 点名了 = 编排层的 defaultPreset 不许越过它（宿主是运行时所有者，不是可被图表单覆盖的缺省值）。
+   */
+  private readonly hostPreset?: string;
+  /**
+   * FS1 注入面（R3）：内核的一切盘操作经这三件，构造期定死、运行期不换。
+   * 缺省 = Node 适配器（现网行为逐字节不变）；测试注 MockFs、R7 浏览器宿主注 Virtual。
+   */
+  readonly fs: IFileSystem;
+  readonly path: IFsPath;
+  readonly proc: IProcessLauncher;
 
   constructor(opts: KernelOptions = {}) {
+    this.fs = opts.fs ?? nodeFs;
+    this.path = opts.path ?? nodePath;
+    this.proc = opts.proc ?? nodeProc;
     this.root = opts.root ?? ROOT;
     this.repoRoot = opts.repoRoot ?? ROOT;
-    this.flowsDir = opts.flowsDir ?? path.join(this.repoRoot, "flows");
+    this.flowsDir = opts.flowsDir ?? this.path.join(this.repoRoot, "flows");
+    this.hostPreset = opts.assertionPreset;
     this.assertionPresets = new AssertionPresets(
-      defaultPresetRoots(this.repoRoot, this.root),
+      defaultPresetRoots(this.repoRoot, this.root, this.path),
       opts.assertionPreset ?? DEFAULT_PRESET_ID,
+      this.fs,
+      this.path,
     );
   }
 
   // ---------- 路径与装载 ----------
 
   projectDir(projectId: string): string {
-    return path.join(this.root, "projects", projectId);
+    return this.path.join(this.root, "projects", projectId);
   }
 
   loadFlow(flowId: string): FlowDescriptor {
-    const file = path.join(this.flowsDir, flowId, "flow.json");
-    if (!fs.existsSync(file)) throw new KernelError("UNKNOWN_FLOW", 404, `flow 不存在: ${flowId}`);
-    return JSON.parse(fs.readFileSync(file, "utf-8")) as FlowDescriptor;
+    const file = this.path.join(this.flowsDir, flowId, "flow.json");
+    if (!this.fs.exists(file)) throw new KernelError("UNKNOWN_FLOW", 404, `flow 不存在: ${flowId}`);
+    return JSON.parse(this.fs.readText(file)) as FlowDescriptor;
   }
 
   listFlows(): { id: string; title: string; version: string; status?: string }[] {
-    if (!fs.existsSync(this.flowsDir)) return [];
-    return fs
-      .readdirSync(this.flowsDir)
-      .filter((d) => fs.existsSync(path.join(this.flowsDir, d, "flow.json")))
+    if (!this.fs.exists(this.flowsDir)) return [];
+    return this.fs
+      .readDir(this.flowsDir)
+      .filter((d) => this.fs.exists(this.path.join(this.flowsDir, d, "flow.json")))
       .map((d) => {
         const f = this.loadFlow(d);
         return { id: f.id, title: f.title, version: f.version, status: f.status };
@@ -153,7 +179,7 @@ export class Kernel {
       // **不新增任何优先级规则**（applyOverlay 本来就有序叠加）。本层不落盘（每次由配置派生）。
       const cfgB = ((): Record<string, number> | undefined => {
         try {
-          return configBudget(loadProjectConfig(projectDir));
+          return configBudget(loadProjectConfig(projectDir, this.fs, this.path));
         } catch (e) {
           // 配置非法绝不静默降级（否则「面板填的阈值没生效」会变成最难查的一类问题）。
           // 错误码/文案沿用既有约定（`flow_run` 侧同一句话），不新造第二套口径。
@@ -181,19 +207,20 @@ export class Kernel {
         // op.config / model_tier / knowledge 的通道）与 `set-input` 在 flow@3 结构性不可达，
         // 而 overlay.json 里却记着 `status:"applied"`。现由 effectiveFlow3 计算后透传。
         const overlays = [
-          readOverlay(factoryOverlayPath(this.repoRoot, flow.id)),
+          readOverlay(factoryOverlayPath(this.repoRoot, flow.id, this.path), this.fs),
           // PP1 生产线预设层：出厂的可选变体（裁剪/追加模块工具），夹在出厂层与项目层之间——
           // 项目 overlay 仍能在它之上继续调，不新增任何优先级规则。
-          presetId ? loadPresetOverlay(this.repoRoot, presetId, flow.id) : undefined,
+          presetId ? loadPresetOverlay(this.repoRoot, presetId, flow.id, this.fs, this.path) : undefined,
           cfgBudgetLayer,
-          readOverlay(projectOverlayPath(projectDir)),
+          readOverlay(projectOverlayPath(projectDir, this.path), this.fs),
         ].filter(Boolean) as FlowOverlay[];
-        const r = effectiveFlow3(this.repoRoot, flow as never, { projectDir, overlays });
+        const r = effectiveFlow3(this.repoRoot, flow as never, { projectDir, overlays }, this.fs, this.path);
         return {
           flow: r.flow,
           policy: r.policy as FlowPolicy,
           inputs: r.inputs,
           toolOverrides: r.toolOverrides,
+          assertionOverrides: r.assertionOverrides,
           boundaries: [],
           links: r.links,
           r6: { modules: r.modules, links: r.links, moduleNodes: r.moduleNodes, dirs: r.dirs },
@@ -203,17 +230,47 @@ export class Kernel {
           appliedCount: r.appliedCount,
         };
       }
-      return effectiveFlow(this.repoRoot, flow, { projectDir, overlays: cfgBudgetLayer ? [cfgBudgetLayer] : [] });
+      return effectiveFlow(this.repoRoot, flow, { projectDir, overlays: cfgBudgetLayer ? [cfgBudgetLayer] : [] }, this.fs, this.path);
     } catch (e) {
       if (e instanceof KernelError) throw e; // 已分类的错误原样上抛，不被 BAD_OVERLAY 掩盖
       throw new KernelError("BAD_OVERLAY", 409, `overlay 非法（拒绝静默降级为 bootstrap 编排）: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
+  /**
+   * AP1 §七 + §九 的**门点唯一取挂载入口**（两处门点：doSubmit 提交链、check_* 内建节点）。
+   *
+   * 预设选择优先级（§九）：
+   *   KernelOptions.assertionPreset（宿主/测试显式指定，已在构造期成为 AssertionPresets 的缺省 id）
+   *     > flow.policy.defaultPreset ⊕ set-policy:defaultPreset（编排层，随生效编排走）
+   *     > novel-fanqie（仓库出厂缺省）
+   * 覆盖叠加（§七）：`eff.assertionOverrides` 叠在挂载上得到派生挂载（progressive 计数与原共享）。
+   * 静默纪律照旧：预设不可用 → undefined = 特性不激活，门点透传，不拦流水线；
+   * 但**没生效的覆盖条目必须留痕**（ignored 清单进诊断通道），否则「面板填了阈值不生效」又是隐形故障。
+   */
+  assertionMount(eff: EffectiveFlow, projectDir?: string): StandingMount | undefined {
+    const fromFlow = typeof eff.policy?.defaultPreset === "string" && eff.policy.defaultPreset.trim()
+      ? eff.policy.defaultPreset
+      : undefined;
+    // §九 优先级：宿主点名 > 编排层 defaultPreset > AssertionPresets 缺省（novel-fanqie）。
+    // 宿主没点名时 hostPreset 是 undefined，正好让位；两者都没有时 wanted=undefined，
+    // mountFor 回落到构造期注入的缺省 id——三级链只在这一处判定，门点不各自实现。
+    const wanted = this.hostPreset ?? fromFlow;
+    const base = this.assertionPresets.mountFor(wanted);
+    if (!base) return undefined;
+    const overrides = eff.assertionOverrides ?? [];
+    if (!overrides.length) return base;
+    const r = applyAssertionOverrides(base, overrides);
+    if (r.ignored.length && projectDir) {
+      recordDiag(this, projectDir, "assert", "assertionOverride", `覆盖未生效：${r.ignored.join("；")}`);
+    }
+    return r.mount;
+  }
+
   /** @internal —— kernel-*.ts 拆分面跨文件访问；模块外勿调用 */
   ctx(projectId: string): { state: RunState; projectDir: string; flow: FlowDescriptor; eff: EffectiveFlow; raw: FlowDescriptor } {
     const projectDir = this.projectDir(projectId);
-    const state = loadState(projectDir);
+    const state = loadState(projectDir, this.fs, this.path);
     if (!state) throw new KernelError("NO_RUN", 404, `项目无 state.json（先 flow_run 或迁移）: ${projectId}`);
     const raw = this.loadFlow(state.flowId);
     const eff = this.effectiveOf(projectDir, raw, state.preset);
@@ -239,7 +296,7 @@ export class Kernel {
         // R6 生效编排读模型（effective@2）：links 取代 boundaries，composition 按模块实例
         const nodeConfig: Record<string, unknown> = {};
         for (const [id, n] of Object.entries(eff.flow.graph.nodes)) {
-          const op = resolveNodeOp(n, this.repoRoot);
+          const op = resolveNodeOp(n, this.repoRoot, undefined, this.fs, this.path);
           nodeConfig[id] = {
             module: n.module,
             gateRole: n.gate_role,
@@ -273,13 +330,12 @@ export class Kernel {
           edges: eff.flow.graph.edges,
           nodeConfig,
         };
-        fs.mkdirSync(path.join(projectDir, "registry"), { recursive: true });
-        atomicWriteText(path.join(projectDir, "registry", "effective.json"), JSON.stringify(view, null, 2) + "\n");
+        this.fs.writeTextAtomic(this.path.join(projectDir, "registry", "effective.json"), JSON.stringify(view, null, 2) + "\n");
         return;
       }
       const nodeConfig: Record<string, unknown> = {};
       for (const [id, n] of Object.entries(eff.flow.graph.nodes)) {
-        const op = resolveNodeOp(n, this.repoRoot);
+        const op = resolveNodeOp(n, this.repoRoot, undefined, this.fs, this.path);
         const ov = op ? eff.toolOverrides[`${op.kit}.${op.op}`] : undefined;
         const cfg = op ? resolveToolConfig(op, n.config, ov?.config) : undefined;
         nodeConfig[id] = {
@@ -313,8 +369,7 @@ export class Kernel {
         /** 逐节点配置解析结果（值 + 逐键来源 + 未识别键），页面「配置」页的数据源 */
         nodeConfig,
       };
-      fs.mkdirSync(path.join(projectDir, "registry"), { recursive: true });
-      atomicWriteText(path.join(projectDir, "registry", "effective.json"), JSON.stringify(view, null, 2) + "\n");
+      this.fs.writeTextAtomic(this.path.join(projectDir, "registry", "effective.json"), JSON.stringify(view, null, 2) + "\n");
     } catch {
       /* 读模型是旁路：写不出来不许阻断流水线（页面会退化为 bootstrap 视图并显式标注） */
     }
@@ -327,16 +382,15 @@ export class Kernel {
    */
   private persistConfigTemplates(projectDir: string, flowId: string): void {
     try {
-      const { entries, skipped } = listConfigTemplates({ dataRoot: this.root, repoRoot: this.repoRoot, flowId });
-      fs.mkdirSync(path.join(projectDir, "registry"), { recursive: true });
-      atomicWriteText(
-        path.join(projectDir, "registry", "config-templates.json"),
+      const { entries, skipped } = listConfigTemplates({ dataRoot: this.root, repoRoot: this.repoRoot, flowId }, this.fs, this.path);
+      this.fs.writeTextAtomic(
+        this.path.join(projectDir, "registry", "config-templates.json"),
         JSON.stringify({ format: "config-templates@1", flowId, entries, skipped }, null, 2) + "\n",
       );
     } catch (e) {
       // 诊断 kind 复用既有枚举里的 `io`（这就是一次读模型落盘失败）；`where` 已经说清是哪个子系统，
       // 不为一条旁路新增契约枚举——契约枚举是台账，加一项要连着文档/schema/消费方一起动。
-      recordDiag(this.repoRoot, "io", "persistConfigTemplates:registry/config-templates.json", e);
+      recordDiag(this, this.repoRoot, "io", "persistConfigTemplates:registry/config-templates.json", e);
     }
   }
 
@@ -348,7 +402,7 @@ export class Kernel {
   /** @internal —— kernel-*.ts 拆分面跨文件访问；模块外勿调用 */
   persistMetricsSummary(projectDir: string, state: RunState, eff: EffectiveFlow): void {
     try {
-      const events = readMetrics(projectDir);
+      const events = readMetrics(this, projectDir);
       const pathToNode: Record<string, string> = {};
       for (const id of Object.keys(eff.flow.graph.nodes)) {
         const p = artifactPathOf(eff.flow, id);
@@ -356,8 +410,7 @@ export class Kernel {
       }
       const summary = summarizeMetrics(events, { pathToNode, budget: resolveBudget(eff.policy).values });
       const view = { format: "metrics-summary@1", runId: state.runId, ...summary };
-      fs.mkdirSync(path.join(projectDir, "registry"), { recursive: true });
-      atomicWriteText(path.join(projectDir, "registry", "metrics-summary.json"), JSON.stringify(view, null, 2) + "\n");
+      this.fs.writeTextAtomic(this.path.join(projectDir, "registry", "metrics-summary.json"), JSON.stringify(view, null, 2) + "\n");
       this.persistModuleReports(projectDir, state, eff);
     } catch {
       /* 旁路 */
@@ -384,7 +437,7 @@ export class Kernel {
 
   /** PP1：列出生产线预设（presets/<id>/，含 broken 标注）——宿主面板的「生产线」下拉数据源。 */
   listPresets(): ProductionPreset[] {
-    return listProductionPresets(this.repoRoot);
+    return listProductionPresets(this.repoRoot, this.fs, this.path);
   }
   async flow_next(
     projectId: string,
@@ -392,7 +445,7 @@ export class Kernel {
   ) { return flow_next(this, projectId, opts); }
   /** @internal —— kernel-*.ts 拆分面跨文件访问；模块外勿调用 */
   acquireLock(projectDir: string): LockDir {
-    const lock = new LockDir(path.join(projectDir, "state.json"));
+    const lock = new LockDir(this.path.join(projectDir, "state.json"), 30000, this.fs, this.path);
     if (!lock.acquire()) throw new KernelError("LOCK_BUSY", 409, "同一项目另有提交/裁决在进行中，请稍后重试");
     return lock;
   }
@@ -416,7 +469,7 @@ export class Kernel {
       if (!byModule.has(mid)) byModule.set(mid, []);
       byModule.get(mid)!.push(id);
     }
-    const events = readMetrics(projectDir);
+    const events = readMetrics(this, projectDir);
     for (const [mid, ids] of byModule) {
       const doneIds = ids.filter((id) => state.nodes[id]?.status === "done");
       if (doneIds.length === 0) continue; // 未收口模块不产报告
@@ -443,7 +496,7 @@ export class Kernel {
         }
         // v5.0（断言协议退役）：验收台账 = 提交链真跑的确定性完整性检查（存在性/残渣/头部/词汇表），
         // 记于注册产物的 validations——不再读节点断言声明（runDeclaredAsserts 已下架）。
-        const latest = [...listArtifacts(projectDir, { node: id, latest: true })].find((a) => a.path === output);
+        const latest = [...listArtifacts(projectDir, { node: id, latest: true }, this.fs, this.path)].find((a) => a.path === output);
         for (const v of latest?.validations ?? []) {
           acceptance.push({ node: id, check: v.name, status: v.status, detail: v.detail });
         }
@@ -467,7 +520,7 @@ export class Kernel {
       const deliverablePath = artifacts.find((a) => a.role === "deliverable")?.path;
       const report = {
         format: "module-report@1" as const,
-        projectId: path.basename(projectDir),
+        projectId: this.path.basename(projectDir),
         flowId: eff.flow.id,
         moduleId: mid,
         moduleName: mid,
@@ -491,10 +544,10 @@ export class Kernel {
       try {
         assertSchema("module-report", report);
       } catch (e) {
-        journalAppend(projectDir, state.runId, "warn", { detail: `module-report ${mid} schema 校验失败（跳过落盘）: ${String(e).slice(0, 120)}` });
+        journalAppend(this, projectDir, state.runId, "warn", { detail: `module-report ${mid} schema 校验失败（跳过落盘）: ${String(e).slice(0, 120)}` });
         continue;
       }
-      atomicWriteText(path.join(projectDir, "registry", `module-report-${mid}.json`), JSON.stringify(report, null, 2) + "\n");
+      this.fs.writeTextAtomic(this.path.join(projectDir, "registry", `module-report-${mid}.json`), JSON.stringify(report, null, 2) + "\n");
     }
   }
 

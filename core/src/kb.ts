@@ -1,7 +1,7 @@
 // KB 检索/读卡（只读）：把 knowledge/ 的方法论资产暴露给 agent（verb 面）。
 // 事实源 = knowledge/ 目录本身；index.json 只做 id→file 的权威映射（缺 index 时扫盘兜底）。
-import * as fs from "node:fs";
-import * as path from "node:path";
+import { nodeFs, nodePath } from "./abstraction/defaults.js";
+import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
 
 export interface KbHit {
   id: string;
@@ -40,16 +40,16 @@ function parseCard(raw: string): CardMeta {
   return meta;
 }
 
-function scanFiles(knowledgeDir: string): string[] {
+function scanFiles(knowledgeDir: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): string[] {
   const out: string[] = [];
   const walk = (d: string) => {
-    for (const it of fs.readdirSync(d).sort()) {
+    for (const it of fs.readDir(d).sort()) {
       const abs = path.join(d, it);
-      if (fs.statSync(abs).isDirectory()) walk(abs);
+      if (fs.stat(abs)?.isDirectory) walk(abs);
       else if (it.endsWith(".md")) out.push(abs);
     }
   };
-  if (fs.existsSync(knowledgeDir)) walk(knowledgeDir);
+  if (fs.exists(knowledgeDir)) walk(knowledgeDir);
   return out;
 }
 
@@ -59,11 +59,11 @@ interface GraphEntry { id: string; title: string; domain: string; path: string; 
 interface HyperGraph { format?: string; entries?: GraphEntry[]; relations?: { from: string; to: string; kind: string; weight: number }[] }
 
 /** 编译图定位：<knowledgeDir>/../kit/hypergraph.rag.json；缺失或损坏返回 null（回落扫盘检索）。 */
-export function loadGraph(knowledgeDir: string): HyperGraph | null {
+export function loadGraph(knowledgeDir: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): HyperGraph | null {
   const p = path.join(knowledgeDir, "..", "kit", "hypergraph.rag.json");
-  if (!fs.existsSync(p)) return null;
+  if (!fs.exists(p)) return null;
   try {
-    const g = JSON.parse(fs.readFileSync(p, "utf-8")) as HyperGraph;
+    const g = JSON.parse(fs.readText(p)) as HyperGraph;
     return Array.isArray(g.entries) ? g : null;
   } catch { return null; }
 }
@@ -96,22 +96,24 @@ function graphSearch(g: HyperGraph, opts: { q: string; dir?: string; k?: number 
 export function kbSearch(
   knowledgeDir: string,
   opts: { q: string; dir?: string; k?: number },
+  fs: IFileSystem = nodeFs,
+  path: IFsPath = nodePath,
 ): { total: number; hits: KbHit[] } {
   // v0.8 目标4 · HyperGraphRAG 装载：kit/hypergraph.rag.json 在场时检索走编译图（词条/标签/域打分），
   // 源 md 降级为「本地可插拔层」（不随仓库分发）——图命中但源卡缺失属正常形态。
-  const graph = loadGraph(knowledgeDir);
+  const graph = loadGraph(knowledgeDir, fs, path);
   if (graph) return graphSearch(graph, opts);
   const q = (opts.q ?? "").trim().toLowerCase();
   const terms = q.split(/[\s,，、;；/]+/).filter(Boolean);
   const k = Math.min(Math.max(opts.k ?? 8, 1), 30);
-  const files = scanFiles(knowledgeDir).filter((f) => {
+  const files = scanFiles(knowledgeDir, fs, path).filter((f) => {
     const rel = path.relative(knowledgeDir, f).replaceAll("\\", "/");
     return !opts.dir || rel.startsWith(opts.dir + "/");
   });
   const hits: KbHit[] = [];
   for (const f of files) {
     let raw: string;
-    try { raw = fs.readFileSync(f, "utf-8"); } catch { continue; }
+    try { raw = fs.readText(f); } catch { continue; }
     const meta = parseCard(raw);
     const title = (meta.title ?? path.basename(f)).toLowerCase();
     const id = (meta.id ?? "").toLowerCase();
@@ -140,7 +142,7 @@ export function kbSearch(
 }
 
 /** ref 归一：卡片 id（kb/<域>/<名>）、去前缀路径（<域>/<名>）、或带 .md 的相对路径。 */
-export function kbResolve(knowledgeDir: string, ref: string): string | null {
+export function kbResolve(knowledgeDir: string, ref: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): string | null {
   const clean = ref.trim().replace(/^\/+/, "").replaceAll("\\", "/");
   const withExt = clean.endsWith(".md") ? clean : clean + ".md";
   const tries = [
@@ -149,30 +151,36 @@ export function kbResolve(knowledgeDir: string, ref: string): string | null {
     path.resolve(knowledgeDir, "kb", withExt),
   ];
   for (const c of tries) {
-    if (fs.existsSync(c) && fs.statSync(c).isFile()) return c;
+    if (fs.stat(c)?.isFile) return c;
   }
   // index.json 权威映射兜底（entry.file 相对 knowledge/）
   try {
-    const idx = JSON.parse(fs.readFileSync(path.join(knowledgeDir, "index.json"), "utf-8"));
+    const idx = JSON.parse(fs.readText(path.join(knowledgeDir, "index.json")));
     const entry = (idx.entries ?? []).find((e: { id?: string }) => e.id === clean.replace(/\.md$/, ""));
     if (entry?.file) {
       const c = path.resolve(knowledgeDir, entry.file as string);
-      if (fs.existsSync(c)) return c;
+      if (fs.exists(c)) return c;
     }
   } catch { /* 无 index 不致命 */ }
   return null;
 }
 
-export function kbRead(knowledgeDir: string, ref: string, maxChars = 16_000): { file: string; content: string } {
-  const resolved = kbResolve(knowledgeDir, ref);
+export function kbRead(
+  knowledgeDir: string,
+  ref: string,
+  maxChars = 16_000,
+  fs: IFileSystem = nodeFs,
+  path: IFsPath = nodePath,
+): { file: string; content: string } {
+  const resolved = kbResolve(knowledgeDir, ref, fs, path);
   if (!resolved) {
     // v0.8：md 是本地可插拔层（不随仓库分发）——图里有词条但源卡未安装属正常形态，报缺要带指引
-    const g = loadGraph(knowledgeDir);
+    const g = loadGraph(knowledgeDir, fs, path);
     const inGraph = g?.entries?.some((e) => e.id === ref.replace(/\.md$/, "") || e.path === `knowledge/${ref}`.replace(/^knowledge\/knowledge\//, "knowledge/"));
     throw new Error(inGraph
       ? `知识卡源文件未安装：${ref}（md 是本地可插拔层——把源卡放回 knowledge/ 对应位置即可读；图内元数据可用 kb_search 查询）`
       : `知识卡不存在：${ref}`);
   }
-  const content = fs.readFileSync(resolved, "utf-8");
+  const content = fs.readText(resolved);
   return { file: path.relative(knowledgeDir, resolved).replaceAll("\\", "/"), content: content.length > maxChars ? content.slice(0, maxChars) + `\n…(截断，全长 ${content.length})` : content };
 }

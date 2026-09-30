@@ -2,11 +2,9 @@
 // 从 kernel.ts 拆出：方法体实现为 free function（kernel: Kernel 显式传参），kernel.ts 保留同名委托与 JSDoc 契约。
 // Kernel 仅 type 引入——运行时依赖单向（kernel.ts → 本文件），无环。
 
-import fs from "node:fs";
-import path from "node:path";
 import type { FlowDescriptor, RunState, TaskPackage, Validation } from "./types.js";
 import { ROOT, assertSchema } from "./schema.js";
-import { atomicWriteText, LockDir } from "./fsio.js";
+import type { LockDir } from "./abstraction/jsonio.js";
 import { listDecisions, setDecision, decisionsDir } from "./decisions.js";
 import { gateToken, nowIso } from "./ids.js";
 import { compilePlan, PlanCycleError, upstreamOf } from "./plan.js";
@@ -76,7 +74,7 @@ export function flow_list(kernel: Kernel) {
 export async function flow_run(kernel: Kernel, flowId: string, projectId: string, inputs: Record<string, unknown> = {}, opts: { preset?: string } = {}): Promise<AdvanceStop> {
     const bootstrap = kernel.loadFlow(flowId);
     const projectDir = kernel.projectDir(projectId);
-    if (loadState(projectDir)) throw new KernelError("RUN_EXISTS", 409, `项目已有 state.json: ${projectId}`);
+    if (loadState(projectDir, kernel.fs, kernel.path)) throw new KernelError("RUN_EXISTS", 409, `项目已有 state.json: ${projectId}`);
     // PP1 生产线预设：显式传入时必须存在（大声失败），选定后随 state.preset 持久——
     // 生效编排 = flow ⊕ 出厂 overlay ⊕ 预设 overlay ⊕ 项目 overlay（见 effectiveOf）。
     if (opts.preset && !kernel.listPresets().some((p) => p.id === opts.preset)) {
@@ -90,14 +88,14 @@ export async function flow_run(kernel: Kernel, flowId: string, projectId: string
     const cfgInputs = cfg ? configToInputs(cfg, flow) : {};
 
     // 现网 run-state.json 自动迁移（幂等入口）
-    if (fs.existsSync(legacyStatePath(projectDir))) {
+    if (kernel.fs.exists(legacyStatePath(projectDir, kernel.path))) {
       const resolved = resolveInputs(flow, { ...cfgInputs, ...inputs }, { project: projectId });
-      const { state, seedEvents } = migrateRunState(projectDir, projectId, flow, resolved);
+      const { state, seedEvents } = migrateRunState(projectDir, projectId, flow, resolved, kernel.fs, kernel.path);
       if (cfg?.presets) state.presets = { ...state.presets, ...cfg.presets };
       if (opts.preset) state.preset = opts.preset;
-      saveState(projectDir, state);
-      writeJournalSeed(projectDir, seedEvents);
-      journalAppend(projectDir, state.runId, "run-start", {
+      saveState(projectDir, state, kernel.fs, kernel.path);
+      writeJournalSeed(projectDir, seedEvents, kernel.fs, kernel.path);
+      journalAppend(kernel, projectDir, state.runId, "run-start", {
         actor: "kernel:migrate",
         detail: `迁移自 run-state.json（${flow.id}@${flow.version}），gate=${state.gate.verdict}`,
       });
@@ -106,7 +104,7 @@ export async function flow_run(kernel: Kernel, flowId: string, projectId: string
       state.overlayHash = eff.overlayHash;
       state.policy = eff.policy as Record<string, unknown>;
       state.planHash = planHashOf(kernel, state.plan?.order ?? [], flow, eff.overlayHash);
-      saveState(projectDir, state);
+      saveState(projectDir, state, kernel.fs, kernel.path);
       return advance(kernel, projectId, state, projectDir, bootstrap);
     }
 
@@ -116,7 +114,7 @@ export async function flow_run(kernel: Kernel, flowId: string, projectId: string
     } catch (e) {
       throw new KernelError("INVALID_INPUT", 400, e instanceof Error ? e.message : String(e));
     }
-    fs.mkdirSync(projectDir, { recursive: true });
+    kernel.fs.mkdir(projectDir, { recursive: true });
     const state = freshState(flow, projectId, resolved);
     if (opts.preset) state.preset = opts.preset;
     seedPreferenceDecisions(kernel, flow, projectDir, resolved, state.runId);
@@ -124,12 +122,12 @@ export async function flow_run(kernel: Kernel, flowId: string, projectId: string
     state.overlayHash = eff.overlayHash;
     state.policy = eff.policy as Record<string, unknown>;
     state.planHash = planHashOf(kernel, state.plan?.order ?? [], flow, eff.overlayHash);
-    journalAppend(projectDir, state.runId, "run-start", { detail: `${flow.id}@${flow.version} 计划 ${state.plan?.order.length ?? 0} 节点` });
+    journalAppend(kernel, projectDir, state.runId, "run-start", { detail: `${flow.id}@${flow.version} 计划 ${state.plan?.order.length ?? 0} 节点` });
     if (eff.notes.length) {
-      journalAppend(projectDir, state.runId, "note", { actor: "kernel:overlay", detail: `生效编排合成：${eff.notes.join(" ｜ ")}` });
+      journalAppend(kernel, projectDir, state.runId, "note", { actor: "kernel:overlay", detail: `生效编排合成：${eff.notes.join(" ｜ ")}` });
     }
     noteConfig(kernel, projectDir, state.runId, cfg);
-    saveState(projectDir, state);
+    saveState(projectDir, state, kernel.fs, kernel.path);
     return advance(kernel, projectId, state, projectDir, bootstrap);
   }
 
@@ -163,33 +161,33 @@ export async function flow_chain(
     } = {},
   ): Promise<{ projectId: string; copied: string[]; stop: AdvanceStop }> {
     const fromDir = kernel.projectDir(fromProjectId);
-    const fromState = loadState(fromDir);
+    const fromState = loadState(fromDir, kernel.fs, kernel.path);
     if (!fromState) throw new KernelError("NO_RUN", 404, `源项目无 state.json: ${fromProjectId}`);
     const toProjectId = opts.projectId ?? `${fromProjectId}.${toFlowId}`;
     const toDir = kernel.projectDir(toProjectId);
-    if (loadState(toDir)) throw new KernelError("RUN_EXISTS", 409, `目标项目已有 state.json: ${toProjectId}`);
+    if (loadState(toDir, kernel.fs, kernel.path)) throw new KernelError("RUN_EXISTS", 409, `目标项目已有 state.json: ${toProjectId}`);
 
     const materialDir = `${(opts.materialDir ?? "00-素材").replaceAll("\\", "/").replace(/\/$/, "")}`;
     const copied: string[] = [];
     for (const rel of opts.copyArtifacts ?? []) {
-      const src = path.join(fromDir, rel);
-      if (!fs.existsSync(src)) {
+      const src = kernel.path.join(fromDir, rel);
+      if (!kernel.fs.exists(src)) {
         throw new KernelError("FILE_MISSING", 404, `源产物不存在: ${rel}（项目 ${fromProjectId}）`);
       }
-      const dest = path.join(toDir, materialDir, rel);
-      fs.mkdirSync(path.dirname(dest), { recursive: true });
-      fs.copyFileSync(src, dest);
+      const dest = kernel.path.join(toDir, materialDir, rel);
+      kernel.fs.mkdir(kernel.path.dirname(dest), { recursive: true });
+      kernel.fs.copy(src, dest);
       copied.push(`${materialDir}/${rel.replaceAll("\\", "/")}`);
     }
-    journalAppend(fromDir, fromState.runId, "chain-out", {
+    journalAppend(kernel, fromDir, fromState.runId, "chain-out", {
       detail: `级联 → ${toFlowId}（目标项目 ${toProjectId}）搬运 ${copied.length} 项产物`,
       refs: copied,
     });
 
     const stop = await flow_run(kernel, toFlowId, toProjectId, opts.inputs ?? {}, { preset: opts.preset });
-    const toState = loadState(toDir);
+    const toState = loadState(toDir, kernel.fs, kernel.path);
     if (toState) {
-      journalAppend(toDir, toState.runId, "chain-in", {
+      journalAppend(kernel, toDir, toState.runId, "chain-in", {
         detail: `级联自 ${fromProjectId}（${fromState.flowId}@${fromState.flowVersion}）——素材 ${copied.length} 项在盘（${materialDir}/）`,
         refs: copied,
       });
@@ -214,14 +212,14 @@ export function seedPreferenceDecisions(kernel: Kernel,
       const dkey = def.feeds_decision;
       const v = resolved[key];
       if (!dkey || v === undefined || v === null || v === "") continue;
-      if (fs.existsSync(path.join(decisionsDir(projectDir), `${dkey}.json`))) continue; // 已有决策（含调研覆盖后的）不回填
-      setDecision(projectDir, {
+      if (kernel.fs.exists(kernel.path.join(decisionsDir(kernel, projectDir), `${dkey}.json`))) continue; // 已有决策（含调研覆盖后的）不回填
+      setDecision(kernel, projectDir, {
         key: dkey,
         picked: [String(v)],
         by: "user.preference",
         evidence: `开跑先验：inputs.${key}=${v}（flow ${flow.id}）`,
       });
-      journalAppend(projectDir, runId, "note", {
+      journalAppend(kernel, projectDir, runId, "note", {
         actor: "kernel:preference",
         detail: `决策落盘 decision:${dkey} picked=${v}（来源=开跑先验，调研步 set_decision 可覆盖）`,
       });
@@ -232,7 +230,7 @@ export function seedPreferenceDecisions(kernel: Kernel,
 
 export function readProjectConfig(kernel: Kernel, projectDir: string): ProjectConfig | undefined {
     try {
-      return loadProjectConfig(projectDir);
+      return loadProjectConfig(projectDir, kernel.fs, kernel.path);
     } catch (e) {
       throw new KernelError("INVALID_INPUT", 400, `项目配置非法: ${e instanceof Error ? e.message : String(e)}`);
     }
@@ -246,7 +244,7 @@ export function noteConfig(kernel: Kernel, projectDir: string, runId: string, cf
       cfg.风格 ? `风格=${cfg.风格}` : "",
       cfg.AB测试 !== undefined ? `AB=${cfg.AB测试 ? "on" : "off"}` : "",
     ].filter(Boolean);
-    journalAppend(projectDir, runId, "note", { actor: "kernel:config", detail: `初始化配置装载：${bits.join(" ")}` });
+    journalAppend(kernel, projectDir, runId, "note", { actor: "kernel:config", detail: `初始化配置装载：${bits.join(" ")}` });
   }
 
   /** 调度推进：core 步就地执行，认知步产出任务包，门挂起。幂等。 */
@@ -318,17 +316,17 @@ export async function doSubmit(kernel: Kernel,
     const contractFile = artifactPathOf(flow, nodeId);
     const rel = output.file ?? contractFile;
     if (!rel) throw new KernelError("NO_OUTPUT_CONTRACT", 400, `节点 ${nodeId} 未声明产物路径`);
-    const abs = path.resolve(projectDir, rel);
-    if (!abs.startsWith(path.resolve(projectDir) + path.sep)) {
+    const abs = kernel.path.resolve(projectDir, rel);
+    if (!abs.startsWith(kernel.path.resolve(projectDir) + kernel.path.sep)) {
       throw new KernelError("PATH_ESCAPE", 400, `产物路径越界: ${rel}`);
     }
     if (output.content !== undefined) {
-      atomicWriteText(abs, output.content);
-    } else if (!fs.existsSync(abs)) {
+      kernel.fs.writeTextAtomic(abs, output.content);
+    } else if (!kernel.fs.exists(abs)) {
       throw new KernelError("FILE_MISSING", 404, `产物文件不存在且未提供 content: ${rel}`);
     }
 
-    const problems = runIntegrityAsserts(projectDir, rel);
+    const problems = runIntegrityAsserts(projectDir, rel, kernel.fs, kernel.path);
     // 过程交付件头部（规范 R4 §二）：版本/上游/审核背景的唯一真相，正文不得复述
     problems.push(
       ...runHeaderAsserts(projectDir, rel, {
@@ -345,9 +343,9 @@ export async function doSubmit(kernel: Kernel,
           .filter(([, n]) => n.kind === "novel-txt")
           .map(([, n]) => nodeOutput(n))
           .filter((p): p is string => !!p),
-      }),
+      }, kernel.fs, kernel.path),
     );
-    const glossary = checkGlossary(kernel.root, projectDir, rel);
+    const glossary = checkGlossary(kernel.root, projectDir, rel, kernel.fs, kernel.path);
     if (glossary) problems.push(glossary);
     // v5.0（工单 §三）：提交链上不再存在任何断言闸——runDeclaredAsserts 三态派发与
     // 对外交付/ 引擎全量闸均已下架。提交只保留确定性完整性（integrity/头部/词汇表）；
@@ -357,10 +355,15 @@ export async function doSubmit(kernel: Kernel,
     // Assertion Preset v1：提交链策略层（gateMode 降级/升级、progressive 渐进、条件丢弃）。
     // 预设不可用 = 结果原样透传（特性不激活，不拦死流水线）。v5.0 契约不变：提交链只有
     // integrity/header/glossary 到场，AE-* 质量闸在 check_* 节点由注册表执行（见 minitools）。
-    const presetMount = kernel.assertionPresets.mountFor();
-    const gatedProblems = presetMount
-      ? applyGatePreset(presetMount, finalProblems, gateContext(projectDir, nodeId, node, rel, (ns.round ?? 0) + 1)).problems
-      : finalProblems;
+    const presetMount = kernel.assertionMount(eff, projectDir);
+    const gated = presetMount
+      ? applyGatePreset(presetMount, finalProblems, gateContext(projectDir, nodeId, node, rel, (ns.round ?? 0) + 1, kernel.fs, kernel.path))
+      : { problems: finalProblems, outcomes: [], summary: "" };
+    const gatedProblems = gated.problems;
+    // AP1 §十：策略摘要写进 state（运行时事实），下游任务包据此注入 diagnosticSummary。
+    // 空摘要不写空串——留着上一次非空的更没用，所以一律覆盖为「本轮的事实」。
+    state.diagnosticSummary = gated.summary;
+    state.diagnosticFrom = nodeId;
     const blocks = blocked(gatedProblems);
     if (blocks.length) {
       ns.failCount = (ns.failCount ?? 0) + 1;
@@ -371,12 +374,12 @@ export async function doSubmit(kernel: Kernel,
         verdict: "rejected",
         note: `打回：${blocks.map((b) => b.name).join("、")}`,
       });
-      journalAppend(projectDir, state.runId, "reject", {
+      journalAppend(kernel, projectDir, state.runId, "reject", {
         nodeId,
         detail: blocks.map((b) => `${b.name}: ${b.detail}`).join("; "),
         refs: [rel],
       });
-      saveState(projectDir, state);
+      saveState(projectDir, state, kernel.fs, kernel.path);
       return { status: "rejected", problems: gatedProblems };
     }
 
@@ -405,10 +408,10 @@ export async function doSubmit(kernel: Kernel,
       node: nodeId,
       round: Math.max(ns.round, 1),
       producer: "host-submit",
-      inputs: inputFingerprint(projectDir, upstreamFiles),
+      inputs: inputFingerprint(projectDir, upstreamFiles, kernel.fs, kernel.path),
       validations: finalProblems,
-    });
-    captureSnapshot(projectDir, nodeId, { [rel]: fs.readFileSync(abs, "utf-8") }, `submit r${Math.max(ns.round, 1)}·${path.basename(rel)}`);
+    }, kernel.fs, kernel.path);
+    captureSnapshot(projectDir, nodeId, { [rel]: kernel.fs.readText(abs) }, `submit r${Math.max(ns.round, 1)}·${kernel.path.basename(rel)}`, kernel.fs, kernel.path);
     // R5 指标：命中率 = 注入的标尺卡/上游件中，产物真正引用过的比例（信号取自 artifact@1 头部 upstream 与正文）
     try {
       // D1（计量口径）：提交侧的提取清单必须与 dispatch 相**同一 id 空间**。
@@ -416,11 +419,11 @@ export async function doSubmit(kernel: Kernel,
       // 此处若改用 op 声明的**原始**清单，`kb/trope/*` 这类通配符会以字面形态占着分母、
       // 永不可能命中 → 标尺卡命中率被系统性压到 0（_918test 实证：梗卡明明引用了 5 张，
       // 计数仍是 0）。故重算任务包，取与派发完全同源的那份清单。
-      const pkg = buildTaskPackage(projectDir, flow, state, nodeId, eff.toolOverrides, eff.policy);
+      const pkg = buildTaskPackage(projectDir, flow, state, nodeId, eff.toolOverrides, eff.policy, kernel.fs, kernel.path);
       const injected = [...(pkg.knowledge ?? []).map((k) => k.id), ...pkg.context.map((c) => c.ref)];
       // 概念词命中层（D1 第一层改造）：kb 卡按签名词在正文的落点计命中，
       // 路径字面匹配只作保底——知识库根以 repoRoot 为准（knowledge/ 与 projects/ 分居）。
-      const usage = extractCtxUsage(fs.readFileSync(abs, "utf-8"), injected, { root: kernel.repoRoot });
+      const usage = extractCtxUsage(kernel.fs.readText(abs), injected, { root: kernel.repoRoot, io: kernel });
       metric(kernel, projectDir, state, nodeId, node, "submit", {
         ctx: usage,
         checks: checksCounts(finalProblems),
@@ -430,21 +433,21 @@ export async function doSubmit(kernel: Kernel,
     } catch {
       /* 指标是旁路 */
     }
-    journalAppend(projectDir, state.runId, "submit", { nodeId, detail: rel, refs: [rel] });
-    journalAppend(projectDir, state.runId, "snapshot", { nodeId, detail: `r${ns.round}·${path.basename(rel)}`, refs: [rel] });
+    journalAppend(kernel, projectDir, state.runId, "submit", { nodeId, detail: rel, refs: [rel] });
+    journalAppend(kernel, projectDir, state.runId, "snapshot", { nodeId, detail: `r${ns.round}·${kernel.path.basename(rel)}`, refs: [rel] });
     // R5：评审步交卷即自动裁决（不再等人开门）。v5.0 起域内质量 = 规则语料（agent 裁决）+ 扫描器证据；
     // 要人接手的唯一入口是 kit 边界验收门，或 policy.gate_mode=manual。
     if (workGate && (eff.policy.gate_mode ?? "auto") === "auto") {
       ns.verdict = "pass";
       state.gate = { verdict: "pass", node: nodeId, at: nowIso(), note: "R5 自动裁决：域内评审步，交卷完整性检查全过即过" };
       metric(kernel, projectDir, state, nodeId, node, "auto-gate", { verdict: "pass", note: "R5 评审步自动裁决" });
-      journalAppend(projectDir, state.runId, "verdict", {
+      journalAppend(kernel, projectDir, state.runId, "verdict", {
         nodeId,
         detail: "auto-pass（R5：域内评审步自动裁决；要人接手请置 policy.gate_mode=manual，或由优化器按指标裁掉该步）",
       });
     }
     state.status = "running";
-    saveState(projectDir, state);
+    saveState(projectDir, state, kernel.fs, kernel.path);
     if (batchable && !output.seal) {
       return { status: "accepted", committed: ns.committed, sealed: false };
     }
@@ -466,11 +469,11 @@ export async function flow_resume(kernel: Kernel, projectId: string): Promise<Ad
       if (ns.status === "running") ns.status = "none";
     }
     if (planDrifted(state, flow)) {
-      journalAppend(projectDir, state.runId, "warn", { detail: "flow 指纹与快照不一致——沿用快照内计划（恢复不读图）" });
+      journalAppend(kernel, projectDir, state.runId, "warn", { detail: "flow 指纹与快照不一致——沿用快照内计划（恢复不读图）" });
     }
     state.status = state.gate.verdict === "awaiting" ? "suspended" : "running";
     state.stalledAt = undefined; // 人工已介入：清停机标记
-    saveState(projectDir, state);
+    saveState(projectDir, state, kernel.fs, kernel.path);
     return advance(kernel, projectId, state, projectDir, raw);
   }
 
@@ -508,11 +511,11 @@ export function markStalled(kernel: Kernel, state: RunState, projectDir: string)
     state.stalledAt = nowIso();
     state.status = "blocked";
     state.lastRejectReason = `等待超时：${state.gate.node ?? state.focus ?? "-"} 悬置超过 ${secs}s（policy.awaitTimeoutMs）——停机等人`;
-    journalAppend(projectDir, state.runId, "warn", {
+    journalAppend(kernel, projectDir, state.runId, "warn", {
       nodeId: state.gate.node,
       detail: `await-timeout：悬置超 ${secs}s → run 标 blocked（不自动放行；请裁决 / flow_resume / 调整 awaitTimeoutMs）`,
     });
-    saveState(projectDir, state);
+    saveState(projectDir, state, kernel.fs, kernel.path);
     return true;
   }
 
@@ -550,7 +553,7 @@ export async function recoverRejected(kernel: Kernel,
         n.stale = true;
         n.round += 1;
         n.committed = [];
-        journalAppend(projectDir, state.runId, "stale", {
+        journalAppend(kernel, projectDir, state.runId, "stale", {
           nodeId: id,
           detail: `resume 恢复：重跑门 ${gateId} 的上游范围`,
         });
@@ -560,7 +563,7 @@ export async function recoverRejected(kernel: Kernel,
       // 人工已介入 ⇒ 等待计时**重起**：否则下一轮 advance 会拿同一个陈旧的 gate.at 立刻再判超时，
       // 变成「resume 无效」的另一种形态。门本身仍等裁决，不计已驳回。
       if (state.gate.verdict === "awaiting") state.gate = { ...state.gate, at: nowIso() };
-      journalAppend(projectDir, state.runId, "note", {
+      journalAppend(kernel, projectDir, state.runId, "note", {
         nodeId: gateId,
         actor: "kernel:resume",
         detail: "等待超时恢复：澄清停机标记、等待计时重起，保留上游成果（门仍在等裁决）",
@@ -569,7 +572,7 @@ export async function recoverRejected(kernel: Kernel,
       // 人工已介入的信号：清该门的累计驳回计数（maxRounds 重新起算），journal 留痕
       const prevRejects = state.rejects?.[gateId];
       if (prevRejects !== undefined) {
-        journalAppend(projectDir, state.runId, "note", {
+        journalAppend(kernel, projectDir, state.runId, "note", {
           nodeId: gateId,
           actor: "kernel:resume",
           detail: `人工恢复：清空 ${gateId} 累计驳回计数（原 ${prevRejects} 次）`,
@@ -587,14 +590,14 @@ export async function recoverRejected(kernel: Kernel,
     }
     state.stalledAt = undefined;
     state.status = state.gate.verdict === "awaiting" ? "suspended" : "running";
-    journalAppend(projectDir, state.runId, "rerun", {
+    journalAppend(kernel, projectDir, state.runId, "rerun", {
       nodeId: gateId,
       detail: byTimeout
         ? `flow_resume 从 ${prevStatus} 恢复：等待超时（不重跑上游）`
         : `flow_resume 从 ${prevStatus} 恢复：失效范围 ${scope.length} 节点（重跑门 ${gateId} 的上游）`,
       refs: scope,
     });
-    saveState(projectDir, state);
+    saveState(projectDir, state, kernel.fs, kernel.path);
     return advance(kernel, projectId, state, projectDir, raw);
   }
 
@@ -656,7 +659,7 @@ export async function doGate(kernel: Kernel, projectId: string, req: GateRequest
           n.stale = true;
           n.round += 1;
           n.committed = [];
-          journalAppend(projectDir, state.runId, "stale", { nodeId: id, detail: "模块驳回：重跑上游模块" });
+          journalAppend(kernel, projectDir, state.runId, "stale", { nodeId: id, detail: "模块驳回：重跑上游模块" });
         }
       }
       ns.verdict = pass ? "pass" : "reject";
@@ -678,7 +681,7 @@ export async function doGate(kernel: Kernel, projectId: string, req: GateRequest
       metric(kernel, projectDir, state, req.nodeId, gateNode, "link", {
         verdict: pass ? "pass" : "reject", note: req.comment,
       });
-      journalAppend(projectDir, state.runId, "verdict", {
+      journalAppend(kernel, projectDir, state.runId, "verdict", {
         nodeId: req.nodeId,
         detail: `${pass ? "pass" : "reject"}（R6 连接件：${pass ? "放行" : `重跑上游模块 ${upstream ?? ""}`}）${req.comment ? "：" + req.comment : ""}`,
         refs: scope,
@@ -687,11 +690,11 @@ export async function doGate(kernel: Kernel, projectId: string, req: GateRequest
         const cap = (state.policy as { maxRounds?: number } | undefined)?.maxRounds;
         state.status = "blocked";
         state.lastRejectReason = `连接件 ${req.nodeId} 累计驳回 ${state.rejects?.[req.nodeId] ?? 0} 次达 policy.maxRounds=${String(cap)} 上限——停机等人（放行 / 调上游 / 调 maxRounds）`;
-        journalAppend(projectDir, state.runId, "run-end", { nodeId: req.nodeId, detail: state.lastRejectReason });
-        saveState(projectDir, state);
+        journalAppend(kernel, projectDir, state.runId, "run-end", { nodeId: req.nodeId, detail: state.lastRejectReason });
+        saveState(projectDir, state, kernel.fs, kernel.path);
         return { applied: true, rollbackScope: scope, next: blockedStop(kernel, state) };
       }
-      saveState(projectDir, state);
+      saveState(projectDir, state, kernel.fs, kernel.path);
       if (!pass) {
         const next = await advance(kernel, projectId, state, projectDir, raw);
         return { applied: true, rollbackScope: scope, next };
@@ -709,11 +712,11 @@ export async function doGate(kernel: Kernel, projectId: string, req: GateRequest
       metric(kernel, projectDir, state, req.nodeId, gateNode ?? { kind: "gate" }, gateNode?.gate_role === "link" ? "link" : isBoundaryGate(gateNode) ? "boundary" : "gate", {
         verdict: req.verdict, note: req.comment,
       });
-      journalAppend(projectDir, state.runId, "verdict", { nodeId: req.nodeId, detail: `${req.verdict}${req.comment ? "：" + req.comment : ""}` });
+      journalAppend(kernel, projectDir, state.runId, "verdict", { nodeId: req.nodeId, detail: `${req.verdict}${req.comment ? "：" + req.comment : ""}` });
       if (gateNode?.kind === "srd") {
         state.status = "completed";
-        journalAppend(projectDir, state.runId, "run-end", { detail: "srd 裁决通过，run 完成" });
-        saveState(projectDir, state);
+        journalAppend(kernel, projectDir, state.runId, "run-end", { detail: "srd 裁决通过，run 完成" });
+        saveState(projectDir, state, kernel.fs, kernel.path);
         try {
           kernel.flowMine(projectId);
           kernel.flowOptimize(projectId, { actor: "auto-completed" });
@@ -723,7 +726,7 @@ export async function doGate(kernel: Kernel, projectId: string, req: GateRequest
         return { applied: true, completed: true };
       }
       state.status = "running";
-      saveState(projectDir, state);
+      saveState(projectDir, state, kernel.fs, kernel.path);
       const next = await advance(kernel, projectId, state, projectDir, raw);
       return { applied: true, next };
     }
@@ -746,7 +749,7 @@ export async function doGate(kernel: Kernel, projectId: string, req: GateRequest
           n.stale = true;
           n.round += 1; // round 只增不清（v3 纪律）
           n.committed = []; // K6：打回重开实例窗口，提交清单清零
-          journalAppend(projectDir, state.runId, "stale", { nodeId: id, detail: forced ? "强制级联失效，待重算" : "本阶段打回失效，待重算" });
+          journalAppend(kernel, projectDir, state.runId, "stale", { nodeId: id, detail: forced ? "强制级联失效，待重算" : "本阶段打回失效，待重算" });
         }
       }
       ns.verdict = "send-back";
@@ -755,12 +758,12 @@ export async function doGate(kernel: Kernel, projectId: string, req: GateRequest
       state.gate = { verdict: "send-back", node: req.nodeId, at: nowIso(), note: req.comment };
       state.lastRejectReason = req.comment ?? req.rootCauseStage ?? "";
       state.status = "running";
-      journalAppend(projectDir, state.runId, "verdict", {
+      journalAppend(kernel, projectDir, state.runId, "verdict", {
         nodeId: req.nodeId,
         detail: `send-back → ${entry}（${forced ? "强制跨阶段" : "本阶段"}，${scope.length} 节点失效）${req.comment ? "：" + req.comment : ""}`,
         refs: scope,
       });
-      saveState(projectDir, state);
+      saveState(projectDir, state, kernel.fs, kernel.path);
       const next = await advance(kernel, projectId, state, projectDir, raw);
       return { applied: true, rollbackScope: scope, next };
     }
@@ -772,9 +775,9 @@ export async function doGate(kernel: Kernel, projectId: string, req: GateRequest
         verdict: "reject", note: req.comment,
       });
       state.status = "failed";
-      journalAppend(projectDir, state.runId, "verdict", { nodeId: req.nodeId, detail: `reject${req.comment ? "：" + req.comment : ""}` });
-      journalAppend(projectDir, state.runId, "run-end", { detail: "门裁决 reject，run 终止" });
-      saveState(projectDir, state);
+      journalAppend(kernel, projectDir, state.runId, "verdict", { nodeId: req.nodeId, detail: `reject${req.comment ? "：" + req.comment : ""}` });
+      journalAppend(kernel, projectDir, state.runId, "run-end", { detail: "门裁决 reject，run 终止" });
+      saveState(projectDir, state, kernel.fs, kernel.path);
       return { applied: true, failed: true };
     }
 
@@ -816,26 +819,26 @@ export async function doRerun(kernel: Kernel, projectId: string, req: { nodeId: 
         n.stale = true;
         n.round += 1;
         n.committed = []; // K6：iterate 节点本批实例清零，重新逐实例提交
-        journalAppend(projectDir, state.runId, "stale", { nodeId: id, detail: "rerun 级联失效" });
+        journalAppend(kernel, projectDir, state.runId, "stale", { nodeId: id, detail: "rerun 级联失效" });
       }
     }
     if (state.gate.verdict === "awaiting") state.gate = { verdict: "none" };
     state.status = "running";
-    journalAppend(projectDir, state.runId, "rerun", { nodeId: req.nodeId, detail: `scope ${scope.length} 节点`, refs: scope });
-    saveState(projectDir, state);
+    journalAppend(kernel, projectDir, state.runId, "rerun", { nodeId: req.nodeId, detail: `scope ${scope.length} 节点`, refs: scope });
+    saveState(projectDir, state, kernel.fs, kernel.path);
     const next = await advance(kernel, projectId, state, projectDir, raw, req.nodeId);
     return { scope, dryRun: false, next };
   }
 
 
 export function lastArtifactEntry(kernel: Kernel, projectDir: string, nodeId: string) {
-    const arts = listArtifacts(projectDir, { node: nodeId });
+    const arts = listArtifacts(projectDir, { node: nodeId }, kernel.fs, kernel.path);
     return arts.length ? arts[arts.length - 1] : undefined;
   }
 
 
 export function fingerprintMatches(kernel: Kernel, projectDir: string, fp: Record<string, string | null>): boolean {
-    const current = inputFingerprint(projectDir, Object.keys(fp));
+    const current = inputFingerprint(projectDir, Object.keys(fp), kernel.fs, kernel.path);
     return Object.entries(fp).every(([p, h]) => current[p] === h);
   }
 
@@ -865,19 +868,19 @@ export async function advance(kernel: Kernel, projectId: string, state: RunState
       const recompiled = compilePlan(flow, state.inputs ?? {}, cond);
       const same = recompiled.length === snapshot.length && recompiled.every((id, i) => id === snapshot[i]);
       if (!same) {
-        journalAppend(projectDir, state.runId, "warn", {
+        journalAppend(kernel, projectDir, state.runId, "warn", {
           actor: "kernel:overlay",
           detail: `R7 首次装载：快照计划与当前生效编排不一致（${snapshot.length} → ${recompiled.length} 节点）——重编译而非沿用旧计划`,
         });
         order = replan(kernel, state, flow, cond, eff, projectDir);
       } else {
         if (eff.boundaries.length) {
-          journalAppend(projectDir, state.runId, "note", {
+          journalAppend(kernel, projectDir, state.runId, "note", {
             actor: "kernel:overlay",
             detail: `R5 编排已就绪（${eff.boundaries.length} 个 kit 边界验收待生效）。本次沿用快照内计划；如需启用请 flow_overlay --replan。`,
           });
         }
-        saveState(projectDir, state);
+        saveState(projectDir, state, kernel.fs, kernel.path);
       }
     } else if (state.overlayHash !== eff.overlayHash) {
       order = replan(kernel, state, flow, cond, eff, projectDir);
@@ -918,16 +921,16 @@ export async function advance(kernel: Kernel, projectId: string, state: RunState
             ns.round += 1;
             ns.stale = false;
             metric(kernel, projectDir, state, id, node, "link", { verdict: "pass", note: "R6 自动批准" });
-            journalAppend(projectDir, state.runId, "verdict", { nodeId: id, detail: "auto-pass（R6 连接件：自动批准）" });
-            saveState(projectDir, state);
+            journalAppend(kernel, projectDir, state.runId, "verdict", { nodeId: id, detail: "auto-pass（R6 连接件：自动批准）" });
+            saveState(projectDir, state, kernel.fs, kernel.path);
             continue;
           }
           const token = gateToken(projectId, state.runId, id);
           state.gate = { verdict: "awaiting", node: id, round: ns.round, token, at: nowIso(), note: node.title };
           ns.status = "awaiting";
           state.status = "suspended";
-          journalAppend(projectDir, state.runId, "gate-open", { nodeId: id, detail: node.title ?? "" });
-          saveState(projectDir, state);
+          journalAppend(kernel, projectDir, state.runId, "gate-open", { nodeId: id, detail: node.title ?? "" });
+          saveState(projectDir, state, kernel.fs, kernel.path);
           return { status: "suspended", nodeId: id, gate: { nodeId: id, round: ns.round, token, title: node.title } };
         }
         // R5 门降级（§四）：非 kit 边界的门不再阻塞——域内质量已由规则语料 + 扫描器证据承担。
@@ -943,17 +946,17 @@ export async function advance(kernel: Kernel, projectId: string, state: RunState
           ns.round += 1;
           ns.stale = false;
           metric(kernel, projectDir, state, id, node, "auto-gate", { verdict: "pass", note: "R5 门降级：纯汇合点无产活，直接放行" });
-          journalAppend(projectDir, state.runId, "verdict", {
+          journalAppend(kernel, projectDir, state.runId, "verdict", {
             nodeId: id,
             detail: "auto-pass（R5 门降级：纯汇合点无产活；如需人工请置 policy.gate_mode=manual 或用 overlay 裁掉该节点）",
           });
-          saveState(projectDir, state);
+          saveState(projectDir, state, kernel.fs, kernel.path);
           continue;
         }
         // (b) 带产活的门 = 评审步：**照跑**（派发任务包、产物照出），只是裁决自动。
         //     这是「拥抱生成式 flow」的关键一步——评审不再是人的串行屏障，但它该干的活不许被跳过。
         if (autoRegion && isWorkGate(node) && !humanEngaged) {
-          const pkg = buildTaskPackage(projectDir, flow, state, id, eff.toolOverrides, eff.policy);
+          const pkg = buildTaskPackage(projectDir, flow, state, id, eff.toolOverrides, eff.policy, kernel.fs, kernel.path);
           batch.push({ nodeId: id, taskPackage: pkg });
           ns.status = "awaiting";
           state.status = "awaiting_input";
@@ -964,7 +967,7 @@ export async function advance(kernel: Kernel, projectId: string, state: RunState
             },
             config: toolConfigSnapshot(kernel, node, eff),
           });
-          journalAppend(projectDir, state.runId, "advance", {
+          journalAppend(kernel, projectDir, state.runId, "advance", {
             nodeId: id,
             detail: `评审步派发（R5：评审照跑，裁决自动——域内质量交回规则语料 + 扫描器证据（v5.0 agent-only）；如需人工请置 policy.gate_mode=manual）`,
           });
@@ -980,11 +983,11 @@ export async function advance(kernel: Kernel, projectId: string, state: RunState
           ns.stale = false;
           state.gate = { verdict: "pass", node: id, at: nowIso(), note: "kit_boundary=auto 自动放行" };
           metric(kernel, projectDir, state, id, node, "boundary", { verdict: "pass", note: "kit_boundary=auto 自动放行" });
-          journalAppend(projectDir, state.runId, "verdict", {
+          journalAppend(kernel, projectDir, state.runId, "verdict", {
             nodeId: id,
             detail: "auto-pass（边界门：policy.kit_boundary=auto——保留可见与指标，但不拦人；要人验收请置 always）",
           });
-          saveState(projectDir, state);
+          saveState(projectDir, state, kernel.fs, kernel.path);
           continue;
         }
         if (humanEngaged) {
@@ -998,32 +1001,32 @@ export async function advance(kernel: Kernel, projectId: string, state: RunState
         state.gate = { verdict: "awaiting", node: id, round: ns.round, token, at: nowIso(), note: node.title };
         ns.status = "awaiting";
         state.status = "suspended";
-        journalAppend(projectDir, state.runId, "gate-open", { nodeId: id, detail: node.title ?? "" });
-        saveState(projectDir, state);
+        journalAppend(kernel, projectDir, state.runId, "gate-open", { nodeId: id, detail: node.title ?? "" });
+        saveState(projectDir, state, kernel.fs, kernel.path);
         return { status: "suspended", nodeId: id, gate: { nodeId: id, round: ns.round, token, title: node.title } };
       }
 
       if (ns.status === "awaiting") {
         // 已派发、等待提交的认知步：每轮重组任务包（磁盘真相 > 对话记忆），并入就绪批
-        batch.push({ nodeId: id, taskPackage: buildTaskPackage(projectDir, flow, state, id, eff.toolOverrides, eff.policy) });
+        batch.push({ nodeId: id, taskPackage: buildTaskPackage(projectDir, flow, state, id, eff.toolOverrides, eff.policy, kernel.fs, kernel.path) });
         state.status = "awaiting_input";
         continue;
       }
 
       if (node.kind === "novel-txt") {
         const f = nodeOutput(node);
-        if (!f || !fs.existsSync(path.join(projectDir, f))) {
-          journalAppend(projectDir, state.runId, "warn", { nodeId: id, detail: `源文件缺失: ${f}` });
+        if (!f || !kernel.fs.exists(kernel.path.join(projectDir, f))) {
+          journalAppend(kernel, projectDir, state.runId, "warn", { nodeId: id, detail: `源文件缺失: ${f}` });
           return { status: "blocked", nodeId: id, reason: `源文件缺失: ${f}` };
         }
-        makeArtifact(projectDir, { path: f, node: id, producer: "kernel:novel-txt", inputs: {} });
-        captureSnapshot(projectDir, id, { [f]: fs.readFileSync(path.join(projectDir, f), "utf-8") }, `src r1·${path.basename(f)}`);
+        makeArtifact(projectDir, { path: f, node: id, producer: "kernel:novel-txt", inputs: {} }, kernel.fs, kernel.path);
+        captureSnapshot(projectDir, id, { [f]: kernel.fs.readText(kernel.path.join(projectDir, f)) }, `src r1·${kernel.path.basename(f)}`, kernel.fs, kernel.path);
         ns.status = "done";
         ns.round += 1;
         ns.stale = false;
         ns.lastArtifact = f;
-        journalAppend(projectDir, state.runId, "advance", { nodeId: id, detail: `源步 ${f}` });
-        saveState(projectDir, state);
+        journalAppend(kernel, projectDir, state.runId, "advance", { nodeId: id, detail: `源步 ${f}` });
+        saveState(projectDir, state, kernel.fs, kernel.path);
         continue;
       }
 
@@ -1036,26 +1039,30 @@ export async function advance(kernel: Kernel, projectId: string, state: RunState
           if (entry?.inputs && Object.keys(entry.inputs).length > 0 && fingerprintMatches(kernel, projectDir, entry.inputs)) {
             ns.status = "done";
             ns.stale = false;
-            journalAppend(projectDir, state.runId, "advance", { nodeId: id, detail: "缓存命中（输入指纹未变，跳过重算）" });
-            saveState(projectDir, state);
+            journalAppend(kernel, projectDir, state.runId, "advance", { nodeId: id, detail: "缓存命中（输入指纹未变，跳过重算）" });
+            saveState(projectDir, state, kernel.fs, kernel.path);
             continue;
           }
         }
         // D#14：脚本壳的超时旋钮。此前 `timeoutMs` 只活在契约里（spawn 不带 timeout）⇒ 脚本卡住
         // = 内核永久卡住。现按「节点 config > op/overlay config > 通用默认 60000」解析后交给
         // runCoreNode，由它传给子进程；到时显式失败，不静默挂死。
-        const coreOp = resolveNodeOp(node, kernel.repoRoot);
+        const coreOp = resolveNodeOp(node, kernel.repoRoot, undefined, kernel.fs, kernel.path);
         const coreOv = coreOp ? eff.toolOverrides[`${coreOp.kit}.${coreOp.op}`]?.config : undefined;
         const coreCfg = resolveToolConfig(coreOp, (node as { config?: Record<string, unknown> }).config, coreOv).values;
         const r = await runCoreNode(projectDir, flow, state, id, {
           timeoutMs: typeof coreCfg.timeoutMs === "number" ? coreCfg.timeoutMs : undefined,
           budget: resolveBudget(eff.policy).values,
-          presetMount: kernel.assertionPresets.mountFor(),
-        });
+          presetMount: kernel.assertionMount(eff, projectDir),
+        }, kernel.fs, kernel.path, kernel.proc);
         if (!r.ok && r.kind === "missing") {
-          journalAppend(projectDir, state.runId, "warn", { nodeId: id, detail: r.reason });
+          journalAppend(kernel, projectDir, state.runId, "warn", { nodeId: id, detail: r.reason });
           return { status: "blocked", nodeId: id, reason: r.reason ?? "minitool missing" };
         }
+        // AP1 §十：检查节点的门策略摘要写进 state（运行时事实），下游 agent 任务包据此注入。
+        // 与 doSubmit 同口径：一律覆盖（本轮没触发条款 = 空串），不留着上轮的旧摘要冒充本轮。
+        state.diagnosticSummary = r.diagnosticSummary ?? "";
+        state.diagnosticFrom = id;
         if (!r.ok) {
           ns.status = "rejected";
           ns.failCount = (ns.failCount ?? 0) + 1;
@@ -1065,8 +1072,8 @@ export async function advance(kernel: Kernel, projectId: string, state: RunState
             retries: ns.failCount,
             note: r.reason,
           });
-          journalAppend(projectDir, state.runId, "reject", { nodeId: id, detail: r.reason ?? "完整性检查未过", refs: r.artifacts });
-          saveState(projectDir, state);
+          journalAppend(kernel, projectDir, state.runId, "reject", { nodeId: id, detail: r.reason ?? "完整性检查未过", refs: r.artifacts });
+          saveState(projectDir, state, kernel.fs, kernel.path);
           return { status: "blocked", nodeId: id, reason: r.reason ?? "完整性检查未过", problems: r.problems };
         }
         ns.status = "done";
@@ -1074,14 +1081,14 @@ export async function advance(kernel: Kernel, projectId: string, state: RunState
         ns.stale = false;
         ns.lastArtifact = r.artifacts[0];
         metric(kernel, projectDir, state, id, node, "core", { verdict: "pass" });
-        journalAppend(projectDir, state.runId, "advance", { nodeId: id, detail: r.artifacts.join(","), refs: r.artifacts });
-        saveState(projectDir, state);
+        journalAppend(kernel, projectDir, state.runId, "advance", { nodeId: id, detail: r.artifacts.join(","), refs: r.artifacts });
+        saveState(projectDir, state, kernel.fs, kernel.path);
         continue;
       }
 
       if (node.kind === "agent") {
         if (!isReady(id)) continue; // 上游未齐：不派发
-        const pkg = buildTaskPackage(projectDir, flow, state, id, eff.toolOverrides, eff.policy);
+        const pkg = buildTaskPackage(projectDir, flow, state, id, eff.toolOverrides, eff.policy, kernel.fs, kernel.path);
         batch.push({ nodeId: id, taskPackage: pkg });
         ns.status = "awaiting";
         state.status = "awaiting_input";
@@ -1093,11 +1100,11 @@ export async function advance(kernel: Kernel, projectId: string, state: RunState
           },
           config: toolConfigSnapshot(kernel, node, eff),
         });
-        journalAppend(projectDir, state.runId, "advance", { nodeId: id, detail: `任务包产出（skill=${node.skill ?? "-"}，上下文 ${pkg.context.length} 件）` });
+        journalAppend(kernel, projectDir, state.runId, "advance", { nodeId: id, detail: `任务包产出（skill=${node.skill ?? "-"}，上下文 ${pkg.context.length} 件）` });
         continue; // 收集同批其余就绪节点，循环结束后一次派发
       }
 
-      journalAppend(projectDir, state.runId, "warn", { nodeId: id, detail: `未知节点类型 ${node.kind}` });
+      journalAppend(kernel, projectDir, state.runId, "warn", { nodeId: id, detail: `未知节点类型 ${node.kind}` });
       return { status: "blocked", nodeId: id, reason: `未知节点类型 ${node.kind}` };
     }
 
@@ -1106,23 +1113,23 @@ export async function advance(kernel: Kernel, projectId: string, state: RunState
       const head = batch[0];
       const ids = batch.map((b) => b.nodeId);
       for (const b of batch) b.taskPackage.parallelWith = ids.filter((n) => n !== b.nodeId);
-      journalAppend(projectDir, state.runId, "advance", {
+      journalAppend(kernel, projectDir, state.runId, "advance", {
         detail: `就绪批派发 ${batch.length} 项：${ids.join("、")}（并行）`,
       });
-      saveState(projectDir, state);
+      saveState(projectDir, state, kernel.fs, kernel.path);
       return { status: "awaiting_input", nodeId: head.nodeId, taskPackage: head.taskPackage, batch };
     }
 
     state.status = "completed";
-    journalAppend(projectDir, state.runId, "run-end", { detail: "全部节点 done" });
-    saveState(projectDir, state);
+    journalAppend(kernel, projectDir, state.runId, "run-end", { detail: "全部节点 done" });
+    saveState(projectDir, state, kernel.fs, kernel.path);
     // W-06 负反馈自动触发：completed 即自动组装挖掘包 + 刷新提案池（内核不做 LLM 判断；提案仍待人批）
     try {
       kernel.flowMine(projectId);
       kernel.flowOptimize(projectId, { actor: "auto-completed" });
     } catch (e) {
       // 负反馈是旁路（不阻塞完成态），但"声明了却静默没跑"正是本仓最反感的模式 ⇒ 留痕
-      recordDiag(projectDir, "feedback", "auto-mine+optimize", e);
+      recordDiag(kernel, projectDir, "feedback", "auto-mine+optimize", e);
     }
     return { status: "completed" };
   }
@@ -1145,7 +1152,7 @@ export function metric(kernel: Kernel,
     extra: Partial<RunMetric> = {},
   ): void {
     try {
-      recordMetric(projectDir, {
+      recordMetric(kernel, projectDir, {
         runId: state.runId,
         nodeId,
         ...(node.kit ? { kit: node.kit } : {}),
@@ -1155,14 +1162,14 @@ export function metric(kernel: Kernel,
         ...extra,
       });
     } catch (e) {
-      recordDiag(projectDir, "metric", `${nodeId}/${phase}`, e);
+      recordDiag(kernel, projectDir, "metric", `${nodeId}/${phase}`, e);
     }
   }
 
   /** 本步生效的 tool 内容配置快照——指标归因的依据（改了哪个旋钮导致指标变化）。 */
 
 export function toolConfigSnapshot(kernel: Kernel, node: FlowNode, eff: EffectiveFlow): Record<string, unknown> | undefined {
-    const op = resolveNodeOp(node, kernel.repoRoot);
+    const op = resolveNodeOp(node, kernel.repoRoot, undefined, kernel.fs, kernel.path);
     if (!op) return node.config;
     const ov = eff.toolOverrides[`${op.kit}.${op.op}`];
     return resolveToolConfig(op, node.config, ov?.config).values;
@@ -1217,13 +1224,13 @@ export function replan(kernel: Kernel, state: RunState, flow: FlowDescriptor, co
       state.gate = { verdict: "none" };
     }
     state.status = "running";
-    journalAppend(projectDir, state.runId, "note", {
+    journalAppend(kernel, projectDir, state.runId, "note", {
       actor: "kernel:overlay",
       detail: `编排变更 → 重编译计划：${before.length} → ${after.length} 节点；新增 ${added.join("、") || "无"}；裁撤 ${removed.join("、") || "无"}；失效 ${stale.join("、") || "无"}`,
       refs: [...added, ...removed],
     });
-    for (const n of eff.notes) journalAppend(projectDir, state.runId, "note", { actor: "kernel:overlay", detail: n });
-    saveState(projectDir, state);
+    for (const n of eff.notes) journalAppend(kernel, projectDir, state.runId, "note", { actor: "kernel:overlay", detail: n });
+    saveState(projectDir, state, kernel.fs, kernel.path);
     return after;
   }
 

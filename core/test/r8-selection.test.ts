@@ -9,6 +9,10 @@ import { buildHttpApp } from "../src/http.js";
 import { VERB_BY_NAME } from "../src/verbs.js";
 import { verbToolSpecs } from "../src/mcp.js";
 import { setDecision, listDecisions } from "../src/decisions.js";
+import { nodeFs, nodePath } from "../src/abstraction/adapters/node.js";
+
+/** 测试走宿主盘：FS1 §四的 io 首参用这套默认适配器。 */
+const io = { fs: nodeFs, path: nodePath };
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 
@@ -162,7 +166,7 @@ describe("R8 S2 · set_decision/list_decisions：决策事实三面可达", () =
     const { root, kernel } = seedKernel();
     const projectDir = kernel.projectDir("p-r8d4");
     fs.mkdirSync(projectDir, { recursive: true });
-    setDecision(projectDir, okInput as never);
+    setDecision(io, projectDir, okInput as never);
     const live = kernel.viewLive("p-r8d4") as { decisions: { decisions: { key: string }[]; issues: string[] } };
     expect(live.decisions.decisions[0].key).toBe("genre");
   });
@@ -173,7 +177,7 @@ describe("R8 S2 · set_decision/list_decisions：决策事实三面可达", () =
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(path.join(dir, "genre.json"), JSON.stringify({ format: "decision@1", key: "style", by: "x", at: "t", picked: ["a"], evidence: "e" }), "utf-8");
     fs.writeFileSync(path.join(dir, "route.json"), "not-json", "utf-8");
-    const r = listDecisions(path.join(root, "projects", "p-r8d5"));
+    const r = listDecisions(io, path.join(root, "projects", "p-r8d5"));
     expect(r.decisions).toHaveLength(0);
     expect(r.issues).toHaveLength(2);
   });
@@ -188,7 +192,7 @@ describe("R8 生产端真跑 · 梗卡池接上后两条内容生产线照跑", 
     expect(next.status, "跑不动就是接线把流程弄死了").toBe("awaiting_input");
     expect(next.taskPackage?.instruction.text).toBeTruthy();
     // 未表态 = 不落决策（不替作者选市场），梗卡池走 load-all-with-warning 并显式告警
-    expect(listDecisions(kernel.projectDir("p-r8live-a")).decisions.map((d) => d.key)).not.toContain("region");
+    expect(listDecisions(kernel, kernel.projectDir("p-r8live-a")).decisions.map((d) => d.key)).not.toContain("region");
   });
 
   it("小说线（prose）：新池语义下照常派发到成文步", async () => {

@@ -1,6 +1,6 @@
-import fs from "node:fs";
-import path from "node:path";
 import type { PoolDecl } from "./selection.js";
+import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
+import { nodeFs, nodePath } from "./abstraction/defaults.js";
 
 export type KitDomain = "search" | "plot" | "prose" | "tool" | "module";
 
@@ -107,17 +107,21 @@ export class KitRegistry {
   private bySkillIndex = new Map<string, ResolvedOp>();
   private skillAmbiguous = new Set<string>();
 
-  constructor(private root: string) {
+  constructor(
+    private root: string,
+    private readonly fs: IFileSystem = nodeFs,
+    private readonly path: IFsPath = nodePath,
+  ) {
     // R6→批D：modules/<id>/module.json（module@1）是唯一装载源——模块工种工具箱接替 kit，
     // 派生节点以 <实例id>.<tool> 引用（kit=<模块id>，op=<tool>），标尺/断言/旋钮解析走同一条路。
-    const mdir = path.join(root, "modules");
-    if (!fs.existsSync(mdir)) return;
-    for (const entry of fs.readdirSync(mdir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
-      if (!entry.isDirectory()) continue;
-      const file = path.join(mdir, entry.name, "module.json");
-      if (!fs.existsSync(file)) continue;
+    const mdir = this.path.join(root, "modules");
+    if (!this.fs.exists(mdir)) return;
+    for (const entry of this.fs.readDirEntries(mdir).sort((a, b) => a.name.localeCompare(b.name))) {
+      if (!entry.isDirectory) continue;
+      const file = this.path.join(mdir, entry.name, "module.json");
+      if (!this.fs.exists(file)) continue;
       try {
-        const raw = JSON.parse(fs.readFileSync(file, "utf-8"));
+        const raw = JSON.parse(this.fs.readText(file));
         // 契约校验归 module-lint（module.json 可能携带 WO-03 平移期的 kit@1 遗留键，
         // 白名单归一化天然剥离）；装载器只取认识的字段，不因遗留键炸掉。
         const ops: Record<string, KitOp> = {};
@@ -191,9 +195,9 @@ export class KitRegistry {
   }
 }
 
-let cache: { root: string; reg: KitRegistry } | undefined;
-export function kitRegistry(root: string): KitRegistry {
-  if (!cache || cache.root !== root) cache = { root, reg: new KitRegistry(root) };
+let cache: { root: string; fs: IFileSystem; path: IFsPath; reg: KitRegistry } | undefined;
+export function kitRegistry(root: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): KitRegistry {
+  if (!cache || cache.root !== root || cache.fs !== fs || cache.path !== path) cache = { root, fs, path, reg: new KitRegistry(root, fs, path) };
   return cache.reg;
 }
 

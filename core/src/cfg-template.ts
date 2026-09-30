@@ -15,8 +15,8 @@
  * 错误分类：**用户能改的错（名字非法/不存在/跨 flow）一律 4xx**，不许被当成「服务器内部错误」上报
  * ——把用户手误报成 500 与「崩掉当没事」是同一种病（HTTP/CLI/MCP 三面共用这套码）。
  */
-import fs from "node:fs";
-import path from "node:path";
+import { nodeFs, nodePath } from "./abstraction/adapters/node.js";
+import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
 import { assertSchema } from "./schema.js";
 import { loadState } from "./state.js";
 
@@ -32,7 +32,7 @@ export class CfgTemplateError extends Error {
   }
 }
 
-export const CFG_TEMPLATE_SUBDIR = path.join("templates", "项目配置");
+export const CFG_TEMPLATE_SUBDIR = nodePath.join("templates", "项目配置");
 export const CONFIG_FILE_NAME = "项目配置.json";
 
 /** 模板名白名单：不允许需要转义的字符 ⇒ **文件名即模板名**，不产生「悄悄改名」。 */
@@ -70,18 +70,18 @@ export interface CfgTemplateScope {
   flowId?: string;
 }
 
-function storeDir(root: string): string {
+function storeDir(root: string, path: IFsPath): string {
   return path.join(root, CFG_TEMPLATE_SUBDIR);
 }
 
-function templatePath(root: string, flowId: string, name: string): string {
-  return path.join(storeDir(root), flowId, `${name}.json`);
+function templatePath(root: string, flowId: string, name: string, path: IFsPath): string {
+  return path.join(storeDir(root, path), flowId, `${name}.json`);
 }
 
-function readTemplate(file: string): { raw: Record<string, unknown>; keys: string[]; hasBudget: boolean } {
+function readTemplate(file: string, fs: IFileSystem): { raw: Record<string, unknown>; keys: string[]; hasBudget: boolean } {
   let raw: unknown;
   try {
-    raw = JSON.parse(fs.readFileSync(file, "utf-8"));
+    raw = JSON.parse(fs.readText(file));
   } catch (e) {
     throw new CfgTemplateError("BAD_TEMPLATE", 409, `模板不是合法 JSON: ${file}（${e instanceof Error ? e.message : String(e)}）`);
   }
@@ -94,9 +94,9 @@ function readTemplate(file: string): { raw: Record<string, unknown>; keys: strin
 }
 
 /** 项目的 flow id（读 state.json；未开跑返回 undefined —— 不猜）。 */
-function projectFlowId(kernel: CfgTemplateKernel, projectId: string): string | undefined {
+function projectFlowId(kernel: CfgTemplateKernel, projectId: string, fs: IFileSystem, path: IFsPath): string | undefined {
   try {
-    return loadState(kernel.projectDir(projectId))?.flowId;
+    return loadState(kernel.projectDir(projectId), fs, path)?.flowId;
   } catch {
     return undefined;
   }
@@ -118,7 +118,7 @@ function assertName(name: string): string {
  * 模板清单。`flowId` 给了就只列该 flow 的（含 synthetic `blank`）。
  * 目录不存在/文件非法**不静默**：`skipped` 字段如实回报坏文件。
  */
-export function listConfigTemplates(scope: CfgTemplateScope): { entries: CfgTemplateEntry[]; skipped: string[] } {
+export function listConfigTemplates(scope: CfgTemplateScope, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): { entries: CfgTemplateEntry[]; skipped: string[] } {
   const { dataRoot, flowId } = scope;
   const demosRoot = scope.repoRoot ?? dataRoot;
   const entries: CfgTemplateEntry[] = [];
@@ -135,13 +135,13 @@ export function listConfigTemplates(scope: CfgTemplateScope): { entries: CfgTemp
 
   // 官方示例：仓库内 demos/<flowId>/项目配置.json（只读）
   const demosDir = path.join(demosRoot, "demos");
-  if (fs.existsSync(demosDir)) {
-    for (const d of fs.readdirSync(demosDir).sort()) {
+  if (fs.exists(demosDir)) {
+    for (const d of fs.readDir(demosDir).sort()) {
       const f = path.join(demosDir, d, CONFIG_FILE_NAME);
-      if (!fs.existsSync(f)) continue;
+      if (!fs.exists(f)) continue;
       if (flowId && d !== flowId) continue;
       try {
-        const { keys, hasBudget } = readTemplate(f);
+        const { keys, hasBudget } = readTemplate(f, fs);
         entries.push({
           name: `官方示例（${d}）`, flowId: d, source: "official", path: f, keys, hasBudget,
           note: "随仓库发布的示例配置，只读",
@@ -153,20 +153,20 @@ export function listConfigTemplates(scope: CfgTemplateScope): { entries: CfgTemp
   }
 
   // 用户自存：templates/项目配置/<flowId>/<名>.json
-  const dir = storeDir(dataRoot);
-  if (fs.existsSync(dir)) {
-    for (const fid of fs.readdirSync(dir).sort()) {
+  const dir = storeDir(dataRoot, path);
+  if (fs.exists(dir)) {
+    for (const fid of fs.readDir(dir).sort()) {
       const sub = path.join(dir, fid);
-      if (!fs.statSync(sub).isDirectory()) continue;
+      if (!fs.stat(sub)?.isDirectory) continue;
       if (flowId && fid !== flowId) continue;
-      for (const n of fs.readdirSync(sub).sort()) {
+      for (const n of fs.readDir(sub).sort()) {
         if (!n.endsWith(".json")) continue;
         const f = path.join(sub, n);
         try {
-          const { keys, hasBudget } = readTemplate(f);
+          const { keys, hasBudget } = readTemplate(f, fs);
           entries.push({
             name: n.replace(/\.json$/, ""), flowId: fid, source: "user", path: f, keys, hasBudget,
-            updatedAt: fs.statSync(f).mtime.toISOString(),
+            updatedAt: new Date(fs.stat(f)!.mtimeMs).toISOString(),
           });
         } catch (e) {
           skipped.push(`${f}（${e instanceof Error ? e.message : String(e)}）`);
@@ -181,29 +181,31 @@ export function listConfigTemplates(scope: CfgTemplateScope): { entries: CfgTemp
 export function saveConfigTemplate(
   kernel: CfgTemplateKernel,
   req: { project: string; name: string; overwrite?: boolean; flowId?: string },
+  fs: IFileSystem = nodeFs,
+  path: IFsPath = nodePath,
 ): Record<string, unknown> {
   const name = assertName(req.name);
   const projectId = String(req.project ?? "").trim();
   if (!projectId) throw new CfgTemplateError("INVALID_INPUT", 400, "save 需要 project（要存哪个项目的配置）");
   const src = path.join(kernel.projectDir(projectId), CONFIG_FILE_NAME);
-  if (!fs.existsSync(src)) {
+  if (!fs.exists(src)) {
     throw new CfgTemplateError("NOT_FOUND", 404, `项目没有 ${CONFIG_FILE_NAME}（先 flow_init 或面板保存一次）: ${src}`);
   }
-  const { raw } = readTemplate(src);
+  const { raw } = readTemplate(src, fs);
   try {
     assertSchema("project-config", raw);
   } catch (e) {
     throw new CfgTemplateError("INVALID_INPUT", 400, `${CONFIG_FILE_NAME} 不合 project-config 契约，拒绝存为模板: ${e instanceof Error ? e.message : String(e)}`);
   }
-  const flowId = req.flowId ?? projectFlowId(kernel, projectId);
+  const flowId = req.flowId ?? projectFlowId(kernel, projectId, fs, path);
   if (!flowId) throw new CfgTemplateError("INVALID_INPUT", 400, `无法判定项目的 flow（无 state.json）：请显式传 --flow`);
-  const dst = templatePath(kernel.root, flowId, name);
-  const overwritten = fs.existsSync(dst);
+  const dst = templatePath(kernel.root, flowId, name, path);
+  const overwritten = fs.exists(dst);
   if (overwritten && !req.overwrite) {
     throw new CfgTemplateError("CONFIG_EXISTS", 409, `模板已存在：${name}（flow ${flowId}）。要覆盖请显式传 overwrite=true`);
   }
-  fs.mkdirSync(path.dirname(dst), { recursive: true });
-  fs.writeFileSync(dst, JSON.stringify(raw, null, 2) + "\n", "utf-8");
+  fs.mkdir(path.dirname(dst), { recursive: true });
+  fs.writeText(dst, JSON.stringify(raw, null, 2) + "\n");
   return { saved: name, flowId, file: dst, overwritten, keys: Object.keys(raw) };
 }
 
@@ -213,8 +215,10 @@ function resolveTemplate(
   name: string,
   flowId: string | undefined,
   force: boolean,
+  fs: IFileSystem,
+  path: IFsPath,
 ): CfgTemplateEntry {
-  const { entries } = listConfigTemplates({ dataRoot: kernel.root, repoRoot: kernel.repoRoot }); // 不按 flow 过滤，歧义自己判
+  const { entries } = listConfigTemplates({ dataRoot: kernel.root, repoRoot: kernel.repoRoot }, fs, path); // 不按 flow 过滤，歧义自己判
   const hits = entries.filter((e) => e.name === name && e.source !== "blank");
   if (!hits.length) {
     const avail = entries.filter((e) => e.source !== "blank").map((e) => `${e.flowId}/${e.name}`);
@@ -261,11 +265,13 @@ function resolveTemplate(
 export function applyConfigTemplate(
   kernel: CfgTemplateKernel,
   req: { project: string; name: string; flowId?: string; force?: boolean },
+  fs: IFileSystem = nodeFs,
+  path: IFsPath = nodePath,
 ): Record<string, unknown> {
   const projectId = String(req.project ?? "").trim();
   if (!projectId) throw new CfgTemplateError("INVALID_INPUT", 400, "apply 需要 project（要套用到哪个项目）");
   const projectDir = kernel.projectDir(projectId);
-  const flowId = req.flowId ?? projectFlowId(kernel, projectId);
+  const flowId = req.flowId ?? projectFlowId(kernel, projectId, fs, path);
   const name = String(req.name ?? "").trim();
   if (!name) throw new CfgTemplateError("INVALID_INPUT", 400, "apply 需要 name（要套用哪个模板；「从零新建」= 空白配置）");
 
@@ -275,8 +281,8 @@ export function applyConfigTemplate(
     raw = { 项目: projectId };
     source = "blank";
   } else {
-    const use = resolveTemplate(kernel, name, flowId, req.force === true);
-    raw = readTemplate(use.path!).raw;
+    const use = resolveTemplate(kernel, name, flowId, req.force === true, fs, path);
+    raw = readTemplate(use.path!, fs).raw;
     source = use.source;
   }
 
@@ -286,9 +292,9 @@ export function applyConfigTemplate(
   } catch (e) {
     throw new CfgTemplateError("INVALID_INPUT", 400, `模板「${name}」不合 project-config 契约，拒绝写入: ${e instanceof Error ? e.message : String(e)}`);
   }
-  fs.mkdirSync(projectDir, { recursive: true });
+  fs.mkdir(projectDir, { recursive: true });
   const dst = path.join(projectDir, CONFIG_FILE_NAME);
-  fs.writeFileSync(dst, JSON.stringify(raw, null, 2) + "\n", "utf-8");
+  fs.writeText(dst, JSON.stringify(raw, null, 2) + "\n");
   return {
     applied: name,
     source,
@@ -301,10 +307,10 @@ export function applyConfigTemplate(
 }
 
 /** 删除自存模板。官方示例与 `blank` 不可删（它们不是盘上的用户文件）。 */
-export function deleteConfigTemplate(kernel: CfgTemplateKernel, req: { name: string; flowId?: string }): Record<string, unknown> {
+export function deleteConfigTemplate(kernel: CfgTemplateKernel, req: { name: string; flowId?: string }, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): Record<string, unknown> {
   const name = String(req.name ?? "").trim();
   if (!name) throw new CfgTemplateError("INVALID_INPUT", 400, "delete 需要 name");
-  const { entries } = listConfigTemplates({ dataRoot: kernel.root, repoRoot: kernel.repoRoot, flowId: req.flowId });
+  const { entries } = listConfigTemplates({ dataRoot: kernel.root, repoRoot: kernel.repoRoot, flowId: req.flowId }, fs, path);
   const hits = entries.filter((e) => e.name === name);
   if (!hits.length) throw new CfgTemplateError("NOT_FOUND", 404, `模板不存在：${name}`);
   const user = hits.filter((e) => e.source === "user");
@@ -318,12 +324,12 @@ export function deleteConfigTemplate(kernel: CfgTemplateKernel, req: { name: str
   }
   const removed: string[] = [];
   for (const u of user) {
-    fs.unlinkSync(u.path!);
+    fs.remove(u.path!);
     removed.push(u.path!);
     // 空目录一并收走（不留空壳）
     try {
       const d = path.dirname(u.path!);
-      if (!fs.readdirSync(d).length) fs.rmdirSync(d);
+      if (!fs.readDir(d).length) fs.remove(d);
     } catch {
       /* 目录收尾失败不影响删除结果 */
     }
@@ -335,19 +341,21 @@ export function deleteConfigTemplate(kernel: CfgTemplateKernel, req: { name: str
 export function cfgTemplate(
   kernel: CfgTemplateKernel,
   req: { action: string; project?: string; name?: string; flowId?: string; overwrite?: boolean; force?: boolean },
+  fs: IFileSystem = nodeFs,
+  path: IFsPath = nodePath,
 ): Record<string, unknown> {
   const action = String(req.action ?? "").trim();
   switch (action) {
     case "list": {
-      const { entries, skipped } = listConfigTemplates({ dataRoot: kernel.root, repoRoot: kernel.repoRoot, flowId: req.flowId });
+      const { entries, skipped } = listConfigTemplates({ dataRoot: kernel.root, repoRoot: kernel.repoRoot, flowId: req.flowId }, fs, path);
       return { action, flowId: req.flowId, count: entries.length, entries, skipped };
     }
     case "save":
-      return { action, ...saveConfigTemplate(kernel, { project: String(req.project), name: String(req.name), overwrite: req.overwrite, flowId: req.flowId }) };
+      return { action, ...saveConfigTemplate(kernel, { project: String(req.project), name: String(req.name), overwrite: req.overwrite, flowId: req.flowId }, fs, path) };
     case "apply":
-      return { action, ...applyConfigTemplate(kernel, { project: String(req.project), name: String(req.name), flowId: req.flowId, force: req.force }) };
+      return { action, ...applyConfigTemplate(kernel, { project: String(req.project), name: String(req.name), flowId: req.flowId, force: req.force }, fs, path) };
     case "delete":
-      return { action, ...deleteConfigTemplate(kernel, { name: String(req.name), flowId: req.flowId }) };
+      return { action, ...deleteConfigTemplate(kernel, { name: String(req.name), flowId: req.flowId }, fs, path) };
     default:
       throw new CfgTemplateError("INVALID_INPUT", 400, `未知 action：${action || "(空)"}（可选 list | save | apply | delete）`);
   }

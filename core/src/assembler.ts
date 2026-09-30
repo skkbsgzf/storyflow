@@ -1,5 +1,5 @@
-import fs from "node:fs";
-import path from "node:path";
+import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
+import { nodeFs, nodePath } from "./abstraction/defaults.js";
 import type { FlowDescriptor, FlowNode, KnowledgeCard, RunState, TaskPackage } from "./types.js";
 import { contentSha12 } from "./ids.js";
 import { upstreamOf } from "./plan.js";
@@ -17,11 +17,11 @@ import { resolveBudget, DEFAULT_BUDGET } from "./budget.js";
 import { poolEntries, resolveSelection, resolveSkillFromPool, type DecisionLite, type ExcludedCandidate, type PoolDecl } from "./selection.js";
 import { decisionsMap } from "./decisions.js";
 
-let regCache: { root: string; reg: ProfileRegistry } | undefined;
-function profileRegistry(root: string): ProfileRegistry {
-  if (!regCache || regCache.root !== root) {
-    const reg = new ProfileRegistry(root);
-    regCache = { root, reg };
+let regCache: { root: string; fs: IFileSystem; path: IFsPath; reg: ProfileRegistry } | undefined;
+function profileRegistry(root: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): ProfileRegistry {
+  if (!regCache || regCache.root !== root || regCache.fs !== fs || regCache.path !== path) {
+    const reg = new ProfileRegistry(root, fs, path);
+    regCache = { root, fs, path, reg };
   }
   return regCache.reg;
 }
@@ -30,7 +30,7 @@ function profileRegistry(root: string): ProfileRegistry {
  * K1 项目背景卡：确定性组装，子代理不再「考古拼背景」（派发质量分析 R1 · R2）。
  * 全部来自盘上文件，缺文件优雅降级；卡片自带上限，不挤占产物上下文预算。
  */
-export function buildBackgroundCard(projectDir: string, flow: FlowDescriptor, state: RunState, nodeId: string): string {
+export function buildBackgroundCard(projectDir: string, flow: FlowDescriptor, state: RunState, nodeId: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): string {
   const node = flow.graph.nodes[nodeId];
   const stage = (flow.stages ?? []).find((s) => s.id === node?.stage || s.nodes?.includes(nodeId));
   const lines: string[] = [];
@@ -39,8 +39,8 @@ export function buildBackgroundCard(projectDir: string, flow: FlowDescriptor, st
     lines.push(`- 阶段：${stage.id} ${stage.name}${stage.question ? ` —— 本阶段要回答：${stage.question}` : ""}`);
   }
   const briefFile = path.join(projectDir, "选题素材.md");
-  if (fs.existsSync(briefFile)) {
-    const brief = clip(fs.readFileSync(briefFile, "utf-8").replace(/\s+/g, " ").trim(), 400);
+  if (fs.exists(briefFile)) {
+    const brief = clip(fs.readText(briefFile).replace(/\s+/g, " ").trim(), 400);
     lines.push(`- 甲方点子：${brief.text}${brief.truncated ? "…" : ""}`);
   }
   const downstream = [...new Set(flow.graph.edges.filter((e) => e.from === nodeId && !isBackEdge(e)).map((e) => e.to))]
@@ -49,7 +49,7 @@ export function buildBackgroundCard(projectDir: string, flow: FlowDescriptor, st
   lines.push(`- 你的交付物：${file}（${node?.title ?? nodeId}）→ 供给下游：${downstream.slice(0, 3).join("、") || "阶段验收门"}`);
   // 词汇表：own 专属词 + banned 红线（缺表则降级为通用合规提示）
   try {
-    const g = JSON.parse(fs.readFileSync(path.join(projectDir, "词汇表.json"), "utf-8")) as {
+    const g = JSON.parse(fs.readText(path.join(projectDir, "词汇表.json"))) as {
       own?: unknown;
       banned?: unknown;
     };
@@ -60,12 +60,12 @@ export function buildBackgroundCard(projectDir: string, flow: FlowDescriptor, st
   }
   // K1.5 项目初始化配置：出品定位/市场预估/快照基线——子代理带着底气干活，避免返工
   try {
-    const cfg = loadProjectConfig(projectDir);
+    const cfg = loadProjectConfig(projectDir, fs, path);
     if (cfg) {
       let snapVersion: string | undefined;
       let snapCorpus: number | undefined;
       try {
-        const snap = JSON.parse(fs.readFileSync(path.join(ROOT, "knowledge", "market", "snapshot.json"), "utf-8")) as {
+        const snap = JSON.parse(fs.readText(path.join(ROOT, "knowledge", "market", "snapshot.json"))) as {
           version?: string;
           source?: { corpus?: number };
         };
@@ -83,10 +83,10 @@ export function buildBackgroundCard(projectDir: string, flow: FlowDescriptor, st
 }
 
 /** 上游产物路径：flow 声明优先，回退到该节点最近注册的产物（kb_load 等内核生成物）。 */
-function pathOfUpstream(projectDir: string, flow: FlowDescriptor, up: string): string | undefined {
+function pathOfUpstream(projectDir: string, flow: FlowDescriptor, up: string, fs: IFileSystem, path: IFsPath): string | undefined {
   const declared = artifactPathOf(flow, up);
   if (declared) return declared;
-  const arts = listArtifacts(projectDir, { node: up, latest: true });
+  const arts = listArtifacts(projectDir, { node: up, latest: true }, fs, path);
   return arts.length ? arts[arts.length - 1]?.path : undefined;
 }
 
@@ -116,7 +116,7 @@ function clip(text: string, cap: number): { text: string; truncated: boolean } {
 }
 
 /** kb 条目 id → 知识文件（支持 kb/... 路径、目录与 /* glob）。 */
-function resolveKbPaths(root: string, ids: string[]): { id: string; file: string }[] {
+function resolveKbPaths(root: string, ids: string[], fs: IFileSystem, path: IFsPath): { id: string; file: string }[] {
   const out: { id: string; file: string }[] = [];
   const seen = new Set<string>();
   const kbRoot = path.join(root, "knowledge");
@@ -131,16 +131,16 @@ function resolveKbPaths(root: string, ids: string[]): { id: string; file: string
       seen.add(file);
       out.push({ id: exact ? toId(file) : id, file });
     };
-    if (id.endsWith("/*") && fs.existsSync(base) && fs.statSync(base).isDirectory()) {
-      for (const f of fs.readdirSync(base).sort()) {
+    if (id.endsWith("/*") && fs.stat(base)?.isDirectory) {
+      for (const f of fs.readDir(base).sort()) {
         const p = path.join(base, f);
-        if (fs.statSync(p).isFile()) push(p, true);
+        if (fs.stat(p)?.isFile) push(p, true);
       }
-    } else if (fs.existsSync(base) && fs.statSync(base).isFile()) {
+    } else if (fs.stat(base)?.isFile) {
       push(base, false);
-    } else if (fs.existsSync(base + ".md")) {
+    } else if (fs.exists(base + ".md")) {
       push(base + ".md", false);
-    } else if (fs.existsSync(path.join(root, id))) {
+    } else if (fs.exists(path.join(root, id))) {
       push(path.join(root, id), false);
     }
   }
@@ -165,6 +165,8 @@ export function loadKnowledge(
   },
   pools: PoolDecl[] = [],
   decisions: Record<string, DecisionLite> = {},
+  fs: IFileSystem = nodeFs,
+  path: IFsPath = nodePath,
 ): {
   cards: KnowledgeCard[];
   text: string;
@@ -183,12 +185,12 @@ export function loadKnowledge(
   const poolIssues: string[] = [];
   const poolIds: string[] = [];
   for (const decl of pools) {
-    const res = resolveSelection(poolEntries(root, decl.pool), decisions, decl);
+    const res = resolveSelection(poolEntries(root, decl.pool, fs, path), decisions, decl);
     poolIds.push(...res.loaded.map((e) => e.id));
     notSelected.push(...res.excluded);
     poolIssues.push(...res.issues);
   }
-  const resolvedAll = resolveKbPaths(root, [...ids, ...poolIds]);
+  const resolvedAll = resolveKbPaths(root, [...ids, ...poolIds], fs, path);
   const dropped = resolvedAll.filter((f) => ex.has(f.id));
   const files = resolvedAll.filter((f) => !ex.has(f.id));
   const found = new Set(files.map((f) => f.id));
@@ -206,7 +208,7 @@ export function loadKnowledge(
     }
     let raw: string;
     try {
-      raw = fs.readFileSync(file, "utf-8");
+      raw = fs.readText(file);
     } catch {
       continue;
     }
@@ -236,8 +238,10 @@ export function resolveNodeOp(
   node: FlowNode,
   root = ROOT,
   overrides?: Record<string, ToolOverride>,
+  fs: IFileSystem = nodeFs,
+  path: IFsPath = nodePath,
 ): ResolvedOp | undefined {
-  const reg = kitRegistry(root);
+  const reg = kitRegistry(root, fs, path);
   const base = reg.resolve(node.kit, node.op) ?? (node.skill ? reg.bySkill(node.skill) : undefined);
   if (!base) return undefined;
   const ov = overrides?.[`${base.kit}.${base.op}`];
@@ -263,6 +267,8 @@ export function buildTaskPackage(
   nodeId: string,
   toolOverrides?: Record<string, ToolOverride>,
   policy?: FlowPolicy | null,
+  fs: IFileSystem = nodeFs,
+  path: IFsPath = nodePath,
 ): TaskPackage {
   const node = flow.graph.nodes[nodeId];
   if (!node) throw new Error(`图中无节点 ${nodeId}`);
@@ -284,29 +290,29 @@ export function buildTaskPackage(
     (up) => (state.nodes[up]?.status ?? "none") === "done",
   );
   const refs = ups
-    .map((up) => pathOfUpstream(projectDir, flow, up))
+    .map((up) => pathOfUpstream(projectDir, flow, up, fs, path))
     .filter((p): p is string => !!p);
   const perItem = Math.max(800, Math.floor(CONTEXT_BUDGET / Math.max(1, refs.length)));
   const context: TaskPackage["context"] = [];
   for (const ref of refs) {
     const abs = path.join(projectDir, ref);
-    if (!fs.existsSync(abs)) continue;
-    const raw = fs.readFileSync(abs, "utf-8");
+    if (!fs.exists(abs)) continue;
+    const raw = fs.readText(abs);
     const { text, truncated } = clip(raw, perItem);
     context.push({ ref, hash: contentSha12(raw), excerpt: text, truncated });
   }
 
   // kit 标尺（K1 装载复位）：kit/op 声明的判定条款为权威；节点 kb 仅在无 kit 归属时生效
-  const opRef = resolveNodeOp(node, ROOT, toolOverrides);
+  const opRef = resolveNodeOp(node, ROOT, toolOverrides, fs, path);
   // R8 选择面：决策是**运行中事实**（decisions/<key>.json），装载与选技能都读它——
   // 不写回 state.inputs（铁律 6：resolveInputs 只跑一次，写回=伪造历史）。
-  const decisions = decisionsMap(projectDir);
+  const decisions = decisionsMap({ fs, path }, projectDir);
   let skillPoolNote: string | undefined;
   let skillId: string | undefined;
   if (node.skill) {
     skillId = node.skill; // 节点显式指定：逃生口（有 skill_pool 的 op 上出现即 lint warn「绕过选择面」）
   } else if (opRef?.skillPool) {
-    const picked = resolveSkillFromPool(opRef.skillPool, decisions, (rel) => fs.existsSync(path.join(ROOT, "skills", rel)));
+    const picked = resolveSkillFromPool(opRef.skillPool, decisions, (rel) => fs.exists(path.join(ROOT, "skills", rel)));
     skillId = picked.skill;
     skillPoolNote = picked.note;
   } else {
@@ -323,6 +329,8 @@ export function buildTaskPackage(
     },
     opRef?.knowledgePools ?? [],
     decisions,
+    fs,
+    path,
   );
   // R5 内容配置项：overlay.opConfig > 节点 config > op.default > 通用默认
   const ovKey = opRef ? `${opRef.kit}.${opRef.op}` : undefined;
@@ -334,10 +342,10 @@ export function buildTaskPackage(
   let patchMisses: string[] = [];
   if (skillId) {
     const skillFile = path.join(ROOT, "skills", `${skillId}.md`);
-    if (fs.existsSync(skillFile)) {
+    if (fs.exists(skillFile)) {
       // W-05 提示词补丁层：只有 status=applied 的 skill-overlay 补丁参与装载；
       // 未命中小节的补丁显式回显（任务包可见），不静默丢弃
-      const patched = applySkillOverlay(fs.readFileSync(skillFile, "utf-8"), skillId, appliedPatchesFor(ROOT, skillId));
+      const patched = applySkillOverlay(fs.readText(skillFile), skillId, appliedPatchesFor(ROOT, skillId, fs, path));
       const r = clip(patched.text, SKILL_CAP);
       skillText = r.text;
       skillTruncated = r.truncated;
@@ -408,7 +416,7 @@ export function buildTaskPackage(
   if (node.desc) parts.push(`## 本步要求\n\n${node.desc}`);
   // D5：禁词表前置。与交卷时的 glossary 断言**同源**（他项目 own 词），但用途相反——
   // 开跑前就告诉写手雷在哪，而不是写完了才打回（_918test：glossary 打回 2 次，全是别项目专名）。
-  const banned = foreignOwnTerms(ROOT, projectDir);
+  const banned = foreignOwnTerms(ROOT, projectDir, fs, path);
   if (banned.length) {
     parts.push(
       `## 禁词表（本项目产物中不得出现；出现即 glossary 检查打回）\n\n${banned.map((w) => `- ${w}`).join("\n")}`,
@@ -444,11 +452,11 @@ export function buildTaskPackage(
     };
   }
   // 角色剖面：节点显式声明 > 技能反向匹配 > 角色族缺省
-  const prof = profileRegistry(ROOT).resolve({ ...node, ...(skillId ? { skill: skillId } : {}) });
-  const projected = profileRegistry(ROOT).project(prof, skillId);
+  const prof = profileRegistry(ROOT, fs, path).resolve({ ...node, ...(skillId ? { skill: skillId } : {}) });
+  const projected = profileRegistry(ROOT, fs, path).project(prof, skillId);
   if (projected) pkg.profile = projected;
   // K1 项目背景卡：子代理不再自行考古拼背景
-  pkg.background = buildBackgroundCard(projectDir, flow, state, nodeId);
+  pkg.background = buildBackgroundCard(projectDir, flow, state, nodeId, fs, path);
   // artifact@1 头部模板（规范 R4 §二）：agent 照抄开头，产物天生合规
   const round = (state.nodes[nodeId]?.round ?? 0) + 1;
   pkg.headerTemplate = headerTemplate({
@@ -460,5 +468,8 @@ export function buildTaskPackage(
     upstream: context.map((c) => `${c.ref}@${c.hash ?? "000000000000"}`),
     skeleton: bodySkeleton(classOfPath(file)),
   });
+  // AP1 §十：门点策略摘要随包下发——写手开跑前就知道上游哪条被降级/升级到哪一档，
+  // 而不是写完才撞闸。字段未定义 = 本项目还没走过门点（区别于空串「走过但没触发」）。
+  if (state.diagnosticSummary !== undefined) pkg.diagnosticSummary = state.diagnosticSummary;
   return pkg;
 }

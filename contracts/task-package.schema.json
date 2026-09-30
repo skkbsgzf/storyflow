@@ -183,6 +183,10 @@
       "type": "object",
       "description": "R5 本步生效的 tool 内容配置项取值（overlay.opConfig > 节点 config > op.default > 通用默认）",
       "additionalProperties": true
+    },
+    "diagnosticSummary": {
+      "type": "string",
+      "description": "AP1 §十（诊断注入）：上一个门点的策略摘要（取自 run-state.diagnosticSummary，配对字段 diagnosticFrom 记出处节点）。作用 = 让执行步不必重新踩同一个坑——『上一轮哪几条断言没过、被 preset 调制到什么档』直接随任务包交出去，而不是只留在 state 里等人查。空串 = 门点走过但无触发，或 preset 的 diagnosticEnabled=false；字段缺省 = 本项目还没走过门点。只作提示，不构成判决。"
     }
   },
   "$defs": {

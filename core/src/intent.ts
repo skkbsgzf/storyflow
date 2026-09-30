@@ -3,8 +3,8 @@
 // 本模块只承担与内核契约相邻的部分：图读取/校验 + ig_sync 落 decision@1
 //（经 decisions.ts setDecision 单源，绝不手写 decision 文件——防双实现漂移）。
 // 方向纪律：立意图 → decisions 单向（feeds_decision 桥同构）；已存在不回填；反向一律禁止。
-import fs from "node:fs";
-import path from "node:path";
+import { nodeFs, nodePath } from "./abstraction/defaults.js";
+import type { FsIo, IFileSystem, IFsPath } from "./abstraction/fs.js";
 import { setDecision } from "./decisions.js";
 
 export interface IntentCandidate {
@@ -46,17 +46,17 @@ export class IntentError extends Error {
   }
 }
 
-export function intentGraphPath(repoRoot: string, uid: string): string {
+export function intentGraphPath(repoRoot: string, uid: string, path: IFsPath = nodePath): string {
   return path.join(repoRoot, "universes", uid, "intent-graph.json");
 }
 
 /** 读宇宙立意图：缺文件/坏 format 显式抛（不静默、不造空图）。 */
-export function loadIntentGraph(repoRoot: string, uid: string): IntentGraph {
-  const p = intentGraphPath(repoRoot, uid);
-  if (!fs.existsSync(p)) throw new IntentError("INTENT_MISSING", `立意图不存在：${p}`);
+export function loadIntentGraph(repoRoot: string, uid: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): IntentGraph {
+  const p = intentGraphPath(repoRoot, uid, path);
+  if (!fs.exists(p)) throw new IntentError("INTENT_MISSING", `立意图不存在：${p}`);
   let g: IntentGraph;
   try {
-    g = JSON.parse(fs.readFileSync(p, "utf-8")) as IntentGraph;
+    g = JSON.parse(fs.readText(p)) as IntentGraph;
   } catch (e) {
     throw new IntentError("INTENT_INVALID", `JSON 解析失败：${p}（${e instanceof Error ? e.message : String(e)}）`);
   }
@@ -81,7 +81,8 @@ export interface IntentSyncResult {
  * 证据串内带 scorer+p 并明示「剪枝排序分，禁当放行闸」——P 值入 R8 证据链的拍板口径；
  * 不占用 confidence 字段（剪枝分 ≠ 决策置信，不混语义）。
  */
-export function syncIntentDecisions(projectDir: string, g: IntentGraph): IntentSyncResult {
+/** io 必传：本函数**写** decision 台账（FS1 §四——写路径的 io 由编译器守，不给静默回落宿主盘的默认值）。 */
+export function syncIntentDecisions(projectDir: string, g: IntentGraph, io: FsIo): IntentSyncResult {
   const out: IntentSyncResult = { universe: g.universe, written: [], skipped: [], issues: [] };
   for (const n of g.nodes ?? []) {
     if (n.status !== "committed") continue;
@@ -95,8 +96,8 @@ export function syncIntentDecisions(projectDir: string, g: IntentGraph): IntentS
       continue;
     }
     const key = n.decision_key;
-    const dpath = path.join(projectDir, "decisions", `${key}.json`);
-    if (fs.existsSync(dpath)) {
+    const dpath = io.path.join(projectDir, "decisions", `${key}.json`);
+    if (io.fs.exists(dpath)) {
       out.skipped.push({ key, reason: "决策已存在（单向桥不回填）" });
       continue;
     }
@@ -111,7 +112,7 @@ export function syncIntentDecisions(projectDir: string, g: IntentGraph): IntentS
       `scorer=${scorer}${pTxt}（剪枝排序分，禁当放行闸）。` +
       `${cand.content ?? ""}｜依据：${cand.evidence ?? "图内无补充证据"}${exTxt}`;
     try {
-      setDecision(projectDir, {
+      setDecision(io, projectDir, {
         key,
         by: `intent-graph:${g.universe}#${n.id}/${cand.id}`,
         picked: [cand.title || cand.id],

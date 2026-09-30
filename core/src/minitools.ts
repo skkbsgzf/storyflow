@@ -1,6 +1,7 @@
-import fs from "node:fs";
-import path from "node:path";
 import type { FlowDescriptor, RunState, Validation } from "./types.js";
+import { nodeFs, nodePath, nodeProc } from "./abstraction/defaults.js";
+import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
+import type { IProcessLauncher } from "./abstraction/proc.js";
 import { ROOT } from "./schema.js";
 import { makeArtifact, inputFingerprint, listArtifacts } from "./registry.js";
 import { runIntegrityAsserts, blocked, dedupeValidations } from "./asserts.js";
@@ -17,25 +18,27 @@ export interface CoreResult {
   kind?: "missing" | "assert";
   reason?: string;
   problems?: Validation[];
+  /** AP1 §十：本节点门策略摘要（diagnosticEnabled=false 或无预设时缺省）。 */
+  diagnosticSummary?: string;
 }
 
 /** 展开节点 loads（"kb/market/constraints"、"kb/benchmark/*"）→ 知识文件绝对路径列表。 */
-function resolveLoads(loads: string | string[] | undefined): string[] {
+function resolveLoads(loads: string | string[] | undefined, fs: IFileSystem, path: IFsPath): string[] {
   if (!loads) return [];
   const items = Array.isArray(loads) ? loads : [loads];
   const out: string[] = [];
   for (const item of items) {
     const rel = item.replace(/^kb\//, "").replace(/\/\*$/, "");
     const base = path.join(ROOT, "knowledge", rel);
-    if (item.endsWith("/*") && fs.existsSync(base) && fs.statSync(base).isDirectory()) {
-      for (const f of fs.readdirSync(base).sort()) {
-        if (fs.statSync(path.join(base, f)).isFile()) out.push(path.join(base, f));
+    if (item.endsWith("/*") && fs.stat(base)?.isDirectory) {
+      for (const f of fs.readDir(base).sort()) {
+        if (fs.stat(path.join(base, f))?.isFile) out.push(path.join(base, f));
       }
-    } else if (fs.existsSync(base) && fs.statSync(base).isFile()) {
+    } else if (fs.stat(base)?.isFile) {
       out.push(base);
-    } else if (fs.existsSync(base + ".md")) {
+    } else if (fs.exists(base + ".md")) {
       out.push(base + ".md");
-    } else if (fs.existsSync(path.join(ROOT, item))) {
+    } else if (fs.exists(path.join(ROOT, item))) {
       out.push(path.join(ROOT, item));
     }
   }
@@ -57,6 +60,9 @@ export async function runCoreNode(
   state: RunState,
   nodeId: string,
   opts: { timeoutMs?: number; budget?: Record<string, number>; presetMount?: StandingMount } = {},
+  fs: IFileSystem = nodeFs,
+  path: IFsPath = nodePath,
+  proc: IProcessLauncher = nodeProc,
 ): Promise<CoreResult> {
   const node = flow.graph.nodes[nodeId];
   const artifacts: string[] = [];
@@ -72,7 +78,7 @@ export async function runCoreNode(
   const script = (node as { script?: string }).script;
   if (script) {
     const scriptPath = path.join(ROOT, script);
-    if (!fs.existsSync(scriptPath)) {
+    if (!fs.exists(scriptPath)) {
       return { ok: false, artifacts, kind: "missing", reason: `script 执行体不存在: ${script}` };
     }
     let src: string | undefined;
@@ -83,7 +89,7 @@ export async function runCoreNode(
       if (seen.has(up)) continue;
       seen.add(up);
       const last = state.nodes[up]?.lastArtifact;
-      if (last && last.endsWith(".md") && fs.existsSync(path.join(projectDir, last))) {
+      if (last && last.endsWith(".md") && fs.exists(path.join(projectDir, last))) {
         src = last;
         break;
       }
@@ -102,11 +108,9 @@ export async function runCoreNode(
                   path.basename(src).replace(/\.md$/i, "") + ".docx").replaceAll("\\", "/");
     const outParent = path.dirname(path.join(projectDir, outRel));
     const title =
-      /^#\s+(.+)$/m.exec(fs.readFileSync(path.join(projectDir, src), "utf-8"))?.[1]?.trim() ?? path.basename(src, ".md");
-    fs.mkdirSync(outParent, { recursive: true });
+      /^#\s+(.+)$/m.exec(fs.readText(path.join(projectDir, src)))?.[1]?.trim() ?? path.basename(src, ".md");
+    fs.mkdir(outParent, { recursive: true });
     const pid = path.basename(projectDir);
-    const { execFile } = await import("node:child_process");
-    const { promisify } = await import("node:util");
     // D#14：脚本壳超时。此前 spawn **不带 timeout** ⇒ 脚本卡住 = 内核永久卡住
     // （与阶段 A 修的 agent 侧悬置同一类故障）。值由调用方按「节点 config > op/overlay config >
     // 通用默认 60000ms」（GENERIC_CONFIG.timeoutMs）解析后传入；到时显式报错，不静默挂死。
@@ -114,48 +118,46 @@ export async function runCoreNode(
     // 执行器按扩展名选：.py → python（原口径），.js/.cjs/.mjs → node（JS 确定性件如 delivery/method-brief）
     const runner = /\.(?:m|c)?js$/.test(scriptPath) ? "node" : "python";
     const startedAt = Date.now();
-    try {
-      await promisify(execFile)(
-        runner,
-        [scriptPath, path.join("projects", pid, src), path.join("projects", pid, outRel),
-         "--title", title, "--node", nodeId, "--flow", state.flowId ?? "",
-         // v5.0.1：JS 壳追加 --config（节点旋钮 JSON），否则 op.config 声明到位却没人读。
-         // python 壳（export-doc/prose-scan 等 argparse 件）保持老 argv——多传未知参数会让它们直接退出。
-         ...(runner === "node" ? ["--config", JSON.stringify(cfg)] : [])].filter((a) => a !== ""),
-        { cwd: ROOT, windowsHide: true, maxBuffer: 32 * 1024 * 1024, timeout: timeoutMs, killSignal: "SIGTERM" },
-      );
-    } catch (e) {
-      const err = e as { killed?: boolean; signal?: string; stderr?: string; message?: string };
+    const r = await proc.runAsync(
+      runner,
+      [scriptPath, path.join("projects", pid, src), path.join("projects", pid, outRel),
+       "--title", title, "--node", nodeId, "--flow", state.flowId ?? "",
+       // v5.0.1：JS 壳追加 --config（节点旋钮 JSON），否则 op.config 声明到位却没人读。
+       // python 壳（export-doc/prose-scan 等 argparse 件）保持老 argv——多传未知参数会让它们直接退出。
+       ...(runner === "node" ? ["--config", JSON.stringify(cfg)] : [])].filter((a) => a !== ""),
+      { cwd: ROOT, maxBufferBytes: 32 * 1024 * 1024, timeoutMs, killSignal: "SIGTERM" },
+    );
+    // 超时与「退出非零」必须分开报——混在一起就分不清「脚本有 bug」和「脚本跑太久」（原 err.killed/err.signal 同判）
+    if (r.timedOut || r.signal === "SIGTERM") {
       const elapsed = Date.now() - startedAt;
-      // 超时与「退出非零」必须分开报——混在一起就分不清「脚本有 bug」和「脚本跑太久」
-      if (err.killed || err.signal === "SIGTERM") {
-        return {
-          ok: false, artifacts, kind: "assert",
-          reason: `script ${script} 超时 ${timeoutMs}ms 被内核终止（已跑 ${elapsed}ms；调 GENERIC_CONFIG/timeoutMs 或节点 config.timeoutMs 放宽）`,
-        };
-      }
-      const tail = String(err?.stderr ?? err?.message ?? "").split("\n").filter(Boolean).slice(-5).join(" ｜ ");
+      return {
+        ok: false, artifacts, kind: "assert",
+        reason: `script ${script} 超时 ${timeoutMs}ms 被内核终止（已跑 ${elapsed}ms；调 GENERIC_CONFIG/timeoutMs 或节点 config.timeoutMs 放宽）`,
+      };
+    }
+    if (r.status !== 0) {
+      const tail = String(r.stderr || r.error || "").split("\n").filter(Boolean).slice(-5).join(" ｜ ");
       return { ok: false, artifacts, kind: "assert", reason: `script ${script} 退出非零：${tail}` };
     }
-    makeArtifact(projectDir, { path: outRel, node: nodeId, producer: `script:${path.basename(script)}`, inputs: {} });
+    makeArtifact(projectDir, { path: outRel, node: nodeId, producer: `script:${path.basename(script)}`, inputs: {} }, fs, path);
     artifacts.push(outRel);
     return { ok: true, artifacts };
   }
 
   if (tool === "kb_load") {
-    const files = resolveLoads(node.loads);
+    const files = resolveLoads(node.loads, fs, path);
     if (files.length === 0) {
       return { ok: false, artifacts, kind: "assert", reason: `kb_load 无匹配知识文件: ${JSON.stringify(node.loads)}` };
     }
     let combined = `# KB 装载 · ${nodeId}（${node.title ?? ""}）\n\n> 由 miniflow kernel kb_load 内建装载，来源 ${files.length} 个知识文件。\n`;
     for (const f of files) {
       const rel = path.relative(ROOT, f).replaceAll("\\", "/");
-      combined += `\n\n---\n\n<!-- source: ${rel} -->\n\n` + fs.readFileSync(f, "utf-8");
+      combined += `\n\n---\n\n<!-- source: ${rel} -->\n\n` + fs.readText(f);
     }
     const outRel = path.join("内部", `kb-${nodeId}.md`).replaceAll("\\", "/");
-    fs.mkdirSync(path.join(projectDir, "内部"), { recursive: true });
-    fs.writeFileSync(path.join(projectDir, outRel), combined, "utf-8");
-    makeArtifact(projectDir, { path: outRel, node: nodeId, producer: "minitool:kb_load", inputs: {} });
+    fs.mkdir(path.join(projectDir, "内部"), { recursive: true });
+    fs.writeText(path.join(projectDir, outRel), combined);
+    makeArtifact(projectDir, { path: outRel, node: nodeId, producer: "minitool:kb_load", inputs: {} }, fs, path);
     artifacts.push(outRel);
     return { ok: true, artifacts };
   }
@@ -170,37 +172,41 @@ export async function runCoreNode(
       .map((e) => e.from);
     const results: Validation[] = [];      // 原始证据（报告 findings 保持原样，含被策略降级的项）
     const gatedResults: Validation[] = []; // 策略后结果（integrity 模式的裁决输入）
+    const gateSummaries: string[] = [];    // AP1 §十：策略摘要（供任务包 diagnosticSummary 注入）
     const checked: string[] = [];
     for (const up of upstream) {
-      for (const rel of artifactPathsOf(flow, up, projectDir)) {
+      for (const rel of artifactPathsOf(flow, up, projectDir, fs, path)) {
         const abs = path.join(projectDir, rel);
-        if (!fs.existsSync(abs)) continue;
+        if (!fs.exists(abs)) continue;
         checked.push(rel);
-        const relRaw = [...runIntegrityAsserts(projectDir, rel)];
+        const relRaw = [...runIntegrityAsserts(projectDir, rel, fs, path)];
         if (scan) {
           // 扫描器 = aesthetic.ts 全量确定性检查；其 pass/warn/block 标签只是证据分级，
           // 不构成提交闸——block 证据交由验收人/agent 决断（增补循环的输入）。
-          relRaw.push(...runAestheticAsserts(projectDir, rel, opts.budget));
+          relRaw.push(...runAestheticAsserts(projectDir, rel, opts.budget, fs, path));
         } else if (opts.presetMount) {
           // Assertion Preset v1：preset 声明的 AE-* 断言在 integrity 检查节点由注册表补跑
-          relRaw.push(...runDeclaredAesthetic(declaredAestheticTypes(opts.presetMount), projectDir, rel, opts.budget));
+          relRaw.push(...runDeclaredAesthetic(declaredAestheticTypes(opts.presetMount), projectDir, rel, opts.budget, fs, path));
         }
         results.push(...relRaw);
-        gatedResults.push(
-          ...(opts.presetMount && !scan
-            ? applyGatePreset(
-                opts.presetMount,
-                relRaw,
-                gateContext(projectDir, nodeId, node, rel, (state.nodes[nodeId]?.round ?? 0) + 1),
-              ).problems
-            : relRaw),
-        );
+        if (opts.presetMount && !scan) {
+          const gated = applyGatePreset(
+            opts.presetMount,
+            relRaw,
+            gateContext(projectDir, nodeId, node, rel, (state.nodes[nodeId]?.round ?? 0) + 1, fs, path),
+          );
+          gatedResults.push(...gated.problems);
+          if (gated.summary) gateSummaries.push(`${rel} → ${gated.summary}`);
+        } else {
+          gatedResults.push(...relRaw);
+        }
       }
     }
     const reportRel = path
       .join("内部", `${scan ? "质量扫描" : "检查报告"}-${nodeId}.json`)
       .replaceAll("\\", "/");
-    fs.mkdirSync(path.join(projectDir, "内部"), { recursive: true });
+    const gateSummary = gateSummaries.length ? gateSummaries.join(" ｜ ") : undefined;
+    fs.mkdir(path.join(projectDir, "内部"), { recursive: true });
     const finalResults = dedupeValidations(results);
     const report = {
       mode: scan ? "quality-evidence" : "integrity",
@@ -216,21 +222,22 @@ export async function runCoreNode(
             block: finalResults.filter((r) => r.status === "block").length,
           }
         : undefined,
+      gateSummary,
       note: scan
         ? "scan_quality：确定性扫描器全量证据（v5.0 agent-only——证据不是判决，本步不拦截；裁决归验收 agent/人，报数必附本报告文件）"
         : "integrity 模式（存在性/残渣/计数一致性）",
     };
-    fs.writeFileSync(path.join(projectDir, reportRel), JSON.stringify(report, null, 2) + "\n", "utf-8");
+    fs.writeText(path.join(projectDir, reportRel), JSON.stringify(report, null, 2) + "\n");
     makeArtifact(projectDir, {
       path: reportRel,
       node: nodeId,
       producer: `minitool:${tool}`,
-      inputs: inputFingerprint(projectDir, checked), // 记录被检产物指纹——rerun 缓存命中判定依据
-    });
+      inputs: inputFingerprint(projectDir, checked, fs, path), // 记录被检产物指纹——rerun 缓存命中判定依据
+    }, fs, path);
     artifacts.push(reportRel);
     if (scan && checked.length === 0) {
       // 空扫描 = 上游没东西可检——不是通过，是接线问题，显式留痕不静默
-      journalAppend(projectDir, state.runId, "warn", {
+      journalAppend({ fs, path }, projectDir, state.runId, "warn", {
         nodeId,
         detail: `scan_quality 未检到任何上游产物（证据为空，非质量通过）——检查上游边/产物注册`,
         refs: [reportRel],
@@ -240,16 +247,16 @@ export async function runCoreNode(
       // 裁决用策略后结果：preset 的降级/升级/progressive 已生效；无 preset = 与原行为一致
       const blocks = blocked(dedupeValidations(gatedResults));
       if (blocks.length) {
-        return { ok: false, artifacts, kind: "assert", reason: `${tool} block ${blocks.length} 项`, problems: blocks };
+        return { ok: false, artifacts, kind: "assert", reason: `${tool} block ${blocks.length} 项`, problems: blocks, diagnosticSummary: gateSummary };
       }
     }
-    return { ok: true, artifacts };
+    return { ok: true, artifacts, diagnosticSummary: gateSummary };
   }
 
   if (tool === "render_html") {
     // 确定性交付页渲染（零 LLM）：收集注册产物（文本）→ 单文件 HTML（四件套合一），移动端可读
     const outRel = nodeOutput(node) ?? "对外交付/选题交付页.html";
-    const arts = listArtifacts(projectDir, { latest: true }).filter((a) => /\.(md|json)$/i.test(a.path));
+    const arts = listArtifacts(projectDir, { latest: true }, fs, path).filter((a) => /\.(md|json)$/i.test(a.path));
     const seen = new Set<string>();
     const sections: string[] = [];
     const esc = (t: string) => t.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
@@ -284,7 +291,7 @@ export async function runCoreNode(
       seen.add(a.path);
       let text: string;
       try {
-        text = fs.readFileSync(path.join(projectDir, a.path), "utf-8");
+        text = fs.readText(path.join(projectDir, a.path));
       } catch {
         continue;
       }
@@ -311,15 +318,15 @@ ${sections.join("\n")}
 </main>
 <footer>miniflow harness · 本页为单文件交付物，可离线浏览</footer>
 </body></html>`;
-    fs.mkdirSync(path.join(projectDir, path.dirname(outRel)), { recursive: true });
-    fs.writeFileSync(path.join(projectDir, outRel), html, "utf-8");
+    fs.mkdir(path.join(projectDir, path.dirname(outRel)), { recursive: true });
+    fs.writeText(path.join(projectDir, outRel), html);
     makeArtifact(projectDir, {
       path: outRel,
       node: nodeId,
       producer: "minitool:render_html",
       inputs: {},
       delivery: true,
-    });
+    }, fs, path);
     artifacts.push(outRel);
     return { ok: true, artifacts };
   }
@@ -331,10 +338,10 @@ ${sections.join("\n")}
     const slice: Record<string, unknown[]> = { characters: [], inventory: [], knowledge: [], promises: [], timeline: [] };
     // 人物状态：世界书/人物/*.md 的 frontmatter 或首段状态行
     const charDir = path.join(wb, "人物");
-    if (fs.existsSync(charDir)) {
-      for (const f of fs.readdirSync(charDir)) {
+    if (fs.exists(charDir)) {
+      for (const f of fs.readDir(charDir)) {
         if (!f.endsWith(".md")) continue;
-        const raw = fs.readFileSync(path.join(charDir, f), "utf-8");
+        const raw = fs.readText(path.join(charDir, f));
         const name = f.replace(".md", "");
         const status = /状态[：:]\s*(.+)/.exec(raw)?.[1]?.trim() ?? "active";
         (slice.characters ??= []).push({ name, status, file: `人物/${f}` });
@@ -343,8 +350,8 @@ ${sections.join("\n")}
     // 伏笔台账：| fid | 内容 | 埋点 | 预定回收 | 状态 |
     const ledgerCands = [path.join(wb, "伏笔", "台账.md"), path.join(projectDir, "伏笔台账.md")];
     for (const lp of ledgerCands) {
-      if (!fs.existsSync(lp)) continue;
-      for (const ln of fs.readFileSync(lp, "utf-8").split("\n")) {
+      if (!fs.exists(lp)) continue;
+      for (const ln of fs.readText(lp).split("\n")) {
         if (!ln.trim().startsWith("|") || /^[\s|:\-]+$/.test(ln)) continue;
         const cells = ln.split("|").map((c) => c.trim()).filter(Boolean);
         if (cells.length < 4 || /编号|内容|状态/.test(cells[0] ?? "")) continue;
@@ -354,14 +361,14 @@ ${sections.join("\n")}
     }
     // 编年/章账：末节 handoff
     const chronPath = path.join(wb, "编年", "章账.md");
-    if (fs.existsSync(chronPath)) {
-      const lines = fs.readFileSync(chronPath, "utf-8").split("\n").filter((l) => l.trim());
+    if (fs.exists(chronPath)) {
+      const lines = fs.readText(chronPath).split("\n").filter((l) => l.trim());
       slice.timeline = lines.slice(-5).map((l) => l.trim());
     }
     const outRel = path.join("registry", "receipts", `continuity-slice-${nodeId}.json`).replaceAll("\\", "/");
-    fs.mkdirSync(path.join(projectDir, "registry", "receipts"), { recursive: true });
-    fs.writeFileSync(path.join(projectDir, outRel), JSON.stringify(slice, null, 2) + "\n", "utf-8");
-    makeArtifact(projectDir, { path: outRel, node: nodeId, producer: "minitool:continuity_slice", inputs: {} });
+    fs.mkdir(path.join(projectDir, "registry", "receipts"), { recursive: true });
+    fs.writeText(path.join(projectDir, outRel), JSON.stringify(slice, null, 2) + "\n");
+    makeArtifact(projectDir, { path: outRel, node: nodeId, producer: "minitool:continuity_slice", inputs: {} }, fs, path);
     artifacts.push(outRel);
     return { ok: true, artifacts };
   }
@@ -372,14 +379,14 @@ ${sections.join("\n")}
     // 当前实现：校验世界书目录存在即可通过（增量回写由写手直接编辑世界书文件，
     // 台账结算节点作为流程闸口确认「世界书已更新」——后续版本做结构化 diff）。
     const wb = path.join(projectDir, "世界书");
-    if (!fs.existsSync(wb)) {
+    if (!fs.exists(wb)) {
       return { ok: false, artifacts, kind: "assert", reason: "世界书/ 目录不存在——台账结算需世界书先行" };
     }
-    const entryCount = fs.readdirSync(wb).filter((f) => f.endsWith(".md")).length;
+    const entryCount = fs.readDir(wb).filter((f) => f.endsWith(".md")).length;
     const outRel = path.join("registry", "receipts", `continuity-commit-${nodeId}.json`).replaceAll("\\", "/");
-    fs.mkdirSync(path.join(projectDir, "registry", "receipts"), { recursive: true });
-    fs.writeFileSync(path.join(projectDir, outRel), JSON.stringify({ ok: true, worldbookEntries: entryCount, committedAt: new Date().toISOString() }, null, 2) + "\n", "utf-8");
-    makeArtifact(projectDir, { path: outRel, node: nodeId, producer: "minitool:continuity_commit", inputs: {} });
+    fs.mkdir(path.join(projectDir, "registry", "receipts"), { recursive: true });
+    fs.writeText(path.join(projectDir, outRel), JSON.stringify({ ok: true, worldbookEntries: entryCount, committedAt: new Date().toISOString() }, null, 2) + "\n");
+    makeArtifact(projectDir, { path: outRel, node: nodeId, producer: "minitool:continuity_commit", inputs: {} }, fs, path);
     artifacts.push(outRel);
     return { ok: true, artifacts };
   }
@@ -397,29 +404,29 @@ ${sections.join("\n")}
     const files: string[] = [];
     for (const g of globs) {
       const base = path.join(ROOT, g.replace(/\/\*$/, ""));
-      if (fs.existsSync(base) && fs.statSync(base).isDirectory()) {
-        for (const f of fs.readdirSync(base)) if (f.endsWith(".md")) files.push(path.join(base, f));
-      } else if (fs.existsSync(base)) files.push(base);
+      if (fs.stat(base)?.isDirectory) {
+        for (const f of fs.readDir(base)) if (f.endsWith(".md")) files.push(path.join(base, f));
+      } else if (fs.exists(base)) files.push(base);
     }
     if (!files.length) {
       // 兜底：扫全 knowledge/
       for (const sub of ["trope", "benchmark", "aesthetic", "craft", "market", "formats"]) {
         const d = path.join(kbDir, sub);
-        if (fs.existsSync(d)) for (const f of fs.readdirSync(d)) if (f.endsWith(".md")) files.push(path.join(d, f));
+        if (fs.exists(d)) for (const f of fs.readDir(d)) if (f.endsWith(".md")) files.push(path.join(d, f));
       }
     }
     const keywords: string[] = [];
     for (const src of ["内部/稿本/梗卡.md", "内部/稿本/热点素材.md"]) {
       const fp = path.join(projectDir, src);
-      if (fs.existsSync(fp)) {
-        const txt = fs.readFileSync(fp, "utf-8");
+      if (fs.exists(fp)) {
+        const txt = fs.readText(fp);
         for (const m of txt.matchAll(/[「『]([^」』]{2,8})[」』]/g)) { if (m[1]) keywords.push(m[1]); }
         for (const m of txt.matchAll(/\*\*([^*\n]{2,8})\*\*/g)) { if (m[1]) keywords.push(m[1]); }
       }
     }
     const hits: { file: string; title: string; score: number }[] = [];
     for (const f of files) {
-      const txt = fs.readFileSync(f, "utf-8");
+      const txt = fs.readText(f);
       let score = 0;
       for (const kw of keywords) if (txt.includes(kw)) score += 1;
       const title = /^#\s+(.+)/m.exec(txt)?.[1] ?? path.basename(f);
@@ -427,9 +434,9 @@ ${sections.join("\n")}
     }
     hits.sort((a, b) => b.score - a.score);
     const outRel = path.join("registry", "receipts", `kb-search-${nodeId}.json`).replaceAll("\\", "/");
-    fs.mkdirSync(path.join(projectDir, "registry", "receipts"), { recursive: true });
-    fs.writeFileSync(path.join(projectDir, outRel), JSON.stringify({ tool, keywords, hits: hits.slice(0, 20), total: hits.length }, null, 2) + "\n", "utf-8");
-    makeArtifact(projectDir, { path: outRel, node: nodeId, producer: `minitool:${tool}`, inputs: {} });
+    fs.mkdir(path.join(projectDir, "registry", "receipts"), { recursive: true });
+    fs.writeText(path.join(projectDir, outRel), JSON.stringify({ tool, keywords, hits: hits.slice(0, 20), total: hits.length }, null, 2) + "\n");
+    makeArtifact(projectDir, { path: outRel, node: nodeId, producer: `minitool:${tool}`, inputs: {} }, fs, path);
     artifacts.push(outRel);
     return { ok: true, artifacts };
   }
@@ -466,7 +473,7 @@ export function artifactPathOf(flow: FlowDescriptor, nodeId: string): string | u
 }
 
 /** 节点产物路径全集：单体产物 + iterate 实例展开（模板 {n}/{i} → 按前后缀匹配目录内数字实例）。 */
-export function artifactPathsOf(flow: FlowDescriptor, nodeId: string, projectDir: string): string[] {
+export function artifactPathsOf(flow: FlowDescriptor, nodeId: string, projectDir: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): string[] {
   const node = flow.graph.nodes[nodeId];
   if (!node) return [];
   const out = new Set<string>();
@@ -479,7 +486,7 @@ export function artifactPathsOf(flow: FlowDescriptor, nodeId: string, projectDir
     const dir = path.dirname(head);
     const prefix = path.basename(head);
     try {
-      for (const f of fs.readdirSync(path.join(projectDir, dir))) {
+      for (const f of fs.readDir(path.join(projectDir, dir))) {
         if (f.startsWith(prefix) && f.endsWith(tail) && /^\d+$/.test(f.slice(prefix.length, f.length - tail.length))) {
           out.add((dir === "." ? "" : dir + "/") + f);
         }
