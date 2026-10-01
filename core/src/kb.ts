@@ -68,25 +68,50 @@ export function loadGraph(knowledgeDir: string, fs: IFileSystem = nodeFs, path: 
   } catch { return null; }
 }
 
-function graphSearch(g: HyperGraph, opts: { q: string; dir?: string; k?: number }): { total: number; hits: KbHit[] } {
+function graphSearch(g: HyperGraph, knowledgeDir: string, opts: { q: string; dir?: string; k?: number }, fs: IFileSystem, path: IFsPath): { total: number; hits: KbHit[] } {
   const q = (opts.q ?? "").trim().toLowerCase();
   const terms = q.split(/[\s,，、;；/]+/).filter(Boolean);
   const k = Math.min(Math.max(opts.k ?? 8, 1), 30);
   const hits: KbHit[] = [];
   for (const e of g.entries ?? []) {
     if (opts.dir && e.domain !== opts.dir) continue;
-    const title = (e.title ?? "").toLowerCase();
+    // 编译图已知缺陷：多数 title 被压缩成 "---"（front-matter 分隔线误提）——
+    // 这类 title 不参与标题打分，展示回退 id/路径，避免「标题全废→查询恒 0」。
+    const rawTitle = (e.title ?? "").trim();
+    const usableTitle = Boolean(rawTitle) && !/^-+$/.test(rawTitle);
+    const title = usableTitle ? rawTitle.toLowerCase() : "";
     const id = (e.id ?? "").toLowerCase();
     let score = 0;
     for (const t of terms) {
-      if (title.includes(t)) score += 8;
+      if (title && title.includes(t)) score += 8;
       if (id.includes(t)) score += 5;
       if ((e.tags ?? []).some((x) => x.toLowerCase().includes(t))) score += 4;
       if (e.domain.toLowerCase().includes(t)) score += 2;
     }
+    // 正文打分（中文查询恒 0 的修复）：编译图条目不带正文——源卡在 knowledge/ 本地时
+    // 按 body 子串匹配 +2，并用真实正文首段做摘要；源卡缺失=可插拔层，按元数据命中处理。
+    let excerpt = (e.tags ?? []).length ? `标签：${e.tags.join("、")}` : `${e.domain} 域词条`;
+    if (e.path && knowledgeDir) {
+      try {
+        // 图内 path 有两种形态：带 knowledge/ 前缀（repo 根相对）或不带（knowledge 相对）——都归一到真实文件。
+        // 绝对路径判定用正则：IFsPath 抽象层没有 isAbsolute（R7 解绑面只保 join/relative 等窄面）。
+        const rel = String(e.path).replaceAll("\\", "/");
+        const abs = /^([a-zA-Z]:[\\/]|\/)/.test(rel) ? rel
+          : rel.startsWith("knowledge/") ? path.join(knowledgeDir, "..", rel)
+          : path.join(knowledgeDir, rel);
+        const raw = fs.readText(abs);
+        const low = raw.toLowerCase();
+        const body = raw.replace(/^---[\s\S]*?---/, "").trim();
+        let bodyHit = false;
+        for (const t of terms) {
+          if (low.includes(t)) { score += 2; bodyHit = true; }
+        }
+        if (bodyHit && body) excerpt = body.slice(0, 160);
+      } catch { /* 源卡不在本地：仅元数据打分 */ }
+    }
     if (score > 0) hits.push({
-      id: e.id, title: e.title, file: e.path, dir: e.domain, score,
-      excerpt: (e.tags ?? []).length ? `标签：${e.tags.join("、")}` : `${e.domain} 域词条`,
+      id: e.id, title: usableTitle ? rawTitle : (e.id || e.path), file: e.path, dir: e.domain, score,
+      excerpt,
     });
   }
   hits.sort((a, b) => b.score - a.score || a.file.localeCompare(b.file, "zh"));
@@ -102,7 +127,7 @@ export function kbSearch(
   // v0.8 目标4 · HyperGraphRAG 装载：kit/hypergraph.rag.json 在场时检索走编译图（词条/标签/域打分），
   // 源 md 降级为「本地可插拔层」（不随仓库分发）——图命中但源卡缺失属正常形态。
   const graph = loadGraph(knowledgeDir, fs, path);
-  if (graph) return graphSearch(graph, opts);
+  if (graph) return graphSearch(graph, knowledgeDir, opts, fs, path);
   const q = (opts.q ?? "").trim().toLowerCase();
   const terms = q.split(/[\s,，、;；/]+/).filter(Boolean);
   const k = Math.min(Math.max(opts.k ?? 8, 1), 30);
