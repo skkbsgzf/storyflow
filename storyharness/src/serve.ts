@@ -255,11 +255,21 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
           const hub = {
             workspace: path.basename(wsRoot),
             version: cfg.harnessVersion,
-            flows: ["drama-flow", "caocao-wudalang", "topic-selection", "novel-longform"].map((id) => {
+            flows: (() => {
+              // 流程清单动态枚举：flows/ 下含 flow.json 的目录即有效流程（不硬编码 id，死 id 下拉 → 502）
+              const flowsDir = path.join(wsRoot, "flows");
+              let ids: string[] = [];
               try {
-                const f = JSON.parse(fs.readFileSync(path.join(wsRoot, "flows", id, "flow.json"), "utf-8"));
-                return { id, title: f.title ?? id, version: f.version ?? "" };
-              } catch { return { id, title: id, version: "" }; }
+                ids = fs.readdirSync(flowsDir).filter((e) => {
+                  try { return fs.statSync(path.join(flowsDir, e)).isDirectory() && fs.existsSync(path.join(flowsDir, e, "flow.json")); } catch { return false; }
+                }).sort();
+              } catch { /* flows/ 不存在＝尚无流程 */ }
+              return ids.map((id) => {
+                try {
+                  const f = JSON.parse(fs.readFileSync(path.join(flowsDir, id, "flow.json"), "utf-8"));
+                  return { id, title: f.title ?? id, version: f.version ?? "" };
+                } catch { return { id, title: id, version: "" }; }
+              });
             }),
             groups: [
               { name: path.basename(wsRoot), projects: listProjectsAt(wsRoot, cfg.corpus.projectsDir) },
@@ -323,7 +333,7 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
             const mk = spawnSync("cmd", ["/c", "mklink", "/J", target, loc], { shell: true });
             if (!fs.existsSync(target)) { res.writeHead(500, { "content-type": "application/json" }); res.end(JSON.stringify({ error: "junction 创建失败" + (mk.stderr ? "：" + String(mk.stderr).slice(0, 120) : "") })); return; }
           }
-          const allow = new Set(["flow_init", "flow_run", "flow_next", "flow_effect"]);
+          const allow = new Set(["flow_init", "flow_run", "flow_next", "flow_effect", "kb_search", "kb_read"]);
           if (!b.verb || !allow.has(b.verb)) { res.writeHead(400, { "content-type": "application/json" }); res.end(JSON.stringify({ error: "verb 不在白名单" })); return; }
           try {
             let r = await kernel.verb(b.verb, b.args ?? {});
