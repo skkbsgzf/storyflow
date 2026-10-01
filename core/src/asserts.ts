@@ -346,7 +346,10 @@ export function headerTemplate(opts: {
   /** D5：头部之后附正文骨架（留空 = 不附，兼容旧调用） */
   skeleton?: string[];
 }): string {
-  const up = opts.upstream?.length ? opts.upstream.map((u) => `  - ${u}`).join("\n") : "  []";
+  // upstream 空表必须落成单行 `upstream: []`——块式「upstream:\n  []」的缩进行既非列表项也非
+  // 键值对，parseArtifactHeader 两条分支都不认，下一个零缩进键还会把 pending 重置掉
+  // ⇒ 出厂模板自己过不了 runHeaderAsserts（ZCode 基础调用测试实证）。非空表保持列表项形态。
+  const up = opts.upstream?.length ? "upstream:\n" + opts.upstream.map((u) => `  - ${u}`).join("\n") : "upstream: []";
   const head = [
     "---",
     "artifact: 1",
@@ -358,7 +361,6 @@ export function headerTemplate(opts: {
     "state: draft",
     `at: <YYYY-MM-DD HH:MM>`,
     `by: ${opts.by}`,
-    "upstream:",
     up,
     `review: ${
       opts.reviewGate

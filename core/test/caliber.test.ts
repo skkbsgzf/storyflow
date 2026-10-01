@@ -9,7 +9,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { summarizeMetrics } from "../src/metrics.js";
-import { bodySkeleton, foreignOwnTerms, headerTemplate } from "../src/asserts.js";
+import { bodySkeleton, foreignOwnTerms, headerTemplate, parseArtifactHeader } from "../src/asserts.js";
 import { loadKnowledge } from "../src/assembler.js";
 import { kitRegistry } from "../src/kits.js";
 import { rootOf } from "../src/schema.js";
@@ -91,6 +91,20 @@ describe("D5 · 派发前置（正文骨架 + 禁词表）", () => {
   it("不传 skeleton 时保持原样（旧调用不受影响）", () => {
     const tpl = headerTemplate({ id: "x", cls: "draft", node: "n", round: 1, by: "user" });
     expect(tpl.endsWith("---")).toBe(true);
+  });
+
+  it("headerTemplate 空上游可被 parseArtifactHeader 解出（出厂模板过自家校验——ZCode 调用测试实证的回归）", () => {
+    const filled = headerTemplate({ id: "t.n", cls: "input", node: "n1", round: 1, by: "kit/t.n" })
+      .replace("<YYYY-MM-DD HH:MM>", "2026-10-01 09:00")
+      .replace("# <标题>", "# 标题")
+      .replace("> <一句话摘要，≤60 字，不得复述标题>", "> 摘要。");
+    const parsed = parseArtifactHeader(filled);
+    expect(parsed).not.toBeNull();
+    expect(parsed?.upstream).toEqual([]);
+    // 非空上游保持列表形态且同样可解析
+    const withUp = headerTemplate({ id: "t.n", cls: "input", node: "n1", round: 2, by: "kit/t.n", upstream: ["01-选题/a.md@abc"] });
+    const parsedUp = parseArtifactHeader(withUp);
+    expect(parsedUp?.upstream).toEqual(["01-选题/a.md@abc"]);
   });
 
   /**
