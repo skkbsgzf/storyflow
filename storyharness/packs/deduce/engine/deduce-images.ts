@@ -1,6 +1,6 @@
 // 推演生图 seam：立绘（portrait，透明底）/ 背景（bg）。
 // 后端（包配置 extensions.deduce.image.backend，契约在包 manifest）：
-//   comfyui   —— 复用 XHS 工作台 scripts/imagegen.mjs（本机 ComfyUI + FLUX.2 Klein，纯黑底生成后本地去背出透明 PNG）
+//   comfyui   —— 本机 ComfyUI 直连 API（qwen_image_2.1 漫画风工作流，实测 A4500 单图 ~175s；立绘纯黑底配前端 screen 混合）
 //   dashscope —— DashScope 文生图异步 API（qwen-image / wanx 系，需 dashscopeKey）
 //   off/缺省  —— 显式报缺（页面用占位艺术兜底，不冒充有图）
 // 资产落 <project>/推演/assets/{bg|portrait-<name>}.png，经 /api/deduce/asset 白名单供出。
@@ -18,36 +18,67 @@ const assetsOf = (cfg: HarnessConfig, project: string) =>
   path.join(currentPackCtx().runtime.projectDir(cfg, project), "推演", "assets");
 
 function buildPrompt(script: ScriptFile, kind: ImageKind, name: string): string {
-  const style = script.style ? `视觉风格：${script.style}。` : "";
+  const style = script.style ? `${script.style}，` : "漫画风格，赛璐璐分色上色，清晰墨线，";
   if (kind === "portrait") {
     const c = script.characters.find((x) => x.name === name);
     if (!c) throw new Error(`角色不存在：${name}`);
-    return `${style}galgame 角色立绘，单人半身像，正面微侧，${c.name}，气质：${c.archetype}，纯黑色背景，主体居中边缘干净便于抠图，高质量插画，细节丰富`;
+    return `${style}漫画风格角色立绘，单人半身像，正面微侧，${c.name}，气质：${c.archetype}，${c.speech_pattern ? `神态：${c.speech_pattern}，` : ""}纯黑色背景，主体居中边缘干净，高质量漫画插画，细节丰富`;
   }
-  return `${style}场景背景插画，无人物，空镜头，${script.premise.slice(0, 80)}，电影感构图，高细节，氛围光`;
+  return `${style}漫画风格场景背景插画，无人物，空镜头，${script.premise.slice(0, 80)}，电影感构图，氛围光，高细节`;
 }
 
 async function runComfyui(im: NonNullable<DeduceConfig["image"]>, prompt: string, out: string, portrait: boolean): Promise<void> {
-  const script = im.comfyuiScript;
-  if (!script) throw new Error("生图未配置：extensions.deduce.image.comfyuiScript 缺失（XHS 工作台 scripts/imagegen.mjs 的绝对路径）");
-  if (!fs.existsSync(script)) throw new Error(`生图脚本不存在：${script}`);
-  const size = portrait ? 768 : 1024;
-  const args = [script, "--instruction", prompt, "--out", out, "--size", String(size)];
-  await new Promise<void>((resolve, reject) => {
-    const p = spawn(im.comfyuiCommand ?? "node", args, { cwd: path.dirname(script), windowsHide: true });
-    let outBuf = "", errBuf = "";
-    const timer = setTimeout(() => { p.kill(); reject(new Error("生图超时（120s）——检查 ComfyUI（127.0.0.1:8188）是否在线")); }, 120_000);
-    p.stdout.on("data", (c) => (outBuf += c));
-    p.stderr.on("data", (c) => (errBuf += c));
-    p.on("error", (e) => { clearTimeout(timer); reject(new Error(`生图进程起不来：${e.message}`)); });
-    p.on("close", (code) => {
-      clearTimeout(timer);
-      if (code === 0 && fs.existsSync(out)) return resolve();
-      let msg = `生图失败（exit ${code}）`;
-      try { msg = JSON.parse(outBuf.trim().split("\n").pop() ?? "{}").error ?? msg; } catch { /* 保底消息 */ }
-      reject(new Error(`${msg}${errBuf && !outBuf ? "：" + errBuf.slice(0, 160) : ""}`));
-    });
-  });
+  const base = (im.comfyuiBase ?? "http://127.0.0.1:8188").replace(/\/$/, "");
+  const width = portrait ? 768 : 1216;
+  const height = portrait ? 1024 : 704;
+  const seed = Math.floor(Math.random() * 2 ** 31);
+  const graph: Record<string, unknown> = {
+    "1": { class_type: "UNETLoader", inputs: { unet_name: im.comfyuiUnet ?? "qwen_image_2.1_int8_convrot.safetensors", weight_dtype: "default" } },
+    "2": { class_type: "CLIPLoader", inputs: { clip_name: im.comfyuiClip ?? "qwen3vl_8b_int8_convrot.safetensors", type: "qwen_image" } },
+    "3": { class_type: "VAELoader", inputs: { vae_name: im.comfyuiVae ?? "qwen_image_2.1_vae_bf16.safetensors" } },
+    "4": { class_type: "CLIPTextEncode", inputs: { text: prompt, clip: ["2", 0] } },
+    "5": { class_type: "CLIPTextEncode", inputs: { text: "低画质，模糊，多人，文字，水印，畸形", clip: ["2", 0] } },
+    "6": { class_type: "ModelSamplingAuraFlow", inputs: { model: ["1", 0], shift: 1.0 } },
+    "7": { class_type: "EmptySD3LatentImage", inputs: { width, height, batch_size: 1 } },
+    "8": { class_type: "KSampler", inputs: { model: ["6", 0], positive: ["4", 0], negative: ["5", 0], latent_image: ["7", 0], seed, steps: 20, cfg: 2.5, sampler_name: "euler", scheduler: "simple", denoise: 1.0 } },
+    "9": { class_type: "VAEDecode", inputs: { samples: ["8", 0], vae: ["3", 0] } },
+    "10": { class_type: "SaveImage", inputs: { images: ["9", 0], filename_prefix: "deduce-gen" } },
+  };
+  const post = async (path: string, body: unknown, timeoutMs = 600000): Promise<any> => {
+    const r = await fetch(`${base}${path}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal: AbortSignal.timeout(timeoutMs) });
+    return r.json();
+  };
+  let pid = "";
+  try {
+    const r = await post("/prompt", { prompt: graph, client: "storyharness-deduce" });
+    pid = String(r.prompt_id ?? "");
+    if (!pid) throw new Error(`ComfyUI 拒绝工作流：${JSON.stringify(r).slice(0, 200)}`);
+  } catch (e) {
+    throw new Error(`生图未就绪：连不上 ComfyUI（${base}）——python start-comfyui.py。原因：${(e as Error).message.slice(0, 120)}`);
+  }
+  const t0 = Date.now();
+  while (Date.now() - t0 < 20 * 60_000) {
+    await new Promise((r) => setTimeout(r, 8000));
+    let h: any = {};
+    try {
+      h = await (await fetch(`${base}/history/${pid}`, { signal: AbortSignal.timeout(30000) })).json();
+    } catch { continue; }
+    const entry = h[pid];
+    if (!entry) continue;
+    const st = entry.status ?? {};
+    if (st.status_str === "error") throw new Error(`ComfyUI 执行出错：${JSON.stringify((st.messages ?? []).slice(-1)).slice(0, 200)}`);
+    if (st.status_str !== "success") continue;
+    for (const o of Object.values(entry.outputs ?? {})) {
+      for (const img of (o as any).images ?? []) {
+        const view = `${base}/view?filename=${encodeURIComponent(img.filename)}&type=${encodeURIComponent(img.type ?? "output")}`;
+        const bin = Buffer.from(await (await fetch(view)).arrayBuffer());
+        fs.writeFileSync(out, bin);
+        return;
+      }
+    }
+    throw new Error("ComfyUI 执行成功但无图输出");
+  }
+  throw new Error("生图超时（20 分钟）——首次运行需加载 20GB 权重，属正常；重试一次即命中缓存");
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));

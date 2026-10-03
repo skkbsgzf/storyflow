@@ -1,3 +1,30 @@
+## Unreleased · 官方 panel 范本批B/C（2026-10-02）
+
+1. **panel/ 零构建组件范本**（对标 pi-web，MIT）：五个原生 ES module 组件（会话列表 / turn 流式对话流 / 输入框 / 文件树预览 / 世界书·RAG 双页签检索）+ 组装示范页 `index.html`；统一 esc()、client 注入式、组件零依赖（裸包名 import 有测试拒门）。
+2. **`/panel/*` 静态托管**：serve 白名单后缀直出 `panel/` 目录（越界 403 / 查无 404 / 白名单外 415）；`/panel/client.mjs` 为固定别名 → `adapter/storyflow-client.mjs`（byte-equal 测试钉住单一事实源）。
+3. **浏览器插件壳（独立运行形态）**：`panel/extension/` MV3 manifest（host_permissions 授权本机 8421/8431，permissions 仅 storage）+ options 页（基址/口令 → chrome.storage）+ popup 面板；`sync.mjs` 复制即打包，副本漂移有测试红。
+4. **测试**：新增 `panel-static.test.ts`、`panel-extension.test.ts`；storyharness **90/90** 全绿（在 deduce 整包挪出后的树上验证）。
+
+## Unreleased · deduce 包整体挪出（2026-10-02）
+
+1. **推演引擎离仓**：`storyharness/packs/deduce/` 整体移出至独立存放区 `D:\storyflow-deduce\`（v4 完整线 763 行引擎 + galgame 页面壳 ‖ kit 纯 API 线 641 行，双线并存未合并，血缘见其 README）；`verify/packtpl-smoke.mjs` 随迁。本仓自此**无内置扩展包**，挂载机制（`src/packs.ts` 三根扫描：内置 `packs/`｜工作区 `<ws>/packs/`｜manifest `runtime.packs`）原样保留——拷回即复活。
+2. **文档口径**：README（架构图/源码地图/§2.2/快速开始）、AGENTS.md 同步「无内置包」；`/api/deduce/*` 随包离仓，官方数据面以批A 的 files/raw/preview + worldbook_search 为准。
+
+## Unreleased · 官方 adapter 能力面批A（2026-10-02）
+
+1. **本地文件能力回归（工单-20261002 批A）**：`/api/panel/files`（两层树/文本读取 ≤200KB）、`/raw`（图/PDF/音频白名单字节流，25MB 上限 + Range）、`/preview`（预览判定元数据 kind:inline|text|none|missing）以官方能力面身份回归，实现自切割存档对齐复刻为 `src/panel-files.ts`（safeProject 走 `safe-project.ts` 同一把越界钥匙）；`worldbook/telemetry/changes/canvas` 维持 **410 GONE**（`code:"RETIRED_FACE"`）。
+2. **`/api/kernel-verb` 白名单 +1**：`worldbook_search`（世界书检索经协议面可达，此前只有 kb_search/kb_read）。
+3. **adapter 能力声明**：`adapter/README.md` 新增四能力总表（创作改写/本地文件/世界书/RAG → 端点 → client 方法）与三同名辨析（adapter/ ≠ adapters/ ≠ pinax-adapter）；`storyflow-client.mjs` 补 `fileList/fileRead/fileRawUrl/filePreview/worldbookSearch/kbSearch/kbRead`。
+4. **测试**：新增 `panel-files.test.ts`（files 树/读取 + raw MIME/Range/415/403/413 + preview 四档 + 退役面 410，13 测）；storyharness **84/84** 全绿；两道生成门禁 OK。
+
+## Unreleased · 前端切割（2026-10-02）
+
+1. **仓内前端整体退役**：门面 `home.ts`、面板数据面 `panels.ts`、deduce 包页面壳（galgame）、页面生成与交付链（`tools/serve.py`、`project-pages.py`、`package.py`、`author-home.py`、三个 HTML 模板、`page-lint.mjs`）、根 `index.html` 全部删除；孤儿工具 `udiff.ts` 与面板 verify 脚本随迁。被切文件的存档指针见 `docs/交接回执-前端切割与v4收拢-20261002.md`。
+2. **协议面行为**：`/api/panel/*` → **410 GONE**（显式点名退役，不静默 404）；`GET /` 改为一页协议面落地说明（无 UI 壳）；`web` 启动器不再拉页面服务（:8420 面退役），manifest `agent.base`/`runtime.ui` 不再消费。
+3. **幸存件迁移**：`safeProject` 迁至 `src/safe-project.ts`（serve/packgate/auth.test/deduce 引擎共用）；`stripPromptFields` 并入 `serve.ts`；deduce 包转纯 API 形态（manifest 1.1.0，pages 扩展点移除，`/api/deduce/*` 不变）；`kit.py` vendor 集剔除 serve.py。
+4. **测试与门禁**：storyharness 76/76（删 3 个面板测试文件与 udiff 孤儿测试后）；core 427/428（唯一失败为本机 `python` 商店 stub 环境问题，与切割无关，见 AGENTS.md 已知坑）；两道生成门禁 OK；`adapters/dist` 重建对齐 src（此前陈旧导致 FS 注册面单文件跑挂）。
+5. **core 未动**：`compat.ts`（页面批注兼容面）按「legacy 面冻结」纪律保留，列退役候选（见交接回执）。
+
 ## Unreleased · 工单 R7-2/R7-3 + R8 主体（2026-10-01）
 
 1. **@storyflow/adapters 物理拆包**：FS 抽象层契约（fs/proc/env/hash 四接口）+ 注册表 + Node/Mock 实现整体迁至 adapters/ 独立包（build 产 dist，core 经 file: 依赖消费）；core/src/abstraction/ 全部变为 re-export shim——旧路径零改动，166 处尾参默认原样可用。

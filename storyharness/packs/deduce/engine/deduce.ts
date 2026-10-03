@@ -15,15 +15,21 @@ import type http from "node:http";
 import type { HarnessConfig } from "../../../src/config.js";
 import { makeModels, resolveModel, type LlmTarget } from "../../../src/llm.js";
 import type { Models, Model } from "@earendil-works/pi-ai";
-import { safeProject } from "../../../src/panels.js";
+import { safeProject } from "../../../src/safe-project.js";
 import { currentPackCtx } from "../../../src/packctx.js";
 import { generateImage, type ImageKind } from "./deduce-images.js";
 
 /** 包配置命名空间 extensions.deduce 的键形态（契约在包 manifest 的 extensions.config）。 */
 export interface DeduceConfig {
   provider?: string; model?: string; apiKey?: string; baseUrl?: string;
+  /** 属性系统（玩小说 A 期）：数值是游戏机制（解锁玩法内容），不是验收闸。 */
+  attributes?: { maxDelta?: number; maxPerBeat?: number; init?: number };
   image?: {
     backend?: "comfyui" | "dashscope" | "off";
+    comfyuiBase?: string;
+    comfyuiUnet?: string;
+    comfyuiClip?: string;
+    comfyuiVae?: string;
     comfyuiCommand?: string;
     comfyuiScript?: string;
     dashscopeKey?: string;
@@ -48,6 +54,7 @@ export interface DeduceOption {
   text: string;   // 台词（空串 = 纯动作拍）
   action: string; // 动作描写
   effect: string; // 一句话叙事效果
+  effects?: Record<string, number>; // 属性贡献（LLM 提议、引擎归一后随采纳落账）
 }
 export interface DimScore { p: number; why: string }
 export interface OptionScore {
@@ -63,13 +70,17 @@ export interface BeatRecord {
   n: number;
   stimulus: Stimulus;
   chosen: { text?: string; action?: string; kind?: string; custom?: boolean };
+  effects?: Record<string, number>; // 实际落账的属性变化（归一+边界折算后）
   ts: string;
 }
+export interface SceneNode { id: string; parent: string | null; beat: BeatRecord; children: string[] }
 export interface SceneFile {
-  format: "deduce-scene@1";
+  format: "deduce-scene@2";
   createdAt: string;
   updatedAt: string;
-  beats: BeatRecord[];
+  root: string | null;
+  nodes: Record<string, SceneNode>;
+  active: string | null;
   preferences: string[]; // ask_user 采纳的方向注记，喂回生成
   pending: null | {
     stimulus: Stimulus;
@@ -78,6 +89,7 @@ export interface SceneFile {
     probe: Probe | null;
     ts: string;
   };
+  bookmarks: Record<string, string>; // 存档名 → 节点 id
 }
 export interface ScriptFile {
   format: "deduce-script@1";
@@ -121,16 +133,65 @@ function writeJson(file: string, data: unknown): void {
 }
 function freshScene(): SceneFile {
   const now = new Date().toISOString();
-  return { format: "deduce-scene@1", createdAt: now, updatedAt: now, beats: [], preferences: [], pending: null };
+  return { format: "deduce-scene@2", createdAt: now, updatedAt: now, root: null, nodes: {}, active: null, preferences: [], pending: null, bookmarks: {} };
+}
+/** v1 线性 scene → v2 链（内存转换，下次落盘即为 v2） */
+function migrateV1(old: any): SceneFile {
+  const s = freshScene();
+  let parent: string | null = null;
+  for (const b of old.beats ?? []) {
+    const id = `m${Object.keys(s.nodes).length + 1}_${Math.random().toString(36).slice(2, 6)}`;
+    s.nodes[id] = { id, parent, beat: { ...b, stimulus: normStimulus(b.stimulus) }, children: [] };
+    if (parent) s.nodes[parent].children.push(id);
+    else s.root = id;
+    parent = id;
+  }
+  s.active = parent;
+  s.preferences = old.preferences ?? [];
+  s.createdAt = old.createdAt ?? s.createdAt;
+  return s;
 }
 function loadScene(cfg: HarnessConfig, project: string): SceneFile {
   const f = sceneOf(cfg, project);
   if (!fs.existsSync(f)) return freshScene();
-  const s = readJson<SceneFile>(f, "推演状态");
-  // 兼容 v1 字符串 stimulus
+  const raw = JSON.parse(fs.readFileSync(f, "utf-8")) as any;
+  const s: SceneFile = raw.format === "deduce-scene@2" ? raw : migrateV1(raw);
   if (s.pending) s.pending.stimulus = normStimulus(s.pending.stimulus);
-  for (const b of s.beats ?? []) b.stimulus = normStimulus(b.stimulus);
   return s;
+}
+// ── 树/链/属性 结算（A 期）─────────────────────────────
+function chainOf(s: SceneFile): SceneNode[] {
+  const out: SceneNode[] = [];
+  let cur = s.active;
+  while (cur && s.nodes[cur]) { out.unshift(s.nodes[cur]); cur = s.nodes[cur].parent; }
+  return out;
+}
+const ATTR = { init: 30, min: 0, max: 100 };
+type AttrState = Record<string, number>; // "好感度.周叙" → 0..100
+function attrsAfter(s: SceneFile, pc?: DeduceConfig, upto?: string): AttrState {
+  const init = pc?.attributes?.init ?? ATTR.init;
+  const st: AttrState = {};
+  for (const nd of chainOf(s)) {
+    if (upto && nd.id === upto) break;
+    for (const [k, v] of Object.entries(nd.beat.effects ?? {})) st[k] = Math.max(ATTR.min, Math.min(ATTR.max, (st[k] ?? init) + v));
+  }
+  return st;
+}
+/** LLM 提议 → 归一：键形「属性.对象」、单键 |Δ|≤maxDelta、每拍总 |Δ|≤maxPerBeat、至多 3 键 */
+function normEffects(x: unknown, pc?: DeduceConfig): Record<string, number> {
+  const md = pc?.attributes?.maxDelta ?? 15;
+  const mpb = pc?.attributes?.maxPerBeat ?? 25;
+  const out: Record<string, number> = {};
+  let total = 0;
+  for (const [k, v] of Object.entries((x ?? {}) as Record<string, unknown>)) {
+    if (!/^[^\s.]{1,10}\.[^\s.]{1,14}$/.test(k)) continue;
+    let n = Math.round(Number(v));
+    if (!Number.isFinite(n) || n === 0) continue;
+    n = Math.max(-md, Math.min(md, n));
+    if (Math.abs(total) + Math.abs(n) > mpb) break;
+    out[k] = n; total += n;
+  }
+  return out;
 }
 function click(cfg: HarnessConfig, project: string, entry: Record<string, unknown>): void {
   try {
@@ -225,8 +286,9 @@ function scriptBrief(script: ScriptFile): string {
   }, null, 1);
 }
 function beatsBrief(scene: SceneFile): string {
-  if (!scene.beats.length) return "（尚无已定拍——本场刚开）";
-  return scene.beats.map((b) => `第${b.n}拍 ${stimulusText(b.stimulus)}\n      反应：${b.chosen.custom ? "（作家自写）" : ""}${b.chosen.text ?? ""}${b.chosen.action ? `（${b.chosen.action}）` : ""}`).join("\n");
+  const chain = chainOf(scene);
+  if (!chain.length) return "（尚无已定拍——本场刚开）";
+  return chain.map((nd, i) => `第${i + 1}拍 ${stimulusText(nd.beat.stimulus)}\n      反应：${nd.beat.chosen.custom ? "（作家自写）" : ""}${nd.beat.chosen.text ?? ""}${nd.beat.chosen.action ? `（${nd.beat.chosen.action}）` : ""}`).join("\n");
 }
 const GEN_INSTRUCTION = (no: number, total: number) => `## 任务（generate · 第${no}拍 / 共约${total}拍）
 给出剧情的下一步，stimulus 为结构化对象：
@@ -236,6 +298,7 @@ const GEN_INSTRUCTION = (no: number, total: number) => `## 任务（generate · 
    若「已定拍序列」为空：speaker 留空，line 原样使用剧本的「开场」。
 4. options：恰 4 个「推演对象」的候选反应，叙事功能必须四象限各一个：推进（冲突升级或信息揭示）、回避（压抑/拖延，张力后移）、意外（低概率但合理的出格反应）、自由（你最有戏的一手）。
    - 每个含 text（台词，≤30 字，可为空串表示纯动作）、action（动作描写 ≤20 字）、effect（一句话叙事效果，≤20 字）。
+   - effects：该选项若采纳，对人物间关系的属性影响——键=「属性.对象」（属性限：好感度/信任/畏惧；对象=在场角色名），值=整数（-15 到 15，符合剧情强度：小摩擦 ±3~6，关键抉择 ±8~12，重大转折 ±15）；只写本拍真正会动的 1~3 个键，没有影响就空对象 {}。四个选项的 effects 方向应有差异（有得有失）。
    - 保守项（回避）也要写得有吸引力，不许凑数陪跑；意外要合理，不为怪而怪。
 输出：{"stimulus":{"speaker":"...","line":"...","narration":"..."},"options":[{"kind":"推进","text":"...","action":"...","effect":"..."},{"kind":"回避",...},{"kind":"意外",...},{"kind":"自由",...]}`;
 const SCORE_INSTRUCTION = `## 任务（score · 四维打分）
@@ -275,10 +338,10 @@ async function deduceNext(cfg: HarnessConfig, project: string, pc: DeduceConfig)
   }
   const script = readJson<ScriptFile>(sFile, "剧本");
   const scene = loadScene(cfg, project);
-  if (scene.pending) return { ...publicState(script, scene), note: "已有待选拍（先采纳或换一批）" };
+  if (scene.pending) return { ...publicState(script, scene, pc), note: "已有待选拍（先采纳或换一批）" };
 
-  const no = scene.beats.length + 1;
-  const pos = scene.beats.length / Math.max(1, script.target_beats);
+  const no = chainOf(scene).length + 1;
+  const pos = (no - 1) / Math.max(1, script.target_beats);
   const pref = scene.preferences.length ? `## 作家偏好注记（追问中的表态）\n${scene.preferences.map((p, i) => `${i + 1}. ${p}`).join("\n")}\n` : "";
 
   // Step 1 生成（结构化 stimulus + 四象限候选）；zai 推理模型的 max_tokens 含思维链——8192 防 JSON 截断
@@ -296,6 +359,7 @@ async function deduceNext(cfg: HarnessConfig, project: string, pc: DeduceConfig)
     text: String(o.text ?? "").slice(0, 60),
     action: String(o.action ?? "").slice(0, 40),
     effect: String(o.effect ?? "").slice(0, 60),
+    effects: normEffects(o.effects, pc),
   }));
   const first = no === 1;
   const gs = gen.stimulus ?? {};
@@ -344,12 +408,12 @@ async function deduceNext(cfg: HarnessConfig, project: string, pc: DeduceConfig)
   scene.pending = { stimulus, options, scores, probe, ts: new Date().toISOString() };
   scene.updatedAt = scene.pending.ts;
   writeJson(sceneOf(cfg, project), scene);
-  const st = publicState(script, scene) as Record<string, unknown>;
+  const st = publicState(script, scene, pc) as Record<string, unknown>;
   if (degraded) st.degraded = degraded;
   return st;
 }
 
-function publicState(script: ScriptFile, scene: SceneFile) {
+function publicState(script: ScriptFile, scene: SceneFile, pc?: DeduceConfig) {
   const ranked = scene.pending
     ? [...scene.pending.options]
         .map((o) => ({ ...o, score: scene.pending!.scores.find((s) => s.id === o.id) ?? null }))
@@ -357,6 +421,8 @@ function publicState(script: ScriptFile, scene: SceneFile) {
     : [];
   const top = ranked.map((r) => r.score?.composite ?? 0);
   const gapClose = ranked.length >= 2 && top[0] - top[1] < 0.15;
+  const chain = chainOf(scene);
+  const onChain = new Set(chain.map((n) => n.id));
   return {
     title: script.title,
     premise: script.premise,
@@ -364,7 +430,14 @@ function publicState(script: ScriptFile, scene: SceneFile) {
     protagonist: script.protagonist,
     characters: script.characters,
     targetBeats: script.target_beats,
-    beats: scene.beats,
+    beats: chain.map((nd, i) => ({ ...nd.beat, n: i + 1 })),
+    tree: Object.values(scene.nodes).map((nd) => ({
+      id: nd.id, parent: nd.parent, n: chain.indexOf(nd) + 1 || null,
+      kind: nd.beat.chosen.kind ?? "自写", text: (nd.beat.chosen.text ?? "").slice(0, 24),
+      onChain: onChain.has(nd.id),
+    })),
+    attributes: attrsAfter(scene, pc),
+    bookmarks: Object.keys(scene.bookmarks ?? {}),
     pending: scene.pending ? { ...scene.pending, stimulus: scene.pending.stimulus, options: ranked } : null,
     ask: scene.pending?.probe && gapClose ? scene.pending.probe : null, // 分数接近 + 模型有探针 = 追问呈现
     gapClose,
@@ -372,13 +445,14 @@ function publicState(script: ScriptFile, scene: SceneFile) {
   };
 }
 
-function chooseBeat(cfg: HarnessConfig, project: string, body: { id?: string; index?: number; custom?: string }) {
+function chooseBeat(cfg: HarnessConfig, project: string, body: { id?: string; index?: number; custom?: string }, pc: DeduceConfig) {
   if (!safeProject(project)) throw new Error(`project 非法：${project}`);
   const script = readJson<ScriptFile>(scriptOf(cfg, project), "剧本");
   const scene = loadScene(cfg, project);
   if (!scene.pending) throw new Error("没有待选拍（先「推演下一拍」）");
   const chosen: BeatRecord["chosen"] = {};
   let chosenId = "custom";
+  let applied: Record<string, number> = {};
   if (body.custom && body.custom.trim()) {
     chosen.custom = true;
     chosen.text = body.custom.trim().slice(0, 120);
@@ -392,28 +466,44 @@ function chooseBeat(cfg: HarnessConfig, project: string, body: { id?: string; in
     chosen.text = opt.text;
     chosen.action = opt.action;
     chosen.kind = opt.kind;
+    // 属性落账：提议已归一，落账时按 0..100 边界折算实际位移
+    const before = attrsAfter(scene, pc);
+    const after = { ...before };
+    for (const [k, v] of Object.entries(opt.effects ?? {})) {
+      const base = Math.round(after[k] ?? (pc?.attributes?.init ?? 30));
+      const now = Math.max(0, Math.min(100, base + v));
+      applied[k] = now - base;
+      after[k] = now;
+    }
+    applied = Object.fromEntries(Object.entries(applied).filter(([, v]) => v !== 0));
   }
-  const beat: BeatRecord = {
-    n: scene.beats.length + 1,
-    stimulus: scene.pending.stimulus,
-    chosen,
-    ts: new Date().toISOString(),
+  const chainLen = chainOf(scene).length;
+  const node: SceneNode = {
+    id: `n${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`,
+    parent: scene.active,
+    beat: { n: chainLen + 1, stimulus: scene.pending.stimulus, chosen, effects: Object.keys(applied).length ? applied : undefined, ts: new Date().toISOString() },
+    children: [],
   };
+  scene.nodes[node.id] = node;
+  if (node.parent && scene.nodes[node.parent]) scene.nodes[node.parent].children.push(node.id);
+  else if (!scene.root) scene.root = node.id;
+  scene.active = node.id;
+  const beat: BeatRecord = node.beat;
   click(cfg, project, {
     kind: chosen.custom ? "custom" : "choose",
     beat: beat.n,
     evidence: {
       stimulus: stimulusText(scene.pending.stimulus),
       options: scene.pending.options.map((o) => ({ id: o.id, kind: o.kind, composite: scene.pending!.scores.find((s) => s.id === o.id)?.composite ?? null })),
+      effects: applied,
     },
     chosen: chosenId,
     rejected: scene.pending.options.map((o) => o.id).filter((id) => id !== chosenId),
   });
-  scene.beats.push(beat);
   scene.pending = null;
   scene.updatedAt = beat.ts;
   writeJson(sceneOf(cfg, project), scene);
-  return { ok: true, beats: scene.beats.length };
+  return { ok: true, beats: chainLen + 1, applied };
 }
 
 function rollbackBeat(cfg: HarnessConfig, project: string) {
@@ -421,12 +511,13 @@ function rollbackBeat(cfg: HarnessConfig, project: string) {
   const scene = loadScene(cfg, project);
   if (scene.pending) {
     // 待选态回退 = 弃掉本轮候选重推（丢弃分支入留档）
-    click(cfg, project, { kind: "reroll", beat: scene.beats.length + 1, evidence: { discarded: scene.pending.options.map((o) => o.id) } });
+    click(cfg, project, { kind: "reroll", beat: chainOf(scene).length + 1, evidence: { discarded: scene.pending.options.map((o) => o.id) } });
     scene.pending = null;
-  } else if (scene.beats.length) {
-    const last = scene.beats[scene.beats.length - 1];
-    click(cfg, project, { kind: "rollback", beat: last.n, evidence: { removed: last.chosen.kind ?? "custom", beatsAfter: scene.beats.length - 1 }, rejected: [last.chosen.kind ?? "custom"] });
-    scene.beats.pop();
+  } else if (scene.active) {
+    const node = scene.nodes[scene.active];
+    if (!node?.parent) throw new Error("已在场首，无可回退");
+    click(cfg, project, { kind: "rollback", beat: node.beat.n, evidence: { from: node.id, to: node.parent, note: "分支语义：被退节点保留在树上" }, rejected: [node.beat.chosen.kind ?? "custom"] });
+    scene.active = node.parent;
   } else {
     throw new Error("已在场首，无可回退");
   }
@@ -435,6 +526,38 @@ function rollbackBeat(cfg: HarnessConfig, project: string) {
   return { ok: true };
 }
 
+function branchTo(cfg: HarnessConfig, project: string, nodeId: string) {
+  if (!safeProject(project)) throw new Error(`project 非法：${project}`);
+  const scene = loadScene(cfg, project);
+  const nd = scene.nodes[nodeId];
+  if (!nd) throw new Error(`节点不存在：${nodeId}`);
+  if (scene.active === nodeId && !scene.pending) return { ok: true, note: "已在该节点" };
+  scene.pending = null;
+  scene.active = nodeId;
+  click(cfg, project, { kind: "branch", beat: chainOf(scene).length, evidence: { to: nodeId } });
+  scene.updatedAt = new Date().toISOString();
+  writeJson(sceneOf(cfg, project), scene);
+  return { ok: true };
+}
+function saveSlot(cfg: HarnessConfig, project: string, name: string) {
+  if (!safeProject(project)) throw new Error(`project 非法：${project}`);
+  const scene = loadScene(cfg, project);
+  if (!scene.active) throw new Error("空场无可存");
+  const nm = name.trim().slice(0, 20);
+  if (!nm) throw new Error("存档名必填");
+  scene.bookmarks[nm] = scene.active;
+  scene.updatedAt = new Date().toISOString();
+  writeJson(sceneOf(cfg, project), scene);
+  click(cfg, project, { kind: "save", evidence: { name: nm, node: scene.active, beats: chainOf(scene).length } });
+  return { ok: true, bookmarks: Object.keys(scene.bookmarks) };
+}
+function loadSlot(cfg: HarnessConfig, project: string, name: string) {
+  if (!safeProject(project)) throw new Error(`project 非法：${project}`);
+  const scene = loadScene(cfg, project);
+  const node = scene.bookmarks[name];
+  if (!node || !scene.nodes[node]) throw new Error(`存档不存在：${name}`);
+  return branchTo(cfg, project, node);
+}
 function answerProbe(cfg: HarnessConfig, project: string, pick: number) {
   if (!safeProject(project)) throw new Error(`project 非法：${project}`);
   const scene = loadScene(cfg, project);
@@ -443,7 +566,7 @@ function answerProbe(cfg: HarnessConfig, project: string, pick: number) {
   const path = probe.paths[Number(pick)];
   if (!path) throw new Error(`pick 越界：${pick}`);
   scene.preferences.push(`追问「${probe.question}」→ 选 ${path.label}（${path.desc}）`);
-  click(cfg, project, { kind: "ask_answer", beat: scene.beats.length + 1, chosen: path.label, evidence: { question: probe.question, paths: probe.paths.map((p) => p.label) } });
+  click(cfg, project, { kind: "ask_answer", beat: chainOf(scene).length + 1, chosen: path.label, evidence: { question: probe.question, paths: probe.paths.map((p) => p.label) } });
   if (scene.pending) scene.pending.probe = null;
   scene.updatedAt = new Date().toISOString();
   writeJson(sceneOf(cfg, project), scene);
@@ -454,18 +577,18 @@ async function assembleDraft(cfg: HarnessConfig, project: string, pc: DeduceConf
   if (!safeProject(project)) throw new Error(`project 非法：${project}`);
   const script = readJson<ScriptFile>(scriptOf(cfg, project), "剧本");
   const scene = loadScene(cfg, project);
-  if (scene.beats.length < 2) throw new Error("拍数不足（至少定 2 拍再收尾成稿）");
+  if (chainOf(scene).length < 2) throw new Error("拍数不足（至少定 2 拍再收尾成稿）");
   const text = await chat(
     cfg,
     `你是编剧。把给定的拍序列串成一场戏的正文。铁律：1) 只输出正文本身——无标题、无拍号、无任何元信息或解释；2) 台词用「角色名：台词」行，动作与环境用叙述段；3) 忠实于每拍已定的刺激与反应，可补衔接细节但不得改写已定台词的意图；4) 全程中文。`,
-    `## 剧本前提\n${script.premise}\n\n## 拍序列\n${beatsBrief(scene)}\n\n串成正文（约 ${scene.beats.length * 60} 字上下）。`,
+    `## 剧本前提\n${script.premise}\n\n## 拍序列\n${beatsBrief(scene)}\n\n串成正文（约 ${chainOf(scene).length * 60} 字上下）。`,
     8192,
     pc,
   );
   const draftPath = path.join(dirOf(cfg, project), "场景草稿.md");
   fs.mkdirSync(path.dirname(draftPath), { recursive: true });
   fs.writeFileSync(draftPath, text.trim() + "\n", "utf-8");
-  click(cfg, project, { kind: "draft", beat: scene.beats.length, evidence: { file: "推演/场景草稿.md", chars: text.trim().length } });
+  click(cfg, project, { kind: "draft", beat: chainOf(scene).length, evidence: { file: "推演/场景草稿.md", chars: text.trim().length } });
   return { ok: true, text: text.trim(), file: "推演/场景草稿.md" };
 }
 
@@ -533,7 +656,7 @@ async function importScript(cfg: HarnessConfig, project: string, body: { mode?: 
   const hadScene = fs.existsSync(sceneOf(cfg, project));
   resetScene(cfg, project);
   click(cfg, project, { kind: "import", evidence: { mode, chars: script.characters.length, replacedScript: fs.existsSync(sFile) && hadScene } });
-  return { ok: true, script: publicState(script, freshScene()) };
+  return { ok: true, script: publicState(script, freshScene(), pc) };
 }
 
 // ── v2：笔记本 ───────────────────────────────────────────
@@ -589,7 +712,7 @@ export async function handleDeduceApi(
         notes: readNotes(cfg, project),
         assets: listAssets(cfg, project),
         imageBackend: pc.image?.backend ?? "off",
-        ...publicState(readJson<ScriptFile>(sFile, "剧本"), loadScene(cfg, project)),
+        ...publicState(readJson<ScriptFile>(sFile, "剧本"), loadScene(cfg, project), pc),
       });
     }
     if (action === "next" && method === "POST") {
@@ -629,8 +752,11 @@ export async function handleDeduceApi(
     }
     if (action === "import" && method === "POST") return json(200, await importScript(cfg, project, { mode: b.mode as string, text: b.text as string, target_beats: b.target_beats as number }, pc));
     if (action === "notes" && method === "POST") return json(200, saveNotes(cfg, project, String(b.text ?? "")));
-    if (action === "choose" && method === "POST") return json(200, chooseBeat(cfg, project, { id: b.id as string, index: b.index as number, custom: b.custom as string }));
+    if (action === "choose" && method === "POST") return json(200, chooseBeat(cfg, project, { id: b.id as string, index: b.index as number, custom: b.custom as string }, pc));
     if (action === "rollback" && method === "POST") return json(200, rollbackBeat(cfg, project));
+    if (action === "branch" && method === "POST") return json(200, branchTo(cfg, project, String(b.node ?? "")));
+    if (action === "save" && method === "POST") return json(200, saveSlot(cfg, project, String(b.name ?? "")));
+    if (action === "load" && method === "POST") return json(200, loadSlot(cfg, project, String(b.name ?? "")));
     if (action === "probe" && method === "POST") return json(200, answerProbe(cfg, project, Number(b.pick)));
     if (action === "draft" && method === "POST") return json(200, await assembleDraft(cfg, project, pc));
     if (action === "reset" && method === "POST") return json(200, resetScene(cfg, project));

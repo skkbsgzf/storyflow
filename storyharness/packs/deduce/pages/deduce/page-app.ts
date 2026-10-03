@@ -3,6 +3,7 @@
 // 采纳后主角台词入队，走完自动推下一拍。分数默认隐藏，「引擎视角」开关才显示综合分。
 export const DEDUCE_APP_JS = `
 var PID = new URLSearchParams(location.search).get('project') || 'template-推演';
+function gotoCase(id){ location.href = '/deduce?project=' + encodeURIComponent(id); }
 var AUTO = new URLSearchParams(location.search).get('demo') === '1';   // 自动演示模式（?demo=1）
 var S = null;             // 引擎状态
 var MQ = [];              // 消息队列 [{speaker, text}]  speaker 空 = 旁白
@@ -70,7 +71,9 @@ function typeMessage(){
     var more = MI < MQ.length - 1;
     $('dlgNext').style.display = 'flex';
     $('dlgNext').textContent = more ? '▼' : '⋯';
-    if (!more && S && S.pending) setTimeout(function(){ if (!TYPING && S && S.pending) showChoices(); }, 420);
+    if (!more && S && S.pending) setTimeout(function(){
+      if (!TYPING && S && S.pending) { if (S.ask) renderProbe(); showChoices(); }
+    }, 420);
     else if (!more && AUTO && AUTO_NEXT) setTimeout(function(){ try { advance(); } catch(e){} }, 1100);
   }
 }
@@ -120,6 +123,114 @@ function renderTop(){
   $('engView').classList.toggle('on', SHOW_SCORES);
   var b = $('demoBadge'); if (b) b.style.display = AUTO ? '' : 'none';
 }
+function renderHud(){
+  var el = $('hud');
+  if (!S || !S.attributes || !Object.keys(S.attributes).length) { el.innerHTML = ''; return; }
+  el.innerHTML = Object.keys(S.attributes).map(function(k){
+    var v = S.attributes[k];
+    var c = v >= 60 ? '#5f9c7a' : (v >= 35 ? '#d9a441' : '#c96f5a');
+    return '<span class="hchip" title="' + esc(k) + '">' + esc(k.split('.')[1] || k) + ' <b style="color:' + c + '">' + v + '</b></span>';
+  }).join('');
+}
+function floatFx(applied){
+  if (!applied || !Object.keys(applied).length) return;
+  var wrap = $('fx');
+  Object.keys(applied).forEach(function(k, i){
+    var v = applied[k];
+    var d = document.createElement('span');
+    d.className = 'fdelta ' + (v > 0 ? 'up' : 'down');
+    d.textContent = k.split('.')[1] + ' ' + (v > 0 ? '+' : '') + v;
+    d.style.right = (30 + i * 90) + 'px';
+    wrap.appendChild(d);
+    setTimeout(function(){ d.remove(); }, 2400);
+  });
+  renderHud();
+}
+function openTree(){
+  if (!S || !S.tree) return;
+  var byParent = {};
+  S.tree.forEach(function(n){ (byParent[n.parent || 'ROOT'] = byParent[n.parent || 'ROOT'] || []).push(n); });
+  var html = '';
+  function walk(pid, depth){
+    (byParent[pid] || []).forEach(function(n){
+      var cls = n.onChain ? 'tnode on' : 'tnode';
+      html += '<div class="' + cls + '" style="margin-left:' + (depth * 26) + 'px">' +
+        '<span class="tmark">' + (n.onChain ? '●' : '○') + '</span>' +
+        '<span class="tlabel">第' + n.n + '拍 [' + esc(n.kind) + '] ' + esc(n.text || '') + '</span>' +
+        (n.onChain ? '<span class="tnow">当前线</span>' : '<button class="btn" data-node="' + n.id + '">从此重推</button>') +
+        '</div>';
+      walk(n.id, depth + 1);
+    });
+  }
+  walk('ROOT', 0);
+  $('treeBody').innerHTML = html || '<div class="dim2" style="padding:12px">还没有已定拍</div>';
+  $('treeOv').classList.add('show');
+}
+function branchTo(id){
+  if (!confirm('切到该节点重推？当前节点之后的支线保留在树上。')) return;
+  api('branch', { node: id }).then(function(){ return refresh(); }).then(closeTree).catch(function(e){ toast('切换失败：' + e.message); });
+}
+function closeTree(){ $('treeOv').classList.remove('show'); }
+function openReplay(){
+  if (!S) return;
+  $('replayTitle').textContent = S.title;
+  var h = '<div class="rchap">' + esc(S.premise) + '</div>';
+  if (!S.beats.length) h += '<div class="dim2" style="padding:12px">还没有已定拍——先去推演。</div>';
+  for (var i = 0; i < S.beats.length; i++) {
+    var b = S.beats[i], st = b.stimulus || {};
+    if (st.narration) h += '<div class="rnarr">' + esc(st.narration) + '</div>';
+    if (st.speaker) h += '<div class="rname" style="background:hsl(' + hue(st.speaker) + ' 45% 38%)">' + esc(st.speaker) + '</div>';
+    if (st.line) h += '<div class="rline">「' + esc(st.line) + '」</div>';
+    var ch = b.chosen || {};
+    h += '<div class="rresp">' + (ch.custom ? '（自写）' : '') + esc(ch.text || '') + (ch.action ? ' <i>（' + esc(ch.action) + '）</i>' : '') + '</div>';
+    var fx = Object.keys(b.effects || {});
+    if (fx.length) {
+      h += '<div class="befx">';
+      for (var j = 0; j < fx.length; j++) {
+        var v = b.effects[fx[j]];
+        h += '<span style="color:' + (v > 0 ? '#7fb98a' : '#d0907e') + '">' + esc(fx[j]) + ' ' + (v > 0 ? '+' : '') + v + '</span>';
+      }
+      h += '</div>';
+    }
+  }
+  if (S.preferences && S.preferences.length) {
+    h += '<div class="sect">你的方向表态</div>';
+    for (var p = 0; p < S.preferences.length; p++) h += '<div class="pref">⚡ ' + esc(S.preferences[p]) + '</div>';
+  }
+  $('replayBody').innerHTML = h;
+  $('replayOv').classList.add('show');
+  $('replayBody').scrollTop = 0;
+}
+function downloadNovel(){
+  var t = $('draftText').textContent;
+  if (!t) { toast('还没有成稿'); return; }
+  var head = '# ' + (S ? S.title : '剧情推演') + '\n\n';
+  var blob = new Blob([head + t], { type: 'text/markdown;charset=utf-8' });
+  var aEl = document.createElement('a');
+  aEl.href = URL.createObjectURL(blob);
+  aEl.download = (S ? S.title : '剧情推演') + '.md';
+  document.body.appendChild(aEl);
+  aEl.click();
+  aEl.remove();
+  toast('已下载 ' + aEl.download);
+}
+function closeReplay(){ $('replayOv').classList.remove('show'); }
+function doSave(){
+  var nm = prompt('存档名（记录当前节点）：'); if (!nm || !nm.trim()) return;
+  api('save', { name: nm.trim() }).then(function(j){ toast('已存「' + nm.trim() + '」'); if (S) S.bookmarks = j.bookmarks; }).catch(function(e){ toast('存档失败：' + e.message); });
+}
+function doLoad(){
+  var bms = (S && S.bookmarks) || [];
+  if (!bms.length) { toast('还没有存档'); return; }
+  var pick = prompt('读哪个存档？ [1] ' + bms.join('  [2] ') + ' ——输入序号');
+  var idx = Number(pick) - 1;
+  if (!pick || !bms[idx]) return;
+  api('load', { name: bms[idx] }).then(function(){ return refresh(); }).then(function(){ toast('已读「' + bms[idx] + '」'); }).catch(function(e){ toast('读档失败：' + e.message); });
+}
+document.addEventListener('click', function(e){
+  var b = e.target.closest && e.target.closest('#treeBody [data-node]');
+  if (b) branchTo(b.getAttribute('data-node'));
+});
 function renderIdle(){       // 队列空：开始态 / 推演中 / 无事可做
   var box = $('dlgText'), plate = $('dlgName');
   plate.style.display = 'none'; box.classList.remove('narr');
@@ -142,9 +253,13 @@ function renderChoices(){
       ? '<span class="ch-score">综合 ' + Math.round(o.score.composite * 100) + '</span>' : '';
     return '<button class="ch" data-i="' + i + '" style="animation-delay:' + (i * 90) + 'ms">' +
       '<span class="ch-kind" style="color:' + (KCOL[o.kind] || '#888') + '">' + esc(o.kind) + '</span>' +
-      '<span class="ch-text">' + (o.text ? '「' + esc(o.text) + '」' : '（' + esc(o.action) + '）') + '</span>' + sc + '</button>';
-  }).join('') +
+      '<span class="ch-text">' + (o.text ? '「' + esc(o.text) + '」' : '（' + esc(o.action) + '）') + '</span>' + sc +
+      '<span class="ch-fx">' + Object.keys(o.effects || {}).map(function(k){
+        var v = o.effects[k];
+        return '<i style="color:' + (v > 0 ? '#7fb98a' : '#d0907e') + '">' + esc(k.split('.')[1]) + ' ' + (v > 0 ? '+' : '') + v + '</i>';
+      }).join('') + '</span></button>';  }).join('') +
   '<div class="ch-sub">点击选择 · 数字键 1-4 · <a href="javascript:void(0)" onclick="event.stopPropagation();customOpen()">自己写</a> · <a href="javascript:void(0)" onclick="event.stopPropagation();reroll()">换一批</a></div>';
+  if (S.ask) { c.classList.remove('show'); return; }   // 追问优先：先表态再看选项
   c.classList.add('show');
   if (AUTO) setTimeout(function(){ try { if (window.S && window.S.pending && document.getElementById('choices').classList.contains('show')) pickByIndex(0); } catch(e){} }, 2100);
   if (S.gapClose) toast('两条路分数接近——都想要可以采纳后回退重走');
@@ -159,12 +274,13 @@ function renderAll(){
 function renderProbe(){
   var el = $('probe');
   var a = S && S.ask;
-  if (!a || !a.paths || !a.paths.length) { el.classList.remove('show'); return; }
+  if (!a || !a.paths || !a.paths.length || TYPING || MI < MQ.length - 1) { el.classList.remove('show'); return; }
   $('askQ').textContent = a.question;
   $('askPaths').innerHTML = a.paths.map(function(p, i){
     return '<button class="path" onclick="event.stopPropagation();answerProbe(' + i + ')"><b>' + esc(p.label) + '</b><span>' + esc(p.desc) + '</span></button>';
-  }).join('') + '<button class="ghost" onclick="event.stopPropagation();dismissAsk()">再看看别的</button>';
+  }).join('') + '<button class="ghost" style="background:rgba(20,18,26,.9);color:#c9c8d2;border:1px solid rgba(255,255,255,.18);padding:6px 12px" onclick="event.stopPropagation();dismissAsk()">跳过，直接选</button>';
   el.classList.add('show');
+  if (AUTO) setTimeout(function(){ try { if (window.S && window.S.ask) answerProbe(0); } catch(e){} }, 1600);
   if (AUTO) setTimeout(function(){ try { if (window.S && window.S.ask) answerProbe(0); } catch(e){} }, 1600);
 }
 
@@ -172,6 +288,22 @@ function renderProbe(){
 var TAB = 'chars';
 function openPanel(t){ TAB = t || TAB; renderPanel(); $('panel').classList.add('open'); }
 function closePanel(){ $('panel').classList.remove('open'); }
+function attrBoard(){
+  if (!S || !S.attributes) return [];
+  return Object.keys(S.attributes).map(function(k){
+    var v = S.attributes[k];
+    var d = v - 30;
+    return { key: k, attr: k.split('.')[0], who: k.split('.')[1] || '', v: v, d: d };
+  });
+}
+function whoSpeaks(){
+  var c = {};
+  if (S && S.beats) for (var i = 0; i < S.beats.length; i++) {
+    var sp = S.beats[i].stimulus && S.beats[i].stimulus.speaker;
+    if (sp) c[sp] = (c[sp] || 0) + 1;
+  }
+  return c;
+}
 function renderPanel(){
   if (!S) return;
   document.querySelectorAll('#panel .ptab').forEach(function(b){ b.classList.toggle('on', b.dataset.t === TAB); });
@@ -191,6 +323,17 @@ function renderPanel(){
         '<div class="cline">' + esc(c.speech_pattern || '') + '</div>' +
         (c.current_arc ? '<div class="cline dim2">弧线：' + esc(c.current_arc) + '</div>' : '') +
         (rel ? '<div class="rels">' + rel + '</div>' : '') +
+        (function(){
+          var rows = attrBoard().filter(function(r){ return r.who === c.name; })
+            .map(function(r){
+              var col = r.v >= 60 ? '#7fb98a' : r.v >= 35 ? '#d9a441' : '#d0907e';
+              var d = r.d > 0 ? '<em class="up">+' + r.d + '</em>' : r.d < 0 ? '<em class="dn">' + r.d + '</em>' : '';
+              return '<div class="abar"><span class="alb">' + esc(r.attr) + '</span>' +
+                '<span class="tr"><i style="width:' + r.v + '%;background:' + col + '"></i></span>' +
+                '<b style="color:' + col + '">' + r.v + '</b>' + d + '</div>';
+            }).join('');
+          return rows ? '<div class="aattrs">' + rows + '</div>' : '';
+        })() +
         ((c.forbidden || []).length ? '<div class="ftags">' + c.forbidden.map(function(f){ return '<span>禁·' + esc(f) + '</span>'; }).join('') + '</div>' : '') +
         '</div></div>';
     }).join('');
@@ -203,7 +346,14 @@ function renderPanel(){
       (S.beats.length ? S.beats.map(function(b){
         var st = (b.stimulus.narration ? b.stimulus.narration + ' ' : '') + (b.stimulus.speaker ? b.stimulus.speaker + '：' : '') + b.stimulus.line;
         return '<div class="beat"><i>' + b.n + '</i><div><p>' + esc(st) + '</p><em>' +
-          (b.chosen.custom ? '（自写）' : '') + esc(b.chosen.text || '') + (b.chosen.action ? '（' + esc(b.chosen.action) + '）' : '') + '</em></div></div>';
+          (b.chosen.custom ? '（自写）' : '') + esc(b.chosen.text || '') + (b.chosen.action ? '（' + esc(b.chosen.action) + '）' : '') + '</em>' +
+          (function(){
+            var fx = Object.keys(b.effects || {}).map(function(k){
+              var v = b.effects[k];
+              return '<span style="color:' + (v > 0 ? '#7fb98a' : '#d0907e') + '">' + esc(k) + ' ' + (v > 0 ? '+' : '') + v + '</span>';
+            }).join(' ');
+            return fx ? '<div class="befx">' + fx + '</div>' : '';
+          })() + '</div></div>';
       }).join('') : '<div class="dim2" style="padding:8px 2px">还没有已定拍</div>');
   } else {
     el.innerHTML = '<textarea id="noteTa" placeholder="随手记：伏笔、要回收的刀、下一场想试的方向……（自动保存）">' + esc(S.notes || '') + '</textarea><div class="nsave" id="nsave"></div>';
@@ -248,11 +398,17 @@ var LOADING = false;
 function setLoading(v){ LOADING = v; if (v || MI >= MQ.length) renderIdle(); }
 function setState(j){
   S = j; MQ = []; MI = 0; AUTO_NEXT = false;
-  hideChoices(); renderAll(); requestAssets();
+  hideChoices(); renderAll(); renderHud(); requestAssets();
+}
+function renderBootErr(m){
+  var box = $('dlgText'), plate = $('dlgName');
+  plate.style.display = 'none'; box.classList.remove('narr');
+  $('dlgNext').style.display = 'none';
+  box.innerHTML = '加载失败：' + esc(m) + '　<a href="javascript:void(0)" onclick="refresh()" style="color:#d9b96a">重试</a>';
 }
 function refresh(){ return api('state').then(function(j){ setState(j); }).catch(function(e){
     if (e.code === 'NO_SCRIPT') { renderNoScript(); return; }
-    toast('加载失败：' + e.message);
+    renderBootErr(e.message);
   }); }
 function next(){
   if (LOADING) return;
@@ -260,15 +416,16 @@ function next(){
   setLoading(true);
   api('next').then(function(j){ setLoading(false); setState(j); }).catch(function(e){
     setLoading(false);
-    if (e.code === 'NO_SCRIPT' || /^NO_SCRIPT\|/.test(e.message)) { renderNoScript(); return; }
+    if (e.code === 'NO_SCRIPT' || e.message.indexOf('NO_SCRIPT|') === 0) { renderNoScript(); return; }
     toast('推演失败：' + e.message); renderIdle();
   });
 }
 function pickByIndex(i){
   var o = S.pending.options[i]; if (!o) return;
   hideChoices();
-  api('choose', { id: o.id }).then(function(){
-    if (S) S.pending = null;          // 乐观清空：主角台词入队时不回弹选项
+  api('choose', { id: o.id }).then(function(j){
+    if (S) S.pending = null;
+    floatFx(j.applied);          // 乐观清空：主角台词入队时不回弹选项
     MQ.push({ speaker: S ? S.protagonist : '', text: (o.text ? o.text : '') + (o.action ? '（' + o.action + '）' : '') });
     MI = MQ.length - 1; AUTO_NEXT = true; typeMessage();
   }).catch(function(e){ toast('采纳失败：' + e.message); });
@@ -290,8 +447,11 @@ function reroll(){
 function rollback(){
   api('rollback').then(refresh).catch(function(e){ toast('回退失败：' + e.message); });
 }
-function answerProbe(i){ api('probe', { pick: i }).then(function(){ if (S && S.pending) S.pending.probe = null; renderProbe(); }).catch(function(e){ toast(e.message); }); }
-function dismissAsk(){ $('probe').classList.remove('show'); }
+function answerProbe(i){ api('probe', { pick: i }).then(function(){
+  if (S) { S.ask = null; if (S.pending) S.pending.probe = null; }   // 两处都清：renderProbe 读 S.ask
+  renderProbe(); if (S && S.pending) showChoices();
+}).catch(function(e){ toast(e.message); }); }
+function dismissAsk(){ if (S) S.ask = null; $('probe').classList.remove('show'); if (S && S.pending) showChoices(); }
 function doDraft(){
   api('draft').then(function(j){
     $('draftText').textContent = j.text; $('draftFile').textContent = '已存 ' + j.file;

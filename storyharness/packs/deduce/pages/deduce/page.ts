@@ -65,11 +65,12 @@ export const DEDUCE_HTML = `<!DOCTYPE html>
   .ch-sub { text-align:center; color:#8e8c9a; font-size:12.5px; margin-top:2px }
   .ch-sub a { color:#b9a06a; text-decoration:none }
   /* 追问 */
-  #probe { position:absolute; left:50%; bottom:200px; transform:translateX(-50%); width:min(560px,92vw); z-index:18; display:none;
-    background:rgba(20,17,10,.94); border:1px solid hsl(40 60% 50% / .6); border-radius:14px; padding:16px 18px }
+  #probe { position:absolute; right:20px; top:92px; width:288px; z-index:18; display:none;
+    background:rgba(20,17,10,.94); border:1px solid hsl(40 60% 50% / .6); border-radius:14px; padding:14px 16px }
   #probe.show { display:block }
   #askQ { font-size:15px; margin-bottom:12px } #askQ::before { content:"⚡ "; color:#d9b96a }
-  #askPaths { display:flex; gap:10px; flex-wrap:wrap }
+  #askPaths { display:flex; flex-direction:column; gap:8px }
+  #askSub { color:#a9a7b4; font-size:12px; margin:6px 0 10px; line-height:1.6 }
   .path { flex:1; min-width:180px; text-align:left; font:inherit; color:#efede6; cursor:pointer;
     background:rgba(13,13,22,.8); border:1px solid rgba(255,255,255,.18); border-radius:10px; padding:10px 14px }
   .path:hover { border-color:#d9b96a }
@@ -134,6 +135,7 @@ export const DEDUCE_HTML = `<!DOCTYPE html>
   #noscript { position:absolute; inset:0; display:none; align-items:center; justify-content:center; z-index:12 }
   #noscript.show { display:flex }
   #noscript .hero { text-align:center; background:rgba(11,11,18,.82); border:1px solid rgba(255,255,255,.12);
+  .herocases { display:flex; gap:10px; justify-content:center; flex-wrap:wrap }
     border-radius:18px; padding:38px 44px; backdrop-filter:blur(8px) }
   #noscript h2 { font-size:20px; letter-spacing:2px; margin-bottom:10px }
   #noscript p { color:#a9a7b4; font-size:13.5px; margin-bottom:20px }
@@ -146,8 +148,46 @@ export const DEDUCE_HTML = `<!DOCTYPE html>
     border:1px solid rgba(255,255,255,.2); color:#e8e6e1; font-size:13px; border-radius:10px; padding:8px 18px;
     opacity:0; pointer-events:none; transition:opacity .25s; max-width:80vw }
   #toast.show { opacity:1 }
+  .hchip { font-size:12px; color:#c9c8d2; border:1px solid rgba(255,255,255,.14); border-radius:99px; padding:1px 9px; background:rgba(10,10,16,.4); white-space:nowrap }
+  #fx { position:fixed; top:64px; right:0; left:0; pointer-events:none; z-index:35 }
+  .fdelta { position:absolute; top:0; font-size:15px; font-weight:700; animation:fxup 2.3s forwards }
+  .fdelta.up { color:#7fb98a } .fdelta.down { color:#d0907e }
+  @keyframes fxup { 0%{ transform:translateY(0); opacity:0 } 12%{ opacity:1 } 80%{ opacity:1 } 100%{ transform:translateY(-34px); opacity:0 } }
+  #treeOv { position:fixed; inset:0; background:rgba(6,6,10,.82); z-index:45; display:none; align-items:center; justify-content:center; padding:24px }
+  #treeOv.show { display:flex }
+  .tsheet { width:min(720px,100%); max-height:84vh; overflow:auto; background:#14141d; border:1px solid rgba(255,255,255,.14); border-radius:16px; padding:22px 26px }
+  .tsheet h3 { font-size:15px; margin-bottom:14px; font-weight:600 }
+  .tnode { display:flex; align-items:center; gap:10px; padding:7px 10px; border-radius:9px; margin:2px 0 }
+  .tnode:hover { background:rgba(255,255,255,.05) }
+  .tnode.on { background:hsl(40 60% 40% / .12); border:1px solid hsl(40 60% 55% / .35) }
+  .tmark { color:#d9b96a; width:14px } .tnode:not(.on) .tmark { color:#5f5e68 }
+  .tlabel { flex:1; font-size:13.5px; color:#e8e6e1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+  .tnow { font-size:11.5px; color:#d9b96a; border:1px solid rgba(217,185,106,.4); border-radius:5px; padding:0 7px }
+  .tnode .btn { font-size:12px; padding:3px 10px }
+  .ch-fx { display:flex; flex-direction:column; gap:2px; align-items:flex-end }
+  .ch-fx i { font-style:normal; font-size:12px; white-space:nowrap }
+  .befx { margin-top:4px; font-size:12px; display:flex; gap:10px }
+  .aattrs { margin-top:8px; display:flex; flex-wrap:wrap; gap:6px }
+  .arow { font-size:12px; color:#c9c8d2; background:rgba(255,255,255,.05); border-radius:6px; padding:1px 8px }
+  .rnarr { color:#c9c8d2; font-size:14px; padding:6px 2px }
+  .rname { display:inline-block; font-size:12.5px; color:#fff; border-radius:6px; padding:1px 10px; margin:10px 0 4px }
+  .rline { font-size:15px; color:#f1efe8; padding:2px 2px 6px }
+  .rresp { font-size:13.5px; color:#d9b96a; padding:2px 2px 8px; border-bottom:1px solid rgba(255,255,255,.06) }
+  .rresp i { font-style:normal; color:#8e8c9a; font-size:12px }
+  .rchap { font-size:13px; color:#c9c8d2; background:rgba(255,255,255,.04); border-radius:10px; padding:10px 14px; margin:8px 0 14px }
+  .abar { display:flex; align-items:center; gap:8px; font-size:12px; color:#c9c8d2; padding:3px 0 }
+  .abar .alb { min-width:64px }
+  .abar .tr { flex:1; height:5px; background:rgba(255,255,255,.08); border-radius:3px; overflow:hidden }
+  .abar .tr i { display:block; height:100%; border-radius:3px }
+  .abar b { min-width:26px; text-align:right }
+  .abar em { font-style:normal; font-size:11px; min-width:28px; text-align:right }
+  .abar em.up { color:#7fb98a } .abar em.dn { color:#d0907e }
+  #askPaths .ghost { background:rgba(20,18,26,.9); color:#c9c8d2; border:1px solid rgba(255,255,255,.18) }
   footer { position:absolute; bottom:4px; left:0; right:0; text-align:center; color:rgba(160,158,172,.55); font-size:11px; z-index:5; pointer-events:none }
-  @media (max-width:640px){ #sprite { height:52vh } #dlg { bottom:14px } #choices { bottom:150px } }
+  @media (max-width:640px){
+    #sprite { height:52vh } #dlg { bottom:14px } #choices { bottom:150px }
+    #probe { left:14px; right:14px; width:auto; top:auto; bottom:190px }
+  }
 </style>
 </head>
 <body>
@@ -162,13 +202,21 @@ export const DEDUCE_HTML = `<!DOCTYPE html>
     <span id="prog"></span>
     <span id="demoBadge" style="display:none;font-size:12px;color:#f5e9c8;border:1px solid hsl(40 60% 55% / .6);border-radius:99px;padding:1px 10px;background:hsl(40 60% 40% / .2)">▶ 自动演示</span>
     <span class="sp"></span>
+    <span id="hud" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"></span>
+    <span class="sp"></span>
     <button class="tbtn" id="engView" onclick="event.stopPropagation();SHOW_SCORES=!SHOW_SCORES;renderTop();renderChoices()" title="显示引擎综合分（排序建议，不构成闸）">引擎视角</button>
+    <button class="tbtn" onclick="event.stopPropagation();openReplay()">回看</button>
     <button class="tbtn" onclick="event.stopPropagation();openPanel('chars')">角色</button>
     <button class="tbtn" onclick="event.stopPropagation();openPanel('plot')">剧情</button>
     <button class="tbtn" onclick="event.stopPropagation();openPanel('notes')">笔记</button>
     <button class="tbtn" onclick="event.stopPropagation();toggleMenu()">☰</button>
   </div>
   <div id="menu" onclick="event.stopPropagation()">
+    <button class="btn" onclick="hideMenu();openTree()">分支树</button>
+    <button class="btn" onclick="hideMenu();doSave()">存档</button>
+    <button class="btn" onclick="hideMenu();doLoad()">读档</button>
+    <button class="btn" onclick="hideMenu();location.href='/deduce?project='+encodeURIComponent('template-连环计')">案例 · 三国连环计</button>
+    <button class="btn" onclick="hideMenu();location.href='/deduce?project='+encodeURIComponent('template-推演')">案例 · 退婚宴</button>
     <button class="btn" onclick="hideMenu();openImport()">新建 / 导入剧本</button>
     <button class="btn" id="btnDraft" onclick="hideMenu();doDraft()" disabled>收尾成稿</button>
     <button class="btn" onclick="hideMenu();doReset()">重置本场</button>
@@ -177,8 +225,12 @@ export const DEDUCE_HTML = `<!DOCTYPE html>
   <div id="noscript">
     <div class="hero">
       <h2>剧情推演</h2>
-      <p>导入一段小说（挑冲突鲜明的场景），或粘贴设定从零创建——<br>引擎出候选、你只负责点选，推演一出你自己的戏。</p>
-      <button class="btn pri" style="padding:10px 26px" onclick="openImport()">导入小说 / 设定创建 →</button>
+      <p>官方案例一键开玩，或导入一段小说 / 粘贴设定从零创建——<br>引擎出候选、你只负责点选，推演一出你自己的戏。</p>
+      <div class="herocases">
+        <button class="btn pri" onclick="gotoCase('template-连环计')">案例 · 三国连环计（经典重演）</button>
+        <button class="btn" onclick="gotoCase('template-推演')">案例 · 退婚宴（原创短剧）</button>
+      </div>
+      <p style="margin-top:14px"><button class="btn" onclick="openImport()">导入小说 / 设定创建 →</button></p>
     </div>
   </div>
 
@@ -186,6 +238,7 @@ export const DEDUCE_HTML = `<!DOCTYPE html>
 
   <div id="probe">
     <div id="askQ"></div>
+    <div id="askSub">引擎拿不准走向，问你要哪种感觉——表态会记进偏好，影响后续几拍的推演倾向。</div>
     <div id="askPaths"></div>
   </div>
 
@@ -206,12 +259,29 @@ export const DEDUCE_HTML = `<!DOCTYPE html>
     <div id="panelBody"></div>
   </div>
 
+  <div id="treeOv" onclick="if(event.target===this)closeTree()">
+    <div class="tsheet">
+      <h3>分支树 <span style="color:#8e8c9a;font-size:12px">● 当前线 ○ 支线（「从此重推」切线，支线保留）</span></h3>
+      <div id="treeBody"></div>
+      <div class="row"><button class="btn pri" onclick="closeTree()">返回推演</button></div>
+    </div>
+  </div>
+  <div id="fx"></div>
+
+  <div id="replayOv" onclick="if(event.target===this)closeReplay()">
+    <div class="tsheet">
+      <h3>剧情回看 · <span id="replayTitle" style="color:#d9b96a"></span></h3>
+      <div id="replayBody"></div>
+      <div class="row"><button class="btn pri" onclick="closeReplay()">返回推演</button></div>
+    </div>
+  </div>
   <div class="modal" id="mdraft" onclick="if(event.target===this)this.classList.remove('show')">
     <div class="sheet">
       <h3>场景草稿 <span style="color:#8e8c9a;font-size:12px" id="draftFile"></span></h3>
       <pre id="draftText"></pre>
       <div class="row">
         <button class="btn" onclick="navigator.clipboard.writeText(document.getElementById('draftText').textContent)">复制正文</button>
+        <button class="btn pri" onclick="downloadNovel()">下载 .md 小说</button>
         <button class="btn pri" onclick="document.getElementById('mdraft').classList.remove('show')">返回推演</button>
       </div>
     </div>
