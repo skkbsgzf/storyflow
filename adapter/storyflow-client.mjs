@@ -44,6 +44,8 @@ export class StoryFlowClient {
 
   /** 会话清单 / 回放 / 会话级指标 */
   sessions(project) { return this.#req(`/api/projects/${encodeURIComponent(project)}/agent/sessions`) }
+  /** 新建会话（title 可空） */
+  createSession(project, title = '') { return this.#post(`/api/projects/${encodeURIComponent(project)}/agent/sessions`, { title }) }
   transcript(project, sid) { return this.#req(`/api/projects/${encodeURIComponent(project)}/agent/sessions/${encodeURIComponent(sid)}`) }
   stats(project, sid) { return this.#req(`/api/projects/${encodeURIComponent(project)}/agent/sessions/${encodeURIComponent(sid)}/stats`) }
 
@@ -97,9 +99,29 @@ export class StoryFlowClient {
     })()
   }
 
-  /** 面板只读数据：kind ∈ worldbook | files | telemetry */
+  /** 官方面板数据（工单-20261002 批A）：仅 files|raw|preview 三端点存活；
+   *  worldbook/telemetry/changes/canvas 已退役（410 GONE）。 */
   panel(project, kind) { return this.#req(`/api/panel/${kind}?project=${encodeURIComponent(project)}`) }
 
-  /** 内核动词白名单代理（flow_run / flow_next / flow_effect / flow_init） */
+  // ── 官方能力面（四能力，详见 adapter/README.md 能力声明总表）─────────
+
+  /** 本地文件·两层文件树 [{path,sizeKB,mtime}] */
+  fileList(project) { return this.#req(`/api/panel/files?project=${encodeURIComponent(project)}`) }
+  /** 本地文件·读文本（.md/.json/.txt，≤200KB 截断） */
+  fileRead(project, file) { return this.#req(`/api/panel/files?project=${encodeURIComponent(project)}&file=${encodeURIComponent(file)}`) }
+  /** 本地文件·字节流 URL（图/PDF/音频白名单，供 <img>/<iframe>/fetch 自取） */
+  fileRawUrl(project, file) { return `${this.base}/api/panel/raw?project=${encodeURIComponent(project)}&file=${encodeURIComponent(file)}` }
+  /** 本地文件·预览判定元数据（kind: inline|text|none|missing ＋ url ＋ note） */
+  filePreview(project, file) { return this.#req(`/api/panel/preview?project=${encodeURIComponent(project)}&file=${encodeURIComponent(file)}`) }
+
+  /** 世界书检索（GraphHyperRAG：标题/tag/摘要打分 + 一跳关系扩展） */
+  worldbookSearch(project, q, k) { return this.kernelVerb('worldbook_search', { project, q, ...(k ? { k } : {}) }) }
+
+  /** RAG 检索（95 张方法论/标尺卡） */
+  kbSearch(q, k) { return this.kernelVerb('kb_search', { q, ...(k ? { k } : {}) }) }
+  /** RAG 读卡正文（ref = 卡 id 如 kb/aesthetic/character） */
+  kbRead(ref, maxChars) { return this.kernelVerb('kb_read', { ref, ...(maxChars ? { max_chars: maxChars } : {}) }) }
+
+  /** 内核动词白名单代理（flow_init/run/next/effect · kb_search/kb_read · worldbook_search） */
   kernelVerb(verb, args = {}) { return this.#post('/api/kernel-verb', { verb, args }) }
 }

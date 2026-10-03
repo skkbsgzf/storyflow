@@ -34,6 +34,9 @@ export type ChatEvent =
   | { type: "tool_call"; id: string; name: string; args: string }
   | { type: "tool_result"; id: string; name: string; ok: boolean; content: string }
   | { type: "round"; n: number }
+  // 官方面板桥（工单-20261002 批E）：raw=pi 会话事件全保真透传（message_update/message_end/
+  // tool_execution_*/…），消费方是 pi-web fork 的 Next 桥。只加投影，不动既有形状。
+  | { type: "raw"; event: Record<string, unknown> }
   | { type: "done"; text: string; turn?: { rounds: number; toolCalls: number; usage: TokenUsage }; context?: ContextReadout; model?: { provider: string; id: string; contextWindow: number } }
   | { type: "error"; message: string };
 
@@ -257,6 +260,7 @@ export async function* chatTurn(
   text: string,
   agents: Map<string, Agent>,
   mode: ChatMode = "full",
+  opts: { raw?: boolean } = {},
 ): AsyncGenerator<ChatEvent> {
   const trimmed = (text || "").trim();
   if (!trimmed) { yield { type: "error", message: "空消息" }; return; }
@@ -307,6 +311,8 @@ export async function* chatTurn(
   let turnUsage = zeroUsage();   // B9 · 本回合逐条 usage 累加（与 message 行同源，不另算一套）
   const push = (ev: ChatEvent) => { queue.push(ev); };
   const unsub = agent.subscribe((ev) => {
+    // raw 透传（官方面板桥）：先于投影全量放行，消费方按 pi 事件形状渲染
+    if (opts.raw) push({ type: "raw", event: ev as unknown as Record<string, unknown> });
     if (ev.type === "message_update") {
       const a = (ev as unknown as { assistantMessageEvent?: { type?: string; delta?: string } }).assistantMessageEvent;
       if (a?.type === "text_delta" && a.delta) push({ type: "delta", text: a.delta });

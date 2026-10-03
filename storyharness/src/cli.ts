@@ -76,7 +76,6 @@ async function main() {
     const cfg = loadConfig({ project: project || undefined, ...(hn ? { serve: { hostname: hn } } : {}) });   // 缺省回落文件配置——禁止硬塞幻影项目名（p-web 再生根因）
     await runWeb(cfg, {
       port: argOf("--port") ? Number(argOf("--port")) : undefined,
-      uiPort: argOf("--ui-port") ? Number(argOf("--ui-port")) : undefined,
       kernelPort: argOf("--kernel-port") ? Number(argOf("--kernel-port")) : undefined,
       noOpen: argv.includes("--no-open"),
     });

@@ -8,7 +8,8 @@
   python tools/kit.py status <project>                     # 副本 vs 上游：一致/已修改/上游已更新
   python tools/kit.py diff  <project> <file>               # 查看某文件与上游的差异
 
-vendor 集（项目内可独立运行）：check-purity / worldbook / export-doc / snapshot / serve + flow.json 快照。
+vendor 集（项目内可独立运行）：check-purity / worldbook / export-doc / snapshot + flow.json 快照。
+（serve.py 已随 2026-10-02 前端切割退役，不再 vendor。）
 """
 import hashlib, json, sys
 from datetime import datetime
@@ -16,7 +17,7 @@ from pathlib import Path
 
 TOOLS = Path(__file__).resolve().parent
 WORKSPACE = TOOLS.parent
-VENDOR_SET = ["check-purity.py", "worldbook.py", "export-doc.py", "snapshot.py", "serve.py"]
+VENDOR_SET = ["check-purity.py", "worldbook.py", "export-doc.py", "snapshot.py"]
 ROOT_LINE = "ROOT = Path(__file__).resolve().parent.parent"
 KIT_MARK = "kit.json"
 
@@ -40,8 +41,7 @@ def bound_flow(project):
     return None
 
 def vendored_file_text(name, project_root):
-    """vendor 模式改写：ROOT 行后注入 kit.json 感知（proj_dir 逻辑随源文件自带）。
-    serve.py 额外把默认端口定为 8425，避免与工作区实例抢端口。"""
+    """vendor 模式改写：ROOT 行后注入 kit.json 感知（proj_dir 逻辑随源文件自带）。"""
     return (TOOLS / name).read_text(encoding="utf-8")
 
 def cmd_vendor(project, flow_id=None, force=False):
@@ -116,7 +116,6 @@ KIT_MD = """# 创作者工具箱（kit）
     python kit/worldbook.py check <project>     # 世界书一致性
     python kit/export-doc.py <src.md> <out.docx> --plain   # md → docx（需 pip install python-docx）
     python kit/snapshot.py capture <flow> <project> <node> --files <f>   # 快照留档
-    python kit/serve.py 8426                    # 本地预览（项目根）
 
 ## 版本自治
 

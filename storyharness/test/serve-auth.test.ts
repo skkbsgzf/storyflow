@@ -82,18 +82,17 @@ test("口令闸：未登录 API 401 / 页面 302 / 登录后 cookie 与 Bearer �
   });
 });
 
-test("路径边界：project 带 ../ → 400，file 越出项目 → 403，项目内正常读 → 200", async () => {
+test("路径边界：project 带 ../ → 400；退役面板面 → 410", async () => {
   const { cfg } = tmpWorkspace();
   await withServer(cfg, async (base) => {
     const cookie = `sh_token=${makeToken(secretOf(PASSWORD), 60_000)}`;
     const h = { cookie };
     assert.equal((await fetch(`${base}/api/projects/${encodeURIComponent("../../etc")}/agent/sessions`, { headers: h })).status, 400, "%2F 编码的 ../ 必须在入口拒");
-    assert.equal((await fetch(`${base}/api/panel/worldbook?project=${encodeURIComponent("../p-else")}`, { headers: h })).status, 400, "project 越界在面板侧同样拒");
-    const esc = await fetch(`${base}/api/panel/files?project=p-b1&file=${encodeURIComponent("../../../Windows/system.ini.md")}`, { headers: h });
-    assert.equal(esc.status, 403, "file 越出项目目录 = 403");
-    const fine = await fetch(`${base}/api/panel/files?project=p-b1&file=notes.md`, { headers: h });
-    assert.equal(fine.status, 200, "项目内文件正常读");
-    assert.match((await fine.json()).content, /项目内文件/);
+    // 2026-10-02 前端切割：worldbook/telemetry/changes/canvas 退役 = 410 显式回；
+    // files/raw/preview 已按工单-20261002 批A 以官方能力面回归（覆盖见 panel-files.test.ts）
+    const gone = await fetch(`${base}/api/panel/worldbook?project=p-b1`, { headers: h });
+    assert.equal(gone.status, 410, "退役面必须 410 显式回，不静默 404");
+    assert.equal((await gone.json()).error, "GONE");
   });
 });
 

@@ -18,15 +18,11 @@
 //   POST /api/projects/:id/agent/sessions/:sid/rename 重命名
 //   DELETE /api/projects/:id/agent/sessions/:sid      删除
 //   POST /api/projects/:id/agent/sessions/:sid/turn   回合（SSE：delta/tool_call/tool_result/round/done/error）
-//   GET  /api/panel/worldbook?project=<id>            B1 世界书 graph 透传（工单 E-B）
-//   GET  /api/panel/files?project=<id>[&file=<rel>]   B2 两层文件树 / 单文件读取（.md/.json/.txt）
-//   GET  /api/panel/raw?project=<id>&file=<rel>       B13 二进制只读供出（图/PDF/音频白名单＋25MB 上限＋单区间 Range）
-//   GET  /api/panel/preview?project=<id>&file=<rel>   B13 预览判定元数据（kind:inline|text|none|missing ＋ url ＋ note）
-//   GET  /api/panel/telemetry?project=<id>            B3 run 遥测清单 + latest 原样
-//   GET  /api/panel/changes?project=<id>              B12 变更索引：快照节点×轮次账 + 最新轮文件的盘上现状
-//   GET  /api/panel/changes?project=<id>&node=<n>&a=<轮>[&b=<轮|working>][&file=<名>]
-//                                                     B12 产物 diff（unified，口径同 tools/snapshot.py，见 src/udiff.ts）
-//   POST /api/kernel-verb[?trim=1]                    内核动词代理（白名单：flow_init/run/next/effect；trim 剥提示词大文本）
+//   GET  /api/panel/files?project=<id>[&file=<rel>]   官方能力·本地文件：两层树 / 单文件读取（.md/.json/.txt ≤200KB）
+//   GET  /api/panel/raw?project=<id>&file=<rel>       官方能力·字节流（图/PDF/音频白名单＋25MB 上限＋Range；files&raw=1 同源）
+//   GET  /api/panel/preview?project=<id>&file=<rel>   官方能力·预览判定元数据（kind:inline|text|none|missing ＋ url ＋ note）
+//                                                     其余面板端点（worldbook/telemetry/changes/canvas）= 410 退役
+//   POST /api/kernel-verb[?trim=1]                    内核动词代理（白名单：flow_init/run/next/effect/kb_search/kb_read/worldbook_search；trim 剥提示词大文本）
 import * as http from "node:http";
 import { spawnSync } from "node:child_process";
 import * as fs from "node:fs";
@@ -39,11 +35,11 @@ import type { KernelClient } from "./kernel.js";
 import { runFlow, type FlowRunResult } from "./scheduler.js";
 import { listChats, createChat, chatTranscript, deleteChat, renameChat, setSessionFlags, forkChat, chatTurn, sessionStats, modelMetaOf } from "./chat.js";
 import { saveAttachment, listAttachments } from "./attachments.js";
-import { HOME_HTML } from "./home.js";
 import { loadPacks, packsBootLog, PackRuntime } from "./packs.js";
 import { packGateReport, setPackGate, packAllowed, projectFromRequest, cloneTemplateProject } from "./packgate.js";
 import { runWithPack, currentPackCtx } from "./packctx.js";
-import { panelWorldbook, panelFiles, panelTelemetry, panelCanvas, panelRaw, panelPreview, panelChanges, stripPromptFields, safeProject, type PanelReply } from "./panels.js";
+import { safeProject } from "./safe-project.js";
+import { panelFiles, panelRaw, panelPreview } from "./panel-files.js";
 import {
   COOKIE_NAME, bearerToken, checkLimit, checkToken, clientKey, clearFails, cookieClear, cookieToken,
   isLoopbackHost, loginPageHtml, makeLimiter, makeToken, passwordMatches, readCookie, recordFail,
@@ -65,17 +61,19 @@ const mask = (k?: string) => (k ? `${k.slice(0, 4)}****${k.slice(-4)}` : null);
 /** 本地时间「YYYY-MM-DD HH:MM」——toISOString 是 UTC，直接切会差时区（0928 验收：15:55 实为 23:55）。 */
 const localStamp = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().replace("T", " ").slice(0, 16);
 
-// Vite 构建的新壳（storyharness/ui/dist）——存在即优先，缺失回落 home.ts 旧门面
-const DIST_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "ui", "dist");
-const MIME: Record<string, string> = {
-  ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".css": "text/css",
-  ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png",
-  ".woff2": "font/woff2", ".ico": "image/x-icon", ".webmanifest": "application/manifest+json",
-};
-function readDist(rel: string): Buffer | null {
-  const f = path.normalize(path.join(DIST_DIR, rel));
-  if (!f.startsWith(DIST_DIR + path.sep) && f !== path.join(DIST_DIR, "index.html")) return null;
-  try { return fs.readFileSync(f); } catch { return null; }
+// B4 · flow_next ?trim=1 剥离器（前端切割后自 panels.ts 迁入）：递归剥提示词大文本。
+// 活内核 v5 任务包的大文本字段是 instruction（实测 13.5KB/节点），历史名 spawnPrompt 两个都剥——
+// 剥是减字段不是改名。
+function stripPromptFields<T>(o: T): T {
+  if (Array.isArray(o)) return o.map(stripPromptFields) as unknown as T;
+  if (o && typeof o === "object") {
+    const r: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(o)) {
+      if (k !== "spawnPrompt" && k !== "instruction") r[k] = stripPromptFields(v);
+    }
+    return r as unknown as T;
+  }
+  return o;
 }
 
 function readModelFile(cfg: HarnessConfig): Record<string, unknown> {
@@ -205,26 +203,61 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
           }
         }
 
-        // ── 产品门面（对齐 dsh desktop 形态：左栏工作区+会话，中间品牌+输入框）──
-        // 壳与数据全走 8431 单端口（HTTP API + kernel 代理），python serve 面是可选的作业台深链。
+        // ── 协议面落地页（前端已切离本仓，2026-10-02）：不再托任何 UI 壳 ──
         if (url === "/" || url === "/index.html") {
-          const idx = readDist("index.html");
           res.writeHead(200, { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" });
-          // 新壳（ui/dist）优先；未构建时回落旧门面（版本戳：页脚可辨当前服务版本）
-          res.end(idx ? idx.toString("utf-8") : HOME_HTML.replace("__VER__", cfg.harnessVersion));
+          res.end(`<!doctype html><html lang="zh"><head><meta charset="utf-8"><title>StoryHarness 协议面</title></head>
+<body style="font-family:serif;background:#f5f1e8;color:#2c2824;padding:48px;max-width:640px;margin:0 auto">
+<h1 style="letter-spacing:2px">StoryHarness 协议面 ·:${port}</h1>
+<p>本仓自 2026-10-02 起不含前端：界面由外部宿主经 adapter 协议与下列 API 接入。</p>
+<ul><li>生产线：GET /status ｜ POST /start ｜ POST /stop</li>
+<li>agent 会话：/api/projects/:id/agent/sessions（+ /turn SSE）</li>
+<li>内核动词：POST /api/kernel-verb ｜ 内核 HTTP 面 :8421 与 MCP 同表</li>
+<li>协议细节：adapter/README.md 与 docs/integration/</li></ul>
+<p style="color:#8a8375">版本 ${cfg.harnessVersion} ｜ 官方面板在 <a href="http://127.0.0.1:30142/" style="color:#a5433a">:30142</a>（本端口只是协议面）</p></body></html>`);
           return;
         }
-        // 静态产物：Vite 哈希包 + dist 根下的 PWA 文件（清单与图标，缺了「添加到主屏幕」不成立）
-        if (/^\/(assets\/|icons\/|manifest\.webmanifest|sw\.js|favicon\.ico)/.test(url)) {
-          const buf = readDist(decodeURIComponent(url));
-          if (buf) {
-            res.writeHead(200, {
-              "content-type": MIME[path.extname(url)] ?? "application/octet-stream",
-              "cache-control": url.startsWith("/assets/") ? "immutable" : "no-store",
-            });
-            res.end(buf);
+        // ── 官方 panel 静态托管：优先 kitapp 的静态导出产物（next build，PAGES_BASE_PATH=/panel），
+        //    无产物时回落 panel/ 白名单后缀目录（零构建直出）。/panel/client.mjs 固定别名 →
+        //    adapter/storyflow-client.mjs（单一事实源，byte-equal 有测试钉住）。
+        if (url === "/panel" || url.startsWith("/panel/") || url.startsWith("/panel?")) {
+          const HERE = path.dirname(fileURLToPath(import.meta.url));
+          const OUT_DIR = path.join(HERE, "..", "..", "panel", "kitapp", "out");
+          const PANEL_DIR = fs.existsSync(path.join(OUT_DIR, "index.html"))
+            ? OUT_DIR
+            : path.join(HERE, "..", "..", "panel");
+          const MIME: Record<string, string> = {
+            ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".mjs": "text/javascript",
+            ".json": "application/json", ".css": "text/css", ".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon",
+            ".woff2": "font/woff2", ".woff": "font/woff", ".txt": "text/plain; charset=utf-8", ".map": "application/json",
+          };
+          let rel = decodeURIComponent(url.split("?")[0].slice("/panel/".length)) || "index.html";
+          let abs: string;
+          if (rel === "client.mjs") {
+            abs = path.join(PANEL_DIR, "..", "adapter", "storyflow-client.mjs"); // 固定别名，单一事实源
+          } else {
+            abs = path.resolve(PANEL_DIR, rel);
+            if (!abs.startsWith(path.resolve(PANEL_DIR) + path.sep)) {
+              res.writeHead(403, { "content-type": "application/json" });
+              res.end(JSON.stringify({ error: "FORBIDDEN", note: "路径越出 panel 目录" }));
+              return;
+            }
+          }
+          const mime = MIME[path.extname(abs).toLowerCase()];
+          if (!mime) {
+            res.writeHead(415, { "content-type": "application/json" });
+            res.end(JSON.stringify({ error: "UNSUPPORTED_TYPE", note: "panel 静态面只出白名单后缀" }));
             return;
           }
+          try {
+            const buf = fs.readFileSync(abs);
+            res.writeHead(200, { "content-type": mime, "cache-control": "no-store" });
+            res.end(buf);
+          } catch {
+            res.writeHead(404, { "content-type": "application/json" });
+            res.end(JSON.stringify({ error: "NOT_FOUND", note: `panel 下没有 ${rel}` }));
+          }
+          return;
         }
         // D-E · 新建工作区：注册表（.storyharness.workspaces.json）——门面「＋」创建，hub 读它出分组
         const regFile = path.join(cfg.workspaceRoot, ".storyharness.workspaces.json");
@@ -333,7 +366,7 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
             const mk = spawnSync("cmd", ["/c", "mklink", "/J", target, loc], { shell: true });
             if (!fs.existsSync(target)) { res.writeHead(500, { "content-type": "application/json" }); res.end(JSON.stringify({ error: "junction 创建失败" + (mk.stderr ? "：" + String(mk.stderr).slice(0, 120) : "") })); return; }
           }
-          const allow = new Set(["flow_init", "flow_run", "flow_next", "flow_effect", "kb_search", "kb_read"]);
+          const allow = new Set(["flow_init", "flow_run", "flow_next", "flow_effect", "kb_search", "kb_read", "worldbook_search"]);
           if (!b.verb || !allow.has(b.verb)) { res.writeHead(400, { "content-type": "application/json" }); res.end(JSON.stringify({ error: "verb 不在白名单" })); return; }
           try {
             let r = await kernel.verb(b.verb, b.args ?? {});
@@ -500,11 +533,12 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
             }
             const b = body ? (JSON.parse(body) as { text?: string; mode?: string }) : {};
             const mode = (["plan", "confirm", "auto", "full"].includes(b.mode ?? "") ? b.mode : "full") as "plan" | "confirm" | "auto" | "full";
+            const raw = new URLSearchParams(req.url?.split("?")[1] ?? "").get("raw") === "1";
             busyTurns.add(turnKey);
             res.writeHead(200, { "content-type": "text/event-stream; charset=utf-8", "cache-control": "no-cache", connection: "keep-alive" });
             res.write(`data: ${JSON.stringify({ type: "open", sid })}\n\n`);
             try {
-              for await (const ev of chatTurn(kernel, cfg, project, sid, b.text || "", chatAgents, mode)) {
+              for await (const ev of chatTurn(kernel, cfg, project, sid, b.text || "", chatAgents, mode, { raw })) {
                 res.write(`data: ${JSON.stringify(ev)}\n\n`);
               }
             } catch (e) {
@@ -578,21 +612,15 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
             return;
           }
         }
-        // ── B组 · 面板数据接口（工单 E-B：B1 世界书 / B2 文件 / B3 遥测，只读代理）──
+        // ── 官方面板数据接口（工单-20261002 批A）：本地文件能力（files/raw/preview）──
+        //    worldbook/telemetry/changes/canvas 维持退役 410（世界书走内核动词 worldbook_search）。
         if (url.startsWith("/api/panel/")) {
           const q = new URLSearchParams(req.url?.split("?")[1] ?? "");
           const project = q.get("project") ?? "";
           const name = url.slice("/api/panel/".length);
-          if (name === "canvas") {
-            // B5 · 画布同源代理（text/html 非 JSON——跨源 iframe 存储白屏的解法，见 panels.ts）
-            const c = panelCanvas(kernel, project);
-            res.writeHead(c.status, { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" });
-            res.end(c.html || JSON.stringify({ error: c.error }));
-            return;
-          }
           // B13 · raw 二进制预览：白名单内才给字节流，其余状态一律 JSON 说明（前端不许靠空 body 猜）
-          //     两种拼法走同一个 panelRaw：/api/panel/raw?file=… 与 A8 侧已写的等价形 /api/panel/files?file=…&raw=1
-          //     （一份实现、两个入口，判定不许有两套——见 docs/交接回执-B组波12(B13二进制预览)-20260928.md）
+          //     两种拼法走同一个 panelRaw：/api/panel/raw?file=… 与 /api/panel/files?file=…&raw=1
+          //     （一份实现、两个入口，判定不许有两套）
           if (name === "raw" || (name === "files" && q.get("raw") === "1")) {
             const r = panelRaw(kernel, project, q.get("file") ?? "", req.headers.range);
             if (r.stream) {
@@ -611,16 +639,86 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
             res.end(JSON.stringify(reply.payload));
             return;
           }
-          let reply: PanelReply;
-          if (!project) reply = { status: 400, payload: { error: "project 必填" } };
-          else if (name === "worldbook") reply = panelWorldbook(kernel, project);
-          else if (name === "files") reply = panelFiles(kernel, project, q.get("file") ?? "");
-          else if (name === "telemetry") reply = panelTelemetry(kernel, project);
-          // B12 · 变更页签：node/a 有=diff 视图，无=轮次索引（响应里 mode 字段明写，前端不猜）
-          else if (name === "changes") reply = panelChanges(kernel, project, q.get("node") ?? "", q.get("a") ?? "", q.get("b") ?? "", q.get("file") ?? "");
-          else reply = { status: 404, payload: { error: "NOT_FOUND" } };
-          res.writeHead(reply.status, { "content-type": "application/json" });
-          res.end(JSON.stringify(reply.payload));
+          if (name === "files") {
+            const reply = panelFiles(kernel, project, q.get("file") ?? "");
+            res.writeHead(reply.status, { "content-type": "application/json" });
+            res.end(JSON.stringify(reply.payload));
+            return;
+          }
+          // 官方面板桥（工单-20261002 批4）：journal 台账尾部——大事记时间轴数据源。
+          if (name === "journal") {
+            if (!safeProject(project)) {
+              res.writeHead(400, { "content-type": "application/json" });
+              res.end(JSON.stringify({ error: `project 非法：${project}` }));
+              return;
+            }
+            const limit = Math.min(Math.max(Number(q.get("limit") ?? 200), 1), 1000);
+            try {
+              const raw = fs.readFileSync(path.join(kernel.projectDir(project), "journal.jsonl"), "utf-8");
+              const lines = raw.split("\n").filter((l) => l.trim());
+              const tail = lines.slice(-limit).map((l) => {
+                try { return JSON.parse(l) as Record<string, unknown>; } catch { return { event: "parse-error", detail: l.slice(0, 120) }; }
+              });
+              res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" });
+              res.end(JSON.stringify({ project, total: lines.length, entries: tail }));
+            } catch {
+              res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" });
+              res.end(JSON.stringify({ project, total: 0, entries: [], note: "该项目还没有 journal 台账——启动生产线（flow_run）后生成" }));
+            }
+            return;
+          }
+          // 官方面板桥（工单-20261002 深度适配）：工具环注册表——kit/skills.tools.json（40 技能卡）
+          // + 内核动词白名单，供面板「工具/技能」页签替换罐头目录。
+          if (name === "tools") {
+            try {
+              const regPath = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "kit", "skills.tools.json");
+              const reg = JSON.parse(fs.readFileSync(regPath, "utf-8")) as {
+                count?: number;
+                tools?: { tool: string; version: number; title: string; summary: string }[];
+              };
+              res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" });
+              res.end(JSON.stringify({
+                skills: (reg.tools ?? []).map((t) => ({ tool: t.tool, version: t.version, title: t.title, summary: t.summary })),
+                verbs: ["flow_init", "flow_run", "flow_next", "flow_effect", "kb_search", "kb_read", "worldbook_search"],
+              }));
+            } catch (e) {
+              res.writeHead(404, { "content-type": "application/json" });
+              res.end(JSON.stringify({ error: "NO_REGISTRY", note: `kit/skills.tools.json 不可读：${(e as Error).message}` }));
+            }
+            return;
+          }
+          // 世界书 pedia 页（v4 力导向图谱前端复活）：模板 + graph.json 注入，整页 text/html。
+          // 用法：/api/panel/worldbook-page?project=<id>（新标签页直接打开，或面板 iframe 内嵌）。
+          if (name === "worldbook-page") {
+            try {
+              const tplPath = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "tools", "worldbook-template.html");
+              const tpl = fs.readFileSync(tplPath, "utf-8");
+              const wbDir = path.join(kernel.projectDir(project ?? ""), "世界书");
+              const graph = JSON.parse(fs.readFileSync(path.join(wbDir, "graph.json"), "utf-8"));
+              const html = tpl
+                .split("__TITLE__").join(project ?? "未命名")
+                .replace("__WBDATA__", JSON.stringify(graph));
+              res.writeHead(200, { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" });
+              res.end(html);
+            } catch (e) {
+              const msg = String((e as Error).message);
+              res.writeHead(msg.includes("ENOENT") ? 404 : 500, { "content-type": "application/json" });
+              res.end(JSON.stringify({
+                error: msg.includes("ENOENT") ? "NO_WORLDBOOK" : "RENDER_FAILED",
+                note: msg.includes("ENOENT")
+                  ? "该项目无 世界书/graph.json——python tools/worldbook_index.py --root projects/<id> 重建"
+                  : msg,
+              }));
+            }
+            return;
+          }
+          res.writeHead(410, { "content-type": "application/json" });
+          res.end(JSON.stringify({
+            error: "GONE",
+            code: "RETIRED_FACE",
+            retired: name,
+            note: "该面板端点已退役（worldbook/telemetry/changes/canvas）；文件能力走 files/raw/preview，世界书/RAG 走 /api/kernel-verb 的 worldbook_search、kb_search、kb_read",
+          }));
           return;
         }
         // ── S4 · 扩展包启停面（GET=逐包三态门禁报告，POST=写项目表态进 项目配置.json）────
@@ -667,7 +765,7 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
           }
           return;
         }
-        // ── S1 · 扩展点挂载表（语料包 pages/apis；推演 = 内置包 packs/deduce）────────
+        // ── S1 · 扩展点挂载表（语料包 pages/apis；deduce 包已整体挪出至 D:\storyflow-deduce，挂载机制保留）────────
         // 鉴权闸在上方已跑过——包路由与核心面同闸，包不许绕闸。
         // runWithPack 绑定注入面（cfg/runtime/packCfg），包代码经 currentPackCtx() 取用。
         {

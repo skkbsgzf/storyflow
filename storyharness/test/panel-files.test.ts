@@ -1,13 +1,14 @@
-// 工单 WO-B13（波9）· 二进制预览数据面单测＋协议面集成测：
-//   白名单后缀出字节流（MIME/长度/Range 正确），白名单外 415 带说明，越界 403，超限 413，
-//   preview 元数据把「能不能内嵌＋URL＋为什么不能」一次说清（UI 不许靠空 body 猜）。
+// 官方面板数据接口 · 本地文件能力单测＋协议面集成测（工单-20261002 批A）：
+//   files 树/读取（白名单外 400、越界 403、查无 404、坏 project 400）；raw 白名单出字节流（MIME/长度/Range 正确），
+//   白名单外 415 带说明，越界 403，超限 413；preview 元数据四档说清；退役面（worldbook/telemetry/changes/canvas）410。
+// 自前端切割时的 panels-raw.test.ts 对齐复刻，import 换 panel-files.ts。
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import type { AddressInfo } from "node:net";
-import { panelRaw, panelPreview } from "../src/panels.js";
+import { panelFiles, panelRaw, panelPreview } from "../src/panel-files.js";
 import { KernelClient } from "../src/kernel.js";
 import type { HarnessConfig } from "../src/config.js";
 import { startServe } from "../src/serve.js";
@@ -32,6 +33,22 @@ function tmpProject(): { root: string; kernel: KernelClient; dir: string } {
   } as unknown as KernelClient;
   return { root, kernel, dir };
 }
+
+test("panelFiles：两层树每项带 path/sizeKB/mtime；单文件读取 200；白名单外 400；越界 403；查无 404；坏 project 400", () => {
+  const { kernel } = tmpProject();
+  const tree = panelFiles(kernel, "p-b13", "");
+  assert.equal(tree.status, 200);
+  const files = (tree.payload as { files: { path: string }[] }).files;
+  assert.ok(files.some((f) => f.path === "交付/shot.png"));
+  assert.ok(files.some((f) => f.path === "交付/正文.md"));
+  const read = panelFiles(kernel, "p-b13", "交付/正文.md");
+  assert.equal(read.status, 200);
+  assert.equal((read.payload as { content: string }).content, "# 正文\n");
+  assert.equal(panelFiles(kernel, "p-b13", "交付/shot.png").status, 400, "二进制后缀不在读取白名单");
+  assert.equal(panelFiles(kernel, "p-b13", "../../outside.md").status, 403);
+  assert.equal(panelFiles(kernel, "p-b13", "交付/没有.md").status, 404);
+  assert.equal(panelFiles(kernel, "../else", "").status, 400);
+});
 
 test("panelRaw（白名单内）：200＋正确 MIME＋content-length＋accept-ranges，流出的字节与磁盘一致", async () => {
   const { kernel } = tmpProject();
@@ -167,7 +184,7 @@ test("HTTP 集成：raw 出图（200 头全对＋字节 sha 一致）、Range 20
     assert.deepEqual([...Buffer.from(await partial.arrayBuffer())], [...PNG.subarray(1, 4)]);
 
     const alias = await fetch(`${base}/api/panel/files?project=p-b13&file=${encodeURIComponent("交付/shot.png")}&raw=1`);
-    assert.equal(alias.status, 200, "A8 侧的 files?…&raw=1 拼法走同一个 panelRaw");
+    assert.equal(alias.status, 200, "files?…&raw=1 拼法走同一个 panelRaw");
     assert.equal(alias.headers.get("content-type"), "image/png");
     assert.deepEqual([...Buffer.from(await alias.arrayBuffer())], [...PNG]);
     const aliasDocx = await fetch(`${base}/api/panel/files?project=p-b13&file=${encodeURIComponent("交付/稿子.docx")}&raw=1`);
@@ -180,12 +197,37 @@ test("HTTP 集成：raw 出图（200 头全对＋字节 sha 一致）、Range 20
     const trav = await fetch(`${base}/api/panel/raw?project=p-b13&file=${encodeURIComponent("../../etc/passwd.png")}`);
     assert.equal(trav.status, 403);
 
+    const tree = await fetch(`${base}/api/panel/files?project=p-b13`);
+    assert.equal(tree.status, 200);
+    assert.ok(Array.isArray((await tree.json()).files));
+
     const meta = await fetch(`${base}/api/panel/preview?project=p-b13&file=${encodeURIComponent("交付/shot.png")}`);
     assert.equal(meta.status, 200);
     const j = await meta.json();
     assert.equal(j.kind, "inline");
     assert.equal(j.sizeKB, 0);
     assert.ok(j.url.startsWith("/api/panel/raw?"));
+  } finally {
+    server.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("HTTP 集成：退役面（worldbook/telemetry/changes/canvas）仍 410 GONE 带 code", async () => {
+  const { root } = tmpProject();
+  const cfg = serveCfg(root);
+  const server = startServe(new KernelClient(cfg.kernelBase, cfg.workspaceRoot, cfg.corpus), cfg, 0);
+  await new Promise<void>((r) => server.once("listening", r));
+  const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  try {
+    for (const name of ["worldbook", "telemetry", "changes", "canvas"]) {
+      const r = await fetch(`${base}/api/panel/${name}?project=p-b13`);
+      assert.equal(r.status, 410, `${name} 必须显式 410`);
+      const j = await r.json();
+      assert.equal(j.error, "GONE");
+      assert.equal(j.code, "RETIRED_FACE");
+      assert.equal(j.retired, name);
+    }
   } finally {
     server.close();
     fs.rmSync(root, { recursive: true, force: true });

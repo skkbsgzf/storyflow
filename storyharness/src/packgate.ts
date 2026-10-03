@@ -15,7 +15,7 @@ import * as fs from "node:fs";
 import path from "node:path";
 import type { HarnessConfig } from "./config.js";
 import { copyProjectTree, type PackRuntime } from "./packs.js";
-import { safeProject } from "./panels.js";
+import { safeProject } from "./safe-project.js";
 
 /** 项目配置件（语料侧既有事实源：brief.ts 读它，tools 的 cfg_template 生成它）。开关段挂在其 presets 下。 */
 export const PROJECT_CONFIG_FILE = "项目配置.json";

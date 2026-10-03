@@ -7,7 +7,7 @@ import {
   isLoopbackHost, loginPageHtml, makeLimiter, makeToken, passwordMatches, readCookie, recordFail,
   resolveCors, safeNext, viaHttps, wantsHtml, COOKIE_NAME,
 } from "../src/auth.js";
-import { safeProject } from "../src/panels.js";
+import { safeProject } from "../src/safe-project.js";
 
 const SECRET = "unit-test-secret";
 
