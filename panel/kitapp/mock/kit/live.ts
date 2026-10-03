@@ -2,8 +2,9 @@
  *  事件序列验收基准 = demo/mock/agent.ts runPrompt（agent_start → 用户消息 → 流式 → 工具起止 → agent_end/settled/prompt_done）。 */
 import type { AgentMessage, ToolResultMessage } from "@/lib/types";
 import { appendEntry, type MockSession } from "../sessions/store";
-import { kitCreateSession, kitStop, kitTurnRaw } from "./client";
+import { kitCreateSession, kitRename, kitStop, kitTurnRaw } from "./client";
 import { kitProjectName } from "./hydrate";
+import { markTouched } from "../sessions/store";
 
 export interface PromptIO {
   emit(sessionId: string, event: Record<string, unknown>): void;
@@ -100,6 +101,13 @@ export async function runPromptKit(
     }
   } catch (e) {
     if (!controller.signal.aborted) io.emit(session.id, { type: "error", message: String((e as Error).message ?? e) });
+    // 自动标题（批5）：无名会话的首回合后以首句命名（kit rename + 本地同步），替掉 demo 罐头 autoTitle
+    if (!session.name && text.trim()) {
+      const title = text.trim().slice(0, 24);
+      session.name = title;
+      markTouched();
+      void kitRename(project, kitSid, title).catch(() => undefined);
+    }
   } finally {
     mark("end frames=" + String(frames ?? 0));
     aborts.delete(session.id);

@@ -9,3 +9,4 @@ out/
 # 依赖目录（已入库的 core/storyharness node_modules 不受影响——gitignore 不动已跟踪文件）
 panel/kitapp/node_modules/
 panel/node_modules/
+extension-dist/

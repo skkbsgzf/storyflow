@@ -117,6 +117,15 @@ export async function kitProductionStop(): Promise<unknown> {
   return kitJson("/stop", { method: "POST" });
 }
 
+/** 会话重命名（自动标题用：首问后以首句命名，替掉 demo 罐头 autoTitle）。 */
+export async function kitRename(project: string, sid: string, title: string): Promise<void> {
+  await kitJson(`/api/projects/${encodeURIComponent(project)}/agent/sessions/${encodeURIComponent(sid)}/rename`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ title }),
+  });
+}
+
 /** kit 文本读取（.md/.json/.txt 白名单 ≤200KB）——世界书卡片等产物走此端点。 */
 export async function kitFileRead(project: string, file: string): Promise<{ path: string; content: string }> {
   return kitJson<{ path: string; content: string }>(
