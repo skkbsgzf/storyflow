@@ -21,7 +21,10 @@ export interface KitSessionMeta {
 }
 
 export async function kitJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const url = `${KIT_BASE}${path}`;
+  // GET 加缓存击穿：chromium 按「默认可缓存」启发式缓存 410/404 错误体——
+  // 旧进程时代的错误响应曾从缓存反复回放（服务端已换新代码仍 410），GET 一律绕开 HTTP 缓存。
+  const isGet = !init?.method || init.method === "GET";
+  const url = isGet ? `${KIT_BASE}${path}${path.includes("?") ? "&" : "?"}_=${Date.now()}` : `${KIT_BASE}${path}`;
   // 8s 超时：水合挂在网络上时快速失败回落教程，侧栏不许无限 Loading
   const res = await (await getRealFetch())(url, { ...init, signal: AbortSignal.timeout(8000) });
   const text = await res.text();

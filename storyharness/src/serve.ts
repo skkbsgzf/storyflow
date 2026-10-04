@@ -857,7 +857,92 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
             }));
             return;
           }
-          res.writeHead(410, { "content-type": "application/json" });
+          // 官方面板桥（工单-20261005 卡片商店）：知识库全量目录——
+          // 声明面静态读取（repoRoot/knowledge/**/*.md frontmatter），与 flow.json 同性质的展示数据；
+          // 摘要 = 正文首个有效段（剥标题/引用/表格线），≤90 字。卡片商店与侧栏域列表共用。
+          if (name === "kb-catalog") {
+            const repoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
+            const kbDir = path.join(repoRoot, "knowledge");
+            const KB_DOMAINS: Record<string, { name: string; desc: string }> = {
+              aesthetic: { name: "审美标尺", desc: "什么叫好：维度、条款、阈值" },
+              structure: { name: "叙事结构", desc: "结构选型目录与骨架" },
+              craft: { name: "成文工艺", desc: "六维约束路由：写前看什么、盖章查什么" },
+              market: { name: "市场盘面", desc: "市场快照与网感公式" },
+              formats: { name: "形态标准", desc: "载体形态约束（长篇网文等）" },
+              method: { name: "方法论", desc: "长篇工程方法" },
+              trope: { name: "梗族", desc: "梗机制 + 饱和度 + 演化链" },
+              benchmark: { name: "对标件", desc: "强度标尺（AI 评分 + 热度）" },
+              rules: { name: "规则语料", desc: "agent 可激活条款集（是语料不是闸）" },
+              continuity: { name: "连续性", desc: "长程连续性与状态台账" },
+              deconstruct: { name: "拆解协议", desc: "参考作品怎么拆成可入库素材" },
+              "semif-calibration": { name: "semif 校准", desc: "机器类验收校准包" },
+            };
+            const KB_TYPES: Record<string, string> = {
+              "aesthetic-standard": "审美判定标准",
+              "style-route": "风格路线档位",
+              "rule-corpus": "规则语料卡",
+              "market-snapshot": "市场快照",
+              "market-standard": "网感公式标准",
+              "deconstruct-protocol": "拆解协议",
+              "continuity-standard": "连续性标准",
+              "format-standard": "形态标准",
+              "structure-catalog": "结构选型目录",
+              "meme-standard": "梗密度约束",
+              "trope": "梗条目",
+              "benchmark": "对标件",
+              "craft-standard": "成文工艺标准",
+            };
+            const cards: Record<string, unknown>[] = [];
+            const counts: Record<string, number> = {};
+            try {
+              for (const domain of fs.readdirSync(kbDir).sort()) {
+                const dDir = path.join(kbDir, domain);
+                if (!fs.statSync(dDir).isDirectory()) continue;
+                for (const f of fs.readdirSync(dDir).sort()) {
+                  if (!f.endsWith(".md") || f.startsWith("README")) continue;
+                  let raw = "";
+                  try { raw = fs.readFileSync(path.join(dDir, f), "utf-8"); } catch { continue; }
+                  const m = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+                  let fm: Record<string, unknown> = {};
+                  if (m) { try { fm = JSON.parse(m[1]) as Record<string, unknown>; } catch { /* frontmatter 非法 → 空对象，落文件名兜底 */ } }
+                  // 摘要：正文剥 frontmatter 后，跳过标题/引用/表格/横线，取首个有效段
+                  const bodyLines = (m ? raw.slice(m[0].length + "---".length) : raw).split(/\r?\n/);
+                  let summary = "";
+                  for (const l of bodyLines) {
+                    const t = l.trim();
+                    if (!t || t.startsWith("#") || t.startsWith(">") || t.startsWith("|") || t.startsWith("---") || t.startsWith("![") || t === "***") continue;
+                    summary = t.replace(/\*\*/g, "").replace(/`/g, "");
+                    break;
+                  }
+                  const key = String(fm.id ?? `kb/${domain}/${f.replace(/\.md$/, "")}`);
+                  counts[domain] = (counts[domain] ?? 0) + 1;
+                  cards.push({
+                    id: key,
+                    domain,
+                    file: `${domain}/${f}`,
+                    title: String(fm.title ?? f.replace(/\.md$/, "")),
+                    type: String(fm.type ?? ""),
+                    typeName: KB_TYPES[String(fm.type ?? "")] ?? String(fm.type ?? ""),
+                    status: String(fm.status ?? ""),
+                    version: String(fm.version ?? ""),
+                    updated: String(fm.updated ?? ""),
+                    summary: summary.slice(0, 90),
+                  });
+                }
+              }
+            } catch (e) {
+              res.writeHead(500, { "content-type": "application/json" });
+              res.end(JSON.stringify({ error: `KB_CATALOG_FAILED: ${(e as Error).message}` }));
+              return;
+            }
+            const domains = Object.keys(KB_DOMAINS).filter((k) => counts[k]).map((k) => ({ key: k, ...KB_DOMAINS[k], count: counts[k] }));
+            // 盘上存在但映射表没收录的域也带上（不静默吞）
+            for (const k of Object.keys(counts)) if (!KB_DOMAINS[k]) domains.push({ key: k, name: k, desc: "（未收录域名映射）", count: counts[k] });
+            res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" });
+            res.end(JSON.stringify({ domains, cards, total: cards.length }));
+            return;
+          }
+          res.writeHead(410, { "content-type": "application/json", "cache-control": "no-store" });
           res.end(JSON.stringify({
             error: "GONE",
             code: "RETIRED_FACE",

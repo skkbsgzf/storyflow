@@ -3,16 +3,37 @@
 /** 统一 tab 工作台（批A · Obsidian 模型骨架）：主内容区唯一容器。
  *  工具侧栏点任何条目 → openWorkTab 开一页；可叠多页、可关；正文 tab 常驻。 */
 import ReactMarkdown from "react-markdown";
-import { useEffect, useState } from "react";
+import React, { Component, useEffect, useState, type ReactNode } from "react";
 import { FileViewer } from "./FileViewer";
 import { PROJECT_ROOT } from "../mock/paths";
 import { EntryWikiView } from "./EntryWikiView";
 import { WorldbookGraphView } from "./WorldbookGraphView";
 import { TimelinePage } from "./TimelinePage";
 import { ProductionPage } from "./ProductionPage";
-import { KbShopView } from "./KbShopView";
+import { KbShopView, KB_TYPE_NAMES } from "./KbShopView";
 import { kitKbRead } from "../mock/kit/client";
 import type { SelectionCard } from "@/lib/selection-card";
+
+/** tab 内容错误边界：单个 tab 渲染崩掉只废这一页（可关掉重开），不许拖死整个工作台。 */
+class TabErrorBoundary extends Component<{ name: string; children: ReactNode }, { error: string | null }> {
+  state = { error: null as string | null };
+  static getDerivedStateFromError(e: unknown) { return { error: String((e as Error)?.message ?? e) }; }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ padding: 20 }}>
+          <div style={{ border: "1px solid #b3564d", borderRadius: 10, padding: "12px 14px", fontSize: 13, color: "#d98a83", marginBottom: 12 }}>
+            页「{this.props.name}」渲染出错：{this.state.error}
+          </div>
+          <button type="button" onClick={() => this.setState({ error: null })} style={{ padding: "7px 16px", border: "1px solid var(--border)", borderRadius: 8, background: "transparent", color: "var(--text)", cursor: "pointer", fontSize: 13 }}>
+            重试
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 export type WorkTab =
   | { kind: "file"; id: string; title: string; path: string }
@@ -70,7 +91,7 @@ function KbCardFetcher({ refId }: { refId: string }) {
         <div style={{ marginBottom: 14, paddingBottom: 12, borderBottom: "1px solid var(--border)" }}>
           <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 8 }}>{String(meta.title ?? refId)}</div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", fontSize: 11 }}>
-            {[String(meta.type ?? ""), `v${String(meta.version ?? "?")}`, String(meta.status ?? ""), String(meta.updated ?? "")]
+            {[KB_TYPE_NAMES[String(meta.type ?? "")] ?? String(meta.type ?? ""), `v${String(meta.version ?? "?")}`, String(meta.status ?? "") === "active" ? "生效中" : String(meta.status ?? ""), String(meta.updated ?? "")]
               .filter(Boolean)
               .map((chip, i) => (
                 <span key={i} style={{ padding: "2px 9px", borderRadius: 999, border: "1px solid var(--border)", color: "var(--text-muted)" }}>{chip}</span>
@@ -144,33 +165,37 @@ export function WorkTabs({
       <div style={{ flex: 1, minHeight: 0, position: "relative", overflow: "auto" }}>
         {!active ? (
           <div style={{ padding: 20, fontSize: 13, color: "var(--text-muted)" }}>（无打开页）</div>
-        ) : active.kind === "file" ? (
-          <div style={{ height: "100%" }}>
-            <FileViewer filePath={`${PROJECT_ROOT}/${active.path}`} cwd={PROJECT_ROOT} onSelectionToChat={onSelectionToChat} />
-          </div>
-        ) : active.kind === "entry" ? (
-          <EntryWikiView path={active.path} title={active.title} onOpenEntry={onOpenEntry} onNavigateEntry={onNavigateEntry} />
-        ) : active.kind === "kbcard" ? (
-          <KbCardFetcher refId={active.ref} />
-        ) : active.kind === "kbshop" ? (
-          <KbShopView
-            key={active.domain ?? "all"}
-            domain={active.domain}
-            onOpenCard={(ref, title) => onOpenWorkTab?.({ kind: "kbcard", id: `kb:${ref}`, title, ref })}
-          />
-        ) : active.kind === "graph" ? (
-          <div style={{ padding: 14, height: "100%", boxSizing: "border-box" }}>
-            <WorldbookGraphView onOpenEntry={onOpenEntry} />
-          </div>
-        ) : active.kind === "timeline" ? (
-          <div style={{ position: "relative", height: "100%" }}>
-            <TimelinePage />
-          </div>
-        ) : active.kind === "production" ? (
-          <div style={{ position: "relative", height: "100%" }}>
-            <ProductionPage project={active.project} />
-          </div>
-        ) : null}
+        ) : (
+          <TabErrorBoundary name={active.title}>
+            {active.kind === "file" ? (
+              <div style={{ height: "100%" }}>
+                <FileViewer filePath={`${PROJECT_ROOT}/${active.path}`} cwd={PROJECT_ROOT} onSelectionToChat={onSelectionToChat} />
+              </div>
+            ) : active.kind === "entry" ? (
+              <EntryWikiView path={active.path} title={active.title} onOpenEntry={onOpenEntry} onNavigateEntry={onNavigateEntry} />
+            ) : active.kind === "kbcard" ? (
+              <KbCardFetcher refId={active.ref} />
+            ) : active.kind === "kbshop" ? (
+              <KbShopView
+                key={active.domain ?? "all"}
+                domain={active.domain}
+                onOpenCard={(ref, title) => onOpenWorkTab?.({ kind: "kbcard", id: `kb:${ref}`, title, ref })}
+              />
+            ) : active.kind === "graph" ? (
+              <div style={{ padding: 14, height: "100%", boxSizing: "border-box" }}>
+                <WorldbookGraphView onOpenEntry={onOpenEntry} />
+              </div>
+            ) : active.kind === "timeline" ? (
+              <div style={{ position: "relative", height: "100%" }}>
+                <TimelinePage />
+              </div>
+            ) : active.kind === "production" ? (
+              <div style={{ position: "relative", height: "100%" }}>
+                <ProductionPage project={active.project} />
+              </div>
+            ) : null}
+          </TabErrorBoundary>
+        )}
       </div>
     </div>
   );
