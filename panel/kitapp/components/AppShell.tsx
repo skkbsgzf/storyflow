@@ -262,6 +262,10 @@ export function AppShell() {
     reclampRightPanelWidth();
   }, [reclampRightPanelWidth, reclampSidebarWidth, rightPanelOpen]);
   const chatInputRef = useRef<ChatInputHandle | null>(null);
+  // ── 主次重构（用户拍板）：正文=主内容区（大），agent 会话=面板（可拖宽）──
+  // order+flex 换位：正文面板 order 提前并 flex:1；chat 列缩为定宽面板；拖拽手柄复用。
+  const [bodyPrimary, setBodyPrimary] = useState(true);
+
   // ── 批1 · 全局导航（写作领域 IA）：icon 导航栏切换主内容区视图 ──
   type AppView = "chat" | "worldbook" | "knowledge" | "timeline" | "production" | "files" | "settings";
   const [activeView, setActiveView] = useState<AppView>("chat");
@@ -2089,7 +2093,12 @@ export function AppShell() {
       )}
 
       {/* Center: chat */}
-      <div inert={rightPanelFullWidth} style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0, position: "relative" }}>
+      <div inert={rightPanelFullWidth} style={{
+        ...(bodyPrimary && rightPanelOpen
+          ? { order: 3, flex: "0 0 auto", width: "max(460px, var(--right-panel-width))", maxWidth: "70vw" }
+          : { order: 2, flex: 1 }),
+        display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0, position: "relative",
+      }}>
         {/* 批1 · 非 chat 视图的整页占位（批2/批3 各视图迁入后替换） */}
         {activeView !== "chat" && activeView !== "worldbook" && (
           <div style={{ position: "absolute", inset: 0, zIndex: 150, background: "var(--bg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10 }}>
@@ -2207,6 +2216,28 @@ export function AppShell() {
               {renderProjectTrustWarning(false)}
               {renderChatToolbarActions(false)}
               {renderSessionStatsButton(false)}
+              <button
+                type="button"
+                onClick={() => setBodyPrimary((v) => !v)}
+                title={bodyPrimary ? "主次：正文为主，会话为侧面板（点击切回会话为主）" : "主次：会话为主（点击切回正文为主）"}
+                aria-pressed={bodyPrimary}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  height: "100%", padding: "0 12px",
+                  background: bodyPrimary ? "var(--bg-selected)" : "none",
+                  border: "none",
+                  borderTop: bodyPrimary ? "2px solid var(--accent)" : "2px solid transparent",
+                  borderRight: "1px solid var(--border)",
+                  cursor: "pointer",
+                  color: bodyPrimary ? "var(--text)" : "var(--text-muted)",
+                  fontSize: 11, whiteSpace: "nowrap",
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="3" y="4" width="13" height="16" rx="2" /><rect x="17" y="4" width="4" height="16" rx="1" />
+                </svg>
+                <span>正文主</span>
+              </button>
             </>
           )}
           {!isMobile && renderMainFileToggle(false)}
@@ -2579,6 +2610,9 @@ export function AppShell() {
         className={`right-panel-container${rightPanelOpen ? " right-panel-open" : " right-panel-closed"}${rightPanelFullWidth ? " right-panel-full-width" : ""}${rightPanelResizer.isResizing ? " right-panel-resizing" : ""}`}
         style={{
           "--right-panel-width": `${rightPanelResizer.width}px`,
+          ...(bodyPrimary && rightPanelOpen
+            ? { order: 2, flex: "1 1 auto", width: "auto", minWidth: 0, borderLeft: "none", borderRight: "1px solid var(--border)" }
+            : {}),
           display: "flex",
           flexDirection: "column",
           borderLeft: "1px solid var(--border)",
