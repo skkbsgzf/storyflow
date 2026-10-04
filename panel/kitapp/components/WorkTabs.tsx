@@ -115,6 +115,8 @@ export function WorkTabs({
   onOpenEntry,
   onNavigateEntry,
   onOpenWorkTab,
+  sidebarOpen,
+  onToggleSidebar,
 }: {
   tabs: WorkTab[];
   activeId: string | null;
@@ -124,6 +126,8 @@ export function WorkTabs({
   onOpenEntry?: (path: string, title: string) => void;
   onNavigateEntry?: (path: string, title: string) => void;
   onOpenWorkTab?: (tab: WorkTab) => void;
+  sidebarOpen?: boolean;
+  onToggleSidebar?: () => void;
 }) {
   const active = tabs.find((t) => t.id === activeId) ?? tabs[0] ?? null;
 
@@ -131,6 +135,32 @@ export function WorkTabs({
     <div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
       {/* tab 条 */}
       <div style={{ display: "flex", gap: 2, padding: "6px 10px 0", flexShrink: 0, overflowX: "auto", borderBottom: "1px solid var(--border)", background: "var(--bg-panel)" }}>
+        {/* 左侧栏开关：管哪侧就锚在哪侧（原来长在右会话面板顶栏上，视觉错位） */}
+        {onToggleSidebar && (
+          <button
+            type="button"
+            onClick={onToggleSidebar}
+            title={sidebarOpen ? "收起左侧栏" : "展开左侧栏"}
+            aria-label={sidebarOpen ? "收起左侧栏" : "展开左侧栏"}
+            aria-expanded={sidebarOpen}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              width: 28, height: 28, marginRight: 6, padding: 0,
+              background: "none", border: "none", borderRight: "1px solid var(--border)",
+              color: sidebarOpen ? "var(--text)" : "var(--text-muted)", cursor: "pointer",
+            }}
+          >
+            {sidebarOpen ? (
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="3" x2="9" y2="21" />
+              </svg>
+            ) : (
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="3" x2="9" y2="21" strokeDasharray="2 2" />
+              </svg>
+            )}
+          </button>
+        )}
         {tabs.map((t) => {
           const on = t.id === active?.id;
           return (

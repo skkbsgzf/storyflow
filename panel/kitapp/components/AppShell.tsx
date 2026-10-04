@@ -2082,8 +2082,9 @@ export function AppShell() {
         className={`sidebar-container${sidebarOpen ? " sidebar-open" : " sidebar-closed"}${mobileSidebarReady ? "" : " sidebar-mobile-pending"}${sidebarResizer.isResizing ? " sidebar-resizing" : ""}`}
         style={{
           "--sidebar-width": `${sidebarResizer.width}px`,
+          // 收起走内联：.sidebar-closed 类规则在某些环境下不生效（computed 仍 260px，原因未明）——内联必胜
+          ...(sidebarOpen ? {} : { width: 0, minWidth: 0, borderRight: "none", overflow: "hidden" }),
           background: "var(--bg-panel)",
-          borderRight: "1px solid var(--border)",
           display: "flex",
           flexDirection: "column",
           flexShrink: 0,
@@ -2116,6 +2117,8 @@ export function AppShell() {
           onOpenEntry={handleOpenEntryTab}
           onNavigateEntry={handleNavigateEntry}
           onOpenWorkTab={openWorkTab}
+          sidebarOpen={sidebarOpen}
+          onToggleSidebar={handleSidebarToggle}
         />
       </div>
 
@@ -2128,6 +2131,8 @@ export function AppShell() {
         {/* Top bar with sidebar toggle */}
         <div ref={topBarRef} style={{ flexShrink: 0, background: "var(--bg-panel)" }}>
         <div style={{ display: "flex", alignItems: "center", position: "relative", borderBottom: "1px solid var(--border)", height: "calc(36px + env(safe-area-inset-top))", paddingTop: "env(safe-area-inset-top)" }}>
+          {/* 侧栏开关已挪到工作台 tab 条左端（管哪侧锚哪侧）——桌面端此处不再放跨区按钮；移动端保留原入口 */}
+          {isMobile && (
           <button
             onClick={handleSidebarToggle}
              title={sidebarOpen ? translate("sidebar.hide") : translate("sidebar.show")}
@@ -2151,6 +2156,7 @@ export function AppShell() {
               </svg>
             )}
           </button>
+          )}
           {isMobile && (
             <div
               ref={mobileToolbarRef}
@@ -2230,7 +2236,8 @@ export function AppShell() {
               {renderSessionStatsButton(false)}
             </>
           )}
-          {!isMobile && renderMainFileToggle(false)}
+          {/* 桌面端不再渲染 renderMainFileToggle——它控制的是 display:none 的旧文件面板（死按钮） */}
+          {isMobile && renderMainFileToggle(true)}
           {isMobile && sessionHasBranches && (
             <BranchNavigator
               tree={branchTree}
