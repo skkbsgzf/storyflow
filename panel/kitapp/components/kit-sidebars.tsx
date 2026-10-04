@@ -37,7 +37,9 @@ function WorldbookSidebar({ open }: { open: OpenWorkTab }) {
   const [hits, setHits] = useState<{ title?: string; path?: string | null }[] | null>(null);
 
   useEffect(() => {
-    fetchWbGraph().then((g) => setGraph(g.entries)).catch(() => setGraph([]));
+    fetchWbGraph()
+      .then((g) => setGraph(g.entries))
+      .catch(() => setGraph([])); // kit 不可达 = 空列表（不卡 Loading）
   }, []);
 
   const cats = useMemo(() => {
@@ -73,6 +75,9 @@ function WorldbookSidebar({ open }: { open: OpenWorkTab }) {
         <button key={c} type="button" onClick={() => { setCat(c); setHits(null); }} style={itemStyle(cat === c)}>{c} · {n}</button>
       ))}
       <div style={sectionLabel}>词条</div>
+      {graph !== null && graph.length === 0 && (
+        <div style={{ fontSize: 11, color: "var(--text-muted)", padding: "4px 8px" }}>kit 世界书为空或不可达</div>
+      )}
       {(hits ?? visible).map((e) => {
         const title = ("title" in e ? e.title : (e as WbEntry).title) ?? "（无题）";
         const path = ("path" in (e as WbEntry) ? (e as WbEntry).path : (e as { path?: string }).path) ?? "";

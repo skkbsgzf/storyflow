@@ -18,6 +18,7 @@ import { ToolDefinitionsPanel } from "./ToolDefinitionsPanel";
 import { WorldbookPanel } from "./WorldbookPanel";
 import { WorkTabs, type WorkTab } from "./WorkTabs";
 import { ToolSidebar, type ToolId } from "./kit-sidebars";
+import { SettingsPage } from "./SettingsPage";
 import { AgentSessionPanel } from "./AgentSessionPanel";
 import { TerminalPanel } from "./TerminalPanel";
 import { newTerminalTab, restoreTerminalTabs, TERMINAL_TABS_KEY, type TerminalTab } from "./terminal-tab-state";
@@ -1249,6 +1250,23 @@ export function AppShell() {
 
   const sidebarContent = (
     <>
+      {/* 批A · 工具激活时：侧栏切换为工具列表；否则显示会话 */}
+      {activeTool && (
+        <div style={{ padding: "8px 6px", overflow: "auto", flex: 1, minHeight: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 6px 8px" }}>
+            <b style={{ fontSize: 12, color: "var(--accent)" }}>
+              {activeTool === "worldbook" ? "📖 世界书" : activeTool === "knowledge" ? "📚 知识库" : activeTool === "timeline" ? "🕐 大事记" : activeTool === "production" ? "🏭 生产线" : activeTool === "files" ? "📄 文件" : "⚙ 设置"}
+            </b>
+            <span style={{ flex: 1 }} />
+            <button type="button" onClick={() => setActiveTool(null)} title="返回会话列表" style={{ border: "none", background: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: 11, padding: "2px 4px" }}>
+              ← 会话
+            </button>
+          </div>
+          <ToolSidebar tool={activeTool} onOpenWorkTab={openWorkTab} onOpenEntry={handleOpenEntryTab} />
+        </div>
+      )}
+      {!activeTool && (
+        <>
       <SessionSidebar
         selectedSessionId={selectedSession?.id ?? null}
         onSelectSession={handleSelectSession}
@@ -1317,6 +1335,8 @@ export function AppShell() {
           <span>{translate("common.settings")}</span>
         </button>
       </div>
+      </>
+      )}
     </>
   );
 
@@ -2018,6 +2038,13 @@ export function AppShell() {
         <div style={{ fontSize: 9, color: "var(--text-dim)", writingMode: "vertical-rl", letterSpacing: 2, userSelect: "none" }}>StoryFlow</div>
       </div>
 
+      {/* 设置专有页：全工作区覆盖 */}
+      {activeTool === "settings" && (
+        <div style={{ position: "absolute", top: 0, bottom: 0, left: 52, right: 0, zIndex: 300 }}>
+          <SettingsPage />
+        </div>
+      )}
+
       {/* Left sidebar */}
       <div
         ref={sidebarResizer.panelRef}
@@ -2047,13 +2074,6 @@ export function AppShell() {
           data-resize-handle="sidebar"
           title={`${translate("layout.resizeSidebar")}: ${translate("layout.resizeHint")}`}
         />
-      )}
-
-      {/* 批A · 工具侧栏（230px 纯列表）：点条目在主区 tab 工作台开页 */}
-      {activeTool && (
-        <div style={{ width: 230, flexShrink: 0, borderRight: "1px solid var(--border)", overflow: "auto", background: "var(--bg-panel)", padding: "8px 6px" }}>
-          <ToolSidebar tool={activeTool} onOpenWorkTab={openWorkTab} onOpenEntry={handleOpenEntryTab} />
-        </div>
       )}
 
       {/* 批A · 主区：统一 tab 工作台（正文 tab 常驻，工具条目开新页） */}
