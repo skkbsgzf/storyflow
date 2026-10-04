@@ -16,11 +16,8 @@ import { BranchNavigator, hasSessionBranches } from "./BranchNavigator";
 import { SystemPromptPanel } from "./SystemPromptPanel";
 import { ToolDefinitionsPanel } from "./ToolDefinitionsPanel";
 import { WorldbookPanel } from "./WorldbookPanel";
-import { WorldbookPage } from "./WorldbookPage";
-import { KnowledgePage } from "./KnowledgePage";
-import { TimelinePage } from "./TimelinePage";
-import { FilesPage } from "./FilesPage";
-import { ProductionPage } from "./ProductionPage";
+import { WorkTabs, type WorkTab } from "./WorkTabs";
+import { ToolSidebar, type ToolId } from "./kit-sidebars";
 import { AgentSessionPanel } from "./AgentSessionPanel";
 import { TerminalPanel } from "./TerminalPanel";
 import { newTerminalTab, restoreTerminalTabs, TERMINAL_TABS_KEY, type TerminalTab } from "./terminal-tab-state";
@@ -263,17 +260,32 @@ export function AppShell() {
     reclampRightPanelWidth();
   }, [reclampRightPanelWidth, reclampSidebarWidth, rightPanelOpen]);
   const chatInputRef = useRef<ChatInputHandle | null>(null);
-  // ── 主次重构（用户拍板）：正文=主内容区（大），agent 会话=面板（可拖宽）──
-  // order+flex 换位：正文面板 order 提前并 flex:1；chat 列缩为定宽面板；拖拽手柄复用。
-  const [bodyPrimary, setBodyPrimary] = useState(true);
+  // ── 主次重构 + 批A 统一 tab 工作台：正文=主区 tab（固定），agent 会话=右侧面板（固定）──
+  // 工具侧栏点条目 → 主区开 tab；可叠多页；双侧不再互相挤占。
+  const [workTabs, setWorkTabs] = useState<WorkTab[]>([
+    { kind: "file", id: "file:水浒传-第一回.md", title: "水浒传-第一回.md", path: "水浒传-第一回.md" },
+  ]);
+  const [activeWorkTabId, setActiveWorkTabId] = useState<string | null>("file:水浒传-第一回.md");
+  const openWorkTab = useCallback((tab: WorkTab) => {
+    setWorkTabs((prev) => (prev.some((t) => t.id === tab.id) ? prev : [...prev, tab]));
+    setActiveWorkTabId(tab.id);
+  }, []);
+  const closeWorkTab = useCallback((id: string) => {
+    setWorkTabs((prev) => {
+      const next = prev.filter((t) => t.id !== id);
+      setActiveWorkTabId((cur) => (cur === id ? next[next.length - 1]?.id ?? null : cur));
+      return next;
+    });
+  }, []);
+  const handleOpenEntryTab = useCallback((path: string, title: string) => {
+    openWorkTab({ kind: "entry", id: `entry:${path}`, title, path });
+  }, [openWorkTab]);
 
   // ── 批1 · 全局导航（写作领域 IA）：icon 导航栏切换主内容区视图 ──
-  type AppView = "chat" | "worldbook" | "knowledge" | "timeline" | "production" | "files" | "settings";
-  const [activeView, setActiveView] = useState<AppView>("chat");
-  const NAV_ITEMS: { id: AppView; label: string; icon: React.ReactNode; hint: string }[] = [
-    { id: "chat", label: "会话", hint: "agent 会话（默认视图）",
-      icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg> },
-    { id: "worldbook", label: "世界书", hint: "本书设定：词条 / 图谱 / RAG（批2 迁入专有页）",
+  type ToolId = "worldbook" | "timeline" | "knowledge" | "production" | "files" | "settings";
+  const [activeTool, setActiveTool] = useState<ToolId | null>("worldbook");
+  const NAV_ITEMS: { id: ToolId; label: string; icon: React.ReactNode; hint: string }[] = [
+    { id: "worldbook", label: "世界书", hint: "本书设定：词条 / 关系图谱 / RAG 检索",
       icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg> },
     { id: "knowledge", label: "知识库", hint: "RAG 方法论与标尺卡（aesthetic/rules/craft…）",
       icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg> },
@@ -1654,42 +1666,6 @@ export function AppShell() {
           </svg>
           {!mobile && <span>{translate("tools.label")}</span>}
         </button>
-        {/* kit 深度适配 · 世界书面板（GraphHyperRAG 检索 + 卡片读取） */}
-        <button
-          type="button"
-          onClick={() => toggleTopPanel("worldbook")}
-          disabled={mobile && !showChat}
-          title="世界书：本书设定检索（GraphHyperRAG）"
-          aria-label="世界书"
-          aria-pressed={activeTopPanel === "worldbook"}
-          style={{
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            width: mobile ? TOP_BAR_ICON_BUTTON_SIZE : undefined,
-            height: "100%", padding: mobile ? 0 : "0 12px",
-            background: activeTopPanel === "worldbook" ? "var(--bg-selected)" : "none",
-            border: "none",
-            borderTop: activeTopPanel === "worldbook" ? "2px solid var(--accent)" : "2px solid transparent",
-            borderRight: "1px solid var(--border)",
-            cursor: mobile && !showChat ? "not-allowed" : "pointer",
-            color: activeTopPanel === "worldbook" ? "var(--text)" : "var(--text-muted)",
-            opacity: mobile && !showChat ? 0.45 : 1,
-            fontSize: 11, whiteSpace: "nowrap", transition: "color 0.1s, background 0.1s",
-          }}
-          onMouseEnter={(event) => {
-            if (mobile && !showChat) return;
-            event.currentTarget.style.color = "var(--text)";
-          }}
-          onMouseLeave={(event) => {
-            event.currentTarget.style.color = activeTopPanel === "worldbook" ? "var(--text)" : "var(--text-muted)";
-          }}
-          data-mobile-toolbar-action={mobile ? "worldbook" : undefined}
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: activeTopPanel === "worldbook" ? "var(--accent)" : "var(--text-dim)", flexShrink: 0 }} aria-hidden="true">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-          </svg>
-          {!mobile && <span>世界书</span>}
-        </button>
       </div>
     );
   };
@@ -2014,7 +1990,7 @@ export function AppShell() {
         }}
       >
         {NAV_ITEMS.map((item) => {
-          const on = activeView === item.id;
+          const on = activeTool === item.id;
           return (
             <button
               key={item.id}
@@ -2022,7 +1998,7 @@ export function AppShell() {
               title={item.hint}
               aria-label={item.label}
               aria-pressed={on}
-              onClick={() => setActiveView((v) => (v === item.id ? "chat" : item.id))}
+              onClick={() => setActiveTool((v) => (v === item.id ? null : item.id))}
               style={{
                 width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center",
                 borderRadius: 8, border: "none", cursor: "pointer",
@@ -2073,34 +2049,31 @@ export function AppShell() {
         />
       )}
 
-      {/* 批6 · 工具区（Obsidian 式）：工具列表+看板嵌在工作区左侧，正文/会话固定不动 */}
-      {activeView !== "chat" && activeView !== "settings" && (
-        <div style={{ width: 700, flexShrink: 0, position: "relative", borderRight: "1px solid var(--border)", background: "var(--bg)" }}>
-          {activeView === "worldbook" && <WorldbookPage />}
-          {activeView === "knowledge" && <KnowledgePage />}
-          {activeView === "timeline" && <TimelinePage />}
-          {activeView === "production" && <ProductionPage />}
-          {activeView === "files" && <FilesPage onSelectionToChat={handleSelectionToChat} />}
+      {/* 批A · 工具侧栏（230px 纯列表）：点条目在主区 tab 工作台开页 */}
+      {activeTool && (
+        <div style={{ width: 230, flexShrink: 0, borderRight: "1px solid var(--border)", overflow: "auto", background: "var(--bg-panel)", padding: "8px 6px" }}>
+          <ToolSidebar tool={activeTool} onOpenWorkTab={openWorkTab} onOpenEntry={handleOpenEntryTab} />
         </div>
       )}
 
-      {/* Center: chat */}
-      <div inert={rightPanelFullWidth} style={{
-        ...(bodyPrimary && rightPanelOpen
-          ? { order: 3, flex: "0 0 auto", width: "max(460px, var(--right-panel-width))", maxWidth: "70vw" }
-          : { order: 2, flex: 1 }),
-        display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0, position: "relative",
+      {/* 批A · 主区：统一 tab 工作台（正文 tab 常驻，工具条目开新页） */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
+        <WorkTabs
+          tabs={workTabs}
+          activeId={activeWorkTabId}
+          onActivate={setActiveWorkTabId}
+          onClose={closeWorkTab}
+          onSelectionToChat={handleSelectionToChat}
+          onOpenEntry={handleOpenEntryTab}
+        />
+      </div>
+
+      {/* 会话面板（固定右侧） */}
+      <div style={{
+        flex: "0 0 auto", width: "max(460px, var(--right-panel-width))", maxWidth: "70vw",
+        display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0,
+        borderLeft: "1px solid var(--border)", background: "var(--bg)",
       }}>
-        {/* 批1 · 非 chat 视图的整页占位（批2/批3 各视图迁入后替换） */}
-        {activeView === "settings" && (
-          <div style={{ position: "absolute", inset: 0, zIndex: 150, background: "var(--bg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10 }}>
-            <div style={{ fontSize: 20, letterSpacing: 4 }}>⚙ 设置</div>
-            <div style={{ color: "var(--text-muted)", fontSize: 13 }}>批3 后续迁入：kit 模型配置 + 连接自探针</div>
-            <button type="button" onClick={() => setActiveView("chat")} style={{ padding: "6px 14px", border: "1px solid var(--border)", borderRadius: 6, background: "transparent", color: "var(--accent)", cursor: "pointer", fontSize: 12 }}>
-              返回会话
-            </button>
-          </div>
-        )}
         {/* Top bar with sidebar toggle */}
         <div ref={topBarRef} style={{ flexShrink: 0, background: "var(--bg-panel)" }}>
         <div style={{ display: "flex", alignItems: "center", position: "relative", borderBottom: "1px solid var(--border)", height: "calc(36px + env(safe-area-inset-top))", paddingTop: "env(safe-area-inset-top)" }}>
@@ -2204,28 +2177,6 @@ export function AppShell() {
               {renderProjectTrustWarning(false)}
               {renderChatToolbarActions(false)}
               {renderSessionStatsButton(false)}
-              <button
-                type="button"
-                onClick={() => setBodyPrimary((v) => !v)}
-                title={bodyPrimary ? "主次：正文为主，会话为侧面板（点击切回会话为主）" : "主次：会话为主（点击切回正文为主）"}
-                aria-pressed={bodyPrimary}
-                style={{
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                  height: "100%", padding: "0 12px",
-                  background: bodyPrimary ? "var(--bg-selected)" : "none",
-                  border: "none",
-                  borderTop: bodyPrimary ? "2px solid var(--accent)" : "2px solid transparent",
-                  borderRight: "1px solid var(--border)",
-                  cursor: "pointer",
-                  color: bodyPrimary ? "var(--text)" : "var(--text-muted)",
-                  fontSize: 11, whiteSpace: "nowrap",
-                }}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <rect x="3" y="4" width="13" height="16" rx="2" /><rect x="17" y="4" width="4" height="16" rx="1" />
-                </svg>
-                <span>正文主</span>
-              </button>
             </>
           )}
           {!isMobile && renderMainFileToggle(false)}
@@ -2598,9 +2549,6 @@ export function AppShell() {
         className={`right-panel-container${rightPanelOpen ? " right-panel-open" : " right-panel-closed"}${rightPanelFullWidth ? " right-panel-full-width" : ""}${rightPanelResizer.isResizing ? " right-panel-resizing" : ""}`}
         style={{
           "--right-panel-width": `${rightPanelResizer.width}px`,
-          ...(bodyPrimary && rightPanelOpen
-            ? { order: 2, flex: "1 1 auto", width: "auto", minWidth: 0, borderLeft: "none", borderRight: "1px solid var(--border)" }
-            : {}),
           display: "flex",
           flexDirection: "column",
           borderLeft: "1px solid var(--border)",

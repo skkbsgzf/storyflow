@@ -241,6 +241,11 @@ const ROUTES: Record<string, Handler> = {
       const raw = (await kitWorldbookGraphBridge()) as { content: string };
       return json(JSON.parse(raw.content));
     }
+    if (sub === "files-root") {
+      const dir = request.query("dir") ?? "";
+      const entries = await listDirectory(dir ? `${PROJECT_ROOT}/${dir}` : PROJECT_ROOT);
+      return json({ entries: entries ?? [] });
+    }
     if (sub === "kb") return json(await kitKbSearchBridge(request.query("q") ?? ""));
     if (sub === "kb-read") return json(await kitKbReadBridge(request.query("ref") ?? ""));
     if (sub === "status") return json(await kitStatusBridge());
