@@ -2569,7 +2569,7 @@ export function AppShell() {
         className={`right-panel-container${rightPanelOpen ? " right-panel-open" : " right-panel-closed"}${rightPanelFullWidth ? " right-panel-full-width" : ""}${rightPanelResizer.isResizing ? " right-panel-resizing" : ""}`}
         style={{
           "--right-panel-width": `${rightPanelResizer.width}px`,
-          display: "flex",
+          display: "none",
           flexDirection: "column",
           borderLeft: "1px solid var(--border)",
           background: "var(--bg)",

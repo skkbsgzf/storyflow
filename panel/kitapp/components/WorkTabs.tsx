@@ -5,6 +5,7 @@
 import ReactMarkdown from "react-markdown";
 import { useEffect, useState } from "react";
 import { FileViewer } from "./FileViewer";
+import { PROJECT_ROOT } from "../mock/paths";
 import { EntryWikiView } from "./EntryWikiView";
 import { WorldbookGraphView } from "./WorldbookGraphView";
 import { TimelinePage } from "./TimelinePage";
@@ -98,7 +99,7 @@ export function WorkTabs({
           <div style={{ padding: 20, fontSize: 13, color: "var(--text-muted)" }}>（无打开页）</div>
         ) : active.kind === "file" ? (
           <div style={{ height: "100%" }}>
-            <FileViewer filePath={active.path} onSelectionToChat={onSelectionToChat} />
+            <FileViewer filePath={`${PROJECT_ROOT}/${active.path}`} cwd={PROJECT_ROOT} onSelectionToChat={onSelectionToChat} />
           </div>
         ) : active.kind === "entry" ? (
           <EntryWikiView path={active.path} title={active.title} onOpenEntry={onOpenEntry} />
