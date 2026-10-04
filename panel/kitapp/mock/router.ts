@@ -11,7 +11,7 @@ import { HOME, PROJECT_ROOT, SCRATCH_ROOT, WORKTREE_BRANCH, WORKTREE_ROOT } from
 import { fileMeta, isBinaryPath, listDirectory, lookup, primeAssetLookup, projectFiles, readFileText, textChunk, PROJECT_ROOTS } from "./files";
 import { gitDiff, gitStatus } from "./git";
 import { agentState, attachAgentStream, createRuntimeSession, runAgentCommand, runningSessionIds } from "./agent";
-import { kitEntryBridge, kitHubBridge, kitJournalBridge, kitKbReadBridge, kitKbSearchBridge, kitMode, kitStartBridge, kitStatusBridge, kitStopBridge, kitWorldbookBridge, kitWorldbookGraphBridge } from "./kit/hydrate";
+import { kitEntryBridge, kitHubBridge, kitJournalBridge, kitKbReadBridge, kitKbSearchBridge, kitMode, kitProductionPlanBridge, kitStartBridge, kitStatusBridge, kitStopBridge, kitWorldbookBridge, kitWorldbookGraphBridge } from "./kit/hydrate";
 import {
   allSessions,
   buildContext,
@@ -256,6 +256,9 @@ const ROUTES: Record<string, Handler> = {
       return json(await kitStartBridge(body.project ?? ""));
     }
     if (sub === "production-stop") return json(await kitStopBridge());
+    if (sub === "production-plan") {
+      return json(await kitProductionPlanBridge(request.query("project") ?? "", request.query("flow") ?? "novel"));
+    }
     return error(`Not found: ${request.path}`, 404);
   },
   cwd: cwdRoute,

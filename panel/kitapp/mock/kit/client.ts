@@ -117,6 +117,44 @@ export async function kitProductionStop(): Promise<unknown> {
   return kitJson("/stop", { method: "POST" });
 }
 
+// ── 生产线工程map（工单-20261004）：工作流图示化数据源 ──────────
+export interface KitPlanNode {
+  id: string;
+  module: string;
+  op: string;
+  title: string;
+  desc: string;
+  kind: string;
+  gateRole: string;
+  output: string;
+  status: string;
+  round: number;
+  failCount: number;
+  at: string | null;
+  submits: number;
+  verdicts: number;
+}
+export interface KitFlowPlan {
+  project: string;
+  mode: "run" | "skeleton";
+  degraded?: boolean;
+  flow: { id: string; title: string; version: string; desc: string };
+  running: boolean;
+  flowStatus: string;
+  startedAt: string | null;
+  lastError: string | null;
+  gate: { verdict: string; node: string | null; at: string | null };
+  modules: { id: string; ref: string; name: string }[];
+  nodes: KitPlanNode[];
+  edges: { from: string; to: string; kind: string }[];
+  stats: { total: number; done: number; awaiting: number };
+}
+
+/** 工作流地图（工程map/剧情树）：state ⊕ effective 读模型 ⊕ journal 走过路径。 */
+export async function kitProductionPlan(project: string, flow = "novel"): Promise<KitFlowPlan> {
+  return kitJson<KitFlowPlan>(`/api/panel/plan?project=${encodeURIComponent(project)}&flow=${encodeURIComponent(flow)}`);
+}
+
 /** 会话重命名（自动标题用：首问后以首句命名，替掉 demo 罐头 autoTitle）。 */
 export async function kitRename(project: string, sid: string, title: string): Promise<void> {
   await kitJson(`/api/projects/${encodeURIComponent(project)}/agent/sessions/${encodeURIComponent(sid)}/rename`, {

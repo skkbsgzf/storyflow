@@ -76,6 +76,12 @@ export async function kitStopBridge(): Promise<unknown> {
   return kitProductionStop();
 }
 
+/** 桥路由用：工作流地图（工程map/剧情树）。 */
+export async function kitProductionPlanBridge(project: string, flow?: string): Promise<unknown> {
+  const { kitProductionPlan } = await import("./client");
+  return kitProductionPlan(project, flow);
+}
+
 /** 桥路由用：世界书 graph.json 全量（词条卡墙 + 关系图谱数据源）。 */
 export async function kitWorldbookGraphBridge(): Promise<unknown> {
   const project = kitProjectName();
