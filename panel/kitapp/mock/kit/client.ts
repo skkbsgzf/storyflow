@@ -194,12 +194,36 @@ export async function kitKbSearch(q: string): Promise<{ hits?: { ref?: string; t
   });
 }
 
-export async function kitKbRead(ref: string): Promise<unknown> {
+export async function kitKbRead(ref: string): Promise<{ content?: string }> {
   return kitJson("/api/kernel-verb", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ verb: "kb_read", args: { ref } }),
   });
+}
+
+// ── 知识库卡片商店（工单-20261005）────────────────────────────
+export interface KitKbCard {
+  id: string;
+  domain: string;
+  file: string;
+  title: string;
+  type: string;
+  typeName: string;
+  status: string;
+  version: string;
+  updated: string;
+  summary: string;
+}
+export interface KitKbCatalog {
+  domains: { key: string; name: string; desc: string; count: number }[];
+  cards: KitKbCard[];
+  total: number;
+}
+
+/** 知识库全量目录（卡片商店数据源）：repoRoot/knowledge frontmatter 静态汇总。 */
+export async function kitKbCatalog(): Promise<KitKbCatalog> {
+  return kitJson<KitKbCatalog>("/api/panel/kb-catalog");
 }
 
 /** 打开一个 kit 回合（raw=1：pi 会话事件全保真），逐帧产出。raw 帧解包为 pi 事件本身；

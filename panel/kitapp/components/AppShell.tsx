@@ -18,6 +18,7 @@ import { ToolDefinitionsPanel } from "./ToolDefinitionsPanel";
 import { WorldbookPanel } from "./WorldbookPanel";
 import { WorkTabs, type WorkTab } from "./WorkTabs";
 import { ToolSidebar, type ToolId } from "./kit-sidebars";
+import { WorldbookPage } from "./WorldbookPage";
 import { SettingsPage } from "./SettingsPage";
 import { AgentSessionPanel } from "./AgentSessionPanel";
 import { TerminalPanel } from "./TerminalPanel";
@@ -284,7 +285,9 @@ export function AppShell() {
 
   // ── 批1 · 全局导航（写作领域 IA）：icon 导航栏切换主内容区视图 ──
   type ToolId = "worldbook" | "timeline" | "knowledge" | "production" | "files" | "settings";
-  const [activeTool, setActiveTool] = useState<ToolId | null>("worldbook");
+  const [activeTool, setActiveTool] = useState<ToolId | null>(null);
+  /** 世界书专有页（批2 全屏形态）：导航点击即全屏打开，返回钮回工作台。 */
+  const [worldbookPageOpen, setWorldbookPageOpen] = useState(false);
   const NAV_ITEMS: { id: ToolId; label: string; icon: React.ReactNode; hint: string }[] = [
     { id: "worldbook", label: "世界书", hint: "本书设定：词条 / 关系图谱 / RAG 检索",
       icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg> },
@@ -1974,6 +1977,12 @@ export function AppShell() {
         }
       }
     `}</style>
+    {/* 批2 · 世界书专有页：全屏三区（顶检索 / 左分类 / 主卡墙·图谱·词条详情），返回钮回工作台 */}
+    {worldbookPageOpen && (
+      <div style={{ position: "fixed", inset: 0, zIndex: 400, background: "var(--bg)" }}>
+        <WorldbookPage onBack={() => setWorldbookPageOpen(false)} />
+      </div>
+    )}
     <div style={{
       display: "flex",
       width: "100%",
@@ -2018,7 +2027,11 @@ export function AppShell() {
               title={item.hint}
               aria-label={item.label}
               aria-pressed={on}
-              onClick={() => setActiveTool((v) => (v === item.id ? null : item.id))}
+              onClick={() => {
+                if (item.id === "worldbook") { setWorldbookPageOpen(true); return; }
+                setWorldbookPageOpen(false);
+                setActiveTool((v) => (v === item.id ? null : item.id));
+              }}
               style={{
                 width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center",
                 borderRadius: 8, border: "none", cursor: "pointer",
@@ -2085,6 +2098,7 @@ export function AppShell() {
           onClose={closeWorkTab}
           onSelectionToChat={handleSelectionToChat}
           onOpenEntry={handleOpenEntryTab}
+          onOpenWorkTab={openWorkTab}
         />
       </div>
 

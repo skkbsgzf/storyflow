@@ -29,7 +29,7 @@ const CAT_PALETTE: Record<string, string> = {
 };
 const catColorOf = (e: WbEntry) => CAT_PALETTE[e.cat] ?? "#8a8375";
 
-export function WorldbookPage() {
+export function WorldbookPage({ onBack }: { onBack?: () => void }) {
   const [graph, setGraph] = useState<WbGraph | null>(null);
   const [loadError, setLoadError] = useState("");
   const [cat, setCat] = useState<string>("全部");
@@ -248,6 +248,11 @@ export function WorldbookPage() {
     <div style={{ position: "absolute", inset: 0, zIndex: 150, background: "var(--bg)", display: "flex", flexDirection: "column" }}>
       {/* 顶栏：标题 + RAG 检索 + 视图切换 */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", borderBottom: "1px solid var(--border)", flexShrink: 0 }}>
+        {onBack && (
+          <button type="button" onClick={onBack} title="返回工作台" style={{ padding: "6px 10px", border: "1px solid var(--border)", borderRadius: 8, background: "transparent", color: "var(--text-muted)", cursor: "pointer", fontSize: 12, whiteSpace: "nowrap" }}>
+            ← 返回工作台
+          </button>
+        )}
         <b style={{ fontSize: 15, letterSpacing: 2, whiteSpace: "nowrap" }}>📖 世界书</b>
         <input
           value={query}
