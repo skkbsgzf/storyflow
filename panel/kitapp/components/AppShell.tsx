@@ -2090,7 +2090,7 @@ export function AppShell() {
 
       {/* 会话面板（固定右侧） */}
       <div style={{
-        flex: "0 0 auto", width: "max(460px, var(--right-panel-width))", maxWidth: "70vw",
+        flex: "0 0 auto", width: `${Math.max(460, rightPanelResizer.width)}px`, maxWidth: "70vw",
         display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0,
         borderLeft: "1px solid var(--border)", background: "var(--bg)",
       }}>
