@@ -2003,31 +2003,6 @@ export function AppShell() {
       />
 
       {/* 批2/批3 · 专有页：全工作区覆盖（只留导航栏），不受中列宽度挤压 */}
-      {activeView === "worldbook" && (
-        <div style={{ position: "absolute", top: 0, bottom: 0, left: 52, right: 0, zIndex: 300 }}>
-          <WorldbookPage />
-        </div>
-      )}
-      {activeView === "knowledge" && (
-        <div style={{ position: "absolute", top: 0, bottom: 0, left: 52, right: 0, zIndex: 300 }}>
-          <KnowledgePage />
-        </div>
-      )}
-      {activeView === "files" && (
-        <div style={{ position: "absolute", top: 0, bottom: 0, left: 52, right: 0, zIndex: 300 }}>
-          <FilesPage onSelectionToChat={handleSelectionToChat} />
-        </div>
-      )}
-      {activeView === "timeline" && (
-        <div style={{ position: "absolute", top: 0, bottom: 0, left: 52, right: 0, zIndex: 300 }}>
-          <TimelinePage />
-        </div>
-      )}
-      {activeView === "production" && (
-        <div style={{ position: "absolute", top: 0, bottom: 0, left: 52, right: 0, zIndex: 300 }}>
-          <ProductionPage />
-        </div>
-      )}
 
       {/* 批1 · 全局 icon 导航栏（写作领域 IA 骨架） */}
       <div
@@ -2047,7 +2022,7 @@ export function AppShell() {
               title={item.hint}
               aria-label={item.label}
               aria-pressed={on}
-              onClick={() => setActiveView(item.id)}
+              onClick={() => setActiveView((v) => (v === item.id ? "chat" : item.id))}
               style={{
                 width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center",
                 borderRadius: 8, border: "none", cursor: "pointer",
@@ -2096,6 +2071,17 @@ export function AppShell() {
           data-resize-handle="sidebar"
           title={`${translate("layout.resizeSidebar")}: ${translate("layout.resizeHint")}`}
         />
+      )}
+
+      {/* 批6 · 工具区（Obsidian 式）：工具列表+看板嵌在工作区左侧，正文/会话固定不动 */}
+      {activeView !== "chat" && activeView !== "settings" && (
+        <div style={{ width: 700, flexShrink: 0, position: "relative", borderRight: "1px solid var(--border)", background: "var(--bg)" }}>
+          {activeView === "worldbook" && <WorldbookPage />}
+          {activeView === "knowledge" && <KnowledgePage />}
+          {activeView === "timeline" && <TimelinePage />}
+          {activeView === "production" && <ProductionPage />}
+          {activeView === "files" && <FilesPage onSelectionToChat={handleSelectionToChat} />}
+        </div>
       )}
 
       {/* Center: chat */}
