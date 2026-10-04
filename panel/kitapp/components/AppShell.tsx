@@ -2043,6 +2043,8 @@ export function AppShell() {
               aria-label={item.label}
               aria-pressed={on}
               onClick={() => {
+                // 世界书走全屏专有页（56db3c99 拍板：弃侧栏紧凑形态）；其余五视图走工具侧栏
+                if (item.id === "worldbook") { setWorldbookPageOpen(true); return; }
                 setWorldbookPageOpen(false);
                 setActiveTool((v) => (v === item.id ? null : item.id));
               }}
