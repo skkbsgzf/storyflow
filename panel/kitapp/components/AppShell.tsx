@@ -19,6 +19,7 @@ import { WorldbookPanel } from "./WorldbookPanel";
 import { WorldbookPage } from "./WorldbookPage";
 import { KnowledgePage } from "./KnowledgePage";
 import { TimelinePage } from "./TimelinePage";
+import { FilesPage } from "./FilesPage";
 import { ProductionPage } from "./ProductionPage";
 import { AgentSessionPanel } from "./AgentSessionPanel";
 import { TerminalPanel } from "./TerminalPanel";
@@ -2012,6 +2013,11 @@ export function AppShell() {
           <KnowledgePage />
         </div>
       )}
+      {activeView === "files" && (
+        <div style={{ position: "absolute", top: 0, bottom: 0, left: 52, right: 0, zIndex: 300 }}>
+          <FilesPage onSelectionToChat={handleSelectionToChat} />
+        </div>
+      )}
       {activeView === "timeline" && (
         <div style={{ position: "absolute", top: 0, bottom: 0, left: 52, right: 0, zIndex: 300 }}>
           <TimelinePage />
@@ -2100,14 +2106,10 @@ export function AppShell() {
         display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0, position: "relative",
       }}>
         {/* 批1 · 非 chat 视图的整页占位（批2/批3 各视图迁入后替换） */}
-        {activeView !== "chat" && activeView !== "worldbook" && (
+        {activeView === "settings" && (
           <div style={{ position: "absolute", inset: 0, zIndex: 150, background: "var(--bg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10 }}>
-            <div style={{ fontSize: 20, letterSpacing: 4 }}>{activeView === "files" ? "📄 文件" : "⚙ 设置"}</div>
-            <div style={{ color: "var(--text-muted)", fontSize: 13 }}>
-              {activeView === "files"
-                ? "批3 迁入：文件树升格主区多 tab"
-                : "批3 迁入：kit 模型配置 + 连接自探针"}
-            </div>
+            <div style={{ fontSize: 20, letterSpacing: 4 }}>⚙ 设置</div>
+            <div style={{ color: "var(--text-muted)", fontSize: 13 }}>批3 后续迁入：kit 模型配置 + 连接自探针</div>
             <button type="button" onClick={() => setActiveView("chat")} style={{ padding: "6px 14px", border: "1px solid var(--border)", borderRadius: 6, background: "transparent", color: "var(--accent)", cursor: "pointer", fontSize: 12 }}>
               返回会话
             </button>
