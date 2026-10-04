@@ -38,11 +38,11 @@ const ROW_GAP = 16;
 const COL_GAP = 46;
 const HEAD_H = 56;
 
-export function ProductionPage() {
+export function ProductionPage({ project: projectProp }: { project?: string }) {
   const [status, setStatus] = useState<KitProductionStatus | null>(null);
   const [plan, setPlan] = useState<KitFlowPlan | null>(null);
   const [projects, setProjects] = useState<HubProject[]>([]);
-  const [selected, setSelected] = useState<string>("");
+  const [selected, setSelected] = useState<string>(projectProp ?? "");
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
   const [selNode, setSelNode] = useState<string | null>(null);
@@ -56,15 +56,16 @@ export function ProductionPage() {
       setStatus(s);
       const list = (hub.groups ?? []).flatMap((g) => g.projects ?? []);
       setProjects(list);
-      const proj = s.project || list[0]?.id || "";
-      setSelected((cur) => cur || proj);
+      // tab 自带项目（侧栏点入）优先；否则回落批循环当前项目 → 首个
+      setSelected((cur) => cur || projectProp || s.project || list[0]?.id || "");
     } catch (e) {
       setNote(`状态不可达：${String((e as Error).message ?? e)}`);
     }
-  }, []);
+  }, [projectProp]);
 
   // 地图随选中项目拉取；运行中每 6s 自动重绘（走过路径会推进）
   useEffect(() => { void refresh(); }, [refresh]);
+  useEffect(() => { if (projectProp) { setSelected(projectProp); setSelNode(null); } }, [projectProp]);
   useEffect(() => {
     if (!selected) return;
     let alive = true;
@@ -157,11 +158,9 @@ export function ProductionPage() {
         </div>
       )}
 
-      {plan && <PlanMap plan={plan} selNode={selNode} onSelect={setSelNode} />}
-
-      {/* ── 节点详情（点击卡片出） ── */}
+      {/* ── 节点详情（点击卡片出；置于地图上方，长图不把详情挤出视口） ── */}
       {sel && (
-        <div style={{ margin: "10px 16px", border: "1px solid var(--border)", borderRadius: 10, padding: "12px 14px", flexShrink: 0, background: "var(--bg-panel, transparent)" }}>
+        <div style={{ margin: "10px 16px", border: `1px solid ${ACCENT}`, borderRadius: 10, padding: "12px 14px", flexShrink: 0, background: "var(--bg-panel, transparent)", boxShadow: `0 0 0 2px ${ACCENT}22` }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
             <b style={{ fontSize: 14 }}>{sel.title}</b>
             <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: DIM }}>{sel.id}</span>
@@ -183,6 +182,8 @@ export function ProductionPage() {
           </div>
         </div>
       )}
+
+      {plan && <PlanMap plan={plan} selNode={selNode} onSelect={setSelNode} />}
 
       {/* ── 底注：原始盘面（折叠） + 机制说明 ── */}
       <div style={{ padding: "6px 16px 16px", display: "flex", flexDirection: "column", gap: 8, flexShrink: 0 }}>
@@ -244,7 +245,7 @@ function PlanMap({ plan, selNode, onSelect }: { plan: KitFlowPlan; selNode: stri
       </div>
 
       {/* 泳道画布 */}
-      <div style={{ overflowX: "auto", border: "1px solid var(--border)", borderRadius: 10, background: "var(--bg-panel, transparent)", padding: 12 }}>
+      <div style={{ overflow: "auto", maxHeight: "58vh", border: "1px solid var(--border)", borderRadius: 10, background: "var(--bg-panel, transparent)", padding: 12 }}>
         <div style={{ position: "relative", width: layout.width, height: layout.height, minWidth: "100%" }}>
           <svg width={layout.width} height={layout.height} style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
             <defs>
@@ -296,8 +297,9 @@ function PlanMap({ plan, selNode, onSelect }: { plan: KitFlowPlan; selNode: stri
                 onClick={() => onSelect(n.id === selNode ? "" : n.id)}
                 style={{
                   position: "absolute", left: p.x, top: p.y, width: NODE_W, minHeight: NODE_H, boxSizing: "border-box",
-                  border: `1px solid ${on ? ACCENT : isLink ? "transparent" : v.color + (n.status === "none" ? "55" : "")}`,
+                  borderWidth: 1,
                   borderStyle: isLink ? "none" : n.status === "none" && !isGate ? "dashed" : "solid",
+                  borderColor: on ? ACCENT : isLink ? "transparent" : v.color + (n.status === "none" ? "55" : ""),
                   borderRadius: 8,
                   background: isLink ? "transparent" : v.bg || "var(--bg)",
                   boxShadow: on ? `0 0 0 2px ${ACCENT}44` : undefined,

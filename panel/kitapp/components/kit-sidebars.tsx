@@ -159,7 +159,7 @@ function ProductionSidebar({ open }: { open: OpenWorkTab }) {
     <div>
       <div style={sectionLabel}>项目 → 盘面</div>
       {projects.map((p) => (
-        <button key={p.id} type="button" onClick={() => open({ kind: "production", id: `production:${p.id}`, title: `盘面 · ${p.title || p.id}` })} style={itemStyle(false)}>
+        <button key={p.id} type="button" onClick={() => open({ kind: "production", id: `production:${p.id}`, title: `盘面 · ${p.title || p.id}`, project: p.id })} style={itemStyle(false)}>
           🏭 {p.title || p.id}
         </button>
       ))}

@@ -712,6 +712,151 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
             }
             return;
           }
+          // 官方面板桥（工单-20261004 工程map）：工作流图示化数据源——
+          // 已开跑 = state.json（plan.order + 逐节点状态 + gate）⊕ registry/effective.json（内核编排读模型，页面纯消费）
+          //          ⊕ journal（submit 时间戳=走过路径）；未开跑 = flows/<flow>/flow.json 描述符骨架（模块级泳道）。
+          // effective.json 缺席时先经内核 flow_effect 物化（读模型落盘是内核单点派生的既定出口），失败则降级 no-meta。
+          if (name === "plan") {
+            if (!safeProject(project)) {
+              res.writeHead(400, { "content-type": "application/json" });
+              res.end(JSON.stringify({ error: `project 非法：${project}` }));
+              return;
+            }
+            const repoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
+            const pDir = kernel.projectDir(project);
+            let stJson: Record<string, unknown> | null = null;
+            try { stJson = JSON.parse(fs.readFileSync(path.join(pDir, "state.json"), "utf-8")) as Record<string, unknown>; } catch { /* 未开跑 */ }
+            const flowId = String((stJson?.flowId as string) ?? q.get("flow") ?? "novel");
+            // 描述符（仓库根声明面）：模块实例→能力域映射 + 题名/描述（骨架模式的主力，run 模式只取题名）
+            let fd: { id?: string; title?: string; desc?: string; version?: string; modules?: { id?: string; module?: string; caps?: string[] }[] } = {};
+            try { fd = JSON.parse(fs.readFileSync(path.join(repoRoot, "flows", flowId, "flow.json"), "utf-8")); } catch { /* 描述符缺席不致命 */ }
+            const modName = (ref: string): string => {
+              try {
+                const mj = JSON.parse(fs.readFileSync(path.join(repoRoot, "modules", ref, "module.json"), "utf-8")) as { name?: string; desc?: string };
+                return mj.name || ref;
+              } catch { return ref; }
+            };
+            // 能力域 → 泳道题名（如 m1+topic →「选题」）
+            const modRefOf = new Map<string, string>((fd.modules ?? []).map((mm) => [String(mm.id ?? ""), String(mm.module ?? "")]));
+            // op 题名表：modules/<ref>/module.json 的 ops[k].title/desc（连接门 .link 不在表内，走 humanize）
+            const opMeta = (ref: string): Record<string, { title?: string; desc?: string }> => {
+              try {
+                const mj = JSON.parse(fs.readFileSync(path.join(repoRoot, "modules", ref, "module.json"), "utf-8")) as { ops?: Record<string, { title?: string; desc?: string }> };
+                return mj.ops ?? {};
+              } catch { return {}; }
+            };
+            const humanize = (s: string) => (s === "link" ? "连接门" : s.replace(/-/g, " "));
+            // journal 走过路径：submit 首次时间 + 次数；verdict 计门裁决
+            const walked: Record<string, { at?: string; submits: number; verdicts: number }> = {};
+            try {
+              for (const l of fs.readFileSync(path.join(pDir, "journal.jsonl"), "utf-8").split("\n")) {
+                if (!l.trim()) continue;
+                try {
+                  const e = JSON.parse(l) as { event?: string; nodeId?: string; ts?: string };
+                  if (!e.nodeId) continue;
+                  const w = (walked[e.nodeId] ??= { submits: 0, verdicts: 0 });
+                  if (e.event === "submit") { w.submits++; w.at ??= e.ts; }
+                  if (e.event === "verdict") w.verdicts++;
+                } catch { /* 半行跳过 */ }
+              }
+            } catch { /* 无 journal = 未走到任何节点 */ }
+            // effective.json（内核读模型）：有 state 但缺席时经 flow_effect 物化一次
+            let eff: { nodes?: Record<string, Record<string, unknown>>; edges?: unknown[]; links?: unknown[]; nodeConfig?: Record<string, Record<string, unknown>> } | null = null;
+            const effPath = path.join(pDir, "registry", "effective.json");
+            try { eff = JSON.parse(fs.readFileSync(effPath, "utf-8")); } catch {
+              if (stJson) {
+                try { await kernel.verb("flow_effect", { project }); eff = JSON.parse(fs.readFileSync(effPath, "utf-8")); } catch { /* 内核不可达 → 降级 */ }
+              }
+            }
+            const gate = (stJson?.gate ?? {}) as { verdict?: string; node?: string; at?: string };
+            const st = String(stJson?.status ?? "");
+            const mine = state.project === project;
+            const base = {
+              project,
+              flow: { id: flowId, title: fd.title ?? flowId, version: fd.version ?? "", desc: fd.desc ?? "" },
+              running: Boolean(st === "running" && state.running && mine),
+              flowStatus: st,
+              startedAt: mine ? state.startedAt ?? null : null,
+              lastError: mine ? state.lastError ?? null : null,
+              gate: { verdict: gate.verdict ?? "none", node: gate.node ?? null, at: gate.at ?? null },
+            };
+            if (!stJson) {
+              // 骨架模式：模块级泳道（描述符声明面），全 pending——开跑后展开为逐节点地图
+              const mods = (fd.modules ?? []).map((mm, i) => ({
+                id: String(mm.id ?? `m${i + 1}`), ref: String(mm.module ?? ""),
+                name: modName(String(mm.module ?? "")), caps: mm.caps ?? [],
+              }));
+              res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" });
+              res.end(JSON.stringify({
+                ...base, mode: "skeleton", degraded: false,
+                modules: mods.map((m) => ({ id: m.id, ref: m.ref, name: m.name })),
+                nodes: mods.map((m) => ({
+                  id: m.id, module: m.id, op: "", title: m.name,
+                  desc: m.caps.length ? m.caps.join(" · ") : "", kind: "module", gateRole: "",
+                  status: "none", at: null,
+                })),
+                edges: mods.slice(1).map((m, i) => ({ from: mods[i].id, to: m.id, kind: "chain" })),
+                stats: { total: mods.length, done: 0, awaiting: 0 },
+              }));
+              return;
+            }
+            // run 模式：plan.order 是执行序真链；effective 补 kind/gateRole/output 元数据
+            const order = ((stJson?.plan as { order?: string[] } | undefined)?.order ?? []) as string[];
+            const nodesState = (stJson?.nodes ?? {}) as Record<string, { status?: string; round?: number; failCount?: number }>;
+            const effNodes = eff?.nodes ?? {};
+            const effCfg = eff?.nodeConfig ?? {};
+            const seenModule = new Set<string>();
+            const modules: { id: string; ref: string; name: string }[] = [];
+            const nodes = order.map((id) => {
+              const dot = id.indexOf(".");
+              const mi = dot > 0 ? id.slice(0, dot) : id;
+              const op = dot > 0 ? id.slice(dot + 1) : "";
+              const ref = modRefOf.get(mi) ?? "";
+              if (!seenModule.has(mi)) { seenModule.add(mi); modules.push({ id: mi, ref, name: ref ? modName(ref) : mi }); }
+              const en = effNodes[id] ?? {};
+              const ec = effCfg[id] ?? {};
+              const meta = ref ? opMeta(ref)[op] : undefined;
+              const ns = nodesState[id] ?? {};
+              const w = walked[id] ?? { submits: 0, verdicts: 0 };
+              return {
+                id, module: mi, op,
+                title: (meta?.title && meta.title !== op ? meta.title : "") || humanize(op),
+                desc: meta?.desc ? meta.desc.slice(0, 90) : "",
+                kind: String(en.kind ?? "agent"),
+                gateRole: String(ec.gateRole ?? en.gate_role ?? ""),
+                output: String(ec.output ?? ""),
+                status: String(ns.status ?? "none"),
+                round: Number(ns.round ?? 0), failCount: Number((ns as { failCount?: number }).failCount ?? 0),
+                at: w.at ?? null, submits: w.submits, verdicts: w.verdicts,
+              };
+            });
+            // 边：effective 原生边优先（带 link 语义），plan 链补缺（kind=chain）
+            const edgeKey = (a: string, b: string) => `${a}\u0000${b}`;
+            const edges: { from: string; to: string; kind: string }[] = [];
+            const push = (from: string, to: string, kind: string) => {
+              if (from && to && !edges.some((e) => edgeKey(e.from, e.to) === edgeKey(from, to))) edges.push({ from, to, kind });
+            };
+            const rawEdges = (eff?.links ?? eff?.edges ?? []) as unknown[];
+            for (const re of rawEdges) {
+              if (Array.isArray(re) && re.length >= 2) push(String(re[0]), String(re[1]), "auto");
+              else if (re && typeof re === "object") {
+                const o = re as Record<string, unknown>;
+                push(String(o.from ?? o.source ?? ""), String(o.to ?? o.target ?? ""), String(o.link ?? o.kind ?? "auto"));
+              }
+            }
+            for (let i = 1; i < order.length; i++) push(order[i - 1], order[i], "chain");
+            res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" });
+            res.end(JSON.stringify({
+              ...base, mode: "run", degraded: !eff,
+              modules, nodes, edges,
+              stats: {
+                total: nodes.length,
+                done: nodes.filter((n) => n.status === "done").length,
+                awaiting: nodes.filter((n) => n.status === "awaiting").length,
+              },
+            }));
+            return;
+          }
           res.writeHead(410, { "content-type": "application/json" });
           res.end(JSON.stringify({
             error: "GONE",

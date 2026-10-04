@@ -18,7 +18,7 @@ export type WorkTab =
   | { kind: "kbcard"; id: string; title: string; ref: string }
   | { kind: "graph"; id: string; title: string }
   | { kind: "timeline"; id: string; title: string; project: string }
-  | { kind: "production"; id: string; title: string };
+  | { kind: "production"; id: string; title: string; project: string };
 
 function KbCardFetcher({ refId }: { refId: string }) {
   const [content, setContent] = useState<string | null>(null);
@@ -115,7 +115,7 @@ export function WorkTabs({
           </div>
         ) : active.kind === "production" ? (
           <div style={{ position: "relative", height: "100%" }}>
-            <ProductionPage />
+            <ProductionPage project={active.project} />
           </div>
         ) : null}
       </div>
