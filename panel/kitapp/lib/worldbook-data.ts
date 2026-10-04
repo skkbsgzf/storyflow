@@ -36,3 +36,16 @@ export function fetchWbGraph(): Promise<WbGraph> {
     });
   return graphPromise;
 }
+
+/** 引用 → 词条解析（pedia 对齐）：关联 chips / 图谱节点可能传裸标题，这里统一兜底——
+ *  全路径 → .md 尾段 → 标题 → id，四级递进；找不到返回 null（上层显式报「找不到词条」）。 */
+export async function resolveEntryRef(ref: string): Promise<WbEntry | null> {
+  const graph = await fetchWbGraph();
+  const bare = ref.replace(/\.md$/i, "");
+  return (
+    graph.entries.find((e) => e.path === ref || e.path === `${ref}.md` || e.id === ref) ??
+    graph.entries.find((e) => e.title === bare || e.id === bare) ??
+    graph.entries.find((e) => e.path.endsWith(`/${bare}.md`) || e.path.endsWith(`/${bare}`)) ??
+    null
+  );
+}

@@ -11,7 +11,7 @@ import { HOME, PROJECT_ROOT, SCRATCH_ROOT, WORKTREE_BRANCH, WORKTREE_ROOT } from
 import { fileMeta, isBinaryPath, listDirectory, lookup, primeAssetLookup, projectFiles, readFileText, textChunk, PROJECT_ROOTS } from "./files";
 import { gitDiff, gitStatus } from "./git";
 import { agentState, attachAgentStream, createRuntimeSession, runAgentCommand, runningSessionIds } from "./agent";
-import { kitEntryBridge, kitHubBridge, kitJournalBridge, kitKbReadBridge, kitKbSearchBridge, kitMode, kitProductionPlanBridge, kitStartBridge, kitStatusBridge, kitStopBridge, kitWorldbookBridge, kitWorldbookGraphBridge } from "./kit/hydrate";
+import { kitEntryBridge, kitHubBridge, kitJournalBridge, kitKbCatalogBridge, kitKbReadBridge, kitKbSearchBridge, kitMode, kitProductionPlanBridge, kitStartBridge, kitStatusBridge, kitStopBridge, kitWorldbookBridge, kitWorldbookGraphBridge } from "./kit/hydrate";
 import {
   allSessions,
   buildContext,
@@ -248,6 +248,7 @@ const ROUTES: Record<string, Handler> = {
     }
     if (sub === "kb") return json(await kitKbSearchBridge(request.query("q") ?? ""));
     if (sub === "kb-read") return json(await kitKbReadBridge(request.query("ref") ?? ""));
+    if (sub === "kb-catalog") return json(await kitKbCatalogBridge());
     if (sub === "status") return json(await kitStatusBridge());
     if (sub === "hub") return json(await kitHubBridge());
     if (sub === "journal") return json(await kitJournalBridge(request.query("project") ?? "", Number(request.query("limit") ?? 200) || 200));

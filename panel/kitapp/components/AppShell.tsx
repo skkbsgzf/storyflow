@@ -282,6 +282,21 @@ export function AppShell() {
   const handleOpenEntryTab = useCallback((path: string, title: string) => {
     openWorkTab({ kind: "entry", id: `entry:${path}`, title, path });
   }, [openWorkTab]);
+  // pedia 单页形态：词条内关联跳转就地替换当前 entry tab（不开新页、tab 标题跟走、同词条不重复开）
+  const handleNavigateEntry = useCallback((path: string, title: string) => {
+    const nid = `entry:${path}`;
+    setWorkTabs((prev) => {
+      const i = prev.findIndex((t) => t.id === activeWorkTabId);
+      const active = i >= 0 ? prev[i] : null;
+      if (!active || active.kind !== "entry") return prev;
+      if (active.id === nid) return prev;
+      const next = prev.filter((t) => t.id !== nid);
+      const j = next.findIndex((t) => t.id === active.id);
+      next[j] = { kind: "entry", id: nid, title, path };
+      return next;
+    });
+    setActiveWorkTabId(nid);
+  }, [activeWorkTabId]);
 
   // ── 批1 · 全局导航（写作领域 IA）：icon 导航栏切换主内容区视图 ──
   type ToolId = "worldbook" | "timeline" | "knowledge" | "production" | "files" | "settings";
@@ -2028,7 +2043,6 @@ export function AppShell() {
               aria-label={item.label}
               aria-pressed={on}
               onClick={() => {
-                if (item.id === "worldbook") { setWorldbookPageOpen(true); return; }
                 setWorldbookPageOpen(false);
                 setActiveTool((v) => (v === item.id ? null : item.id));
               }}
@@ -2098,6 +2112,7 @@ export function AppShell() {
           onClose={closeWorkTab}
           onSelectionToChat={handleSelectionToChat}
           onOpenEntry={handleOpenEntryTab}
+          onNavigateEntry={handleNavigateEntry}
           onOpenWorkTab={openWorkTab}
         />
       </div>

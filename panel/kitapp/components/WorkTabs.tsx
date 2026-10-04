@@ -10,34 +10,77 @@ import { EntryWikiView } from "./EntryWikiView";
 import { WorldbookGraphView } from "./WorldbookGraphView";
 import { TimelinePage } from "./TimelinePage";
 import { ProductionPage } from "./ProductionPage";
+import { KbShopView } from "./KbShopView";
+import { kitKbRead } from "../mock/kit/client";
 import type { SelectionCard } from "@/lib/selection-card";
 
 export type WorkTab =
   | { kind: "file"; id: string; title: string; path: string }
   | { kind: "entry"; id: string; title: string; path: string }
   | { kind: "kbcard"; id: string; title: string; ref: string }
+  | { kind: "kbshop"; id: string; title: string; domain?: string }
   | { kind: "graph"; id: string; title: string }
   | { kind: "timeline"; id: string; title: string; project: string }
   | { kind: "production"; id: string; title: string; project: string };
 
+/** 知识卡深读页：frontmatter 结构化卡头 + 正文 markdown。
+ *  失败态带「重试」——8431 曾因服务重启短暂不可达，失败卡死在页上（点击同一命中不重拉）即由此修。 */
 function KbCardFetcher({ refId }: { refId: string }) {
   const [content, setContent] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [nonce, setNonce] = useState(0);
   useEffect(() => {
     let alive = true;
     setContent(null);
     setError("");
-    fetch(`/api/kit/kb-read?ref=${encodeURIComponent(refId)}`)
-      .then((r) => r.json())
-      .then((body: { content?: string }) => { if (alive) setContent(body.content ?? "（读卡失败）"); })
-      .catch((e) => { if (alive) setError(String(e)); });
+    kitKbRead(refId)
+      .then((raw) => {
+        if (!alive) return;
+        const body = raw as { content?: string };
+        if (typeof body?.content === "string" && body.content.length > 0) setContent(body.content);
+        else setError("读卡返回为空");
+      })
+      .catch((e) => { if (alive) setError(String((e as Error).message ?? e)); });
     return () => { alive = false; };
-  }, [refId]);
+  }, [refId, nonce]);
+
+  if (error) {
+    return (
+      <div style={{ padding: 20 }}>
+        <div style={{ border: "1px solid #b3564d", borderRadius: 10, padding: "12px 14px", fontSize: 13, color: "#d98a83", marginBottom: 12, maxWidth: 720 }}>
+          读卡失败（{refId}）：{error}
+        </div>
+        <button type="button" onClick={() => setNonce((n) => n + 1)} style={{ padding: "7px 16px", border: "1px solid var(--border)", borderRadius: 8, background: "transparent", color: "var(--text)", cursor: "pointer", fontSize: 13 }}>
+          重试
+        </button>
+      </div>
+    );
+  }
   if (content === null) return <div style={{ padding: 14, fontSize: 12, color: "var(--text-muted)" }}>装载卡片…</div>;
-  if (error) return <div style={{ padding: 14, fontSize: 12, color: "var(--text-muted)" }}>{error}</div>;
+  // frontmatter 结构化头（JSON in --- 围栏）与正文分离渲染
+  const m = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
+  let meta: Record<string, unknown> | null = null;
+  let body = content;
+  if (m) {
+    try { meta = JSON.parse(m[1]) as Record<string, unknown>; body = content.slice(m[0].length); } catch { meta = null; }
+  }
   return (
-    <div className="markdown-body" style={{ padding: "16px 20px", fontSize: 14, lineHeight: 1.9, maxWidth: 980 }}>
-      <ReactMarkdown>{content}</ReactMarkdown>
+    <div style={{ padding: "18px 22px", fontSize: 14, lineHeight: 1.9, maxWidth: 980 }}>
+      {meta && (
+        <div style={{ marginBottom: 14, paddingBottom: 12, borderBottom: "1px solid var(--border)" }}>
+          <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 8 }}>{String(meta.title ?? refId)}</div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", fontSize: 11 }}>
+            {[String(meta.type ?? ""), `v${String(meta.version ?? "?")}`, String(meta.status ?? ""), String(meta.updated ?? "")]
+              .filter(Boolean)
+              .map((chip, i) => (
+                <span key={i} style={{ padding: "2px 9px", borderRadius: 999, border: "1px solid var(--border)", color: "var(--text-muted)" }}>{chip}</span>
+              ))}
+          </div>
+        </div>
+      )}
+      <div className="markdown-body">
+        <ReactMarkdown>{body}</ReactMarkdown>
+      </div>
     </div>
   );
 }
@@ -49,6 +92,8 @@ export function WorkTabs({
   onClose,
   onSelectionToChat,
   onOpenEntry,
+  onNavigateEntry,
+  onOpenWorkTab,
 }: {
   tabs: WorkTab[];
   activeId: string | null;
@@ -56,6 +101,8 @@ export function WorkTabs({
   onClose: (id: string) => void;
   onSelectionToChat?: (card: SelectionCard) => void;
   onOpenEntry?: (path: string, title: string) => void;
+  onNavigateEntry?: (path: string, title: string) => void;
+  onOpenWorkTab?: (tab: WorkTab) => void;
 }) {
   const active = tabs.find((t) => t.id === activeId) ?? tabs[0] ?? null;
 
@@ -102,9 +149,15 @@ export function WorkTabs({
             <FileViewer filePath={`${PROJECT_ROOT}/${active.path}`} cwd={PROJECT_ROOT} onSelectionToChat={onSelectionToChat} />
           </div>
         ) : active.kind === "entry" ? (
-          <EntryWikiView path={active.path} title={active.title} onOpenEntry={onOpenEntry} />
+          <EntryWikiView path={active.path} title={active.title} onOpenEntry={onOpenEntry} onNavigateEntry={onNavigateEntry} />
         ) : active.kind === "kbcard" ? (
           <KbCardFetcher refId={active.ref} />
+        ) : active.kind === "kbshop" ? (
+          <KbShopView
+            key={active.domain ?? "all"}
+            domain={active.domain}
+            onOpenCard={(ref, title) => onOpenWorkTab?.({ kind: "kbcard", id: `kb:${ref}`, title, ref })}
+          />
         ) : active.kind === "graph" ? (
           <div style={{ padding: 14, height: "100%", boxSizing: "border-box" }}>
             <WorldbookGraphView onOpenEntry={onOpenEntry} />

@@ -82,6 +82,12 @@ export async function kitProductionPlanBridge(project: string, flow?: string): P
   return kitProductionPlan(project, flow);
 }
 
+/** 桥路由用：知识库全量目录（卡片商店数据源）。 */
+export async function kitKbCatalogBridge(): Promise<unknown> {
+  const { kitKbCatalog } = await import("./client");
+  return kitKbCatalog();
+}
+
 /** 桥路由用：世界书 graph.json 全量（词条卡墙 + 关系图谱数据源）。 */
 export async function kitWorldbookGraphBridge(): Promise<unknown> {
   const project = kitProjectName();

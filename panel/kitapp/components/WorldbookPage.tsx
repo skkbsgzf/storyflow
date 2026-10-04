@@ -1,7 +1,9 @@
 "use client";
 
-/** 世界书专有页（工单-20261002 批2）：主内容区整页视图。
+/** 世界书专有页（工单-20261002 批2；2026-10-05 恢复全屏形态 + pedia 交互对齐）：
  *  左=分类树，中=词条卡墙/图谱/详情，顶=全局 RAG 检索。
+ *  图谱 = pedia 交互全家桶：节点拖拽 / 画布平移 / 滚轮缩放 / 节点名称 / 度数定半径 / 分类图例高亮。
+ *  读卡带引用解析兜底（全路径 → 尾段 → 标题 → id），关联词条原地跳转（单页形态不开新页）。
  *  数据经桥路由 /api/kit/worldbook-graph（graph.json）与 /api/kit/worldbook（检索）、/api/kit/entry（读卡）。 */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -28,146 +30,120 @@ const CAT_PALETTE: Record<string, string> = {
   "总览": "#b09a5f", "物品": "#a06a8a", "事件": "#6a9aa0",
 };
 const catColorOf = (e: WbEntry) => CAT_PALETTE[e.cat] ?? "#8a8375";
+const catColor = (c: string) => CAT_PALETTE[c] ?? "#8a8375";
 
-export function WorldbookPage({ onBack }: { onBack?: () => void }) {
-  const [graph, setGraph] = useState<WbGraph | null>(null);
-  const [loadError, setLoadError] = useState("");
-  const [cat, setCat] = useState<string>("全部");
-  const [query, setQuery] = useState("");
-  const [searching, setSearching] = useState(false);
-  const [hits, setHits] = useState<Hit[] | null>(null);
-  const [entry, setEntry] = useState<{ path: string; title: string; content: string } | null>(null);
-  const byTitle = useMemo(() => new Map((graph?.entries ?? []).map((e) => [e.title, e])), [graph]);
-  const [mode, setMode] = useState<"cards" | "graph">("cards");
+/** 图谱节点（布局后含度数）。 */
+interface GraphNode { e: WbEntry; x: number; y: number; vx: number; vy: number; deg: number }
+type GraphEdge = readonly [GraphNode, GraphNode];
+interface ViewTx { k: number; tx: number; ty: number }
+const MIN_K = 0.35;
+const MAX_K = 3;
+
+/** 关系图谱（pedia 对齐）：布局一次，交互（hover/拖拽/平移/缩放/图例）全在客户端。 */
+function WorldbookGraph({ graph, onOpen }: { graph: WbGraph; onOpen: (e: WbEntry) => void }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const graphLayoutRef = useRef<{
-    nodes: { e: WbEntry; x: number; y: number; vx: number; vy: number }[];
-    edges: readonly (readonly [{ e: WbEntry; x: number; y: number; vx: number; vy: number }, { e: WbEntry; x: number; y: number; vx: number; vy: number }])[];
-    byId: Map<string, WbEntry>;
-  } | null>(null);
-
-  /** 绘制：hover 时高亮该节点邻域（邻边 + 邻点全亮，其余淡化）。 */
-  interface GraphNode { e: WbEntry; x: number; y: number; vx?: number; vy?: number }
-  const drawGraph = (
-    canvas: HTMLCanvasElement,
-    ctx: CanvasRenderingContext2D,
-    nodes: GraphNode[],
-    edges: readonly (readonly [GraphNode, GraphNode])[],
-    hoverId: string | null,
-  ) => {
-    const W = canvas.width, H = canvas.height;
-    const neighborIds = new Set<string>();
-    if (hoverId) {
-      neighborIds.add(hoverId);
-      for (const pair of edges) {
-        const a = pair[0]!, b = pair[1]!;
-        if (a.e.id === hoverId) neighborIds.add(b.e.id);
-        if (b.e.id === hoverId) neighborIds.add(a.e.id);
-      }
-    }
-    const dim = hoverId ? 0.14 : 1;
-    ctx.clearRect(0, 0, W, H);
-    ctx.lineWidth = 1.4;
-    for (const pair of edges) {
-      const a = pair[0]!, b = pair[1]!;
-      const on = !hoverId || (a.e.id === hoverId || b.e.id === hoverId);
-      ctx.strokeStyle = on ? "rgba(138,131,117,0.5)" : `rgba(138,131,117,${0.35 * dim})`;
-      ctx.beginPath();
-      ctx.moveTo(a.x, a.y);
-      ctx.lineTo(b.x, b.y);
-      ctx.stroke();
-    }
-    for (const n of nodes) {
-      const on = !hoverId || neighborIds.has(n.e.id);
-      const r = n.e.cat === "总览" ? 14 : 7;
-      ctx.globalAlpha = on ? 1 : dim;
-      ctx.beginPath();
-      ctx.arc(n.x, n.y, r * 2, 0, Math.PI * 2);
-      ctx.fillStyle = catColorOf(n.e);
-      ctx.fill();
-      if (hoverId && n.e.id === hoverId) {
-        ctx.strokeStyle = "#fff";
-        ctx.lineWidth = 3;
-        ctx.stroke();
-      }
-      if (n.e.cat !== "总览") { ctx.globalAlpha = 1; continue; }
-      ctx.fillStyle = "#2c2824";
-      ctx.font = "bold 26px 'Noto Serif SC', serif";
-      ctx.textAlign = "center";
-      ctx.fillText(n.e.title, n.x, n.y - 24);
-      ctx.globalAlpha = 1;
-    }
-  };
-
-  useEffect(() => {
-    fetch("/api/kit/worldbook-graph")
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-      .then((g: WbGraph) => setGraph(g))
-      .catch((e) => setLoadError(`图谱数据不可达：${e}`));
-  }, []);
+  const layoutRef = useRef<{ nodes: GraphNode[]; edges: GraphEdge[] } | null>(null);
+  const viewRef = useRef<ViewTx>({ k: 1, tx: 0, ty: 0 });
+  const hoverRef = useRef<string | null>(null);
+  const dragRef = useRef<
+    | { type: "node"; n: GraphNode; ox: number; oy: number; moved: boolean }
+    | { type: "pan"; sx: number; sy: number; tx0: number; ty0: number; moved: boolean }
+    | null
+  >(null);
+  const [highlightCat, setHighlightCat] = useState<string | null>(null);
+  const highlightRef = useRef<string | null>(null);
+  highlightRef.current = highlightCat;
 
   const cats = useMemo(() => {
-    if (!graph) return [];
     const m = new Map<string, number>();
     for (const e of graph.entries) m.set(e.cat, (m.get(e.cat) ?? 0) + 1);
     return [...m.entries()].sort((a, b) => b[1] - a[1]);
   }, [graph]);
 
-  const visible = useMemo(() => {
-    if (!graph) return [];
-    const word = query.trim();
-    const list = cat === "全部" ? graph.entries : graph.entries.filter((e) => e.cat === cat);
-    if (!word) return list;
-    return list.filter((e) =>
-      e.title.includes(word) || e.tags.some((t) => t.includes(word)) || (e.summary ?? "").includes(word),
-    );
-  }, [graph, cat, query]);
-
-  const fetchEntry = useCallback((path: string, title: string) => {
-    fetch(`/api/kit/entry?path=${encodeURIComponent(path)}`)
-      .then((r) => r.json())
-      .then((body: { path: string; content: string }) => setEntry({ ...body, title }))
-      .catch(() => setEntry({ path, title, content: "（读取失败）" }));
-  }, []);
-  const openEntry = useCallback((e: WbEntry) => fetchEntry(e.path, e.title), [fetchEntry]);
-
-  const runSearch = useCallback(() => {
-    const word = query.trim();
-    if (!word) return;
-    setSearching(true);
-    setEntry(null);
-    fetch(`/api/kit/worldbook?q=${encodeURIComponent(word)}`)
-      .then((r) => r.json())
-      .then((body: { hits?: Hit[] }) => setHits(body.hits ?? []))
-      .catch(() => setHits([]))
-      .finally(() => setSearching(false));
-  }, []);
-
-  // ── 关系图谱（canvas 力导向简化版：分类着色 + 邻域高亮） ──
-  useEffect(() => {
-    if (mode !== "graph" || !graph || !canvasRef.current) return;
+  const draw = useCallback((hoverId: string | null) => {
     const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    const layout = layoutRef.current;
+    if (!canvas || !ctx || !layout) return;
+    const { nodes, edges } = layout;
+    const { k, tx, ty } = viewRef.current;
+    const hl = highlightRef.current;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(k, 0, 0, k, tx, ty);
+    const neighbors = new Set<string>();
+    if (hoverId) {
+      neighbors.add(hoverId);
+      for (const [a, b] of edges) {
+        if (a.e.id === hoverId) neighbors.add(b.e.id);
+        if (b.e.id === hoverId) neighbors.add(a.e.id);
+      }
+    }
+    const dimOf = (id: string): number => {
+      if (hoverId) return neighbors.has(id) ? 1 : 0.14;
+      if (hl) return nodes.find((n) => n.e.id === id)?.e.cat === hl ? 1 : 0.16;
+      return 1;
+    };
+    ctx.lineWidth = 1.4;
+    for (const [a, b] of edges) {
+      const on = !hoverId && !hl ? 1 : Math.min(dimOf(a.e.id), dimOf(b.e.id));
+      ctx.strokeStyle = on === 1 ? "rgba(138,131,117,0.5)" : `rgba(138,131,117,${0.35 * on})`;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+    // 名称显隐：枢纽与总览常显，放大后全显（字号随缩放恒定屏显 ~11px）
+    const labelAll = k >= 1.2;
+    for (const n of nodes) {
+      const alpha = dimOf(n.e.id);
+      if (alpha === 0) continue;
+      const r = n.e.cat === "总览" ? 18 : 8 + Math.min(n.deg, 20) * 0.5;
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = catColorOf(n.e);
+      ctx.fill();
+      if (hoverId && n.e.id === hoverId) {
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 3 / k;
+        ctx.stroke();
+      }
+      if (n.e.cat === "总览" || labelAll || n.deg >= 5) {
+        ctx.font = `${(n.e.cat === "总览" ? 15 : 22) / k}px 'Noto Serif SC', serif`;
+        ctx.textAlign = "center";
+        ctx.fillStyle = "rgba(200,195,185,0.92)";
+        ctx.fillText(n.e.title, n.x, n.y - r - 6 / k);
+      }
+      ctx.globalAlpha = 1;
+    }
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+  }, []);
+
+  // 布局：环形起点 + 斥力/弹簧迭代（一次；此后拖拽即真拖拽）
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     const W = canvas.width = canvas.clientWidth * 2;
     const H = canvas.height = canvas.clientHeight * 2;
-    const byId = new Map(graph.entries.map((e) => [e.id, e]));
-    const palette: Record<string, string> = {
-      "人物": "#c96f4a", "地点": "#5b7fa6", "势力": "#8a6fb0", "规则": "#5f9c7a",
-      "总览": "#b09a5f", "物品": "#a06a8a", "事件": "#6a9aa0",
-    };
-    const colorOf = (e: WbEntry) => palette[e.cat] ?? "#8a8375";
-    // 初始环形布局 + 简易斥力迭代
-    const nodes = graph.entries.map((e, i) => ({
+    const deg: Record<string, number> = {};
+    for (const r of graph.relations) { deg[r.a] = (deg[r.a] ?? 0) + 1; deg[r.b] = (deg[r.b] ?? 0) + 1; }
+    const nodes: GraphNode[] = graph.entries.map((e, i) => ({
       e,
+      deg: deg[e.id] ?? 0,
       x: W / 2 + Math.cos((i / graph.entries.length) * Math.PI * 2) * W * 0.36,
       y: H / 2 + Math.sin((i / graph.entries.length) * Math.PI * 2) * H * 0.36,
       vx: 0, vy: 0,
     }));
     const idx = new Map(nodes.map((n) => [n.e.id, n]));
-    const edges = graph.relations
-      .map((r) => [idx.get(r.a), idx.get(r.b)] as const)
-      .filter((pair): pair is readonly [NonNullable<ReturnType<typeof idx.get>>, NonNullable<ReturnType<typeof idx.get>>] => pair[0] !== undefined && pair[1] !== undefined);
+    const edges: GraphEdge[] = [];
+    for (const r of graph.relations) {
+      const a = idx.get(r.a);
+      const b = idx.get(r.b);
+      if (a && b) edges.push([a, b] as const);
+    }
     for (let iter = 0; iter < 220; iter += 1) {
       for (let i = 0; i < nodes.length; i += 1) {
         for (let j = i + 1; j < nodes.length; j += 1) {
@@ -193,47 +169,219 @@ export function WorldbookPage({ onBack }: { onBack?: () => void }) {
         n.vx *= 0.82; n.vy *= 0.82;
       }
     }
-    // 布局结果与邻接缓存到 ref，供 hover/点击交互复用
-    graphLayoutRef.current = { nodes, edges, byId };
-    drawGraph(canvas, ctx, nodes, edges, null);
-  }, [mode, graph]);
+    layoutRef.current = { nodes, edges };
+    viewRef.current = { k: 1, tx: 0, ty: 0 };
+    draw(null);
+  }, [graph, draw]);
 
-  // 交互：hover 高亮邻域 / 点击节点开词条（坐标换算 ×2 = canvas 内部分辨率）
-  const graphHoverRef = useRef<string | null>(null);
-  const redrawWithHighlight = useCallback((hoverId: string | null) => {
+  // 滚轮缩放（native 非被动监听——React 根上的 wheel 是被动的，preventDefault 无效）
+  useEffect(() => {
     const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d");
-    const layout = graphLayoutRef.current;
-    if (!canvas || !ctx || !layout) return;
-    drawGraph(canvas, ctx, layout.nodes, layout.edges, hoverId);
+    if (!canvas) return;
+    const onWheel = (ev: WheelEvent) => {
+      ev.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const px = (ev.clientX - rect.left) * 2, py = (ev.clientY - rect.top) * 2;
+      const { k, tx, ty } = viewRef.current;
+      const nk = Math.max(MIN_K, Math.min(MAX_K, k * (ev.deltaY < 0 ? 1.12 : 0.89)));
+      viewRef.current.tx = px - ((px - tx) * nk) / k;
+      viewRef.current.ty = py - ((py - ty) * nk) / k;
+      viewRef.current.k = nk;
+      draw(hoverRef.current);
+    };
+    canvas.addEventListener("wheel", onWheel, { passive: false });
+    return () => canvas.removeEventListener("wheel", onWheel);
+  }, [draw]);
+
+  // 高亮切换重绘
+  useEffect(() => { draw(hoverRef.current); }, [highlightCat, draw]);
+
+  const toWorld = useCallback((clientX: number, clientY: number) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+    const rect = canvas.getBoundingClientRect();
+    const { k, tx, ty } = viewRef.current;
+    return { x: ((clientX - rect.left) * 2 - tx) / k, y: ((clientY - rect.top) * 2 - ty) / k };
   }, []);
 
-  const onCanvasMove = useCallback((ev: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    const layout = graphLayoutRef.current;
-    if (!canvas || !layout) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = (ev.clientX - rect.left) * 2;
-    const y = (ev.clientY - rect.top) * 2;
-    let hit: string | null = null;
+  const pickNode = useCallback((clientX: number, clientY: number): GraphNode | null => {
+    const p = toWorld(clientX, clientY);
+    const layout = layoutRef.current;
+    const { k } = viewRef.current;
+    if (!p || !layout) return null;
+    let best: GraphNode | null = null;
+    let bestD = Infinity;
     for (const n of layout.nodes) {
-      const r = n.e.cat === "总览" ? 28 : 16;
-      if ((n.x - x) ** 2 + (n.y - y) ** 2 <= r * r) { hit = n.e.id; break; }
+      const r = Math.max(n.e.cat === "总览" ? 18 : 8 + Math.min(n.deg, 20) * 0.5, 12 / k);
+      const d = (n.x - p.x) ** 2 + (n.y - p.y) ** 2;
+      if (d <= r * r && d < bestD) { best = n; bestD = d; }
     }
-    if (hit !== graphHoverRef.current) {
-      graphHoverRef.current = hit;
-      redrawWithHighlight(hit);
-      canvas.style.cursor = hit ? "pointer" : "default";
-    }
-  }, [redrawWithHighlight]);
+    return best;
+  }, [toWorld]);
 
-  const onCanvasClick = useCallback(() => {
-    const hover = graphHoverRef.current;
-    const layout = graphLayoutRef.current;
-    if (!hover || !layout) return;
-    const node = layout.nodes.find((n) => n.e.id === hover);
-    if (node) openEntry(node.e);
-  }, [openEntry]);
+  return (
+    <div style={{ border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden" }}>
+      {/* 分类图例：点击高亮该类（其余淡化），再点取消 */}
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", padding: "8px 12px", borderBottom: "1px solid var(--border)", alignItems: "center" }}>
+        {cats.map(([c, count]) => {
+          const on = highlightCat === c;
+          return (
+            <button
+              key={c}
+              type="button"
+              onClick={() => setHighlightCat(on ? null : c)}
+              style={{
+                display: "flex", alignItems: "center", gap: 6, padding: "2px 10px", borderRadius: 999, fontSize: 11,
+                border: `1px solid ${on ? catColor(c) : "var(--border)"}`,
+                background: on ? `${catColor(c)}22` : "transparent",
+                color: on ? catColor(c) : "var(--text-muted)",
+                cursor: "pointer",
+              }}
+            >
+              <span style={{ width: 8, height: 8, borderRadius: 999, background: catColor(c), display: "inline-block" }} />
+              {c} · {count}
+            </button>
+          );
+        })}
+        {highlightCat && <span style={{ fontSize: 11, color: "var(--text-muted)" }}>已高亮「{highlightCat}」— 再点图例取消</span>}
+      </div>
+      <canvas
+        ref={canvasRef}
+        style={{ width: "100%", height: "62vh", display: "block", touchAction: "none", cursor: "grab" }}
+        onPointerDown={(ev) => {
+          const hit = pickNode(ev.clientX, ev.clientY);
+          if (hit) {
+            const p = toWorld(ev.clientX, ev.clientY);
+            if (p) dragRef.current = { type: "node", n: hit, ox: p.x - hit.x, oy: p.y - hit.y, moved: false };
+          } else {
+            const { tx, ty } = viewRef.current;
+            dragRef.current = { type: "pan", sx: ev.clientX, sy: ev.clientY, tx0: tx, ty0: ty, moved: false };
+          }
+          try { canvasRef.current?.setPointerCapture(ev.pointerId); } catch { /* 捕获失败照走 */ }
+        }}
+        onPointerMove={(ev) => {
+          const drag = dragRef.current;
+          if (!drag) {
+            const hit = pickNode(ev.clientX, ev.clientY);
+            const id = hit?.e.id ?? null;
+            if (id !== hoverRef.current) {
+              hoverRef.current = id;
+              draw(id);
+              if (canvasRef.current) canvasRef.current.style.cursor = id ? "pointer" : "grab";
+            }
+            return;
+          }
+          if (drag.type === "pan") {
+            const dx = ev.clientX - drag.sx, dy = ev.clientY - drag.sy;
+            if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
+            viewRef.current.tx = drag.tx0 + dx * 2;
+            viewRef.current.ty = drag.ty0 + dy * 2;
+            if (drag.moved) {
+              if (canvasRef.current) canvasRef.current.style.cursor = "grabbing";
+              draw(null);
+            }
+            return;
+          }
+          const p = toWorld(ev.clientX, ev.clientY);
+          if (!p) return;
+          drag.moved = true;
+          drag.n.x = p.x - drag.ox;
+          drag.n.y = p.y - drag.oy;
+          if (canvasRef.current) canvasRef.current.style.cursor = "grabbing";
+          draw(null);
+        }}
+        onPointerUp={() => {
+          const drag = dragRef.current;
+          dragRef.current = null;
+          if (canvasRef.current) canvasRef.current.style.cursor = "grab";
+          // 节点原地点击（未拖动）→ 开词条
+          if (drag?.type === "node" && !drag.moved) onOpen(drag.n.e);
+        }}
+        onPointerLeave={() => {
+          if (!dragRef.current) { hoverRef.current = null; draw(null); }
+        }}
+        onDoubleClick={() => { viewRef.current = { k: 1, tx: 0, ty: 0 }; draw(null); }}
+      />
+      <div style={{ padding: "8px 12px", fontSize: 12, color: "var(--text-muted)", borderTop: "1px solid var(--border)" }}>
+        {graph.entries.length} 词条 · {graph.relations.length} 关系边 · hover 高亮邻域 · 拖节点/拖画布/滚轮缩放 · 双击复位 · 点节点打开词条 · 图例点击按分类高亮
+      </div>
+    </div>
+  );
+}
+
+export function WorldbookPage({ onBack }: { onBack?: () => void }) {
+  const [graph, setGraph] = useState<WbGraph | null>(null);
+  const [loadError, setLoadError] = useState("");
+  const [cat, setCat] = useState<string>("全部");
+  const [query, setQuery] = useState("");
+  const [searching, setSearching] = useState(false);
+  const [hits, setHits] = useState<Hit[] | null>(null);
+  const [entry, setEntry] = useState<{ path: string; title: string; content: string } | null>(null);
+  const [mode, setMode] = useState<"cards" | "graph">("cards");
+  const byTitle = useMemo(() => new Map((graph?.entries ?? []).map((e) => [e.title, e])), [graph]);
+
+  useEffect(() => {
+    fetch("/api/kit/worldbook-graph")
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((g: WbGraph) => setGraph(g))
+      .catch((e) => setLoadError(`图谱数据不可达：${e}`));
+  }, []);
+
+  const cats = useMemo(() => {
+    if (!graph) return [];
+    const m = new Map<string, number>();
+    for (const e of graph.entries) m.set(e.cat, (m.get(e.cat) ?? 0) + 1);
+    return [...m.entries()].sort((a, b) => b[1] - a[1]);
+  }, [graph]);
+
+  const visible = useMemo(() => {
+    if (!graph) return [];
+    const word = query.trim();
+    const list = cat === "全部" ? graph.entries : graph.entries.filter((e) => e.cat === cat);
+    if (!word) return list;
+    return list.filter((e) =>
+      e.title.includes(word) || e.tags.some((t) => t.includes(word)) || (e.summary ?? "").includes(word),
+    );
+  }, [graph, cat, query]);
+
+  /** 引用解析兜底（pedia 对齐）：全路径 → .md 尾段 → 标题 → id；关联/RAG 带来的裸引用都能开卡。 */
+  const resolveEntry = useCallback((ref: string): WbEntry | null => {
+    if (!graph) return null;
+    const bare = ref.replace(/\.md$/i, "");
+    return (
+      graph.entries.find((e) => e.path === ref || e.path === `${ref}.md` || e.id === ref) ??
+      graph.entries.find((e) => e.title === bare || e.id === bare) ??
+      graph.entries.find((e) => e.path.endsWith(`/${bare}.md`) || e.path.endsWith(`/${bare}`)) ??
+      null
+    );
+  }, [graph]);
+
+  const fetchEntry = useCallback((ref: string, title: string) => {
+    const ent = resolveEntry(ref);
+    const path = ent?.path ?? ref;
+    fetch(`/api/kit/entry?path=${encodeURIComponent(path)}`)
+      .then((r) => r.json())
+      .then((body: { path: string; content?: string }) => {
+        const content = typeof body.content === "string" && body.content.length > 0
+          ? body.content
+          : `（找不到词条内容：${ent ? path : `${title || ref}——引用解析不中`}）`;
+        setEntry({ path, title: ent?.title ?? title, content });
+      })
+      .catch(() => setEntry({ path, title: ent?.title ?? title, content: "（读取失败）" }));
+  }, [resolveEntry]);
+  const openEntry = useCallback((e: WbEntry) => fetchEntry(e.path, e.title), [fetchEntry]);
+
+  const runSearch = useCallback(() => {
+    const word = query.trim();
+    if (!word) return;
+    setSearching(true);
+    setEntry(null);
+    fetch(`/api/kit/worldbook?q=${encodeURIComponent(word)}`)
+      .then((r) => r.json())
+      .then((body: { hits?: Hit[] }) => setHits(body.hits ?? []))
+      .catch(() => setHits([]))
+      .finally(() => setSearching(false));
+  }, []);
 
   const labelStyle: React.CSSProperties = { fontSize: 12, color: "var(--text-muted)" };
   const chipStyle = (on: boolean): React.CSSProperties => ({
@@ -314,19 +462,21 @@ export function WorldbookPage({ onBack }: { onBack?: () => void }) {
             </div>
           )}
 
-          {/* 词条详情 · wiki 形态（frontmatter 结构化 + markdown 正文 + 关联词条） */}
+          {/* 词条详情 · wiki 形态（frontmatter 结构化 + markdown 正文 + 关联词条原地跳转） */}
           {entry && (() => {
             const fm = parseFrontmatter(entry.content);
             const meta = (fm.data ?? {}) as { title?: string; cat?: string; tags?: string[]; links?: string[]; summary?: string };
             const body = fm.rest.replace(/^#[^\n]*\n/, ""); // 正文渲染自标题行之后（标题已在页头）
-            const graphEntry = byTitle.get(meta.title ?? entry.title);
             const tags = Array.isArray(meta.tags) ? meta.tags : [];
-            const linkTitles = (Array.isArray(meta.links) ? meta.links : []).filter((t) => byTitle.has(t));
+            const linkEntries = (Array.isArray(meta.links) ? meta.links : [])
+              .map((t) => byTitle.get(t))
+              .filter((e): e is WbEntry => Boolean(e));
+            const catColorOfMeta = meta.cat ? catColor(meta.cat) : ACCENT;
             return (
               <div style={{ border: "1px solid var(--border)", borderRadius: 12, padding: "18px 22px", marginBottom: 16, background: "var(--bg-panel, transparent)", maxWidth: 980 }}>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
                   <b style={{ fontSize: 24, letterSpacing: 2 }}>{meta.title ?? entry.title}</b>
-                  {meta.cat && <span style={{ padding: "2px 10px", borderRadius: 999, fontSize: 11, border: `1px solid ${ACCENT}`, color: ACCENT }}>{meta.cat}</span>}
+                  {meta.cat && <span style={{ padding: "2px 10px", borderRadius: 999, fontSize: 11, border: `1px solid ${catColorOfMeta}`, color: catColorOfMeta }}>{meta.cat}</span>}
                   <span style={{ flex: 1 }} />
                   <button type="button" onClick={() => setEntry(null)} style={{ ...chipStyle(false), borderRadius: 6 }}>← 返回</button>
                 </div>
@@ -338,7 +488,7 @@ export function WorldbookPage({ onBack }: { onBack?: () => void }) {
                   </div>
                 )}
                 {meta.summary && (
-                  <div style={{ marginTop: 10, fontSize: 13, color: "var(--text)", lineHeight: 1.7, borderLeft: `3px solid ${ACCENT}`, paddingLeft: 10 }}>
+                  <div style={{ marginTop: 10, fontSize: 13, color: "var(--text)", lineHeight: 1.7, borderLeft: `3px solid ${catColorOfMeta}`, paddingLeft: 10 }}>
                     {meta.summary}
                   </div>
                 )}
@@ -351,13 +501,20 @@ export function WorldbookPage({ onBack }: { onBack?: () => void }) {
                     {body}
                   </ReactMarkdown>
                 </div>
-                {linkTitles.length > 0 && (
+                {linkEntries.length > 0 && (
                   <div style={{ marginTop: 16, paddingTop: 10, borderTop: "1px solid var(--border)" }}>
-                    <div style={{ ...labelStyle, marginBottom: 6 }}>关联词条 · {linkTitles.length}</div>
+                    <div style={{ ...labelStyle, marginBottom: 6 }}>关联词条 · {linkEntries.length}（点击在本页打开）</div>
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                      {linkTitles.map((t) => (
-                        <button key={t} type="button" onClick={() => { const target = byTitle.get(t); if (target) openEntry(target); }} style={{ ...chipStyle(false), borderRadius: 6 }}>
-                          {t} ↗
+                      {linkEntries.map((e) => (
+                        <button
+                          key={e.id}
+                          type="button"
+                          onClick={() => openEntry(e)}
+                          title={`${e.cat} · ${e.summary?.slice(0, 60) ?? ""}`}
+                          style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 10px", borderRadius: 6, fontSize: 11, border: `1px solid ${catColorOf(e)}66`, background: "transparent", color: "var(--text)", cursor: "pointer" }}
+                        >
+                          <span style={{ width: 7, height: 7, borderRadius: 999, background: catColorOf(e), display: "inline-block" }} />
+                          {e.title}
                         </button>
                       ))}
                     </div>
@@ -380,7 +537,7 @@ export function WorldbookPage({ onBack }: { onBack?: () => void }) {
                 >
                   <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
                     <b style={{ fontSize: 14 }}>{e.title}</b>
-                    <span style={{ fontSize: 11, color: ACCENT }}>{e.cat}</span>
+                    <span style={{ fontSize: 11, color: catColorOf(e) }}>{e.cat}</span>
                   </div>
                   <div style={{ ...labelStyle, marginTop: 4, lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                     {e.tags.join(" · ")}
@@ -391,21 +548,8 @@ export function WorldbookPage({ onBack }: { onBack?: () => void }) {
             </div>
           )}
 
-          {/* 关系图谱 */}
-          {mode === "graph" && graph && (
-            <div style={{ border: "1px solid var(--border)", borderRadius: 10, overflow: "hidden" }}>
-              <canvas
-                ref={canvasRef}
-                style={{ width: "100%", height: "62vh", display: "block" }}
-                onMouseMove={onCanvasMove}
-                onMouseLeave={() => { graphHoverRef.current = null; redrawWithHighlight(null); }}
-                onClick={onCanvasClick}
-              />
-              <div style={{ padding: "8px 12px", ...labelStyle, borderTop: "1px solid var(--border)" }}>
-                {graph.entries.length} 词条 · {graph.relations.length} 关系边 · 分类着色（人物/地点/势力/规则…）
-              </div>
-            </div>
-          )}
+          {/* 关系图谱（pedia 交互：拖拽/平移/缩放/名称/图例高亮） */}
+          {mode === "graph" && graph && <WorldbookGraph graph={graph} onOpen={openEntry} />}
         </div>
       </div>
     </div>

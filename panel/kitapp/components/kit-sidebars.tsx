@@ -4,6 +4,7 @@
  *  点任何条目 = 在主内容区开一个 tab（openWorkTab）；侧栏自身不渲染看板。 */
 import { useEffect, useMemo, useState } from "react";
 import { catColorOf, fetchWbGraph, type WbEntry } from "@/lib/worldbook-data";
+import { KB_DOMAIN_STYLE } from "./KbShopView";
 import type { WorkTab } from "./WorkTabs";
 
 const ACCENT = "var(--accent, #a5433a)";
@@ -94,9 +95,21 @@ function WorldbookSidebar({ open }: { open: OpenWorkTab }) {
 // ── 知识库侧栏：域 + 检索命中 ─────────────────────────────────────
 const KB_DOMAINS = ["aesthetic", "rules", "craft", "structure", "trope", "market", "formats", "method", "deconstruct", "continuity"];
 
+/** 知识库侧栏：卡片商店入口 + 中文域列表（点域开商店并过滤）+ 检索（命中开深读卡）。 */
 function KnowledgeSidebar({ open }: { open: OpenWorkTab }) {
   const [q, setQ] = useState("");
   const [hits, setHits] = useState<{ ref?: string; title?: string }[] | null>(null);
+  const [domains, setDomains] = useState<{ key: string; name: string; count: number }[]>([]);
+  const [active, setActive] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/kit/kb-catalog")
+      .then((r) => r.json())
+      .then((c: { domains?: { key: string; name: string; count: number }[] }) => { if (alive) setDomains(c.domains ?? []); })
+      .catch(() => { /* 目录缺席时侧栏域列表留空，商店页内仍有完整域签条 */ });
+    return () => { alive = false; };
+  }, []);
 
   const run = (word: string) => {
     const term = word.trim();
@@ -107,14 +120,27 @@ function KnowledgeSidebar({ open }: { open: OpenWorkTab }) {
       .catch(() => setHits([]));
   };
 
+  const openShop = (domain?: string) => {
+    setActive(domain ?? null);
+    open({ kind: "kbshop", id: "kb-shop", title: domain ? `卡片商店 · ${domains.find((d) => d.key === domain)?.name ?? domain}` : "卡片商店", domain });
+  };
+
   return (
     <div>
+      <button type="button" onClick={() => openShop()} style={{ ...wideBtn, borderColor: "var(--accent)" }}>🏪 卡片商店</button>
+      <div style={sectionLabel}>语料域</div>
+      {(domains.length ? domains : KB_DOMAINS.map((k) => ({ key: k, name: k, count: 0 }))).map((d) => {
+        const st = KB_DOMAIN_STYLE[d.key] ?? { icon: "📦" };
+        return (
+          <button key={d.key} type="button" onClick={() => openShop(d.key)} style={itemStyle(active === d.key)}>
+            <span style={{ marginRight: 6 }}>{st.icon}</span>
+            {d.name}
+            {d.count > 0 && <span style={{ float: "right", opacity: 0.65 }}>{d.count}</span>}
+          </button>
+        );
+      })}
+      <div style={sectionLabel}>检索{hits ? ` · 命中 ${hits.length}` : ""}</div>
       <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") run(q); }} placeholder="检索方法论…" style={inputStyle} />
-      <div style={sectionLabel}>语料域（点按检索）</div>
-      {KB_DOMAINS.map((d) => (
-        <button key={d} type="button" onClick={() => { setQ(d); run(d); }} style={itemStyle(q === d)}>{d}</button>
-      ))}
-      <div style={sectionLabel}>命中{hits ? ` · ${hits.length}` : ""}</div>
       {(hits ?? []).map((h, i) => {
         const ref = h.ref ?? "";
         return (
