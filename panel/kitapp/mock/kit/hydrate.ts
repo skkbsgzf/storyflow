@@ -166,3 +166,13 @@ export async function hydrateKitSessions(): Promise<boolean> {
 }
 
 export type { SessionInfo };
+
+/** 桥路由用：git 分支信息 / 切换。 */
+export async function kitGitInfoBridge(): Promise<unknown> {
+  const { kitGitInfo } = await import("./client");
+  return kitGitInfo();
+}
+export async function kitGitCheckoutBridge(branch: string): Promise<unknown> {
+  const { kitGitCheckout } = await import("./client");
+  return kitGitCheckout(branch);
+}

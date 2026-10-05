@@ -18,6 +18,7 @@ import { ToolDefinitionsPanel } from "./ToolDefinitionsPanel";
 import { WorldbookPanel } from "./WorldbookPanel";
 import { WorkTabs, type WorkTab } from "./WorkTabs";
 import { ExplorerSidebar, type ExplorerSection } from "./ExplorerSidebar";
+import { AgentDockBar } from "./AgentDockBar";
 import { WorldbookPage } from "./WorldbookPage";
 import { SettingsPage } from "./SettingsPage";
 import { AgentSessionPanel } from "./AgentSessionPanel";
@@ -299,12 +300,12 @@ export function AppShell() {
   }, [activeWorkTabId]);
 
   // ── 批1 · 全局导航（写作领域 IA）：icon 导航栏切换主内容区视图 ──
-  type ToolId = "sessions" | "worldbook" | "timeline" | "knowledge" | "production" | "files" | "settings";
+  type ToolId = "worldbook" | "timeline" | "knowledge" | "production" | "files" | "settings";
   const [activeTool, setActiveTool] = useState<ToolId | null>(null);
   /** 世界书专有页（批2 全屏形态）：导航点击即全屏打开，返回钮回工作台。 */
   const [worldbookPageOpen, setWorldbookPageOpen] = useState(false);
-  const NAV_ITEMS: { id: ToolId; label: string; icon: React.ReactNode; hint: string }[] = [
-    { id: "sessions", label: "会话", hint: "会话列表（资源管理器默认区）",
+  const NAV_ITEMS: { id: ToolId | "sessions"; label: string; icon: React.ReactNode; hint: string }[] = [
+    { id: "sessions", label: "会话", hint: "agent dock（会话/分支）开关",
       icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg> },
     { id: "worldbook", label: "世界书", hint: "本书设定：词条 / 关系图谱 / RAG 检索",
       icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg> },
@@ -1268,38 +1269,41 @@ export function AppShell() {
     return () => observer.disconnect();
   }, [windowTitle]);
 
+  const sessionDrawer = (
+    /* 会话抽屉（工单-20261006 分流）：SessionSidebar 整体挂到右侧 agent dock 的可折叠抽屉里——
+       项目选择/会话列表/git 分支/新建都在这，左侧资源管理器只管文件与功能面板 */
+    <SessionSidebar
+      selectedSessionId={selectedSession?.id ?? null}
+      onSelectSession={handleSelectSession}
+      onNewSession={handleNewSession}
+      initialSessionId={initialSessionId}
+      skipInitialProjectSelection={initialNavigation.requestedCwd !== null}
+      onInitialRestoreDone={handleInitialRestoreDone}
+      refreshKey={refreshKey}
+      onSessionDeleted={handleSessionDeleted}
+      selectedCwd={selectedSession?.cwd ?? newSessionCwd ?? null}
+      onCwdChange={handleCwdChange}
+      onOpenFile={handleOpenFile}
+      onOpenTerminal={handleOpenTerminal}
+      explorerRefreshKey={explorerRefreshKey}
+      onExplorerRefresh={handleExplorerRefresh}
+      onAtMention={handleAtMention}
+      onAtMentions={handleAtMentions}
+      onBackgroundTaskDone={handleBackgroundTaskDone}
+      onRunningSessionIdsChange={handleRunningSessionIdsChange}
+      onSessionsChange={handleSessionsChange}
+    />
+  );
+
   const sidebarContent = (
-    /* 固定资源管理器（Obsidian 模型，工单-20261005）：常驻分区树取代「会话⇄工具」双态切换；
-       会话区整体内嵌（常驻挂载），无「← 会话」逃逸门——导航栏与区头都是常驻入口 */
+    /* 固定资源管理器（Obsidian 模型，工单-20261005；20261006 分流）：左侧只管文件系统树 + 功能面板；
+       会话/git 分支归右侧 agent dock（AgentDockBar） */
     <ExplorerSidebar
-        focused={activeTool ?? "sessions"}
-        onFocusSection={(s) => setActiveTool(s === "sessions" ? null : (s as ToolId))}
+        focused={activeTool ?? "files"}
+        onFocusSection={(s) => setActiveTool(s as ToolId)}
         activeTab={workTabs.find((t) => t.id === activeWorkTabId) ?? workTabs[0] ?? null}
         onOpenWorkTab={openWorkTab}
         onOpenSettings={(sec) => setSettingsSection(sec)}
-        sessionSlot={
-      <SessionSidebar
-        selectedSessionId={selectedSession?.id ?? null}
-        onSelectSession={handleSelectSession}
-        onNewSession={handleNewSession}
-        initialSessionId={initialSessionId}
-        skipInitialProjectSelection={initialNavigation.requestedCwd !== null}
-        onInitialRestoreDone={handleInitialRestoreDone}
-        refreshKey={refreshKey}
-        onSessionDeleted={handleSessionDeleted}
-        selectedCwd={selectedSession?.cwd ?? newSessionCwd ?? null}
-        onCwdChange={handleCwdChange}
-        onOpenFile={handleOpenFile}
-        onOpenTerminal={handleOpenTerminal}
-        explorerRefreshKey={explorerRefreshKey}
-        onExplorerRefresh={handleExplorerRefresh}
-        onAtMention={handleAtMention}
-        onAtMentions={handleAtMentions}
-        onBackgroundTaskDone={handleBackgroundTaskDone}
-        onRunningSessionIdsChange={handleRunningSessionIdsChange}
-        onSessionsChange={handleSessionsChange}
-          />
-        }
       />
   );
 
@@ -1979,7 +1983,7 @@ export function AppShell() {
         }}
       >
         {NAV_ITEMS.map((item) => {
-          const on = item.id === "sessions" ? activeTool === null : activeTool === item.id;
+          const on = item.id === "sessions" ? rightPanelOpen : activeTool === item.id;
           return (
             <button
               key={item.id}
@@ -1988,11 +1992,12 @@ export function AppShell() {
               aria-label={item.label}
               aria-pressed={on}
               onClick={() => {
-                // 会话=侧栏的常驻家（资源管理器默认区）；世界书走全屏专有页（56db3c99 拍板）+ 侧栏跟随；其余分区手风琴切换
-                if (item.id === "sessions") { setWorldbookPageOpen(false); setActiveTool(null); return; }
+                // 会话=右侧 agent dock（工单-20261006 分流）：轨上缩略图标即开关；世界书走全屏专有页 + 侧栏跟随；其余分区手风琴切换
+                if (item.id === "sessions") { setWorldbookPageOpen(false); setRightPanelOpen((v) => !v); return; }
                 if (item.id === "worldbook") { setWorldbookPageOpen(true); setActiveTool("worldbook"); return; }
                 setWorldbookPageOpen(false);
-                setActiveTool((v) => (v === item.id ? null : item.id));
+                const tid = item.id as ToolId;
+                setActiveTool((v) => (v === tid ? null : tid));
               }}
               style={{
                 width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center",
@@ -2068,12 +2073,19 @@ export function AppShell() {
         />
       </div>
 
-      {/* 会话面板（固定右侧） */}
+      {/* 会话面板（固定右侧 · agent dock）：顶条 = 会话抽屉开关 + git 分支快切 + 新建 */}
       <div style={{
         flex: "0 0 auto", width: `${Math.max(460, rightPanelResizer.width)}px`, maxWidth: "70vw",
         display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0,
         borderLeft: "1px solid var(--border)", background: "var(--bg)",
       }}>
+        <AgentDockBar
+          sessions={sessionCatalog}
+          selectedSessionId={selectedSession?.id ?? null}
+          onSelectSession={(id) => { const s = sessionCatalog.find((x) => x.id === id); if (s) void handleSelectSession(s); }}
+          onNewSession={() => handleNewSession(`s-${Date.now()}`, selectedSession?.cwd ?? newSessionCwd ?? DEMO_PROJECT_ROOT)}
+          drawer={sessionDrawer}
+        />
         {/* Top bar with sidebar toggle */}
         <div ref={topBarRef} style={{ flexShrink: 0, background: "var(--bg-panel)" }}>
         <div style={{ display: "flex", alignItems: "center", position: "relative", borderBottom: "1px solid var(--border)", height: "calc(36px + env(safe-area-inset-top))", paddingTop: "env(safe-area-inset-top)" }}>
