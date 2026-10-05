@@ -15,7 +15,7 @@ import type http from "node:http";
 import type { HarnessConfig } from "../../../src/config.js";
 import { makeModels, resolveModel, type LlmTarget } from "../../../src/llm.js";
 import type { Models, Model } from "@earendil-works/pi-ai";
-import { safeProject } from "../../../src/safe-project.js";
+import { safeProject } from "./safe-project.js";
 import { currentPackCtx } from "../../../src/packctx.js";
 import { generateImage, type ImageKind } from "./deduce-images.js";
 
