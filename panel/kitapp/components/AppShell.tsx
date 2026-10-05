@@ -10,14 +10,14 @@ import type { ChatScrollPosition } from "@/lib/chat-scroll-position";
 import { FileViewer } from "./FileViewer";
 import { TabBar, type Tab } from "./TabBar";
 import { openFileTab, saveFileViewerState } from "./file-tab-state";
-import { SettingsPanel, SettingsSectionIcon } from "./SettingsPanel";
+import { SettingsPanel } from "./SettingsPanel";
 import { ProjectTrustDialog } from "./ProjectTrustDialog";
 import { BranchNavigator, hasSessionBranches } from "./BranchNavigator";
 import { SystemPromptPanel } from "./SystemPromptPanel";
 import { ToolDefinitionsPanel } from "./ToolDefinitionsPanel";
 import { WorldbookPanel } from "./WorldbookPanel";
 import { WorkTabs, type WorkTab } from "./WorkTabs";
-import { ToolSidebar, type ToolId } from "./kit-sidebars";
+import { ExplorerSidebar, type ExplorerSection } from "./ExplorerSidebar";
 import { WorldbookPage } from "./WorldbookPage";
 import { SettingsPage } from "./SettingsPage";
 import { AgentSessionPanel } from "./AgentSessionPanel";
@@ -70,7 +70,7 @@ import { getSessionFamily } from "@/lib/session-family";
 import { demoRouterPath } from "@/mock/base-path";
 import { PROJECT_ROOT as DEMO_PROJECT_ROOT } from "@/mock/paths";
 import { openDemoHistory } from "@/mock/export";
-import { getLastSettingsSection, type SettingsSection } from "@/lib/settings-navigation";
+import { type SettingsSection } from "@/lib/settings-navigation";
 
 type SessionCopyField = "file" | "id" | "projectDir" | "gitBranch" | "gitWorktree";
 type AutoNameStatus =
@@ -299,11 +299,13 @@ export function AppShell() {
   }, [activeWorkTabId]);
 
   // ── 批1 · 全局导航（写作领域 IA）：icon 导航栏切换主内容区视图 ──
-  type ToolId = "worldbook" | "timeline" | "knowledge" | "production" | "files" | "settings";
+  type ToolId = "sessions" | "worldbook" | "timeline" | "knowledge" | "production" | "files" | "settings";
   const [activeTool, setActiveTool] = useState<ToolId | null>(null);
   /** 世界书专有页（批2 全屏形态）：导航点击即全屏打开，返回钮回工作台。 */
   const [worldbookPageOpen, setWorldbookPageOpen] = useState(false);
   const NAV_ITEMS: { id: ToolId; label: string; icon: React.ReactNode; hint: string }[] = [
+    { id: "sessions", label: "会话", hint: "会话列表（资源管理器默认区）",
+      icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg> },
     { id: "worldbook", label: "世界书", hint: "本书设定：词条 / 关系图谱 / RAG 检索",
       icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg> },
     { id: "knowledge", label: "知识库", hint: "RAG 方法论与标尺卡（aesthetic/rules/craft…）",
@@ -1267,24 +1269,15 @@ export function AppShell() {
   }, [windowTitle]);
 
   const sidebarContent = (
-    <>
-      {/* 批A · 工具激活时：侧栏切换为工具列表；否则显示会话 */}
-      {activeTool && (
-        <div style={{ padding: "8px 6px", overflow: "auto", flex: 1, minHeight: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 6px 8px" }}>
-            <b style={{ fontSize: 12, color: "var(--accent)" }}>
-              {activeTool === "worldbook" ? "📖 世界书" : activeTool === "knowledge" ? "📚 知识库" : activeTool === "timeline" ? "🕐 大事记" : activeTool === "production" ? "🏭 生产线" : activeTool === "files" ? "📄 文件" : "⚙ 设置"}
-            </b>
-            <span style={{ flex: 1 }} />
-            <button type="button" onClick={() => setActiveTool(null)} title="返回会话列表" style={{ border: "none", background: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: 11, padding: "2px 4px" }}>
-              ← 会话
-            </button>
-          </div>
-          <ToolSidebar tool={activeTool} onOpenWorkTab={openWorkTab} onOpenEntry={handleOpenEntryTab} />
-        </div>
-      )}
-      {!activeTool && (
-        <>
+    /* 固定资源管理器（Obsidian 模型，工单-20261005）：常驻分区树取代「会话⇄工具」双态切换；
+       会话区整体内嵌（常驻挂载），无「← 会话」逃逸门——导航栏与区头都是常驻入口 */
+    <ExplorerSidebar
+        focused={activeTool ?? "sessions"}
+        onFocusSection={(s) => setActiveTool(s === "sessions" ? null : (s as ToolId))}
+        activeTab={workTabs.find((t) => t.id === activeWorkTabId) ?? workTabs[0] ?? null}
+        onOpenWorkTab={openWorkTab}
+        onOpenSettings={(sec) => setSettingsSection(sec)}
+        sessionSlot={
       <SessionSidebar
         selectedSessionId={selectedSession?.id ?? null}
         onSelectSession={handleSelectSession}
@@ -1305,57 +1298,9 @@ export function AppShell() {
         onBackgroundTaskDone={handleBackgroundTaskDone}
         onRunningSessionIdsChange={handleRunningSessionIdsChange}
         onSessionsChange={handleSessionsChange}
+          />
+        }
       />
-      <div style={{ padding: "8px", flexShrink: 0, display: "flex", justifyContent: "space-between", gap: 4 }}>
-        {([
-          ["models", translate("common.models")],
-          ["skills", translate("common.skills")],
-        ] as const).map(([section, label]) => {
-          const disabled = section !== "models" && !projectTrustCwd;
-          return (
-            <button
-              key={section}
-              type="button"
-              onClick={() => setSettingsSection(section)}
-              disabled={disabled}
-              title={disabled ? translate("settings.projectRequired") : label}
-              aria-label={label}
-              style={{
-                flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                height: 32, padding: 0, background: "none", border: "none",
-                borderRadius: 9, color: "var(--text-muted)", cursor: disabled ? "default" : "pointer",
-                fontSize: 12, opacity: disabled ? 0.35 : 1,
-                transition: "background 0.12s, color 0.12s",
-              }}
-              onMouseEnter={(event) => { if (!disabled) { event.currentTarget.style.background = "var(--bg-hover)"; event.currentTarget.style.color = "var(--text)"; } }}
-              onMouseLeave={(event) => { event.currentTarget.style.background = "none"; event.currentTarget.style.color = "var(--text-muted)"; }}
-            >
-              <SettingsSectionIcon section={section} size={14} strokeWidth={2} />
-              <span>{label}</span>
-            </button>
-          );
-        })}
-        <button
-          type="button"
-          onClick={() => setSettingsSection(getLastSettingsSection(projectTrustCwd))}
-          title={translate("common.settings")}
-          aria-label={translate("common.settings")}
-          style={{
-            flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            height: 32, padding: 0, background: "none", border: "none",
-            borderRadius: 9, color: "var(--text-muted)", cursor: "pointer",
-            fontSize: 12, transition: "background 0.12s, color 0.12s",
-          }}
-          onMouseEnter={(event) => { event.currentTarget.style.background = "var(--bg-hover)"; event.currentTarget.style.color = "var(--text)"; }}
-          onMouseLeave={(event) => { event.currentTarget.style.background = "none"; event.currentTarget.style.color = "var(--text-muted)"; }}
-        >
-          <SettingsSectionIcon section="general" size={14} strokeWidth={2} />
-          <span>{translate("common.settings")}</span>
-        </button>
-      </div>
-      </>
-      )}
-    </>
   );
 
   const renderProjectTrustWarning = (mobileBanner: boolean) => {
@@ -2034,7 +1979,7 @@ export function AppShell() {
         }}
       >
         {NAV_ITEMS.map((item) => {
-          const on = activeTool === item.id;
+          const on = item.id === "sessions" ? activeTool === null : activeTool === item.id;
           return (
             <button
               key={item.id}
@@ -2043,8 +1988,9 @@ export function AppShell() {
               aria-label={item.label}
               aria-pressed={on}
               onClick={() => {
-                // 世界书走全屏专有页（56db3c99 拍板：弃侧栏紧凑形态）；其余五视图走工具侧栏
-                if (item.id === "worldbook") { setWorldbookPageOpen(true); return; }
+                // 会话=侧栏的常驻家（资源管理器默认区）；世界书走全屏专有页（56db3c99 拍板）+ 侧栏跟随；其余分区手风琴切换
+                if (item.id === "sessions") { setWorldbookPageOpen(false); setActiveTool(null); return; }
+                if (item.id === "worldbook") { setWorldbookPageOpen(true); setActiveTool("worldbook"); return; }
                 setWorldbookPageOpen(false);
                 setActiveTool((v) => (v === item.id ? null : item.id));
               }}
