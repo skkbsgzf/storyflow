@@ -646,7 +646,44 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
             return;
           }
           // 官方面板桥（工单-20261002 批4）：journal 台账尾部——大事记时间轴数据源。
+          // project=_scan_：扫全工作区列出有台账的项目（台账只由 flow_run 产生，
+          // 立项未跑的项目永远空态——不扫就永远盯错项目，时间轴看起来像没实现）。
           if (name === "journal") {
+            if (project === "_scan_" || project === "") {
+              const projectsRoot = path.dirname(kernel.projectDir("_scan_probe"));
+              const rows: { id: string; total: number; last: string | null; flowId?: string; flowStatus?: string }[] = [];
+              try {
+                for (const e of fs.readdirSync(projectsRoot, { withFileTypes: true })) {
+                  if (!e.isDirectory()) continue;
+                  const jPath = path.join(projectsRoot, e.name, "journal.jsonl");
+                  if (!fs.existsSync(jPath)) continue;
+                  let total = 0;
+                  let last: string | null = null;
+                  try {
+                    const lines = fs.readFileSync(jPath, "utf-8").split("\n").filter((l) => l.trim());
+                    total = lines.length;
+                    for (let i = lines.length - 1; i >= 0 && !last; i--) {
+                      try { last = (JSON.parse(lines[i]) as { ts?: string }).ts ?? null; } catch { /* 半行跳过 */ }
+                    }
+                  } catch { /* 读不了 = 0 条 */ }
+                  let flowId: string | undefined;
+                  let flowStatus: string | undefined;
+                  try {
+                    const st = JSON.parse(fs.readFileSync(path.join(projectsRoot, e.name, "state.json"), "utf-8")) as { flowId?: string; status?: string };
+                    flowId = st.flowId;
+                    flowStatus = st.status;
+                  } catch { /* 无 state = 已归档或半立项 */ }
+                  rows.push({ id: e.name, total, last, flowId, flowStatus });
+                }
+              } catch (e) {
+                res.writeHead(500, { "content-type": "application/json", "cache-control": "no-store" });
+                res.end(JSON.stringify({ error: `SCAN_FAILED: ${(e as Error).message}` }));
+                return;
+              }
+              res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" });
+              res.end(JSON.stringify({ projects: rows }));
+              return;
+            }
             if (!safeProject(project)) {
               res.writeHead(400, { "content-type": "application/json" });
               res.end(JSON.stringify({ error: `project 非法：${project}` }));
