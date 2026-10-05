@@ -1,9 +1,11 @@
 "use client";
 
-/** 右侧 agent dock 条（工单-20261006 分流：右侧主攻 agent）：
- *  一条缩略工具条收纳 agent 侧一切入口——💬 会话抽屉（SessionSidebar 整体，可选会话/项目/git 分支）、
- *  🌿 分支快切（git checkout，分支名白名单校验）、＋ 新建会话。左侧资源管理器从此只管文件与功能面板。 */
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+/** 右侧 agent dock 条（工单-20261006 分流；20261007 抽屉改浮层）：
+ *  一条缩略工具条收纳 agent 侧一切入口——💬 会话浮层（SessionSidebar 整体，可选会话/项目/git 分支，
+ *  盖在聊天上方、不推挤内容）、🌿 分支快切（git checkout，分支名白名单校验）、＋ 新建会话。
+ *  左侧资源管理器从此只管文件与功能面板。SessionSidebar 常驻挂载（display 切换）——它承担
+ *  会话水合/恢复管线，卸载即断流。 */
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 const BORDER = "var(--border)";
 const chip = (on: boolean): React.CSSProperties => ({
@@ -29,19 +31,15 @@ export function AgentDockBar({
   selectedSessionId: string | null;
   onSelectSession: (id: string) => void;
   onNewSession: () => void;
-  /** 会话抽屉内容（SessionSidebar 整体——项目选择/会话列表/操作全都在）。 */
+  /** 会话浮层内容（SessionSidebar 整体——项目选择/会话列表/操作全都在）。 */
   drawer: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const [git, setGit] = useState<{ current: string; branches: string[] } | null>(null);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
+  const wrapRef = useRef<HTMLDivElement | null>(null);
 
-  const pullGit = useCallback(() => {
-    fetch("/api/kit/git-info").then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-      .then((g: { current: string; branches: string[] }) => setGit(g))
-      .catch(() => setGit(null));
-  }, []);
   // kit 未就绪时桥路由 503——挂载后重试拉取直至成功（上限 20 次），保底分支选择器不缺席
   useEffect(() => {
     let tries = 0;
@@ -53,6 +51,16 @@ export function AgentDockBar({
     }, 2500);
     return () => clearInterval(timer);
   }, []);
+
+  // 浮层点外收起（mousedown 在浮层/工具条之外）
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (ev: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(ev.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [open]);
 
   const checkout = useCallback(async (branch: string) => {
     if (!git || branch === git.current || busy) return;
@@ -72,7 +80,7 @@ export function AgentDockBar({
   const sessionLabel = current ? (current.name || current.title || current.id) : "会话…";
 
   return (
-    <div style={{ borderBottom: `1px solid ${BORDER}`, background: "var(--bg-panel)", flexShrink: 0 }}>
+    <div ref={wrapRef} style={{ position: "relative", borderBottom: `1px solid ${BORDER}`, background: "var(--bg-panel)", flexShrink: 0 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 8px", flexWrap: "wrap" }}>
         <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} style={chip(open)} title="会话列表 / 项目 / 工作区">
           💬 <span style={{ maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis" }}>{sessionLabel}</span> {open ? "▾" : "▸"}
@@ -93,8 +101,14 @@ export function AgentDockBar({
         <button type="button" onClick={onNewSession} style={chip(false)} title="新建会话">＋ 新建</button>
       </div>
       {note && <div style={{ padding: "0 10px 5px", fontSize: 11, color: "var(--text-muted)" }}>{note}</div>}
-      {/* 抽屉常驻挂载（display 切换）：SessionSidebar 承担会话恢复/项目选择管线，卸载即断流 */}
-      <div style={{ display: open ? "flex" : "none", maxHeight: "46vh", overflow: "auto", borderTop: open ? `1px solid ${BORDER}` : "none", flexDirection: "column" }}>
+      {/* 会话浮层：盖在聊天上方（absolute），不占布局流——SessionSidebar 常驻挂载只切可见性 */}
+      <div style={{
+        position: "absolute", top: "100%", left: 8, right: 8, zIndex: 90,
+        display: open ? "flex" : "none", flexDirection: "column",
+        maxHeight: "68vh", overflow: "auto",
+        border: `1px solid ${BORDER}`, borderRadius: 10, background: "var(--bg)",
+        boxShadow: "0 14px 36px rgba(0,0,0,0.5)",
+      }}>
         {drawer}
       </div>
     </div>
