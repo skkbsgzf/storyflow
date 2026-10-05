@@ -42,7 +42,9 @@ export type WorkTab =
   | { kind: "kbshop"; id: string; title: string; domain?: string }
   | { kind: "graph"; id: string; title: string }
   | { kind: "timeline"; id: string; title: string; project: string }
-  | { kind: "production"; id: string; title: string; project: string };
+  | { kind: "production"; id: string; title: string; project: string }
+  /** kit 侧 HTML 页嵌入式面板（ZCode 工件式）：pedia 全页/台账页等整页 HTML 直接并列进工作台。 */
+  | { kind: "html"; id: string; title: string; src: string };
 
 /** 知识卡深读页：frontmatter 结构化卡头 + 正文 markdown。
  *  失败态带「重试」——8431 曾因服务重启短暂不可达，失败卡死在页上（点击同一命中不重拉）即由此修。 */
@@ -223,6 +225,12 @@ export function WorkTabs({
               <div style={{ position: "relative", height: "100%" }}>
                 <ProductionPage project={active.project} />
               </div>
+            ) : active.kind === "html" ? (
+              <iframe
+                src={active.src}
+                title={active.title}
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none", background: "var(--bg)" }}
+              />
             ) : null}
           </TabErrorBoundary>
         )}

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>大事记 · __TITLE__</title>
+<style>
+  :root { --bg:#16181d; --panel:#1d2027; --border:#2a2e37; --ink:#d8d4cb; --dim:#8a8375; --gold:#e8b33d; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.7 "Noto Sans SC","Microsoft YaHei",system-ui,sans-serif; }
+  header { padding:14px 20px 10px; border-bottom:1px solid var(--border); display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; position:sticky; top:0; background:var(--bg); z-index:2; }
+  header h1 { margin:0; font-size:16px; letter-spacing:2px; }
+  header .proj { font-family:ui-monospace,monospace; font-size:12px; color:var(--dim); }
+  #filters { display:flex; gap:6px; flex-wrap:wrap; margin-left:auto; }
+  .chip { border:1px solid var(--border); background:transparent; color:var(--dim); border-radius:999px; font-size:11px; padding:2px 10px; cursor:pointer; }
+  .chip.on { border-color:var(--gold); color:var(--gold); background:rgba(232,179,61,.08); }
+  main { max-width:920px; margin:0 auto; padding:18px 20px 60px; }
+  .day { margin:18px 0 6px; font-size:12px; color:var(--dim); letter-spacing:1px; border-bottom:1px dashed var(--border); padding-bottom:4px; }
+  .row { display:flex; gap:10px; padding:7px 4px; border-radius:8px; align-items:baseline; }
+  .row:hover { background:var(--panel); }
+  .dot { flex:0 0 auto; width:9px; height:9px; border-radius:999px; margin-top:6px; }
+  .time { flex:0 0 auto; font-family:ui-monospace,monospace; font-size:11px; color:var(--dim); width:64px; }
+  .ev { flex:0 0 auto; font-size:11px; padding:0 8px; border-radius:999px; border:1px solid var(--border); }
+  .node { flex:0 0 auto; font-family:ui-monospace,monospace; font-size:11px; color:var(--gold); max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .detail { flex:1; min-width:0; font-size:12.5px; color:var(--ink); overflow-wrap:anywhere; white-space:pre-wrap; }
+  .empty { padding:60px 20px; text-align:center; color:var(--dim); }
+</style>
+</head>
+<body>
+<header>
+  <h1>大事记</h1>
+  <span class="proj">__TITLE__ · journal.jsonl</span>
+  <div id="filters"></div>
+</header>
+<main id="list"><div class="empty">装载…</div></main>
+<script>
+const DATA = __JOURNAL__;
+const EV_COLOR = {
+  "run-start":"#5f9c7a", "run-end":"#5f9c7a", "advance":"#6ea8fe", "submit":"#e8b33d",
+  "verdict":"#c96f4a", "gate-open":"#e8b33d", "reject":"#d98a83", "rerun":"#8a6fb0",
+  "deliver":"#5f9c7a", "note":"#8a8375", "warn":"#d98a83", "intake":"#6a9aa0",
+  "chain-out":"#8a6fb0", "chain-in":"#8a6fb0", "stale":"#8a8375", "snapshot":"#8a8375",
+};
+const entries = DATA.entries || [];
+const list = document.getElementById("list");
+const filters = document.getElementById("filters");
+let activeEv = null;
+
+function render() {
+  if (!entries.length) { list.innerHTML = '<div class="empty">该项目还没有 journal 台账——启动生产线（flow_run）后生成</div>'; return; }
+  const seen = new Map();
+  for (const e of entries) seen.set(e.event, (seen.get(e.event) || 0) + 1);
+  filters.innerHTML = [...seen.entries()].sort((a,b)=>b[1]-a[1]).map(([ev,n]) =>
+    `<button class="chip ${activeEv===ev?"on":""}" data-ev="${ev}">${ev} · ${n}</button>`).join("");
+  filters.querySelectorAll(".chip").forEach(ch => ch.onclick = () => {
+    activeEv = activeEv === ch.dataset.ev ? null : ch.dataset.ev; render();
+  });
+  let html = "", day = "";
+  for (const e of [...entries].reverse()) {
+    if (activeEv && e.event !== activeEv) continue;
+    const ts = String(e.ts || "");
+    const d = ts.slice(0, 10), t = ts.slice(11, 19);
+    if (d && d !== day) { day = d; html += `<div class="day">${d}</div>`; }
+    const color = EV_COLOR[e.event] || "#8a8375";
+    html += `<div class="row"><span class="dot" style="background:${color}"></span>` +
+      `<span class="time">${t}</span><span class="ev" style="color:${color};border-color:${color}55">${e.event || "?"}</span>` +
+      (e.nodeId ? `<span class="node" title="${e.nodeId}">${e.nodeId}</span>` : "") +
+      `<span class="detail">${String(e.detail ?? e.actor ?? "")}</span></div>`;
+  }
+  list.innerHTML = html || '<div class="empty">（该事件类无记录）</div>';
+}
+render();
+</script>
+</body>
+</html>

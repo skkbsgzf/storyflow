@@ -1,27 +1,27 @@
 "use client";
 
-/** 固定资源管理器侧栏（Obsidian 模型，工单-20261005）：
- *  左侧栏 = 一棵常驻的分区树（会话/世界书/知识库/大事记/生产线/文件/设置），
+/** 固定资源管理器侧栏（Obsidian 模型，工单-20261005；20261006 分流：左=文件管理+功能面板，会话归右侧 agent dock）：
+ *  左侧栏 = 一棵常驻的分区树（文件/世界书/知识库/大事记/生产线/设置），
  *  手风琴式单区展开；工作台激活的 tab 自动跟随——切到归属区、展开到对应节点、
- *  高亮并滚动可见。没有「返回会话」逃逸门：导航栏与区头都是常驻入口。
- *  会话区内容 = SessionSidebar 整体内嵌（display:none 保活，管线不中断）。 */
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+ *  高亮并滚动可见。导航栏与区头都是常驻入口。 */
+import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchWbGraph, type WbEntry } from "@/lib/worldbook-data";
 import { KB_DOMAIN_STYLE } from "./KbShopView";
+import { kitHtmlUrl } from "../mock/kit/client";
+import { kitProjectName } from "../mock/kit/hydrate";
 import type { WorkTab } from "./WorkTabs";
 
 const ACCENT = "var(--accent, #a5433a)";
 
-export type ExplorerSection = "sessions" | "worldbook" | "knowledge" | "timeline" | "production" | "files" | "settings";
+export type ExplorerSection = "worldbook" | "knowledge" | "timeline" | "production" | "files" | "settings";
 export type OpenWorkTab = (tab: WorkTab) => void;
 
 const SECTIONS: { id: ExplorerSection; icon: string; label: string }[] = [
-  { id: "sessions", icon: "💬", label: "会话" },
+  { id: "files", icon: "📄", label: "文件" },
   { id: "worldbook", icon: "📖", label: "世界书" },
   { id: "knowledge", icon: "📚", label: "知识库" },
   { id: "timeline", icon: "🕐", label: "大事记" },
   { id: "production", icon: "🏭", label: "生产线" },
-  { id: "files", icon: "📄", label: "文件" },
   { id: "settings", icon: "⚙", label: "设置" },
 ];
 
@@ -54,15 +54,12 @@ export function ExplorerSidebar({
   onFocusSection,
   activeTab,
   onOpenWorkTab,
-  sessionSlot,
   onOpenSettings,
 }: {
   focused: ExplorerSection;
   onFocusSection: (s: ExplorerSection) => void;
   activeTab: WorkTab | null;
   onOpenWorkTab: OpenWorkTab;
-  /** 会话区内容（SessionSidebar 整体）——由 AppShell 传入，常驻挂载。 */
-  sessionSlot: ReactNode;
   onOpenSettings?: (section: "models" | "skills" | "general") => void;
 }) {
   const followRef = useRef(onFocusSection);
@@ -113,11 +110,6 @@ export function ExplorerSidebar({
               display: open ? "flex" : "none",
               flex: 1, minHeight: 0, flexDirection: "column", overflow: "hidden",
             }}>
-              {s.id === "sessions" && (
-                <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0, overflow: "hidden" }}>
-                  {sessionSlot}
-                </div>
-              )}
               {s.id === "worldbook" && <WorldbookSection activeTab={activeTab} follow={followKind === "entry" || followKind === "graph"} onOpenWorkTab={onOpenWorkTab} />}
               {s.id === "knowledge" && <KnowledgeSection activeTab={activeTab} follow={followKind === "kbcard" || followKind === "kbshop"} onOpenWorkTab={onOpenWorkTab} />}
               {s.id === "timeline" && <TimelineSection follow={followKind === "timeline"} onOpenWorkTab={onOpenWorkTab} />}
@@ -229,6 +221,12 @@ function WorldbookSection({ activeTab, follow, onOpenWorkTab }: { activeTab: Wor
           style={rowStyle(hl === "wb:graph", 0)}
         >🕸 关系图谱</button>
       </div>
+      <button
+        type="button"
+        data-node="wb:pedia"
+        onClick={() => onOpenWorkTab({ kind: "html", id: "html:wb-pedia", title: "世界书 · pedia 全页", src: kitHtmlUrl(`/api/panel/worldbook-page?project=${encodeURIComponent(kitProjectName() ?? "")}`) })}
+        style={rowStyle(hl === "wb:pedia", 0)}
+      >📖 pedia 全页（嵌入面板）</button>
       {searching && hits !== null && (
         <div>
           <div style={{ fontSize: 11, color: "var(--text-muted)", padding: "2px 8px" }}>RAG 命中 · {hits.length}</div>
@@ -356,6 +354,12 @@ function TimelineSection({ follow, onOpenWorkTab }: { follow: boolean; onOpenWor
         onClick={() => onOpenWorkTab({ kind: "timeline", id: "timeline", title: "大事记", project: "" })}
         style={rowStyle(hl === "tl:open")}
       >🕐 打开大事记时间轴</button>
+      <button
+        type="button"
+        data-node="tl:page"
+        onClick={() => onOpenWorkTab({ kind: "html", id: "html:journal-page", title: "大事记 · 台账页", src: kitHtmlUrl(`/api/panel/journal-page?project=${encodeURIComponent(kitProjectName() ?? "")}`) })}
+        style={rowStyle(false)}
+      >🗂 台账页（嵌入面板）</button>
       <div style={{ fontSize: 11, color: "var(--text-muted)", lineHeight: 1.7, padding: "4px 8px" }}>
         journal 台账流水（批次/节点/裁决）。数据随生产线运行增长。
       </div>

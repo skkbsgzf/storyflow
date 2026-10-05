@@ -979,6 +979,81 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
             res.end(JSON.stringify({ domains, cards, total: cards.length }));
             return;
           }
+          // 大事记台账页（工单-20261006 HTML 嵌入面板）：自包含模板 + journal 尾部注入，整页 text/html。
+          // 用法：/api/panel/journal-page?project=<id>&limit=400（工作台 iframe 面板 / 新标签页皆可）。
+          if (name === "journal-page") {
+            if (!safeProject(project)) {
+              res.writeHead(400, { "content-type": "application/json" });
+              res.end(JSON.stringify({ error: `project 非法：${project}` }));
+              return;
+            }
+            try {
+              const tplPath = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "tools", "journal-template.html");
+              const tpl = fs.readFileSync(tplPath, "utf-8");
+              const limit = Math.min(Math.max(Number(q.get("limit") ?? 400), 1), 1000);
+              let entries: Record<string, unknown>[] = [];
+              try {
+                const raw = fs.readFileSync(path.join(kernel.projectDir(project), "journal.jsonl"), "utf-8");
+                entries = raw.split("\n").filter((l) => l.trim()).slice(-limit).map((l) => {
+                  try { return JSON.parse(l) as Record<string, unknown>; } catch { return { event: "parse-error", detail: l.slice(0, 120) }; }
+                });
+              } catch { /* 无台账 = 空态页 */ }
+              const html = tpl
+                .split("__TITLE__").join(project ?? "未命名")
+                .replace("__JOURNAL__", JSON.stringify({ project, entries }));
+              res.writeHead(200, { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" });
+              res.end(html);
+            } catch (e) {
+              res.writeHead(500, { "content-type": "application/json" });
+              res.end(JSON.stringify({ error: "RENDER_FAILED", note: String((e as Error).message) }));
+            }
+            return;
+          }
+          // git 分支信息/切换（工单-20261006 右侧 agent dock）：工作区根 = 仓库根（本仓部署形态）。
+          // 分支名白名单校验——checkout 只接受 git-info 列出的名字，杜绝任意参数注入。
+          if (name === "git-info") {
+            const root = cfg.workspaceRoot;
+            try {
+              const cur = spawnSync("git", ["rev-parse", "--abbrev-ref", "HEAD"], { cwd: cfg.workspaceRoot, encoding: "utf-8", shell: false });
+              const br = spawnSync("git", ["branch", "--format=%(refname:short)"], { cwd: cfg.workspaceRoot, encoding: "utf-8", shell: false });
+              if (cur.status !== 0) {
+                res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" });
+                res.end(JSON.stringify({ current: null, branches: [], note: "非 git 仓库" }));
+                return;
+              }
+              res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" });
+              res.end(JSON.stringify({ current: cur.stdout.trim(), branches: br.stdout.split("\n").map((s) => s.trim()).filter(Boolean) }));
+            } catch (e) {
+              res.writeHead(500, { "content-type": "application/json" });
+              res.end(JSON.stringify({ error: String((e as Error).message) }));
+            }
+            return;
+          }
+          if (name === "git-checkout" && req.method === "POST") {
+            try {
+              const b = body ? (JSON.parse(body) as { branch?: string }) : {};
+              const target = String(b.branch ?? "");
+              const br = spawnSync("git", ["branch", "--format=%(refname:short)"], { cwd: cfg.workspaceRoot, encoding: "utf-8", shell: false });
+              const known = br.stdout.split("\n").map((s) => s.trim()).filter(Boolean);
+              if (!known.includes(target)) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(JSON.stringify({ error: `分支不在白名单：${target}` }));
+                return;
+              }
+              const co = spawnSync("git", ["checkout", target], { cwd: cfg.workspaceRoot, encoding: "utf-8", shell: false });
+              if (co.status !== 0) {
+                res.writeHead(409, { "content-type": "application/json" });
+                res.end(JSON.stringify({ error: String(co.stderr || co.stdout).slice(0, 300) || "checkout 失败（工作区脏？）" }));
+                return;
+              }
+              res.writeHead(200, { "content-type": "application/json" });
+              res.end(JSON.stringify({ ok: true, current: target }));
+            } catch (e) {
+              res.writeHead(500, { "content-type": "application/json" });
+              res.end(JSON.stringify({ error: String((e as Error).message) }));
+            }
+            return;
+          }
           res.writeHead(410, { "content-type": "application/json", "cache-control": "no-store" });
           res.end(JSON.stringify({
             error: "GONE",

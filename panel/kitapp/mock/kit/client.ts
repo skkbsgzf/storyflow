@@ -274,3 +274,22 @@ export async function* kitTurnRaw(
     }
   }
 }
+
+/** kit 侧整页 HTML 的绝对地址（iframe 嵌入面板用：pedia 全页/台账页等工作台并列面板）。 */
+export function kitHtmlUrl(path: string): string {
+  return `${KIT_BASE}${path}`;
+}
+
+/** git 分支信息（右侧 agent dock）：工作区根 = 仓库根。 */
+export async function kitGitInfo(): Promise<{ current: string | null; branches: string[]; note?: string }> {
+  return kitJson(`/api/panel/git-info`);
+}
+
+/** 切换分支（checkout；分支名服务端白名单校验）。 */
+export async function kitGitCheckout(branch: string): Promise<{ ok?: boolean; current?: string; error?: string }> {
+  return kitJson("/api/panel/git-checkout", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ branch }),
+  });
+}
