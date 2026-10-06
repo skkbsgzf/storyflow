@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "miniflow/beat-plan",
+  "title": "beat-plan@1 · 叙事节拍规划（submit_narrative_beat_plan 工具入参）",
+  "description": "每轮写正文前的局部计划：由同一 provider 经内部控制工具 submit_narrative_beat_plan 提交；不是世界工具，不查询/写入外部状态，不计入 grounding evidence。升格自 Pinax shared/narrativeBeatPlanContract.js 的 narrativeBeatPlanToolSchema()（2026-10 agent 口径统一 P0.2，双侧实现零漂移后收单源），properties/required 与其逐字段等价并由契约等价测试钉住。不带 format 常量：本契约顶层即工具入参（additionalProperties:false），塞入信封字段会改变现有 provider 工具目录形状——版本以 $id/title 声明。容错归一化（顿号数组/单位对象）、错误码与 FNV 指纹属行为层，仍在双份代码中。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["responseObligation", "causalSteps", "revealOrChange", "endCondition"],
+  "properties": {
+    "sceneThreadRevision": { "type": "string" },
+    "intent": { "type": "string" },
+    "mode": { "type": "string" },
+    "responseObligation": { "type": "string", "maxLength": 120 },
+    "causalSteps": {
+      "type": "array",
+      "maxItems": 4,
+      "items": { "type": "string", "maxLength": 120 }
+    },
+    "characterMoves": {
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["action"],
+        "properties": {
+          "character": { "type": "string" },
+          "intent": { "type": "string" },
+          "action": { "type": "string", "maxLength": 120 },
+          "result": { "type": "string", "maxLength": 120 }
+        }
+      }
+    },
+    "functionalDetails": {
+      "type": "array",
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "detail": { "type": "string" },
+          "affects": { "type": "string" }
+        }
+      }
+    },
+    "revealOrChange": { "type": "string", "maxLength": 120 },
+    "endCondition": {
+      "type": "string",
+      "maxLength": 120,
+      "description": "最后一个可观察场景状态（动作完成、台词落地或事实确认）；不得描述故事结束或等待玩家行动。"
+    },
+    "avoidRepeats": {
+      "type": "array",
+      "maxItems": 6,
+      "items": { "type": "string", "maxLength": 120 }
+    },
+    "targetChars": { "type": "integer", "minimum": 0 }
+  }
+}

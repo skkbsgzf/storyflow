@@ -47,6 +47,9 @@ const SCHEMA_IDS = [
   "decision",
   "catalog-entry",
   "assertion-preset",
+  // 2026-10 agent 口径统一 P0.2：工具声明面与节拍规划入参（消费方 pinax-adapter / 后续 storyharness 任务面）
+  "capability-manifest",
+  "beat-plan",
 ] as const;
 export type SchemaId = (typeof SCHEMA_IDS)[number];
 

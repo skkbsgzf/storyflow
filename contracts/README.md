@@ -11,6 +11,8 @@ JSON Schema（draft 2020-12）是全部插件与内核数据模型的**唯一权
 | `page-payload.schema.json` | **R6 冻结契约** | `page-payload@2` 工作台页注入数据五键：DATA / EFF / OVERLAY / OPTIMIZE / METRICS |
 | `toolbox.schema.json` | **R6 冻结契约** | `toolbox@1` 能力标签 → 工具映射（渲染与选工具共用视图） |
 | `artifact-header.schema.json` | **R6 重写** | artifact@1 头部：+module；-class/-round/-version；review 挂连接件（pass/reject 两值） |
+| `capability-manifest.schema.json` | **口径统一 P0.2** | `capability-manifest@1` Agent 能力清单声明面：id/desc/kind/model_tier/knowledge/domain/parameters（KitOp 同位；execute 属运行时不在契约） |
+| `beat-plan.schema.json` | **口径统一 P0.2** | `beat-plan@1` `submit_narrative_beat_plan` 工具入参（升格自 Pinax narrativeBeatPlanToolSchema，双侧零漂移后收单源；无 format 常量——顶层即工具入参） |
 | `flow-overlay.schema.json` | R5 沿用 | 运行时编排改写；R6 patch kinds 收敛（+set-module / insert-tool），由 WO-01 实现对齐 |
 | `metrics.schema.json` | R5 沿用 | 指标口径；R6 门相位改 links 相位 |
 | `minitool.schema.json` / `task-package.schema.json` / `run-state.schema.json` / `artifact.schema.json` / `journal-event.schema.json` / `project-config.schema.json` / `agent-profile.schema.json` / `http-openapi.json` | 沿用 | 各自领域不变 |
