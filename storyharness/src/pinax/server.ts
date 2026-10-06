@@ -1,12 +1,14 @@
 // HTTP/SSE 门面：任务级端点。Pinax 客户端经 fetch+ReadableStream 消费。
 // 端点：POST /v1/pinax/tasks（开跑+SSE）、POST /v1/pinax/tasks/:id/resume（恢复+SSE）、
-//       POST /v1/pinax/tasks/:id/cancel（取消）、GET /v1/pinax/tasks/:id（状态）、GET /healthz
+//       POST /v1/pinax/tasks/:id/cancel（取消）、GET /v1/pinax/tasks/:id（状态）、GET /healthz、
+//       GET|POST /model（统一模型漏斗：状态/热切换）、POST /v1/pinax/complete[/stream]（一次性补全转发）
 import * as http from "node:http";
 import { loadConfig } from "./config.js";
 import { TaskStore, isValidTaskId, newTaskId, type TaskSnapshot } from "./store.js";
 import { createRun, type RunHandle } from "./runner.js";
 import { parseNarrativeAgentSseEvent, createNarrativeAgentStreamEvent, serializeNarrativeAgentSseEvent, NARRATIVE_TOOL_LIMITS, PINAX_TOOL_NAMES } from "./contract.js";
 import type { TurnRequest } from "./prompt.js";
+import { applyModelPatch, modelStatus, runComplete, runCompleteStream, validateCompleteRequest, validateModelPatch } from "./modelFunnel.js";
 
 interface TaskExecution {
   run?: RunHandle;
@@ -148,6 +150,58 @@ export function startServer(overrides = {}) {
       return res.end();
     }
     if (url.pathname === "/healthz") return json(res, 200, { ok: true, service: "pinax-adapter", port: cfg.port, model: `${cfg.provider}.${cfg.model}` });
+
+    // GET /model —— 统一模型漏斗：当前 agent 模型（key 只回显掩码）
+    if (req.method === "GET" && url.pathname === "/model") {
+      return json(res, 200, { ok: true, ...modelStatus(cfg) });
+    }
+    // POST /model —— 持久化 + 内存热切换（无需重启）
+    if (req.method === "POST" && url.pathname === "/model") {
+      const raw = await readBody(req);
+      let body: unknown;
+      try { body = JSON.parse(raw); } catch { return json(res, 400, { ok: false, error: "invalid-json" }); }
+      const validated = validateModelPatch(body);
+      if (!validated.ok) return json(res, 400, { ok: false, error: "invalid-model-patch", message: validated.message });
+      const model = applyModelPatch(cfg, validated.patch);
+      return json(res, 200, { ok: true, model, note: "已热生效（持久化到配置文件，新任务即刻使用）" });
+    }
+    // POST /v1/pinax/complete[/stream] —— 一次性补全转发（统一模型漏斗；内部协议）
+    if (req.method === "POST" && (url.pathname === "/v1/pinax/complete" || url.pathname === "/v1/pinax/complete/stream")) {
+      const streaming = url.pathname.endsWith("/stream");
+      const raw = await readBody(req);
+      let body: unknown;
+      try { body = JSON.parse(raw); } catch { return json(res, 400, { ok: false, error: "invalid-json" }); }
+      const validated = validateCompleteRequest(body);
+      if (!validated.ok) return json(res, 400, { ok: false, error: "invalid-complete-request", message: validated.message });
+      const controller = new AbortController();
+      res.on("close", () => controller.abort());
+      try {
+        if (!streaming) {
+          const result = await runComplete(cfg, validated.value, controller.signal);
+          return json(res, 200, result);
+        }
+        sseHead(res);
+        const result = await runCompleteStream(cfg, validated.value, (delta) => {
+          if (res.destroyed || res.writableEnded) return;
+          try { res.write(`data: ${JSON.stringify({ content: delta })}\n\n`); } catch { /* 断连由 close 处理 */ }
+        }, controller.signal);
+        if (!res.destroyed && !res.writableEnded) {
+          res.write("data: [DONE]\n\n");
+          res.end();
+        }
+        return;
+      } catch (error) {
+        const message = String((error as Error)?.message || error).slice(0, 240);
+        if (streaming) {
+          if (!res.destroyed && !res.writableEnded) {
+            res.write(`data: ${JSON.stringify({ error: message })}\n\n`);
+            res.end();
+          }
+          return;
+        }
+        return json(res, 502, { ok: false, error: "complete-failed", message });
+      }
+    }
 
     try {
       // POST /v1/pinax/tasks

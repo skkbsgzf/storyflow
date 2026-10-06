@@ -49,12 +49,14 @@ function pkgRoot(): string {
   return path.resolve(import.meta.dirname, "..", "..");
 }
 
+/** 运行配置文件的解析路径（与 loadConfig 同一候选序）：PINAX_ADAPTER_CONFIG env > <pkgRoot>/.external/pinax-adapter.json。 */
+export function configPath(env = process.env): string {
+  return env.PINAX_ADAPTER_CONFIG || path.join(pkgRoot(), ".external", "pinax-adapter.json");
+}
+
 export function loadConfig(explicit?: Partial<AdapterConfig>): AdapterConfig {
   let fileCfg: FileConfig = {};
-  const candidates = [
-    process.env.PINAX_ADAPTER_CONFIG,
-    path.join(pkgRoot(), ".external", "pinax-adapter.json"),
-  ].filter(Boolean) as string[];
+  const candidates = [configPath(process.env)].filter(Boolean) as string[];
   for (const c of candidates) {
     try {
       if (fs.existsSync(c)) {
