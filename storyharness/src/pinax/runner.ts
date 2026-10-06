@@ -92,8 +92,9 @@ export function createRun(req: TurnRequest, cfg: AdapterConfig, snapshot: Resour
   const toolNames = (Object.keys(snapshot.domains) as PinaxToolName[]).filter((n) => (snapshot.domains[n]?.length || 0) > 0);
   // BeatPlan 规划轮（②）：init/auto/respond 计划先行；continue 复用当前计划不暴露。
   // 受理的节拍计划落 runExtras + 扩展帧 beat.plan（契约枚举外，上游 parser 安全忽略）。
-  const runExtras: { beatPlan: Record<string, unknown> | null } = { beatPlan: null };
-  const beatPlanEnabled = req.taskKind !== "assistant" && req.mode !== "continue" && budget.maxModelSteps > 1;
+  const runExtras: { beatPlan: Record<string, unknown> | null; capabilityResult: Record<string, unknown> | null } = { beatPlan: null, capabilityResult: null };
+  const beatPlanEnabled = (req.taskKind === "narrative" || req.taskKind === undefined) && req.mode !== "continue" && budget.maxModelSteps > 1;
+  const capability = req.taskKind === "capability" ? req.capability : undefined;
   const toolHooks: Parameters<typeof buildPinaxTools>[2] = beatPlanEnabled
     ? {
         onBeatPlan: (plan: BeatPlan, revision: string) => {
@@ -103,14 +104,28 @@ export function createRun(req: TurnRequest, cfg: AdapterConfig, snapshot: Resour
         },
       }
     : undefined;
-  const tools = buildPinaxTools(snapshot, toolNames, toolHooks);
+  const lookupTools = buildPinaxTools(snapshot, toolNames, toolHooks);
+  // 能力任务（BeatPlan 模式推广）：强制提交工具——调用回执即任务结果（语义校验在 Pinax 服务端）
+  const submitToolName = capability?.submitTool.name ?? "";
+  // submitTool.parameters 来自运行时 JSON schema（Record）——pi 的 TSchema 泛型面用 as 收敛（与 toolManifest 同法）
+  const buildSubmitTool = (): (typeof lookupTools)[number] => ({
+    name: capability!.submitTool.name,
+    label: capability!.submitTool.name,
+    description: capability!.submitTool.description ?? "提交本任务的最终结构化结果；提交即结束任务。",
+    parameters: capability!.submitTool.parameters,
+    execute: async (_toolCallId: string, args: unknown) => {
+      runExtras.capabilityResult = (args && typeof args === "object") ? args as Record<string, unknown> : { value: args };
+      return { content: [{ type: "text" as const, text: JSON.stringify({ ok: true, received: true }) }], details: undefined } as never;
+    },
+  });
+  const tools = capability ? [...lookupTools, buildSubmitTool()] : lookupTools;
 
   const ac = new AbortController();
   const timer = setTimeout(() => ac.abort(new Error("PINAX_ADAPTER_AGENT_TIMEOUT")), budget.agentTimeoutMs);
 
   const agent = new Agent({
     initialState: {
-      systemPrompt: buildSystemPrompt(req, tools.map(tool => tool.name), { beatPlanEnabled }),
+      systemPrompt: capability ? capability.systemPrompt : buildSystemPrompt(req, tools.map(tool => tool.name), { beatPlanEnabled }),
       model,
       tools,
       ...(opts.resumeMessages?.length ? { messages: boundedResumeMessages(opts.resumeMessages) as never } : {}),
@@ -135,7 +150,10 @@ export function createRun(req: TurnRequest, cfg: AdapterConfig, snapshot: Resour
       case "turn_start":
         if (ac.signal.aborted) return;
         if (counters.steps >= budget.maxModelSteps) { ac.abort(new Error("PINAX_ADAPTER_STEP_LIMIT")); return; }
-        if (counters.steps >= budget.maxModelSteps - 1 || counters.toolCalls >= budget.maxCallsPerTurn) agent.state.tools.length = 0;
+        if (counters.steps >= budget.maxModelSteps - 1 || counters.toolCalls >= budget.maxCallsPerTurn) {
+          if (capability) agent.state.tools = agent.state.tools.filter((tool) => tool.name === submitToolName);
+          else agent.state.tools.length = 0;
+        }
         counters.steps += 1;
         counters.roundsInTurn = 0;
         counters.turnToolFlags = false;
@@ -182,6 +200,10 @@ export function createRun(req: TurnRequest, cfg: AdapterConfig, snapshot: Resour
         const event = ev as { toolName?: string; result?: unknown; isError?: boolean };
         const frame = `event: tool.result\ndata: ${JSON.stringify({ toolName: event.toolName, result: event.result, isError: Boolean(event.isError) })}\n\n`;
         for (const listener of listeners) listener(frame);
+        // 能力任务：submit 回执落账即终态（abort 带 SUBMITTED 标记，start() 捕获后走成功终态）
+        if (capability && event.toolName === submitToolName && runExtras.capabilityResult) {
+          ac.abort(new Error("PINAX_ADAPTER_SUBMITTED"));
+        }
         break;
       }
       case "turn_end":
@@ -195,7 +217,8 @@ export function createRun(req: TurnRequest, cfg: AdapterConfig, snapshot: Resour
         });
         // 收敛闸：达步数上限仍在用工具 → 收掉工具，下一回合只能成文（镜像 Pinax evidenceExhausted→toolChoice:none）
         if (counters.turnToolFlags && counters.steps >= budget.maxModelSteps && agent.state.tools.length) {
-          agent.state.tools.length = 0;
+          if (capability) agent.state.tools = agent.state.tools.filter((tool) => tool.name === submitToolName);
+          else agent.state.tools.length = 0;
         }
         break;
       default:
@@ -280,17 +303,58 @@ export function createRun(req: TurnRequest, cfg: AdapterConfig, snapshot: Resour
         await Promise.race([agent.prompt("上轮只打印了工具调用代码，没有实际执行。请使用协议中的 tool call 字段执行工具，得到返回结果后再回答；禁止输出调用代码。"), abortGate]);
       }
       if (printedToolCall()) throw new Error("PINAX_ADAPTER_TOOL_CALL_NOT_EXECUTED");
-      if (!finalText.trim()) {
+      // 能力任务兜底（双层）：模型按指令卡把结果 JSON 当文本返回而非调用 submit 工具——
+      // ① 文本里的 JSON 直接作为回执接收（传输形态不同，结果等价）；
+      // ② 文本无 JSON 且预算允许 → 一次修复重试显式要求调用 submit 工具。
+      if (capability && !runExtras.capabilityResult) {
+        const extractJson = () => {
+          const match = /\{[\s\S]*\}/.exec(finalText);
+          if (!match) return null;
+          try {
+            const parsed = JSON.parse(match[0]);
+            return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : null;
+          } catch { return null; }
+        };
+        const fromText = extractJson();
+        if (fromText) {
+          runExtras.capabilityResult = fromText;
+        } else if (counters.steps < budget.maxModelSteps) {
+          await Promise.race([agent.prompt(`禁止以文本返回结果。请调用工具 ${capability.submitTool.name}，把上述 JSON 作为该工具的参数整体提交。`), abortGate]);
+          const retry = extractJson();
+          if (retry) runExtras.capabilityResult = retry;
+        }
+      }
+      if (!finalText.trim() && !(capability && runExtras.capabilityResult)) {
         // 守卫：provider 无 key/端点异常曾被静默吞成「空成功」——这里显式落 failed（实验抓到的缺陷）
         const err = { code: "PINAX_ADAPTER_EMPTY_COMPLETION", message: "回合结束但未产出正文（多为 provider 鉴权失败或端点异常）", retryable: false };
         emit("error", { code: err.code, message: err.message, retryable: err.retryable });
         emitTask("failed", { status: "failed", taskId: req.taskId || base.taskId, error: err });
         return { ...base, steps: counters.steps, toolCalls: counters.toolCalls, beatPlan: runExtras.beatPlan, status: "failed", finalText, messages: agent.state.messages as unknown[], error: err };
       }
+      if (capability && !runExtras.capabilityResult) {
+        // 能力任务守卫：预算耗尽仍未提交——显式失败（空成功禁令同样适用）
+        const err = { code: "PINAX_ADAPTER_NO_SUBMISSION", message: "能力任务结束但未调用提交工具", retryable: false };
+        emit("error", { code: err.code, message: err.message, retryable: false });
+        emitTask("failed", { status: "failed", taskId: req.taskId || base.taskId, error: err });
+        return { ...base, steps: counters.steps, toolCalls: counters.toolCalls, beatPlan: null, status: "failed", finalText, messages: agent.state.messages as unknown[], error: err };
+      }
       emit("usage", { usage: counters.usage });
-      emitTask("completed", { status: "completed", taskId: req.taskId || base.taskId, model: `${cfg.provider}.${cfg.model}`, usage: counters.usage, steps: counters.steps, toolCalls: counters.toolCalls, textChars: finalText.length, finalText, beatPlan: runExtras.beatPlan });
-      return { ...base, steps: counters.steps, toolCalls: counters.toolCalls, beatPlan: runExtras.beatPlan, status: "completed", finalText, messages: agent.state.messages as unknown[] };
+      emitTask("completed", { status: "completed", taskId: req.taskId || base.taskId, model: `${cfg.provider}.${cfg.model}`, usage: counters.usage, steps: counters.steps, toolCalls: counters.toolCalls, textChars: finalText.length, finalText, beatPlan: runExtras.beatPlan, ...(capability ? { capabilityResult: runExtras.capabilityResult } : {}) });
+      return { ...base, steps: counters.steps, toolCalls: counters.toolCalls, beatPlan: runExtras.beatPlan, status: "completed", finalText, messages: agent.state.messages as unknown[], ...(capability ? { capabilityResult: runExtras.capabilityResult } : {}) };
     } catch (e) {
+      // 能力任务：SUBMITTED 不是取消——提交回执已落账，走成功终态（finalText 可空）
+      if (ac.signal.aborted && String((ac.signal.reason as Error)?.message || "") === "PINAX_ADAPTER_SUBMITTED" && runExtras.capabilityResult) {
+        emit("usage", { usage: counters.usage });
+        emitTask("completed", { status: "completed", taskId: req.taskId || base.taskId, model: `${cfg.provider}.${cfg.model}`, usage: counters.usage, steps: counters.steps, toolCalls: counters.toolCalls, textChars: finalText.length, finalText, beatPlan: null, capabilityResult: runExtras.capabilityResult });
+        return { ...base, steps: counters.steps, toolCalls: counters.toolCalls, beatPlan: null, status: "completed", finalText, messages: agent.state.messages as unknown[], capabilityResult: runExtras.capabilityResult };
+      }
+      // 能力任务：步数收敛（STEP_LIMIT）仍未提交 → 显式 NO_SUBMISSION 失败（非用户取消）
+      if (capability && ac.signal.aborted && String((ac.signal.reason as Error)?.message || "") === "PINAX_ADAPTER_STEP_LIMIT" && !runExtras.capabilityResult) {
+        const err = { code: "PINAX_ADAPTER_NO_SUBMISSION", message: "能力任务在步数预算内未调用提交工具", retryable: false };
+        emit("error", { code: err.code, message: err.message, retryable: false });
+        emitTask("failed", { status: "failed", taskId: req.taskId || base.taskId, error: err });
+        return { ...base, steps: counters.steps, toolCalls: counters.toolCalls, beatPlan: null, status: "failed", finalText, messages: agent.state.messages as unknown[], error: err };
+      }
       const aborted = ac.signal.aborted;
       const msg = String((e as Error)?.message || e);
       const err = aborted
