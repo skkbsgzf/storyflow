@@ -237,7 +237,7 @@ export function createRun(req: TurnRequest, cfg: AdapterConfig, snapshot: Resour
     emitTask("started", { status: "running", taskId: req.taskId || "", ...(req.bookId ? { bookId: req.bookId } : {}) });
     const base: Omit<TaskSnapshot, "status" | "finalText" | "messages" | "error"> = {
       taskId: req.taskId || "", requestId: req.requestId, createdAt: Date.now(), updatedAt: Date.now(),
-      mode: req.mode, ...(req.bookId ? { bookId: req.bookId } : {}),
+      mode: req.mode, ...(req.taskKind ? { taskKind: req.taskKind } : {}), ...(req.bookId ? { bookId: req.bookId } : {}),
       steps: counters.steps, toolCalls: counters.toolCalls, usage: counters.usage,
     };
     // abort 竞速：provider 侧悬挂时 Promise 可能不 settle，取消必须硬落账（cancellation 可用性）

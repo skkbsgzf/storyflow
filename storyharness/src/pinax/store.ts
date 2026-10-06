@@ -18,6 +18,8 @@ export interface TaskSnapshot {
   createdAt: number;
   updatedAt: number;
   mode: string;
+  /** 任务种类（assistant/narrative/capability）；capability 为一次性提交语义 */
+  taskKind?: string;
   /** 作品归属（PR #4 审阅②）：任务创建时固定的归属锚（面板传当前作品绑定 id）；缺省 = 未归属（历史任务） */
   bookId?: string;
   steps: number;
@@ -28,6 +30,8 @@ export interface TaskSnapshot {
   finalText: string;
   /** BeatPlan 规划轮（②）：本回合受理的节拍计划（含 revision）；continue 模式或未提交时缺省 */
   beatPlan?: Record<string, unknown> | null;
+  /** 能力任务（taskKind=capability）：submit 工具回执（结构化结果，语义校验在 Pinax 服务端） */
+  capabilityResult?: Record<string, unknown> | null;
   error?: { code: string; message: string; retryable?: boolean };
 }
 

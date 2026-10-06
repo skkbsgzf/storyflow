@@ -66,6 +66,17 @@ test.before(async () => {
   adapterPort = (adapter.address() as AddressInfo).port;
 });
 
+
+test("capability 任务：/resume 显式拒绝（422，一次性语义）", async () => {
+  plan = "submit";
+  const taskId = `ptask_cap_resume_${Date.now().toString(36)}`;
+  await runTask(capabilityPayload(taskId));
+  const response = await fetch(`http://127.0.0.1:${adapterPort}/v1/pinax/tasks/${taskId}/resume`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ requestId: "resume_x", mode: "continue", kernel: { blocks: [] }, resources: { domains: {} } }) });
+  const body = await response.json();
+  assert.equal(response.status, 422);
+  assert.equal(body.error, "task-not-resumable");
+});
+
 test.after(() => {
   adapter?.closeAllConnections?.();
   mockServer?.closeAllConnections?.();

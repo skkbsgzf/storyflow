@@ -59,14 +59,28 @@ function validate(reqBody: unknown): { ok: true; value: TurnRequest } | { ok: fa
   if (typeof b.requestId !== "string" || !b.requestId.trim() || /[\u0000-\u001f\u007f]/.test(b.requestId)) return { ok: false, error: "requestId 必须是非空字符串" };
   if (b.taskId !== undefined && !isValidTaskId(b.taskId)) return { ok: false, error: "taskId 必须是 1–80 字符的 ASCII 标识（list 为保留值）" };
   if (!["init", "continue", "auto", "respond"].includes(b.mode)) return { ok: false, error: "mode 必须是 init/continue/auto/respond" };
+  const isCapability = b.taskKind === "capability";
   if (!isRecord(b.kernel) || !Array.isArray(b.kernel.blocks) || b.kernel.blocks.some((block) => !isRecord(block))) return { ok: false, error: "kernel.blocks 必须是对象数组" };
-  if (!isRecord(b.resources) || !isRecord(b.resources.domains)) return { ok: false, error: "resources.domains 必须是对象" };
-  for (const [name, items] of Object.entries(b.resources.domains)) {
-    if (![...PINAX_TOOL_NAMES, "manuscript", "notes", "outline"].includes(name) || !Array.isArray(items) || items.some((item) => !isRecord(item))) {
-      return { ok: false, error: "resources.domains 仅接受已声明资料域的对象数组" };
+  if (!isCapability) {
+    if (!isRecord(b.resources) || !isRecord(b.resources.domains)) return { ok: false, error: "resources.domains 必须是对象" };
+    for (const [name, items] of Object.entries(b.resources.domains)) {
+      if (![...PINAX_TOOL_NAMES, "manuscript", "notes", "outline"].includes(name) || !Array.isArray(items) || items.some((item) => !isRecord(item))) {
+        return { ok: false, error: "resources.domains 仅接受已声明资料域的对象数组" };
+      }
     }
   }
-  if (b.taskKind !== undefined && !["assistant", "narrative"].includes(b.taskKind)) return { ok: false, error: "invalid-task-kind" };
+  if (b.taskKind !== undefined && !["assistant", "narrative", "capability"].includes(b.taskKind)) return { ok: false, error: "invalid-task-kind" };
+  if (isCapability) {
+    if (!isRecord(b.capability)) return { ok: false, error: "capability 任务需要 capability 配置" };
+    const cap = b.capability as Record<string, unknown>;
+    if (typeof cap.systemPrompt !== "string" || !cap.systemPrompt.trim() || cap.systemPrompt.length > 32000) return { ok: false, error: "capability.systemPrompt 必须是 1–32000 字符" };
+    if (!isRecord(cap.submitTool) || typeof cap.submitTool.name !== "string" || !/^[a-z][a-z0-9_]*$/.test(cap.submitTool.name)) return { ok: false, error: "capability.submitTool.name 非法" };
+    if (cap.submitTool.description !== undefined && typeof cap.submitTool.description !== "string") return { ok: false, error: "capability.submitTool.description 非法" };
+    if (!isRecord(cap.submitTool.parameters)) return { ok: false, error: "capability.submitTool.parameters 必须是对象（JSON schema）" };
+    if (!isRecord(b.kernel) || !Array.isArray(b.kernel.blocks)) return { ok: false, error: "kernel.blocks 必须是对象数组" };
+  } else if (b.capability !== undefined) {
+    return { ok: false, error: "capability 配置仅限 taskKind=capability" };
+  }
   if (b.maxTokens !== undefined && (!Number.isInteger(b.maxTokens) || b.maxTokens < 200 || b.maxTokens > 8000)) return { ok: false, error: "maxTokens 必须在 200–8000 之间" };
   if (b.bookId === null) delete b.bookId;
   if (b.bookId !== undefined && !isValidBookId(b.bookId)) return { ok: false, error: "bookId 必须是 1–120 字符的非空标识" };
@@ -101,8 +115,8 @@ export function startServer(overrides = {}) {
       let run: RunHandle;
       try {
         run = createRun(turn, cfg, {
-          revision: turn.resources.revision, currentPlaceId: turn.resources.currentPlaceId,
-          domains: turn.resources.domains as never,
+          revision: turn.resources?.revision, currentPlaceId: turn.resources?.currentPlaceId,
+          domains: (turn.resources?.domains ?? {}) as never,
         }, { resumeMessages });
       } catch (e) {
         const message = String((e as Error)?.message || e).slice(0, 240);
@@ -269,6 +283,10 @@ export function startServer(overrides = {}) {
           }
           // Legacy unbound journals can still resume without bookId. They cannot be silently claimed.
           if (!snap.bookId && parsed.value.bookId !== undefined) return json(res, 422, { error: "task-book-unbound", taskId });
+          // 能力任务是一次性提交语义：续接会用叙事续写提示词重跑，语义错位——显式拒绝
+          if (snap.taskKind === "capability" || parsed.value.taskKind === "capability") {
+            return json(res, 422, { ok: false, error: "task-not-resumable", hint: "capability 任务不支持续接——请重新发起任务" });
+          }
           if (active.size >= 4) return json(res, 429, { ok: false, error: "adapter-busy" });
           const turn = { ...parsed.value, taskId, bookId: snap.bookId };
           const snapshot: TaskSnapshot = {
