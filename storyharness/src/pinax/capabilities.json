@@ -1,0 +1,16 @@
+{
+  "format": "capability-manifest@1",
+  "capabilities": [
+    { "id": "world_lookup", "kind": "query", "knowledge": ["worldbook"], "domain": "world", "desc": "查询当前世界书中的角色、组织、地点设定、物品、规则和普通条目（search/get/related）。" },
+    { "id": "geo_lookup", "kind": "query", "knowledge": ["geography"], "domain": "geo", "desc": "查询当前地点、地点详情、邻近地点和已有路线约束（current/get/nearby/route）。" },
+    { "id": "history_lookup", "kind": "query", "knowledge": ["history"], "domain": "history", "desc": "查询并追溯与地点、人物、时间和因果相关的世界历史或玩家历史（search/get/trace）。" },
+    { "id": "memory_lookup", "kind": "query", "knowledge": ["memory"], "domain": "memory", "desc": "查询当前项目或会话中已经确认的记忆事实（search/get）。" },
+    { "id": "politics_lookup", "kind": "query", "knowledge": ["politics"], "domain": "politics", "desc": "查询当前势力关系、人物关系、地点控制和已确认政治事实（current/get/trace）。" },
+    { "id": "manuscript_search", "kind": "query", "knowledge": ["manuscript"], "domain": "manuscript", "desc": "全书正文检索：找场景、伏笔、重复用词与既有事实（有界快照，非通读）。" },
+    { "id": "manuscript_get", "kind": "query", "knowledge": ["manuscript"], "domain": "manuscript", "desc": "按定位读取章节/单元正文片段（每项有界）。" },
+    { "id": "notes_search", "kind": "query", "knowledge": ["notes"], "domain": "notes", "desc": "检索构思与速记（意图非事实，结果须标注）。" },
+    { "id": "outline_lookup", "kind": "query", "knowledge": ["outline"], "domain": "outline", "desc": "查阅项目大纲与既定走向。" },
+    { "id": "calc_evaluate", "kind": "query", "model_tier": "lite", "desc": "确定性算术复算（禁心算）：只允许数字与四则括号。" },
+    { "id": "submit_narrative_beat_plan", "kind": "produce", "desc": "节拍规划：写正文前提交局部计划（因果步/角色移动/揭示/收束条件），契约见 beat-plan@1。" }
+  ]
+}

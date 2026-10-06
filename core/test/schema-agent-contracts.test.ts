@@ -1,5 +1,6 @@
 // 口径统一 P0.2：agent 两契约（capability-manifest@1 / beat-plan@1）在 core schema 装载器的注册证明。
 // 文件按 <id>.schema.json 命名被 loadAjv 发现；断言缺文件/非法样本会以 SchemaViolation 显式失败。
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { assertSchema, schemaLoaded } from "../src/schema.ts";
 
@@ -61,5 +62,17 @@ describe("agent 契约注册（capability-manifest@1 / beat-plan@1）", () => {
         schemaVersion: 1,
       }),
     ).toThrow();
+  });
+
+  it("pinax 标准工具集清单工件（P3 工具环归一）过 capability-manifest@1 校验", () => {
+    const artifact = JSON.parse(
+      readFileSync(new URL("../../storyharness/src/pinax/capabilities.json", import.meta.url), "utf-8"),
+    );
+    assertSchema("capability-manifest", artifact);
+    const ids = artifact.capabilities.map((c: { id: string }) => c.id);
+    expect(ids).toContain("world_lookup");
+    expect(ids).toContain("calc_evaluate");
+    expect(ids).toContain("submit_narrative_beat_plan");
+    expect(new Set(ids).size).toBe(ids.length);
   });
 });
