@@ -10,7 +10,7 @@ import type { HarnessConfig, TierTarget } from "./config.js";
 import { KernelClient } from "./kernel.js";
 import { buildTools } from "./tools.js";
 import { makeAnalysisTools } from "./analysis.js";
-import { makeModels, makeStreamFn, resolveModel } from "./llm.js";
+import { makeModels, makeStreamFn, resolveModel, THINKING_BUDGETS } from "./llm.js";
 import { newSession, appendSession, endSession, capResult, normUsage } from "./sessions.js";
 import { buildProjectBrief } from "./brief.js";
 import { spawnSync } from "node:child_process";
@@ -163,13 +163,7 @@ export async function runEntry(kernel: KernelClient, cfg: HarnessConfig, entry: 
     },
   });
 
-  // thinking 合理性旋钮：推理预算按档给足，防「maxTokens 被 thinking 吃光」失败态
-  const BUDGETS: Record<string, { minimal?: number; low?: number; medium?: number; high?: number }> = {
-    off: {},
-    low: { low: 1024, medium: 2048, high: 4096 },
-    medium: { low: 2048, medium: 8192, high: 16384 },
-    high: { low: 4096, medium: 16384, high: 32768 },
-  };
+  // thinking 合理性旋钮：推理预算按档给足，防「maxTokens 被 thinking 吃光」失败态（单源见 llm.ts THINKING_BUDGETS）
 
   const textOf = (c: unknown): string =>
     typeof c === "string" ? c : Array.isArray(c) ? c.filter((b) => (b as { type?: string }).type === "text").map((b) => (b as { text?: string }).text ?? "").join("") : "";
@@ -194,8 +188,8 @@ export async function runEntry(kernel: KernelClient, cfg: HarnessConfig, entry: 
           ...makeAnalysisTools(kernel, { models, model, projectDir: sessDir0.projectDir }),
         ].map(toolLogWrap),
       },
-      thinkingBudgets: BUDGETS[cfg.thinking] ?? BUDGETS.medium,
-      streamFn: makeStreamFn(models),
+      thinkingBudgets: THINKING_BUDGETS[cfg.thinking] ?? THINKING_BUDGETS.medium,
+      streamFn: makeStreamFn(models, cfg.taskBudget?.maxTokens ?? 32_768),
     });
     a.subscribe((ev) => {
       // B9 · 逐条用量随 message 行落盘：执行器轨迹与对话同库，轨迹页的逐轮表要有数（provider 不回报则不写空对象）
@@ -266,8 +260,8 @@ export async function runEntry(kernel: KernelClient, cfg: HarnessConfig, entry: 
   let bridgeUsed = false;
   for (;;) {
     let streamErr = "";
-    // D-B3 · 看门狗（960s）：SDK 超时失效时的兜底闸——到点 agent.abort() 显式终结
-    const watchdog = setTimeout(() => { try { agent.abort(); } catch { /* 已结束 */ } }, 960_000);
+    // D-B3 · 看门狗：SDK 超时失效时的兜底闸——到点 agent.abort() 显式终结（taskBudget.wallClockMs 可收紧，不可放大）
+    const watchdog = setTimeout(() => { try { agent.abort(); } catch { /* 已结束 */ } }, Math.min(960_000, cfg.taskBudget?.wallClockMs ?? 960_000));
     try {
       await agent.prompt(finalPrompt);
     } catch (e) {

@@ -162,6 +162,9 @@ export interface HarnessConfig {
    *  pi SSE 流重试穷尽后走桥（实测可扛数分钟生成）。command+script 都配置才启用；
    *  未配置则流断按失败处理——不再隐式借用外部仓路径（v4 已归档）。 */
   fallback?: { command?: string; script?: string; maxTokens?: number };
+  /** 单任务预算（2026-10 口径统一 P1）：per-node 流式 maxTokens 与墙钟上限；未配保持缺省（32768 / 960s）。
+   *  与 tiers/fallback 一样仅来自 .external/storyharness.json，无 env 面。 */
+  taskBudget?: { maxTokens?: number; wallClockMs?: number };
   /** 包 manifest 声明的 extensions.<ns> schema（S3 回显用；装载归 packs.ts） */
   extensions?: Record<string, unknown>;
   /** 扩展包根（v0.8 打包形态 = 包自身根；默认即 PKG_ROOT） */
@@ -218,6 +221,7 @@ export function loadConfig(
     thinking: (process.env.PI_THINKING as HarnessConfig["thinking"]) || (file.thinking as string) || "medium",
     tiers: file.tiers as HarnessConfig["tiers"],
     fallback: file.fallback as HarnessConfig["fallback"],
+    taskBudget: (isPlainObject(file.taskBudget) ? file.taskBudget : undefined) as HarnessConfig["taskBudget"],
     extensions: (isPlainObject(file.extensions) ? file.extensions : undefined) as HarnessConfig["extensions"],
     pkgRoot: PKG_ROOT,
     packs: runtimePacks.packs,

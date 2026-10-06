@@ -12,7 +12,7 @@ import {
 } from "@earendil-works/pi-agent-core";
 import { buildTools } from "./tools.js";
 import { makeAnalysisTools } from "./analysis.js";
-import { makeModels, makeStreamFn, resolveModel } from "./llm.js";
+import { makeModels, makeStreamFn, resolveModel, THINKING_BUDGETS } from "./llm.js";
 import {
   newSession, appendSession, endSession, capResult, readSession, listSessions, readSessionNumbered, sessionFile,
   normUsage, addUsage, zeroUsage,
@@ -65,13 +65,6 @@ export function toolsForMode(kernel: KernelClient, project: string, mode: ChatMo
   if (mode === "plan") return all.filter((t) => t.name !== "fs_write");
   return all;
 }
-
-const THINKING_BUDGETS: Record<string, Record<string, number>> = {
-  off: {},
-  low: { low: 1024, medium: 2048, high: 4096 },
-  medium: { low: 2048, medium: 8192, high: 16384 },
-  high: { low: 4096, medium: 16384, high: 32768 },
-};
 
 type AgentMessageLike = { role: string; content: unknown };
 

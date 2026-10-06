@@ -2,7 +2,9 @@
 
 ## 未发布
 
+- **provider 注册表（口径统一 P1）**：`llm.ts` 收编具名 provider 的兼容旗标/缺省端点（`PROVIDER_PROFILES`：dots 旗标逐字自 pinax-adapter runner.ts 迁入；minimax 缺省端点 api.minimaxi.com/v1 + thinking off），`makeModels` 按 provider 注入 compat——generic 兼容面固定 `max_tokens` 字段（OpenAI 兼容中转/本地 mock 的互操作缺省），具名 profile 叠加完整旗标；此前 kit 不发旗标、pinax-adapter 无差别发 dots 全旗标，两者都修正为分层匹配。`THINKING_BUDGETS` 单源化（executor/chat 删本地副本；历史漂移 32768 vs pinax-adapter 32384，统一取 32768）。`HarnessConfig.taskBudget`（maxTokens/wallClockMs，仅文件配置）在 executor 落 per-node 流式与看门狗 enforcement。
 - **fallback 回落桥改显式配置**：`cfg.fallback.command` + `cfg.fallback.script` 都配置才启用 python 非流式兜底；未配置时流断直接报「未配置 fallback 桥」失败，不再隐式借用 `D:/storymasterv4` 路径（v4 已归档）。需要桥的部署把这两项写进 `.external/storyharness.json`（`script` 相对 workspaceRoot）。
+- **契约登记（口径统一 P0.2）**：`contracts/capability-manifest.schema.json`（capability-manifest@1，agent 工具声明面，KitOp 同位）与 `contracts/beat-plan.schema.json`（beat-plan@1，submit_narrative_beat_plan 入参，升格自 Pinax shared 实现）入 R6 现行表并登记 core `SCHEMA_IDS`；消费方 pinax-adapter 以 fixture 副本 + 同步门禁对齐。
 
 ## 0.7.2 · A 组波 10：路线二视觉对标 pi-web（设计令牌 / 消息语法 / 工具胶囊 / 密度 / 两栏拖宽 / 统计位 / 状态行 / 轮级导航 / 文件树迁左）（2026-09-29）
 
