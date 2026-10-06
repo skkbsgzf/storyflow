@@ -159,7 +159,8 @@ export interface HarnessConfig {
    *  未命中/未配置照旧「查无」（面板不许报 $0 冒充）。cacheRead 不填 = 缓存读不计价。 */
   pricing?: Record<string, { input: number; output: number; cacheRead?: number }>;
   /** 流式死亡回落桥（python 非流式 POST）：Z.ai 网关对高档长思维流有断流行为，
-   *  pi SSE 流重试穷尽后走桥（实测可扛数分钟生成）。缺省指向 v4 仓的 glm_chat.py。 */
+   *  pi SSE 流重试穷尽后走桥（实测可扛数分钟生成）。command+script 都配置才启用；
+   *  未配置则流断按失败处理——不再隐式借用外部仓路径（v4 已归档）。 */
   fallback?: { command?: string; script?: string; maxTokens?: number };
   /** 包 manifest 声明的 extensions.<ns> schema（S3 回显用；装载归 packs.ts） */
   extensions?: Record<string, unknown>;

@@ -1,5 +1,9 @@
 # StoryHarness 变更记录
 
+## 未发布
+
+- **fallback 回落桥改显式配置**：`cfg.fallback.command` + `cfg.fallback.script` 都配置才启用 python 非流式兜底；未配置时流断直接报「未配置 fallback 桥」失败，不再隐式借用 `D:/storymasterv4` 路径（v4 已归档）。需要桥的部署把这两项写进 `.external/storyharness.json`（`script` 相对 workspaceRoot）。
+
 ## 0.7.2 · A 组波 10：路线二视觉对标 pi-web（设计令牌 / 消息语法 / 工具胶囊 / 密度 / 两栏拖宽 / 统计位 / 状态行 / 轮级导航 / 文件树迁左）（2026-09-29）
 
 依据 `docs/WO批次-storyharness波10-路线二视觉对标piweb-20260928.md`。「路线二」= **只搬 pi-web 的设计令牌值、布局几何与消息显示语法，不搬它的栈**（无 Tailwind v4 / React 19 / Next SSR / node-pty / Catppuccin SVG），逐处保留出处（MIT，Copyright (c) 2026 agegr，https://github.com/agegr/pi-web ，快照 `ui/refs/pi-web/globals.css`）。A14→A23 按序全落，零协议改动，**判据仍只看「pi-web 有的效果这边看不看得见」**。B 组与 C5/C7 拍板不在本版；**C5/C7 拍板前 8431 仍不得对外暴露**。

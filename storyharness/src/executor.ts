@@ -224,9 +224,11 @@ export async function runEntry(kernel: KernelClient, cfg: HarnessConfig, entry: 
   /** 流式死亡回落桥：python 非流式 POST（900s socket）——Z.ai 网关对高档长思维流会断 SSE，
    *  非流式实测可扛数分钟生成（sh.mts/demo2 全程实证）。 */
   const bridgeFallback = (system: string, user: string): string | null => {
+    // 显式合同：command+script 都配置才启用；未配置不回落（隐式借用 v4 仓路径已随 v4 归档移除）。
+    if (!cfg.fallback?.command || !cfg.fallback?.script) return null;
     try {
-      const cmd = cfg.fallback?.command ?? "D:/storymasterv4/tools/_vendor/laya-venv/Scripts/python.exe";
-      const script = cfg.fallback?.script ? path.join(cfg.workspaceRoot, cfg.fallback.script) : "D:/storymasterv4/tools/storyharness/glm_chat.py";
+      const cmd = cfg.fallback.command;
+      const script = path.join(cfg.workspaceRoot, cfg.fallback.script);
       if (!fs.existsSync(script)) return null;
       const dir = os.tmpdir();
       const cfgFile = path.join(dir, `sh-bridge-cfg-${Date.now()}.json`);
@@ -294,6 +296,10 @@ export async function runEntry(kernel: KernelClient, cfg: HarnessConfig, entry: 
     if (opts.dry) {
       endSession(sessDir0.projectDir, sessDir0.corpus, sid, `模型流错误（dry 不回落桥）: ${streamErr.slice(0, 100)}`);
       throw new Error(`模型流错误（节点 ${node}）：${streamErr.slice(0, 200)}`);
+    }
+    if (!cfg.fallback?.command || !cfg.fallback?.script) {
+      endSession(sessDir0.projectDir, sessDir0.corpus, sid, `流断且未配置 fallback 桥`);
+      throw new Error(`模型流错误且未配置 fallback 桥（cfg.fallback.command/script，节点 ${node}）：${streamErr.slice(0, 160)}`);
     }
     console.error(`[storyharness] 节点 ${node} 流重试仍死——python 桥非流式兜底`);
     appendSession(sessDir0.projectDir, sessDir0.corpus, sid, { kind: "run_event", event: { event: "stream_fallback", node, error: streamErr.slice(0, 120) } });
