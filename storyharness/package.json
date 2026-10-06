@@ -7,6 +7,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "start": "tsx src/cli.ts",
+    "serve:pinax": "tsx src/pinax/serve.ts",
     "test": "tsx --test test/*.test.ts",
     "verify:pack": "node ../demos/mini-pack/verify.mjs"
   },

@@ -10,3 +10,6 @@ out/
 panel/kitapp/node_modules/
 panel/node_modules/
 extension-dist/
+
+# pinax 任务面运行数据（P2 迁入后落 kit 本地）
+storyharness/tasks/
