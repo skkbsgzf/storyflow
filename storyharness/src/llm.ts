@@ -75,7 +75,7 @@ export function makeModels(t: LlmTarget): Models {
             resolve: async (input: Parameters<NonNullable<ReturnType<typeof envApiKeyAuth>["resolve"]>>[0]) =>
               t.apiKey
                 ? { auth: { apiKey: t.apiKey }, source: "配置内联 apiKey" }
-                : envApiKeyAuth("pi-agent key", ["MINIFLOW_AGENT_KEY", "ZAI_API_KEY"]).resolve(input),
+                : envApiKeyAuth("pi-agent key", ["MINIFLOW_AGENT_KEY", "ZAI_API_KEY", "MINIMAX_API_KEY"]).resolve(input),
           },
         },
         models: [
