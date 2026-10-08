@@ -6,6 +6,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { startServer } from "../src/pinax/server.js";
+import { validateCompleteRequest, validateModelPatch } from "../src/pinax/modelFunnel.js";
 import type { AddressInfo } from "node:net";
 
 function sseFrames(body: ReadableStream<Uint8Array>): AsyncGenerator<string> {
@@ -149,4 +150,40 @@ test("热切后新任务用新模型（内存 cfg 生效证明）", async () => 
   await post("/model", { model: "second-model" });
   const probe = await post("/v1/pinax/complete", { messages: [{ role: "user", content: "probe" }] });
   assert.equal(probe.body.model, "mock.second-model");
+});
+
+test("/model patch 协议轴：api 合法值透传、非法值拒（validateModelPatch 纯函数面）", () => {
+  assert.deepEqual(validateModelPatch({ model: "m", api: "anthropic-messages" }), { ok: true, patch: { model: "m", api: "anthropic-messages" } });
+  assert.deepEqual(validateModelPatch({ model: "m" }), { ok: true, patch: { model: "m" } });
+  const bad = validateModelPatch({ model: "m", api: "grpc" });
+  assert.equal(bad.ok, false);
+  assert.match((bad as { message: string }).message, /api/);
+});
+
+test("POST /model 非法 api → 400 且当前协议不变（GET /model 回显 api）", async () => {
+  const before = await get("/model");
+  assert.equal(before.api, "openai-completions");
+  const rejected = await post("/model", { model: "second-model", api: "anthropic" });
+  assert.equal(rejected.status, 400);
+  assert.equal(rejected.body.error, "invalid-model-patch");
+  assert.equal((await get("/model")).api, "openai-completions");
+});
+
+test("空提示词护栏：全部 user/system 轮正文为空且无 systemPrompt → 拒绝（validateCompleteRequest 纯函数面）", () => {
+  const empty = validateCompleteRequest({
+    messages: [
+      { role: "user", content: "" },
+      { role: "assistant", content: "（模型自由发挥的文本）" }
+    ]
+  });
+  assert.equal(empty.ok, false);
+  assert.match((empty as { message: string }).message, /正文为空/);
+});
+
+test("空提示词护栏：systemPrompt 非空即视为有锚（独立字段不计入 messages）", () => {
+  const anchored = validateCompleteRequest({
+    systemPrompt: "你是叙事者",
+    messages: [{ role: "user", content: "" }]
+  });
+  assert.equal(anchored.ok, true);
 });

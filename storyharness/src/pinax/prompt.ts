@@ -19,11 +19,16 @@ export interface TurnRequest {
   intent?: string | null;
   formatInstructions?: string;
   maxTokens?: number;
-  taskKind?: "assistant" | "narrative";
+  taskKind?: "assistant" | "narrative" | "capability";
+  /** capability 任务配置（taskKind=capability 时必填）：系统提示=任务指令卡，submitTool=强制提交（BeatPlan 模式） */
+  capability?: {
+    systemPrompt: string;
+    submitTool: { name: string; description?: string; parameters: Record<string, unknown> };
+  };
   /** Pinax serializeKernelWithinTextPartBudget 的产物 */
   kernel: { revision?: string; blocks: KernelBlock[]; toolCatalog?: { name: string }[] };
-  /** 资源快照（工具桥数据源） */
-  resources: {
+  /** 资源快照（工具桥数据源）；capability 任务可省（默认空域） */
+  resources?: {
     revision?: string;
     currentPlaceId?: string;
     coverage?: Record<string, unknown>;
@@ -66,7 +71,7 @@ export function buildSystemPrompt(req: TurnRequest, toolNames: string[], options
     "",
     "== 会话上下文（Pinax Kernel，按注入预算裁剪，revision: " + (req.kernel.revision || "-") + "）==",
     blocks || "（无注入块）",
-    req.resources.coverage ? `资料覆盖范围（快照有数量和长度上限，不代表全书完整阅读）：${JSON.stringify(req.resources.coverage)}` : "",
+    req.resources?.coverage ? `资料覆盖范围（快照有数量和长度上限，不代表全书完整阅读）：${JSON.stringify(req.resources.coverage)}` : "",
     "",
     "== 资料工具纪律 ==",
     toolsGuide,

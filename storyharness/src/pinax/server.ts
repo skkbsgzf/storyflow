@@ -29,10 +29,15 @@ function isTerminal(status: TaskSnapshot["status"]): boolean {
   return status === "completed" || status === "failed" || status === "cancelled";
 }
 
+/** CORS 单点判定：空名单 = 开发态反射 *；非空 = 仅回显名单内来源，其余不回显（浏览器按 CORS 失败拦截）。 */
+export function corsOriginFor(allowed: string[], origin: string | undefined): string | null {
+  if (allowed.length === 0) return "*";
+  return origin && allowed.includes(origin) ? origin : null;
+}
+
 function json(res: http.ServerResponse, code: number, body: unknown) {
   res.writeHead(code, {
     "content-type": "application/json; charset=utf-8",
-    "access-control-allow-origin": "*",
   });
   res.end(JSON.stringify(body));
 }
@@ -42,7 +47,6 @@ function sseHead(res: http.ServerResponse) {
     "content-type": "text/event-stream; charset=utf-8",
     "cache-control": "no-cache",
     connection: "keep-alive",
-    "access-control-allow-origin": "*",
   });
 }
 
@@ -155,9 +159,15 @@ export function startServer(overrides = {}) {
     const url = new URL(req.url || "/", `http://${cfg.host}`);
     const seg = url.pathname.split("/").filter(Boolean);
 
+    // CORS 单点：allow-origin 统一在此 setHeader（writeHead 会合并保留）；Vary 供缓存正确性。
+    const corsOrigin = corsOriginFor(cfg.allowedOrigins, req.headers.origin);
+    if (corsOrigin) {
+      res.setHeader("access-control-allow-origin", corsOrigin);
+      if (corsOrigin !== "*") res.setHeader("vary", "Origin");
+    }
+
     if (req.method === "OPTIONS") {
       res.writeHead(204, {
-        "access-control-allow-origin": "*",
         "access-control-allow-methods": "GET,POST,OPTIONS",
         "access-control-allow-headers": "content-type",
       });

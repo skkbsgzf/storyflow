@@ -1,7 +1,10 @@
-// 运行配置：优先级 env > 配置文件（.external/pinax-adapter.json 或 PINAX_ADAPTER_CONFIG 指定路径）> 默认。
-// 口径与 storyharness/config.ts 一致：密钥只活在 gitignore 的文件或环境变量里。
+// 运行配置：优先级 env > 配置文件（.external/pinax-adapter.json 或 PINAX_ADAPTER_CONFIG 指定路径）
+// > 默认。口径与 storyharness/config.ts 一致：密钥只活在 gitignore 的文件或环境变量里。
+// 2026-10-08 去内置档：模型由调用方（Pinax 设置面 /model 热切或配置文件）显式给出，
+// 不再按 env key 命中 provider 表缺省——配置层不携带任何厂商内置分支。
 import * as fs from "node:fs";
 import path from "node:path";
+import type { LlmApi } from "../llm.js";
 
 export interface AdapterBudget {
   agentTimeoutMs: number;
@@ -15,11 +18,13 @@ export interface AdapterConfig {
   host: string;
   /** 任务快照目录（相对包根或绝对路径） */
   tasksDir: string;
-  /** LLM 绑定（OpenAI 兼容端点 / zai 目录内置） */
+  /** LLM 绑定（自定义端点按 api 选传输 / zai 目录内置） */
   provider: string;
   model: string;
   apiKey?: string;
   baseUrl?: string;
+  /** 传输协议轴：openai-completions（缺省）或 anthropic-messages */
+  api?: LlmApi;
   thinking: "off" | "low" | "medium" | "high";
   /** 预算守护默认值（请求体 budget.* 可逐项覆盖） */
   budget: AdapterBudget;
@@ -33,6 +38,7 @@ const DEFAULTS: AdapterConfig = {
   tasksDir: "tasks",
   provider: "zai",
   model: "glm-5.3",
+  api: "openai-completions",
   thinking: "medium",
   budget: {
     agentTimeoutMs: 240_000,
@@ -70,16 +76,16 @@ export function loadConfig(explicit?: Partial<AdapterConfig>): AdapterConfig {
   const pick = <T>(envVal: string | undefined, fileVal: T | undefined, def: T): T =>
     (envVal !== undefined ? (envVal as unknown as T) : fileVal !== undefined ? fileVal : def);
 
-  const builtinMiniMax = Boolean(env.MINIMAX_API_KEY && !env.MINIFLOW_AGENT_KEY && !env.ZAI_API_KEY && !fileCfg.apiKey);
   const cfg: AdapterConfig = {
     port: Number(env.PINAX_ADAPTER_PORT ?? fileCfg.port ?? DEFAULTS.port),
     host: pick(env.PINAX_ADAPTER_HOST, fileCfg.host, DEFAULTS.host),
     tasksDir: path.resolve(pkgRoot(), env.PINAX_ADAPTER_TASKS_DIR ?? fileCfg.tasksDir ?? DEFAULTS.tasksDir),
-    provider: pick(env.PINAX_ADAPTER_PROVIDER, fileCfg.provider, builtinMiniMax ? "minimax" : DEFAULTS.provider),
-    model: pick(env.PINAX_ADAPTER_MODEL, fileCfg.model, builtinMiniMax ? "MiniMax-Text-01" : DEFAULTS.model),
-    apiKey: env.MINIFLOW_AGENT_KEY ?? env.ZAI_API_KEY ?? fileCfg.apiKey ?? env.MINIMAX_API_KEY,
-    baseUrl: env.PINAX_ADAPTER_BASE_URL ?? fileCfg.baseUrl ?? (builtinMiniMax ? "https://api.minimaxi.com/v1" : undefined),
-    thinking: pick(env.PINAX_ADAPTER_THINKING, fileCfg.thinking, builtinMiniMax ? "off" : DEFAULTS.thinking),
+    provider: pick(env.PINAX_ADAPTER_PROVIDER, fileCfg.provider, DEFAULTS.provider),
+    model: pick(env.PINAX_ADAPTER_MODEL, fileCfg.model, DEFAULTS.model),
+    apiKey: env.MINIFLOW_AGENT_KEY ?? env.ZAI_API_KEY ?? fileCfg.apiKey,
+    baseUrl: env.PINAX_ADAPTER_BASE_URL ?? fileCfg.baseUrl,
+    api: pick(env.PINAX_ADAPTER_API, fileCfg.api, DEFAULTS.api),
+    thinking: pick(env.PINAX_ADAPTER_THINKING, fileCfg.thinking, DEFAULTS.thinking),
     budget: { ...DEFAULTS.budget, ...(fileCfg.budget || {}), ...(explicit?.budget || {}) },
     allowedOrigins: Array.isArray(fileCfg.allowedOrigins)
       ? fileCfg.allowedOrigins

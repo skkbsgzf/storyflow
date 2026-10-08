@@ -1,6 +1,7 @@
 // 统一模型漏斗基座（2026-10-07）：/model 热切换 + /complete 一次性补全转发。
-// - /model：patch {provider?, model!, baseUrl?, apiKey?, thinking?} → 持久化配置文件 + 内存 cfg 热生效
+// - /model：patch {provider?, model!, baseUrl?, apiKey?, thinking?, api?} → 持久化配置文件 + 内存 cfg 热生效
 //   （makeModels/getModel/THINKING_BUDGETS 均在 createRun 时读取，改 cfg 即对新区间生效，无需重启）。
+//   api 是传输协议轴（openai-completions / anthropic-messages），缺省 openai-completions。
 //   注意 zai provider 会把内联 key 写 process.env.ZAI_API_KEY（粘性）——切走后再切回需重发 key。
 // - /complete：pi-ai Models.complete 一次性补全（无需 Agent 循环）；
 //   消费方（Pinax server 漏斗）只经此内部协议调用，key 只写不回显。
@@ -8,9 +9,10 @@ import fs from "node:fs";
 import path from "node:path";
 import type { AdapterConfig } from "./config.js";
 import { configPath } from "./config.js";
-import { makeModels, resolveModel, THINKING_BUDGETS } from "../llm.js";
+import { makeModels, resolveModel, THINKING_BUDGETS, type LlmApi } from "../llm.js";
 
 const THINKING_LEVELS = new Set(["off", "minimal", "low", "medium", "high"]);
+const API_PROTOCOLS = new Set<LlmApi>(["openai-completions", "anthropic-messages"]);
 
 export interface ModelPatch {
   provider?: string;
@@ -18,6 +20,7 @@ export interface ModelPatch {
   baseUrl?: string;
   apiKey?: string;
   thinking?: string;
+  api?: LlmApi;
 }
 
 export function maskKey(key?: string): string | null {
@@ -25,7 +28,7 @@ export function maskKey(key?: string): string | null {
 }
 
 export function modelStatus(cfg: AdapterConfig) {
-  return { provider: cfg.provider, model: cfg.model, baseUrl: cfg.baseUrl ?? null, thinking: cfg.thinking, keyMasked: maskKey(cfg.apiKey) };
+  return { provider: cfg.provider, model: cfg.model, baseUrl: cfg.baseUrl ?? null, api: cfg.api ?? "openai-completions", thinking: cfg.thinking, keyMasked: maskKey(cfg.apiKey) };
 }
 
 function readConfigFile(file: string): Record<string, unknown> {
@@ -50,6 +53,12 @@ export function validateModelPatch(body: unknown): { ok: true; patch: ModelPatch
   if (raw.apiKey !== undefined) {
     if (raw.apiKey !== null && typeof raw.apiKey !== "string") return { ok: false, message: "apiKey 非法" };
     patch.apiKey = String(raw.apiKey ?? "");
+  }
+  if (raw.api !== undefined) {
+    if (typeof raw.api !== "string" || !API_PROTOCOLS.has(raw.api as LlmApi)) {
+      return { ok: false, message: `api 必须是 ${[...API_PROTOCOLS].join("/")}` };
+    }
+    patch.api = raw.api as LlmApi;
   }
   if (raw.thinking !== undefined) {
     if (typeof raw.thinking !== "string" || !THINKING_LEVELS.has(raw.thinking)) return { ok: false, message: `thinking 必须是 ${[...THINKING_LEVELS].join("/")}` };
@@ -146,6 +155,12 @@ export function validateCompleteRequest(body: unknown): { ok: true; value: Compl
     messages.push({ role: role as "system" | "user" | "assistant", content: message.content });
   }
   if (!messages.length) return { ok: false, message: "messages 无有效项" };
+  // 20261009 空提示词护栏：全部 user/system 轮正文为空（且无独立 systemPrompt）时，
+  // 模型只会自由发挥——这是提示词组装回归的最后一道防线（Pinax 侧曾静默发生，产出与提示词无关的文本）。
+  const hasAnchoredPrompt =
+    messages.some((m) => (m.role === "user" || m.role === "system") && String(m.content ?? "").trim().length > 0) ||
+    (typeof raw.systemPrompt === "string" && raw.systemPrompt.trim().length > 0);
+  if (!hasAnchoredPrompt) return { ok: false, message: "所有 user/system 轮正文为空——疑似提示词组装回归，拒绝转发" };
   const value: CompleteRequest = {
     messages,
     ...(typeof raw.systemPrompt === "string" ? { systemPrompt: raw.systemPrompt } : {}),

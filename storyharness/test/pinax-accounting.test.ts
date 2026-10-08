@@ -4,6 +4,8 @@
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import * as http from "node:http";
+import * as fs from "node:fs";
+import * as path from "node:path";
 import type { AddressInfo } from "node:net";
 import { startServer } from "../src/pinax/server.js";
 
@@ -101,12 +103,13 @@ async function* sseFrames(res: Response) {
 
 let adapter: http.Server;
 let adapterPort = 0;
+const acctTasksDir = `tasks-test-accounting-${Date.now()}`;
 
 before(async () => {
   const llmPort = await startMockLlm();
   adapter = startServer({
     port: 0,
-    tasksDir: `tasks-test-accounting-${Date.now()}`,
+    tasksDir: acctTasksDir,
     provider: "mock",
     model: "mock-model",
     baseUrl: `http://127.0.0.1:${llmPort}/v1`,
@@ -122,6 +125,8 @@ after(() => {
   mockServer?.closeAllConnections?.();
   adapter?.close();
   mockServer?.close();
+  // 回收测试目录：曾每次跑测试泄漏一个 tasks-test-accounting-* 目录（相对 cwd 解析，见 store.ts mkdirSync）
+  fs.rmSync(path.resolve(acctTasksDir), { recursive: true, force: true });
 });
 
 test("快照计数：工具回合+正文的任务，落盘 steps/toolCalls 反映真实值", async () => {
@@ -209,9 +214,10 @@ function startBeatMockLlm(): Promise<number> {
 
 test("BeatPlan 规划轮（②）：mode=init 受理节拍计划 → beat.plan 帧 + 快照/返回携带（含 revision）", async () => {
   const llmPort = await startBeatMockLlm();
+  const beatTasksDir = `tasks-test-accounting-beat-${Date.now()}`;
   const beatAdapter = startServer({
     port: 0,
-    tasksDir: `tasks-test-accounting-beat-${Date.now()}`,
+    tasksDir: beatTasksDir,
     provider: "mock",
     model: "mock-model",
     baseUrl: `http://127.0.0.1:${llmPort}/v1`,
@@ -246,6 +252,7 @@ test("BeatPlan 规划轮（②）：mode=init 受理节拍计划 → beat.plan �
     beatAdapter.close();
     beatMockServer?.closeAllConnections?.();
     beatMockServer?.close();
+    fs.rmSync(path.resolve(beatTasksDir), { recursive: true, force: true });
   }
 });
 

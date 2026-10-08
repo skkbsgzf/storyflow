@@ -275,7 +275,7 @@ export function createPiNarrativeAgentBridge({ endpoint = '/api/storyagent', fet
       finally { clearTimeout(timer); signal?.removeEventListener('abort', abort) }
     },
 
-    async run({ kernel, index, registry, mode = 'continue', intent = null, formatInstructions = '', maxTokens = 1600, requestId = '', signal = null, callbacks = {}, onStatus = null, budget = null, taskId = null, bookId = null, taskKind = 'narrative' }) {
+    async run({ kernel, index, registry, mode = 'continue', intent = null, formatInstructions = '', requestId = '', signal = null, callbacks = {}, onStatus = null, budget = null, taskId = null, bookId = null, taskKind = 'narrative' }) {
       taskId = base === '/api/storyagent' ? scopedId(taskId) : taskId || freshId()
       if (signal?.aborted) throw abortError(signal)
       const state = { usage: null, error: null, taskEvent: null, terminal: false }
@@ -284,7 +284,6 @@ export function createPiNarrativeAgentBridge({ endpoint = '/api/storyagent', fet
         mode, taskKind,
         intent,
         formatInstructions,
-        maxTokens,
         // 作品归属（PR #4 审阅②）：任务开始时固定；适配器全程携带并落账
         ...(bookId ? { bookId } : {}),
         kernel: buildKernelPayload(kernel),
@@ -319,11 +318,11 @@ export function createPiNarrativeAgentBridge({ endpoint = '/api/storyagent', fet
       return { ...result, cancelled: result.status === 'cancelled' }
     },
 
-    async resume({ taskId, kernel, index, intent = null, callbacks = {}, onStatus = null, signal = null, requestId = '', bookId = null, taskKind = 'assistant', maxTokens = 1600, formatInstructions = '' }) {
+    async resume({ taskId, kernel, index, intent = null, callbacks = {}, onStatus = null, signal = null, requestId = '', bookId = null, taskKind = 'assistant', formatInstructions = '' }) {
       const state = { usage: null, error: null, taskEvent: null, terminal: false }
       const body = {
         requestId: requestId || `pi_resume_${Date.now().toString(36)}`,
-        mode: 'continue', taskId, taskKind, maxTokens, formatInstructions,
+        mode: 'continue', taskId, taskKind, formatInstructions,
         intent,
         // 归属不变式：续跑重发同值；客户端漏发时适配器以快照为准（旧任务永远归旧作品）
         ...(bookId ? { bookId } : {}),

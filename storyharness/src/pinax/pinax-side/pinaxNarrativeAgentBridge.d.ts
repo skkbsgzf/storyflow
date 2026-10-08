@@ -43,7 +43,6 @@ export interface BridgeRunArgs {
   mode?: "init" | "continue" | "auto" | "respond";
   intent?: string | null;
   formatInstructions?: string;
-  maxTokens?: number;
   requestId?: string;
   /** 真实作品 ID，独立于关联的世界书 ID。 */
   bookId?: string | null;
@@ -81,7 +80,6 @@ export interface BridgeRunResult {
 export interface BridgeResumeArgs {
   taskId: string;
   taskKind?: "assistant" | "narrative";
-  maxTokens?: number;
   formatInstructions?: string;
   kernel: any;
   index: any;

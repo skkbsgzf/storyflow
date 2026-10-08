@@ -139,7 +139,6 @@ test("bridge.run：资料回合→流式正文→orchestrator 兼容返回，且
     mode: "continue",
     intent: "回应脚步声",
     formatInstructions: "纯叙事正文。",
-    maxTokens: 1200,
     requestId: "bridge_1",
     callbacks: { onChunk: (c: { content: string }) => chunks.push(c.content), onComplete: () => {} },
     onStatus: (s: unknown) => statuses.push(s),
