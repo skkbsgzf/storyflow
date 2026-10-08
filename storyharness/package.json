@@ -6,10 +6,16 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json",
     "start": "tsx src/cli.ts",
     "serve:pinax": "tsx src/pinax/serve.ts",
     "test": "tsx --test test/*.test.ts",
     "verify:pack": "node ../demos/mini-pack/verify.mjs"
+  },
+  "main": "./dist/pinax/serve.js",
+  "exports": {
+    ".": "./dist/pinax/serve.js",
+    "./pinax/model-funnel": "./dist/pinax/modelFunnel.js"
   },
   "dependencies": {
     "@earendil-works/pi-agent-core": "0.87.1",
