@@ -1,9 +1,0 @@
-{
- "tool": "batch-edit/v1",
- "at": "2026-09-30T19:56:29",
- "file": "docs/integration/embedding-modes.md",
- "ops": 7,
- "sha_before": "552f2ed1a471",
- "sha_after": "3c44885039c9",
- "diff_lines": 60
-}

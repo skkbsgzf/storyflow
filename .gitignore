@@ -6,13 +6,21 @@ __pycache__/
 # Next.js 产物（panel/kitapp）
 .next/
 out/
-# 依赖目录（已入库的 core/storyharness node_modules 不受影响——gitignore 不动已跟踪文件）
-panel/kitapp/node_modules/
-panel/node_modules/
+# 依赖目录（2026-10-10 批1a：node_modules 已全部出库，本地保留不入库）
+node_modules/
 extension-dist/
 
 # pinax 任务面运行数据（P2 迁入后落 kit 本地）
 storyharness/tasks/
+# pinax 桥/测试的落盘运行数据（时间戳目录，排障后即弃）
+storyharness/tasks-bridge-*/
+storyharness/tasks-test-*/
+
+# 工具运行回执（batch-edit 等，描述一次操作而非系统状态——真相在 git history）
+.receipt-*.json
+
+# 本地模型权重与批扫临时产物（laya 学生头等）
+runs/
 
 # 构建产物（W2-4 前置：build/dist 入口已备，产物不入库）
 dist/

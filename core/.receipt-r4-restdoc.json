@@ -1,9 +1,0 @@
-{
- "tool": "batch-edit/v1",
- "at": "2026-09-30T19:53:53",
- "file": "docs/integration/rest-api-reference.md",
- "ops": 9,
- "sha_before": "f07c2d49ced4",
- "sha_after": "f63393a4da21",
- "diff_lines": 153
-}

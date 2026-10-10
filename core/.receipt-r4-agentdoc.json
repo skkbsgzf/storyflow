@@ -1,9 +1,0 @@
-{
- "tool": "batch-edit/v1",
- "at": "2026-09-30T19:57:12",
- "file": "docs/Agent.md",
- "ops": 3,
- "sha_before": "84e106a64b5b",
- "sha_after": "ca183d16222f",
- "diff_lines": 44
-}
