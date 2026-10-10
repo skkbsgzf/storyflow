@@ -1,6 +1,7 @@
 import { nodeEnv, nodeFs, nodePath } from "./abstraction/defaults.js";
 import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
 import type { Validation } from "./types.js";
+import { degenerationAsserts } from "./degeneration.js";
 import { recordDiag } from "./diag.js";
 import { DEFAULT_BUDGET } from "./budget.js";
 
@@ -529,6 +530,9 @@ export function runAestheticAsserts(
         chapterHookAssert(projectDir, relPath, text, fs, path),
         ...ledgerSliceAsserts(projectDir, relPath, text, fs, path),
         purityAssert(projectDir, text, fs, path),
+        // 批次3d 退化扫描条款组（additive：只新增 AE-DEGEN-* 四名，机制搬运自 pinax，
+        // 见 degeneration.ts 头注——拍级/剧本路径不挂，【】与拍格式标记在彼语料合法）
+        ...degenerationAsserts(text),
       ];
     }
     return [{ name: "AE-SKIP-NON-BEAT", status: "warn", detail: "非拍级产物，美学断言不适用（转红方视角层）" }];

@@ -2,7 +2,7 @@
   "format": "storyflow-hypergraph@1",
   "note": "knowledge 语料的 HyperGraphRAG 编译产物（词条+关系边+编译期聚类簇）。源 md 是本地可插拔层，不进 git；改 md 后重跑 tools/kit-compile.py。",
   "stats": {
-    "entries": 120,
+    "entries": 116,
     "relations": 0,
     "domains": [
       "aesthetic",
@@ -24,144 +24,144 @@
         "size": 1
       },
       {
-        "name": "簇#02[不看,乎无,了本]",
+        "name": "簇#02[义半,义提,人审]",
+        "size": 5
+      },
+      {
+        "name": "簇#03[不看,乎无,了本]",
         "size": 1
       },
       {
-        "name": "簇#03[一定,一面,三维]",
+        "name": "簇#04[一定,一面,三维]",
         "size": 1
       },
       {
-        "name": "簇#04[一因,不写,与危]",
+        "name": "簇#05[一因,不写,与危]",
         "size": 1
       },
       {
-        "name": "簇#05[基本,实基,律选]",
+        "name": "簇#06[基本,实基,律选]",
         "size": 2
       },
       {
-        "name": "簇#06[一种,一行,三对]",
+        "name": "簇#07[一种,一行,三对]",
         "size": 1
       },
       {
-        "name": "簇#07[一型,不动,不扣]",
+        "name": "簇#08[一型,不动,不扣]",
         "size": 1
       },
       {
-        "name": "簇#08[一幕,一强,与冲]",
+        "name": "簇#09[一幕,一强,与冲]",
         "size": 1
       },
       {
-        "name": "簇#09[之一,四型,铺垫]",
+        "name": "簇#10[之一,四型,铺垫]",
         "size": 2
       },
       {
-        "name": "簇#10[一只,一样,一潭]",
+        "name": "簇#11[一只,一团,一样]",
         "size": 1
       },
       {
-        "name": "簇#11[一内,不为,与媒]",
+        "name": "簇#12[一内,不为,与媒]",
         "size": 1
       },
       {
-        "name": "簇#12[专家,份碎,双专]",
+        "name": "簇#13[专家,份碎,双专]",
         "size": 2
       },
       {
-        "name": "簇#13[不念,么目,么表]",
+        "name": "簇#14[不念,么目,么表]",
         "size": 1
       },
       {
-        "name": "簇#14[一例,一合,不漏]",
+        "name": "簇#15[一例,一合,不漏]",
         "size": 1
       },
       {
-        "name": "簇#15[一修,一场,事价]",
+        "name": "簇#16[一修,一场,事价]",
         "size": 1
       },
       {
-        "name": "簇#16[与心,且叙,中可]",
+        "name": "簇#17[与心,且叙,中可]",
         "size": 1
       },
       {
-        "name": "簇#17[一官,不算,事套]",
+        "name": "簇#18[一官,不算,事套]",
         "size": 1
       },
       {
-        "name": "簇#18[一下,一档,三秒]",
+        "name": "簇#19[一下,一档,三秒]",
         "size": 1
       },
       {
-        "name": "簇#19[一安,不会,不断]",
+        "name": "簇#20[一安,不会,不断]",
         "size": 1
       },
       {
-        "name": "簇#20[一张,一答,三条]",
+        "name": "簇#21[一张,一答,三条]",
         "size": 1
       },
       {
-        "name": "簇#21[举逆,元开,族科]",
+        "name": "簇#22[举逆,元开,族科]",
         "size": 3
       },
       {
-        "name": "簇#22[手握,冷面,末世]",
+        "name": "簇#23[手握,冷面,末世]",
         "size": 6
       },
       {
-        "name": "簇#23[种田,流放,放种]",
+        "name": "簇#24[种田,流放,放种]",
         "size": 6
       },
       {
-        "name": "簇#24[万爽,全库,和度]",
+        "name": "簇#25[万爽,全库,和度]",
         "size": 15
       },
       {
-        "name": "簇#25[三年,不惜,与治]",
+        "name": "簇#26[三年,不惜,与治]",
         "size": 1
       },
       {
-        "name": "簇#26[灾难,场男,男频]",
+        "name": "簇#27[灾难,场男,男频]",
         "size": 6
       },
       {
-        "name": "簇#27[冷血,材超,超自]",
+        "name": "簇#28[冷血,材超,超自]",
         "size": 2
       },
       {
-        "name": "簇#28[不懂,与运,业大]",
+        "name": "簇#29[不懂,与运,业大]",
         "size": 1
       },
       {
-        "name": "簇#29[一击,万额,三金]",
+        "name": "簇#30[一击,万额,三金]",
         "size": 1
       },
       {
-        "name": "簇#30[一台,与状,么典]",
+        "name": "簇#31[一台,与状,么典]",
         "size": 1
       },
       {
-        "name": "簇#31[一目,与特,书体]",
+        "name": "簇#32[一目,与特,书体]",
         "size": 1
       },
       {
-        "name": "簇#32[两成,分场,卷积]",
+        "name": "簇#33[两成,分场,卷积]",
         "size": 2
       },
       {
-        "name": "簇#33[一为,与梗,个机]",
+        "name": "簇#34[一为,与梗,个机]",
         "size": 1
       },
       {
-        "name": "簇#34[一维,上限,不进]",
+        "name": "簇#35[一维,上限,不进]",
         "size": 1
       },
       {
-        "name": "簇#35[个文,了判,付流]",
+        "name": "簇#36[个文,了判,付流]",
         "size": 1
-      },
-      {
-        "name": "簇#36[义半,义提,人审]",
-        "size": 10
       },
       {
         "name": "簇#37[三类,与溯,与纪]",
@@ -220,15 +220,19 @@
         "size": 16
       },
       {
-        "name": "簇#51[与节,场对,型三]",
-        "size": 6
-      },
-      {
-        "name": "簇#52[一结,上而,二结]",
+        "name": "簇#51[体检,内嵌,冻结]",
         "size": 1
       },
       {
-        "name": "簇#53[一串,一座,一杠]",
+        "name": "簇#52[与节,场对,型三]",
+        "size": 6
+      },
+      {
+        "name": "簇#53[一结,上而,二结]",
+        "size": 1
+      },
+      {
+        "name": "簇#54[一串,一座,一杠]",
         "size": 1
       }
     ]
@@ -243,12 +247,36 @@
       "cluster": "簇#01[不做,两级,位外]"
     },
     {
+      "id": "kb/aesthetic/ai-trace-dashabuse",
+      "title": "破折号滥用条款草案（slop-list S1/S5 · SemIf dash-abuse 校准回流）",
+      "domain": "aesthetic",
+      "path": "knowledge/aesthetic/ai-trace-dashabuse.md",
+      "tags": [],
+      "cluster": "簇#02[义半,义提,人审]"
+    },
+    {
+      "id": "kb/aesthetic/ai-trace-negpattern",
+      "title": "否定排比条款草案（slop-list S2 · SemIf neg-pattern 校准回流）",
+      "domain": "aesthetic",
+      "path": "knowledge/aesthetic/ai-trace-negpattern.md",
+      "tags": [],
+      "cluster": "簇#02[义半,义提,人审]"
+    },
+    {
+      "id": "kb/aesthetic/ai-trace-revealstack",
+      "title": "揭示三连与假对比条款草案（slop-list S3/S4 · SemIf reveal-stack 校准回流）",
+      "domain": "aesthetic",
+      "path": "knowledge/aesthetic/ai-trace-revealstack.md",
+      "tags": [],
+      "cluster": "簇#02[义半,义提,人审]"
+    },
+    {
       "id": "kb/aesthetic/ai-trace",
       "title": "AI 痕迹标准（结构级去机味）",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/ai-trace.md",
       "tags": [],
-      "cluster": "簇#02[不看,乎无,了本]"
+      "cluster": "簇#03[不看,乎无,了本]"
     },
     {
       "id": "kb/aesthetic/character",
@@ -256,7 +284,7 @@
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/character.md",
       "tags": [],
-      "cluster": "簇#03[一定,一面,三维]"
+      "cluster": "簇#04[一定,一面,三维]"
     },
     {
       "id": "kb/aesthetic/conflict-escalation",
@@ -264,7 +292,7 @@
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/conflict-escalation.md",
       "tags": [],
-      "cluster": "簇#04[一因,不写,与危]"
+      "cluster": "簇#05[一因,不写,与危]"
     },
     {
       "id": "kb/aesthetic/constitution",
@@ -272,7 +300,7 @@
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/constitution.md",
       "tags": [],
-      "cluster": "簇#05[基本,实基,律选]"
+      "cluster": "簇#06[基本,实基,律选]"
     },
     {
       "id": "kb/aesthetic/dialogue",
@@ -280,7 +308,7 @@
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/dialogue.md",
       "tags": [],
-      "cluster": "簇#06[一种,一行,三对]"
+      "cluster": "簇#07[一种,一行,三对]"
     },
     {
       "id": "kb/aesthetic/emotion-curve",
@@ -288,7 +316,7 @@
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/emotion-curve.md",
       "tags": [],
-      "cluster": "簇#07[一型,不动,不扣]"
+      "cluster": "簇#08[一型,不动,不扣]"
     },
     {
       "id": "kb/aesthetic/ending",
@@ -296,7 +324,7 @@
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/ending.md",
       "tags": [],
-      "cluster": "簇#08[一幕,一强,与冲]"
+      "cluster": "簇#09[一幕,一强,与冲]"
     },
     {
       "id": "kb/aesthetic/hook-3s",
@@ -304,7 +332,7 @@
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/hook-3s.md",
       "tags": [],
-      "cluster": "簇#09[之一,四型,铺垫]"
+      "cluster": "簇#10[之一,四型,铺垫]"
     },
     {
       "id": "kb/aesthetic/metaphor-zh",
@@ -312,7 +340,7 @@
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/metaphor-zh.md",
       "tags": [],
-      "cluster": "簇#10[一只,一样,一潭]"
+      "cluster": "簇#11[一只,一团,一样]"
     },
     {
       "id": "kb/aesthetic/naturalness-zh",
@@ -320,7 +348,7 @@
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/naturalness-zh.md",
       "tags": [],
-      "cluster": "簇#11[一内,不为,与媒]"
+      "cluster": "簇#12[一内,不为,与媒]"
     },
     {
       "id": "kb/aesthetic/oversight",
@@ -328,7 +356,7 @@
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/oversight.md",
       "tags": [],
-      "cluster": "簇#12[专家,份碎,双专]"
+      "cluster": "簇#13[专家,份碎,双专]"
     },
     {
       "id": "kb/aesthetic/pacing-density",
@@ -336,7 +364,7 @@
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/pacing-density.md",
       "tags": [],
-      "cluster": "簇#12[专家,份碎,双专]"
+      "cluster": "簇#13[专家,份碎,双专]"
     },
     {
       "id": "kb/aesthetic/perspective-review",
@@ -344,7 +372,7 @@
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/perspective-review.md",
       "tags": [],
-      "cluster": "簇#13[不念,么目,么表]"
+      "cluster": "簇#14[不念,么目,么表]"
     },
     {
       "id": "kb/aesthetic/platform-compliance",
@@ -352,7 +380,7 @@
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/platform-compliance.md",
       "tags": [],
-      "cluster": "簇#14[一例,一合,不漏]"
+      "cluster": "簇#15[一例,一合,不漏]"
     },
     {
       "id": "kb/aesthetic/redline-scoring",
@@ -360,7 +388,7 @@
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/redline-scoring.md",
       "tags": [],
-      "cluster": "簇#05[基本,实基,律选]"
+      "cluster": "簇#06[基本,实基,律选]"
     },
     {
       "id": "kb/aesthetic/reversal",
@@ -368,7 +396,7 @@
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/reversal.md",
       "tags": [],
-      "cluster": "簇#09[之一,四型,铺垫]"
+      "cluster": "簇#10[之一,四型,铺垫]"
     },
     {
       "id": "kb/aesthetic/scene-value",
@@ -376,7 +404,7 @@
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/scene-value.md",
       "tags": [],
-      "cluster": "簇#15[一修,一场,事价]"
+      "cluster": "簇#16[一修,一场,事价]"
     },
     {
       "id": "kb/aesthetic/sensory-detail",
@@ -384,7 +412,7 @@
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/sensory-detail.md",
       "tags": [],
-      "cluster": "簇#16[与心,且叙,中可]"
+      "cluster": "簇#17[与心,且叙,中可]"
     },
     {
       "id": "kb/aesthetic/slop-list",
@@ -392,7 +420,7 @@
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/slop-list.md",
       "tags": [],
-      "cluster": "簇#17[一官,不算,事套]"
+      "cluster": "簇#18[一官,不算,事套]"
     },
     {
       "id": "kb/aesthetic/style-routes",
@@ -400,7 +428,7 @@
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/style-routes.md",
       "tags": [],
-      "cluster": "簇#18[一下,一档,三秒]"
+      "cluster": "簇#19[一下,一档,三秒]"
     },
     {
       "id": "kb/aesthetic/unreasonable-highlight",
@@ -408,7 +436,7 @@
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/unreasonable-highlight.md",
       "tags": [],
-      "cluster": "簇#19[一安,不会,不断]"
+      "cluster": "簇#20[一安,不会,不断]"
     },
     {
       "id": "kb/aesthetic/visual-poster",
@@ -416,7 +444,7 @@
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/visual-poster.md",
       "tags": [],
-      "cluster": "簇#20[一张,一答,三条]"
+      "cluster": "簇#21[一张,一答,三条]"
     },
     {
       "id": "kb/benchmark/b001-cn",
@@ -424,7 +452,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b001-cn.md",
       "tags": [],
-      "cluster": "簇#21[举逆,元开,族科]"
+      "cluster": "簇#22[举逆,元开,族科]"
     },
     {
       "id": "kb/benchmark/b002-cn",
@@ -432,7 +460,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b002-cn.md",
       "tags": [],
-      "cluster": "簇#21[举逆,元开,族科]"
+      "cluster": "簇#22[举逆,元开,族科]"
     },
     {
       "id": "kb/benchmark/b003-cn",
@@ -440,7 +468,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b003-cn.md",
       "tags": [],
-      "cluster": "簇#21[举逆,元开,族科]"
+      "cluster": "簇#22[举逆,元开,族科]"
     },
     {
       "id": "kb/benchmark/b004-cn",
@@ -448,7 +476,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b004-cn.md",
       "tags": [],
-      "cluster": "簇#22[手握,冷面,末世]"
+      "cluster": "簇#23[手握,冷面,末世]"
     },
     {
       "id": "kb/benchmark/b005-cn",
@@ -456,7 +484,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b005-cn.md",
       "tags": [],
-      "cluster": "簇#22[手握,冷面,末世]"
+      "cluster": "簇#23[手握,冷面,末世]"
     },
     {
       "id": "kb/benchmark/b006-cn",
@@ -464,7 +492,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b006-cn.md",
       "tags": [],
-      "cluster": "簇#23[种田,流放,放种]"
+      "cluster": "簇#24[种田,流放,放种]"
     },
     {
       "id": "kb/benchmark/b007-cn",
@@ -472,7 +500,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b007-cn.md",
       "tags": [],
-      "cluster": "簇#22[手握,冷面,末世]"
+      "cluster": "簇#23[手握,冷面,末世]"
     },
     {
       "id": "kb/benchmark/b008-cn",
@@ -480,7 +508,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b008-cn.md",
       "tags": [],
-      "cluster": "簇#23[种田,流放,放种]"
+      "cluster": "簇#24[种田,流放,放种]"
     },
     {
       "id": "kb/benchmark/b009-cn",
@@ -488,7 +516,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b009-cn.md",
       "tags": [],
-      "cluster": "簇#23[种田,流放,放种]"
+      "cluster": "簇#24[种田,流放,放种]"
     },
     {
       "id": "kb/benchmark/b010-cn",
@@ -496,7 +524,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b010-cn.md",
       "tags": [],
-      "cluster": "簇#23[种田,流放,放种]"
+      "cluster": "簇#24[种田,流放,放种]"
     },
     {
       "id": "kb/benchmark/b011-cn",
@@ -504,7 +532,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b011-cn.md",
       "tags": [],
-      "cluster": "簇#23[种田,流放,放种]"
+      "cluster": "簇#24[种田,流放,放种]"
     },
     {
       "id": "kb/benchmark/b012-cn",
@@ -512,7 +540,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b012-cn.md",
       "tags": [],
-      "cluster": "簇#24[万爽,全库,和度]"
+      "cluster": "簇#25[万爽,全库,和度]"
     },
     {
       "id": "kb/benchmark/b013-fam",
@@ -520,7 +548,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b013-fam.md",
       "tags": [],
-      "cluster": "簇#24[万爽,全库,和度]"
+      "cluster": "簇#25[万爽,全库,和度]"
     },
     {
       "id": "kb/benchmark/b014-fam",
@@ -528,7 +556,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b014-fam.md",
       "tags": [],
-      "cluster": "簇#24[万爽,全库,和度]"
+      "cluster": "簇#25[万爽,全库,和度]"
     },
     {
       "id": "kb/benchmark/b015-fam",
@@ -536,7 +564,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b015-fam.md",
       "tags": [],
-      "cluster": "簇#24[万爽,全库,和度]"
+      "cluster": "簇#25[万爽,全库,和度]"
     },
     {
       "id": "kb/benchmark/b016-fam",
@@ -544,7 +572,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b016-fam.md",
       "tags": [],
-      "cluster": "簇#24[万爽,全库,和度]"
+      "cluster": "簇#25[万爽,全库,和度]"
     },
     {
       "id": "kb/benchmark/b017-fam",
@@ -552,7 +580,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b017-fam.md",
       "tags": [],
-      "cluster": "簇#25[三年,不惜,与治]"
+      "cluster": "簇#26[三年,不惜,与治]"
     },
     {
       "id": "kb/benchmark/b018-fam",
@@ -560,7 +588,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b018-fam.md",
       "tags": [],
-      "cluster": "簇#24[万爽,全库,和度]"
+      "cluster": "簇#25[万爽,全库,和度]"
     },
     {
       "id": "kb/benchmark/b019-na",
@@ -568,7 +596,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b019-na.md",
       "tags": [],
-      "cluster": "簇#26[灾难,场男,男频]"
+      "cluster": "簇#27[灾难,场男,男频]"
     },
     {
       "id": "kb/benchmark/b020-na",
@@ -576,7 +604,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b020-na.md",
       "tags": [],
-      "cluster": "簇#26[灾难,场男,男频]"
+      "cluster": "簇#27[灾难,场男,男频]"
     },
     {
       "id": "kb/benchmark/b021-na",
@@ -584,7 +612,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b021-na.md",
       "tags": [],
-      "cluster": "簇#26[灾难,场男,男频]"
+      "cluster": "簇#27[灾难,场男,男频]"
     },
     {
       "id": "kb/benchmark/b022-na",
@@ -592,7 +620,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b022-na.md",
       "tags": [],
-      "cluster": "簇#26[灾难,场男,男频]"
+      "cluster": "簇#27[灾难,场男,男频]"
     },
     {
       "id": "kb/benchmark/b023-na",
@@ -600,7 +628,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b023-na.md",
       "tags": [],
-      "cluster": "簇#26[灾难,场男,男频]"
+      "cluster": "簇#27[灾难,场男,男频]"
     },
     {
       "id": "kb/benchmark/b024-na",
@@ -608,7 +636,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b024-na.md",
       "tags": [],
-      "cluster": "簇#26[灾难,场男,男频]"
+      "cluster": "簇#27[灾难,场男,男频]"
     },
     {
       "id": "kb/benchmark/b025-s",
@@ -616,7 +644,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b025-s.md",
       "tags": [],
-      "cluster": "簇#27[冷血,材超,超自]"
+      "cluster": "簇#28[冷血,材超,超自]"
     },
     {
       "id": "kb/benchmark/b026-s",
@@ -624,7 +652,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b026-s.md",
       "tags": [],
-      "cluster": "簇#27[冷血,材超,超自]"
+      "cluster": "簇#28[冷血,材超,超自]"
     },
     {
       "id": "kb/benchmark/b027-s",
@@ -632,7 +660,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b027-s.md",
       "tags": [],
-      "cluster": "簇#28[不懂,与运,业大]"
+      "cluster": "簇#29[不懂,与运,业大]"
     },
     {
       "id": "kb/benchmark/b028-s",
@@ -640,7 +668,7 @@
       "domain": "benchmark",
       "path": "knowledge/benchmark/b028-s.md",
       "tags": [],
-      "cluster": "簇#29[一击,万额,三金]"
+      "cluster": "簇#30[一击,万额,三金]"
     },
     {
       "id": "kb/continuity/state-ledger",
@@ -648,7 +676,7 @@
       "domain": "continuity",
       "path": "knowledge/continuity/state-ledger.md",
       "tags": [],
-      "cluster": "簇#30[一台,与状,么典]"
+      "cluster": "簇#31[一台,与状,么典]"
     },
     {
       "id": "kb/continuity/worldbook",
@@ -656,7 +684,7 @@
       "domain": "continuity",
       "path": "knowledge/continuity/worldbook.md",
       "tags": [],
-      "cluster": "簇#31[一目,与特,书体]"
+      "cluster": "簇#32[一目,与特,书体]"
     },
     {
       "id": "kb/craft/convolution-waves",
@@ -664,7 +692,23 @@
       "domain": "craft",
       "path": "knowledge/craft/convolution-waves.md",
       "tags": [],
-      "cluster": "簇#32[两成,分场,卷积]"
+      "cluster": "簇#33[两成,分场,卷积]"
+    },
+    {
+      "id": "kb/craft/craft-similesuspend",
+      "title": "悬浮比喻条款草案（metaphor-zh 病1 · SemIf simile-suspend 校准回流）",
+      "domain": "craft",
+      "path": "knowledge/craft/craft-similesuspend.md",
+      "tags": [],
+      "cluster": "簇#02[义半,义提,人审]"
+    },
+    {
+      "id": "kb/craft/dialogue-daisychain",
+      "title": "顶真电报腔条款草案（user-style-rules R7 · SemIf daisy-chain 校准回流）",
+      "domain": "craft",
+      "path": "knowledge/craft/dialogue-daisychain.md",
+      "tags": [],
+      "cluster": "簇#02[义半,义提,人审]"
     },
     {
       "id": "kb/craft/highlight-loop",
@@ -672,7 +716,7 @@
       "domain": "craft",
       "path": "knowledge/craft/highlight-loop.md",
       "tags": [],
-      "cluster": "簇#33[一为,与梗,个机]"
+      "cluster": "簇#34[一为,与梗,个机]"
     },
     {
       "id": "kb/craft/prose-constraints",
@@ -680,7 +724,7 @@
       "domain": "craft",
       "path": "knowledge/craft/prose-constraints.md",
       "tags": [],
-      "cluster": "簇#34[一维,上限,不进]"
+      "cluster": "簇#35[一维,上限,不进]"
     },
     {
       "id": "kb/craft/section-pipeline",
@@ -688,7 +732,7 @@
       "domain": "craft",
       "path": "knowledge/craft/section-pipeline.md",
       "tags": [],
-      "cluster": "簇#32[两成,分场,卷积]"
+      "cluster": "簇#33[两成,分场,卷积]"
     },
     {
       "id": "kb/craft/user-style-rules",
@@ -696,47 +740,7 @@
       "domain": "craft",
       "path": "knowledge/craft/user-style-rules.md",
       "tags": [],
-      "cluster": "簇#35[个文,了判,付流]"
-    },
-    {
-      "id": "kb/deconstruct/ai-trace-dashabuse",
-      "title": "破折号滥用条款草案（slop-list S1/S5 · SemIf dash-abuse 校准回流）",
-      "domain": "deconstruct",
-      "path": "knowledge/deconstruct/ai-trace-dashabuse-draft.md",
-      "tags": [],
-      "cluster": "簇#36[义半,义提,人审]"
-    },
-    {
-      "id": "kb/deconstruct/ai-trace-negpattern",
-      "title": "否定排比条款草案（slop-list S2 · SemIf neg-pattern 校准回流）",
-      "domain": "deconstruct",
-      "path": "knowledge/deconstruct/ai-trace-negpattern-draft.md",
-      "tags": [],
-      "cluster": "簇#36[义半,义提,人审]"
-    },
-    {
-      "id": "kb/deconstruct/ai-trace-revealstack",
-      "title": "揭示三连与假对比条款草案（slop-list S3/S4 · SemIf reveal-stack 校准回流）",
-      "domain": "deconstruct",
-      "path": "knowledge/deconstruct/ai-trace-revealstack-draft.md",
-      "tags": [],
-      "cluster": "簇#36[义半,义提,人审]"
-    },
-    {
-      "id": "kb/deconstruct/craft-similesuspend",
-      "title": "悬浮比喻条款草案（metaphor-zh 病1 · SemIf simile-suspend 校准回流）",
-      "domain": "deconstruct",
-      "path": "knowledge/deconstruct/craft-similesuspend-draft.md",
-      "tags": [],
-      "cluster": "簇#36[义半,义提,人审]"
-    },
-    {
-      "id": "kb/deconstruct/dialogue-daisychain",
-      "title": "顶真电报腔条款草案（user-style-rules R7 · SemIf daisy-chain 校准回流）",
-      "domain": "deconstruct",
-      "path": "knowledge/deconstruct/dialogue-daisychain-draft.md",
-      "tags": [],
-      "cluster": "簇#36[义半,义提,人审]"
+      "cluster": "簇#36[个文,了判,付流]"
     },
     {
       "id": "kb/deconstruct/protocol",
@@ -987,44 +991,12 @@
       "cluster": "簇#50[不用,中的,交拦]"
     },
     {
-      "id": "kb/semif-calibration/daisy-chain/report-批D-20260922",
-      "title": "顶真电报腔条款体检卷 · 批D 报告（2026-09-22）",
-      "domain": "semif-calibration",
-      "path": "knowledge/semif-calibration/daisy-chain/report-批D-20260922.md",
-      "tags": [],
-      "cluster": "簇#36[义半,义提,人审]"
-    },
-    {
       "id": "kb/semif-calibration/dash-abuse/report-批A-20260922",
       "title": "破折号条款体检卷 · 批A 报告（2026-09-22）",
       "domain": "semif-calibration",
       "path": "knowledge/semif-calibration/dash-abuse/report-批A-20260922.md",
       "tags": [],
-      "cluster": "簇#36[义半,义提,人审]"
-    },
-    {
-      "id": "kb/semif-calibration/neg-pattern/report-批D-20260922",
-      "title": "否定排比条款体检卷 · 批D 报告（2026-09-22）",
-      "domain": "semif-calibration",
-      "path": "knowledge/semif-calibration/neg-pattern/report-批D-20260922.md",
-      "tags": [],
-      "cluster": "簇#36[义半,义提,人审]"
-    },
-    {
-      "id": "kb/semif-calibration/reveal-stack/report-批D-20260922",
-      "title": "揭示三连与假对比条款体检卷 · 批D 报告（2026-09-22）",
-      "domain": "semif-calibration",
-      "path": "knowledge/semif-calibration/reveal-stack/report-批D-20260922.md",
-      "tags": [],
-      "cluster": "簇#36[义半,义提,人审]"
-    },
-    {
-      "id": "kb/semif-calibration/simile-suspend/report-批D-20260922",
-      "title": "悬浮比喻条款体检卷 · 批D 报告（2026-09-22）",
-      "domain": "semif-calibration",
-      "path": "knowledge/semif-calibration/simile-suspend/report-批D-20260922.md",
-      "tags": [],
-      "cluster": "簇#36[义半,义提,人审]"
+      "cluster": "簇#51[体检,内嵌,冻结]"
     },
     {
       "id": "kb/structure/ascent",
@@ -1038,7 +1010,7 @@
         "赘婿",
         "系统流"
       ],
-      "cluster": "簇#51[与节,场对,型三]"
+      "cluster": "簇#52[与节,场对,型三]"
     },
     {
       "id": "kb/structure/barbell-return",
@@ -1052,7 +1024,7 @@
         "深沉档",
         "长线IP"
       ],
-      "cluster": "簇#51[与节,场对,型三]"
+      "cluster": "簇#52[与节,场对,型三]"
     },
     {
       "id": "kb/structure/catalog",
@@ -1060,7 +1032,7 @@
       "domain": "structure",
       "path": "knowledge/structure/catalog.md",
       "tags": [],
-      "cluster": "簇#52[一结,上而,二结]"
+      "cluster": "簇#53[一结,上而,二结]"
     },
     {
       "id": "kb/structure/dual-line",
@@ -1073,7 +1045,7 @@
         "商战",
         "身份错位"
       ],
-      "cluster": "簇#51[与节,场对,型三]"
+      "cluster": "簇#52[与节,场对,型三]"
     },
     {
       "id": "kb/structure/episodic-fate",
@@ -1087,7 +1059,7 @@
         "无限流",
         "循环"
       ],
-      "cluster": "簇#51[与节,场对,型三]"
+      "cluster": "簇#52[与节,场对,型三]"
     },
     {
       "id": "kb/structure/episodic-webnovel",
@@ -1095,7 +1067,7 @@
       "domain": "structure",
       "path": "knowledge/structure/episodic-webnovel.md",
       "tags": [],
-      "cluster": "簇#53[一串,一座,一杠]"
+      "cluster": "簇#54[一串,一座,一杠]"
     },
     {
       "id": "kb/structure/revenge",
@@ -1109,7 +1081,7 @@
         "赘婿",
         "重生"
       ],
-      "cluster": "簇#51[与节,场对,型三]"
+      "cluster": "簇#52[与节,场对,型三]"
     },
     {
       "id": "kb/structure/save-the-cat",
@@ -1122,7 +1094,7 @@
         "成长",
         "家庭"
       ],
-      "cluster": "簇#51[与节,场对,型三]"
+      "cluster": "簇#52[与节,场对,型三]"
     },
     {
       "id": "kb/trope/chongsheng-fuchou",
@@ -1135,7 +1107,7 @@
         "复仇",
         "年代"
       ],
-      "cluster": "簇#22[手握,冷面,末世]"
+      "cluster": "簇#23[手握,冷面,末世]"
     },
     {
       "id": "kb/trope/dalian-nuezha",
@@ -1148,7 +1120,7 @@
         "赘婿逆袭",
         "都市"
       ],
-      "cluster": "簇#24[万爽,全库,和度]"
+      "cluster": "簇#25[万爽,全库,和度]"
     },
     {
       "id": "kb/trope/liufang-zhongtian",
@@ -1161,7 +1133,7 @@
         "悔婚",
         "都市情感"
       ],
-      "cluster": "簇#23[种田,流放,放种]"
+      "cluster": "簇#24[种田,流放,放种]"
     },
     {
       "id": "kb/trope/majia-diaoma",
@@ -1174,7 +1146,7 @@
         "马甲",
         "逆袭"
       ],
-      "cluster": "簇#24[万爽,全库,和度]"
+      "cluster": "簇#25[万爽,全库,和度]"
     },
     {
       "id": "kb/trope/na-billionaire",
@@ -1187,7 +1159,7 @@
         "亿万富翁",
         "契约婚姻"
       ],
-      "cluster": "簇#24[万爽,全库,和度]"
+      "cluster": "簇#25[万爽,全库,和度]"
     },
     {
       "id": "kb/trope/na-fantasy",
@@ -1200,7 +1172,7 @@
         "奇幻",
         "魔法"
       ],
-      "cluster": "簇#24[万爽,全库,和度]"
+      "cluster": "簇#25[万爽,全库,和度]"
     },
     {
       "id": "kb/trope/na-werewolf",
@@ -1213,7 +1185,7 @@
         "狼人",
         "命定之恋"
       ],
-      "cluster": "簇#24[万爽,全库,和度]"
+      "cluster": "簇#25[万爽,全库,和度]"
     },
     {
       "id": "kb/trope/shenhao-baofu",
@@ -1226,7 +1198,7 @@
         "暴富",
         "都市爽文"
       ],
-      "cluster": "簇#24[万爽,全库,和度]"
+      "cluster": "簇#25[万爽,全库,和度]"
     },
     {
       "id": "kb/trope/tuanchong",
@@ -1239,7 +1211,7 @@
         "萌宝",
         "家庭亲情"
       ],
-      "cluster": "簇#24[万爽,全库,和度]"
+      "cluster": "簇#25[万爽,全库,和度]"
     },
     {
       "id": "kb/trope/xianhun-lianai",
@@ -1252,7 +1224,7 @@
         "修仙",
         "跨世之恋"
       ],
-      "cluster": "簇#22[手握,冷面,末世]"
+      "cluster": "簇#23[手握,冷面,末世]"
     },
     {
       "id": "kb/trope/zhenjia-qianjin",
@@ -1265,7 +1237,7 @@
         "身份错位",
         "豪门"
       ],
-      "cluster": "簇#24[万爽,全库,和度]"
+      "cluster": "簇#25[万爽,全库,和度]"
     },
     {
       "id": "kb/trope/zhuiqi-huozangchang",
@@ -1278,7 +1250,7 @@
         "悔过",
         "情感虐恋"
       ],
-      "cluster": "簇#24[万爽,全库,和度]"
+      "cluster": "簇#25[万爽,全库,和度]"
     },
     {
       "id": "kb/trope/zhuxu-zhanshen",
@@ -1291,7 +1263,7 @@
         "系统流",
         "无限流"
       ],
-      "cluster": "簇#22[手握,冷面,末世]"
+      "cluster": "簇#23[手握,冷面,末世]"
     }
   ],
   "relations": []

@@ -371,12 +371,30 @@ def main():
             if sp.exists():
                 spec_qids |= set(load(sp).get("questions", {}))
         n_spec_qids = len(spec_qids)
-        for p in sorted((ROOT / "knowledge" / "rules").glob("*.md")):
-            if p.name == "README.md":  # 索引页，不是规则卡
+        # 批次3d：扫描面 = rules/ 16 域卡（存量信封可无 format 字段，按路径全收，历史行为不变）
+        # ＋ rules/ 之外声明 format=rule-card@1 的 JSON 信封卡——deconstruct/习惯两条 land 流
+        # 落 knowledge/<域>/ 的转正卡（-draft 豁免随转正消失）必须真过 E12/E13，不留域外盲区。
+        # 域外判定只认 JSON 信封的 format 字段（两条 land 流均产 JSON；YAML 裸键卡无此字段，
+        # 维持缺省合法不入账，与 kit-compile front() 的 JSON 优先口径同源）。
+        env_files: list = []
+        for p in sorted((ROOT / "knowledge").rglob("*.md")):
+            if p.name.upper() == "README.MD":  # 索引页，不是规则卡
                 continue
+            rp = p.relative_to(ROOT).as_posix()
+            if rp.startswith("knowledge/rules/"):
+                env_files.append((rp, p))
+                continue
+            m0 = re.match(r"^---\r?\n(.*?)\r?\n---\r?\n", p.read_text(encoding="utf-8"), re.S)
+            if m0:
+                try:
+                    fm0 = json.loads(m0.group(1))
+                except Exception:  # noqa: BLE001 - 非 JSON 信封不属 rule-card@1 声明面
+                    fm0 = None
+                if isinstance(fm0, dict) and fm0.get("format") == "rule-card@1":
+                    env_files.append((rp, p))
+        for rel, _card_path in sorted(env_files):
             n_rule_cards += 1
-            rel = f"knowledge/rules/{p.name}"
-            txt = p.read_text(encoding="utf-8")
+            txt = _card_path.read_text(encoding="utf-8")
             m = re.match(r"^---\r?\n(.*?)\r?\n---\r?\n", txt, re.S)
             if not m:
                 E.append(f"{rel}: frontmatter 缺失（规则卡必须是 JSON frontmatter，rule-card@1 信封）")
@@ -394,8 +412,13 @@ def main():
                 E.append(f"{rel}: 缺信封必填字段 {miss}（契约 contracts/rule.schema.json）")
             if fm.get("type") != "rule-corpus":
                 E.append(f"{rel}: type={fm.get('type')!r} 非法（须 rule-corpus）")
-            if fm.get("status") not in ("active", "retired"):
-                E.append(f"{rel}: status={fm.get('status')!r} 非法（∈ active|retired）")
+            # 草稿态豁免（批次3d）：status=draft 仅在 -draft 后缀文件上合法（N3 草稿待审家法，
+            # 转正去后缀即必须 active|retired——豁免随转正消失，不留「永远 draft」后门）
+            _draft_file = _card_path.stem.endswith("-draft")
+            if fm.get("status") not in (("active", "retired", "draft") if _draft_file else ("active", "retired")):
+                E.append(f"{rel}: status={fm.get('status')!r} 非法（∈ active|retired{'|draft（仅 -draft 文件）' if _draft_file else ''}）")
+            elif fm.get("status") == "draft" and not _draft_file:
+                E.append(f"{rel}: status=draft 须搭配 -draft 后缀文件名（N3 草稿待审家法）")
             ah = fm.get("activation_hint")
             if ah is not None and (not isinstance(ah, list) or not ah
                                    or not all(isinstance(x, str) and x for x in ah)):

@@ -123,9 +123,11 @@ def ledger_entries():
 #      属设计形态（R1 2026-10-11 裁决口径，豁免归本票）。
 #   ② 占位标注 —— stage:meta / 留库备用 / 草稿待审：技能带 stage:meta 或有明确裁决标注
 #      （SKILL_META_EXEMPT 显式表）；卡 id 以 -draft 结尾（或 status=draft）＝草稿待审区，
-#      转正前零执行面消费属设计（Q3 §2.2：knowledge/deconstruct/ 5 张草案）。
+#      转正前零执行面消费属设计（Q3 §2.2：knowledge/deconstruct/ 5 张草案；批次3d C×5
+#      已转正迁出 aesthetic/craft 域，-draft 豁免随之清零，机制本身保留给未来草稿）。
 #   ③ 人工链路证据件 —— 消费方是人工复查链路，零执行面消费属设计
-#      （CARD_MANUAL_EXEMPT 显式表：semif-calibration 报告 5 张，laya 已裁暂不规划）。
+#      （CARD_MANUAL_EXEMPT 显式表：semif-calibration 报告存批A 1 张，批D 四卷 2026-10-11
+#      用户裁决删弃，laya 已裁暂不规划）。
 
 # ② 占位标注 · 技能面：技能名 → 豁免理由（含裁决出处；T 编号见 ROADMAP T/N 终版表）
 SKILL_META_EXEMPT: dict[str, str] = {
@@ -147,7 +149,7 @@ KB_SEARCH_DOMAINS: dict[str, str] = {
 
 # ③ 人工链路证据件：卡 id 前缀 → 豁免理由
 CARD_MANUAL_EXEMPT: dict[str, str] = {
-    "kb/semif-calibration/": "SemIf 校准报告 5 张：人工复查链路证据件，laya 已裁暂不规划，零执行面消费属设计——Q3 §三.3",
+    "kb/semif-calibration/": "SemIf 校准报告存 1 张（批A；批D 四卷 2026-10-11 用户裁决删弃）：人工复查链路证据件，laya 已裁暂不规划，零执行面消费属设计——Q3 §三.3",
 }
 
 # 卡间 id 级互引 token（与 kb-affinity 的 KB_TOKEN 同口径：kb/<段>/<名> 或 glob；占位写法不匹配）
@@ -157,7 +159,8 @@ _FRONT_ID_RE = re.compile(r'"id":\s*"([^"]+)"')
 
 
 def draft_card(cid: str) -> bool:
-    """② 草稿待审形状：id 以 -draft 结尾（knowledge/deconstruct/*-draft.md 家法）。"""
+    """② 草稿待审形状：id 以 -draft 结尾（草稿待审区家法；批次3d C×5 已转正迁出，
+    deconstruct/ 草稿清零——机制保留给未来 land 流草稿）。"""
     return cid.endswith("-draft")
 
 

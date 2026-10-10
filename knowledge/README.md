@@ -45,12 +45,12 @@
 
 | track | 收什么 | 映射口径（存量 120 卡定案，`scripts/r2-add-track.py` 为映射与红线审计的留档件） |
 | --- | --- | --- |
-| `文风` | 词句层：AI 味/去模板化/比喻/感官/风格档/成文约束/文风学习/词句校准 | `aesthetic/{ai-detection-sources,ai-trace,metaphor-zh,naturalness-zh,sensory-detail,slop-list,style-routes}`、`craft/{prose-constraints,user-style-rules}`、`deconstruct/*-draft` 与 `style-learning`、`rules/ai-trace`、`semif-calibration/` 五卷 |
+| `文风` | 词句层：AI 味/去模板化/比喻/感官/风格档/成文约束/文风学习/词句校准 | `aesthetic/{ai-detection-sources,ai-trace,ai-trace-dashabuse,ai-trace-negpattern,ai-trace-revealstack,metaphor-zh,naturalness-zh,sensory-detail,slop-list,style-routes}`、`craft/{craft-similesuspend,dialogue-daisychain,prose-constraints,user-style-rules}`、`style-learning`、`rules/ai-trace`、`semif-calibration/` 批A 卷（批次3d 2026-10-11：C×5 草稿转正迁出 deconstruct 待审区落 aesthetic/craft；批D 四卷判分报告经用户裁决删弃） |
 | `编剧` | 故事设计：人物/冲突/对白/钩子/节奏/反转/场景/结局/可视化/结构母型 | `aesthetic/{character,conflict-escalation,dialogue,ending,hook-3s,pacing-density,reversal,scene-value,unreasonable-highlight,visual-poster}`、`rules/{character,conflict,dialogue,ending,hook,pacing,reversal,scene,visual}`、`structure/` 全部 |
 | `选材` | 题材/市场/对标/梗族/设定/平台合规 | `market/` 全部、`benchmark/` 全部、`trope/` 全部、`rules/{meme,platform,setting}`、`aesthetic/platform-compliance` |
 | `情绪` | 情绪曲线族 | `aesthetic/emotion-curve`、`rules/curve` |
 | `连续性` | 长程台账/世界书 | `continuity/` 全部、`rules/continuity` |
-| `立意` | **本批空白（Q3 确认无卡）**——缺口入 R3 补缺清单写题目；立意组建卡前该值不得出现 | — |
+| `立意` | 立意：价值命题/主张与对撞（批次3d 首用——首卡 T-立意-1 以草稿态落 deconstruct 待审区，转正落 `craft/`；题目清单见 `projects/_reports/track-立意-20261011.md`） | `deconstruct/craft-liyi-valueclash-draft`（draft 待审） |
 | `通用` | 横切流程/总纲/监管/评审协议/形态标准/工程方法/拆书协议 | `aesthetic/{constitution,oversight,perspective-review,redline-scoring}`、`craft/{convolution-waves,highlight-loop,section-pipeline}`、`deconstruct/protocol`、`formats/` 全部、`method/` 全部、`rules/deconstruct` |
 
 纪律：track 是**人工维度**，逐卡亲读裁定、正文零改写（只加 frontmatter 行）；新增卡入库时人工填

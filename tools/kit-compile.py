@@ -250,6 +250,18 @@ def write_doc(out: Path, note: str, entries: list, relations: list, extra_stats:
     }, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
 
+def _is_draft(rel: str, p: Path) -> bool:
+    """草稿卡不进产物图（批次3d）：-draft 后缀文件或 status=draft 卡待人审，
+    人审前置语义与 deconstruct land 一致——落正式域并 active 才编译。"""
+    if rel.removesuffix('.md').endswith('-draft'):
+        return True
+    try:
+        head = p.read_text(encoding='utf-8', errors='replace')[:400]
+    except OSError:
+        return False
+    return '"status": "draft"' in head or "'status': 'draft'" in head
+
+
 def compile_doc(root: Path, project: str | None):
     """构建但不写盘 → (out, note, entries, relations, extra_stats)；无可编译语料返回 None。
 
@@ -259,7 +271,9 @@ def compile_doc(root: Path, project: str | None):
         # ── 全局模式（与历史版本同构）──
         src = root / 'knowledge'
         out = root / 'kit' / 'hypergraph.rag.json'
-        files = [(p.relative_to(src).as_posix(), p) for p in src.rglob('*.md')]
+        files = [(r, p) for r, p in
+                 ((p.relative_to(src).as_posix(), p) for p in src.rglob('*.md'))
+                 if not _is_draft(r, p)]
         entries, relations, clusters = build_graph(files, 'kb', 'knowledge/')
         return out, ('knowledge 语料的 HyperGraphRAG 编译产物（词条+关系边+编译期聚类簇）。源 md 是本地可插拔层，不进 git；改 md 后重跑 tools/kit-compile.py。',
                      entries, relations, {'clusters': clusters})
@@ -274,7 +288,9 @@ def compile_doc(root: Path, project: str | None):
     for sub in ('世界书', '规则', '文风'):
         d = proj / sub
         if d.is_dir():
-            files.extend((p.relative_to(proj).as_posix(), p) for p in d.rglob('*.md'))
+            files.extend((r, p) for r, p in
+                         ((p.relative_to(proj).as_posix(), p) for p in d.rglob('*.md'))
+                         if not _is_draft(r, p))
     if not files:
         print(f'[ABORT] 项目无可编译语料（世界书/ 规则/ 文风/ 下无 md）：{proj}')
         return None
