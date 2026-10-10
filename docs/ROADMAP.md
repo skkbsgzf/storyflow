@@ -106,7 +106,7 @@
 
 | 包 | 内容 | 边界 |
 | --- | --- | --- |
-| Q1 知识库体检 | `tools/kb-health.py`（画像/查重候选/边审计/覆盖矩阵，收据制）；agent 亲读高风险子集出语义层 findings；分级处置方案（A=additive 直接修 / B=合并草案待审 / C=新卡草稿待审 / D=移交能力复查） | Q1 只读不动卡 |
+| Q1 知识库体检 | ✅ 已落地 2026-10-11：①`tools/kb-health.py`（stdlib 确定性四账：inventory 全卡画像 / dups 查重候选（独异 gram IDF 加权压模板样板）/ edges 边审计（含回退标题伪边判别与净化视图）/ coverage 覆盖矩阵（缺口①qid 反向对账 + 缺口②确定性条款候选带 T 轨孪生标注）——收据落 projects/_reports/、重跑 sha256 逐字节一致，与 kb-affinity（卡↔消费者）互补管卡↔卡与卡↔标尺）；②agent 亲读高风险子集出 findings，报告 `projects/_reports/kb-health-20261011.md`；③分级处置 A×5 / B×4 / C×5 / D×5。**核心发现：语料本体健康（rule-card@1 16/16 合规 50 条款、卡间互引 131 笔成网、真重复 0），病在编译管线——kit-compile front() 不识 JSON frontmatter（knowledge/README.md 自家约定），115 词条 107 个 title 回落『---』、tags 全空、5998 边中 5992 条伪边、2 张 market 卡产物 id 错位（core/src/kb.ts 已有『已知缺陷』补丁自保，tags 打分全库死代码）＝A 类一处修三处收益**；次级：qid 7/26 认领（活缺口 13）、五校准包无 C 侧条款、pov-leak 校准包知识侧目录缺席（台账 calibrated、原卷在数据根）、4 张 SemIf 报告同名占位 | Q1 只读不动卡（knowledge/ 零改动、产物只读，kit-compile --check 一致为证） |
 | Q2 聚合拉边补缺 | A 类直接执行（补边/补 frontmatter/挂靠）；B 类逐对合并草案（保留哪张/怎么并/冲突点，待人审）；C 类新卡草稿落草稿区（deconstruct draft 式）；**规则原文零改写纪律沿用**——正文改动一律走草案不直改 | 语料是用户资产：合并=草案，绝不静默合并 |
 | Q3 能力安排复查 | KB 就位后重判 15 条待拍板项（带证据）；ops×KB 覆盖矩阵（无消费的域/无卡的 op）；能力安排合理性评审报告 | 裁决权仍在用户，报告给建议 |
 
