@@ -82,13 +82,22 @@
 | P4 | 收尾杂项 | — | ✅ 已落地 2026-10-10：①阶段动作清单——`docs/integration/host-integration.md` §六「项目阶段动作」五节点约定表（init 后 project-index build / 世界书·文风·规则大改后 kit-compile --project（先 --check 干跑）/ 交付·验收门后 project-index diff --receipt 落收据 / 会话段落后 memory 子命令 / 阶段收口 kb-affinity 对账，逐行注明命令与产出物），`tools/project-index.py` docstring 加交叉引用；②`core/src/minitools.ts` 脚本壳解释器可配置——python 壳走环境面 IEnv：`MINIFLOW_PYTHON`（与 compat.ts 同一旋钮）＞`STORYFLOW_PYTHON`＞缺省回退 `python`（零破坏；本机 python stub 环境例 r8-os02cd 的治本入口，配真 python 全路径即绿，测试断言未动）；③`tools/kit-compile.py --check` 干跑——内存重编译 vs 盘上产物逐键比对，一致 exit 0 / 不一致 exit 1（差异摘要：数量变化＋首个不一致 key）/ 盘上无产物 exit 1 提示先编译，全局与 --project 双模式，零写盘幂等零依赖；④`tools/rules-init.py` 防覆盖门——头部显著警示＋默认检测到存量卡带 rule-card@1 收敛字段（clauses/scanner_qids/format）即拒绝整批写入（一个不写，README 也不写），显式 `--force` 才整卡覆盖（选 --force 门而非自动合并字段——简单可靠，字段保留责任前置到人）；⑤文档收口（ROADMAP 本行＋规划 §9.5＋ARCHITECTURE §10） |
 | — | 存量 ops 过堂（F） | 需求4 | module-lint 39 条 warning（meme_harvest planned、同槽多件）——随批次3 逐个归并或清退，不进本批次 |
 
-## 四、批次3 · 缓做（架构重建后慢慢排期）
+## 四、批次3 · 缓做（架构重建后慢慢排期）——3a 波已开工（2026-10-10）
+
+### 批次3a（本轮三包）
+
+| 包 | 内容 | 边界 |
+| --- | --- | --- |
+| P5 拆·逆向 | `contracts/deconstruct.schema.json`（契约先行）；确定性采样器 + agent 归因工具（样本→规则卡草稿，provenance.refs 回溯）；回流通道（草稿→人审→`knowledge/deconstruct/` 或项目 规则/）；抽样优先纪律（默认小样本，--expand 才扩大） | 归因是语义工作走 LLM（agent 工具形态，打桩测试）；采样/组装/落卡是确定性件 |
+| P6 快诊断服务化（S 级全量 · A 级适配器） | 诊断动词进 verbs 单表（三脸同源）；S 级确定性诊断产出 diagnosis-report@1；`project-config.validation` 声明位变现（tierThreshold/cardScope/severityFloor 接入诊断路径）；静默追写宿主协议成文（默认保守：高置信 top1–2，绝不大模型进链路）；laya A 级适配器（服务形态接口 + **权重缺失显式失败带回填指引**——`runs/` 权重与 `_vendor/laya-venv` 缺位是用户侧动作，非代码可解） | 延迟预算 <100ms 若受 Python 子进程 spawn 制约，如实报告架构取舍，不为达标硬造 |
+| P7 存量 ops 过堂 + 杂项 | module-lint 39 warnings / flow-lint 3 warnings 逐条 triage（修声明/清占位/解同槽，或文档化留账）；图文视频现状核对（prose seedance 完整性，按「留库备用」口径记录）；scripts/ops 启动器注入 MINIFLOW_PYTHON（.vbs 纯 ASCII 纪律） | 凡涉及能力删留的裁决列出待拍板清单，不擅自删 op |
+
+### 批次3 后续（3a 后再排）
 
 | 项 | 前置 | 说明 |
 | --- | --- | --- |
-| 本地快诊断服务化 | rule + diagnosis-report 契约；**laya 环境回填**（本机 `runs/` 权重与 `tools/_vendor/laya-venv` 缺位） | S 级确定性 <100ms；A 级 laya 学生头；静默追写默认保守（只标高置信 1–2 条）；绝不让大模型进静默链路 |
-| 图文视频能力 | 声明式口径（规则进 KB，工具是执行器） | seedance 族按需求4 归并口径重建 |
-| 拆 · 逆向 | rule 契约 | `deconstruct.schema.json` + 采样/归因/规则卡沉淀/复用回路 |
+| laya A 级真跑通 | **用户侧权重回填**（`runs/laya-run-0923/student-v3` + `tools/_vendor/laya-venv`） | 回填后 P6 适配器即插即用；静默追写联调随宿主 |
+| 图文视频重建 | 有真实使用场景时 | prose seedance 声明/技能/知识卡完整（「留库备用」口径），drama 份待场景出现按声明式口径重建 |
 
 ## 五、每期通用纪律
 
