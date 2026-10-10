@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>知识图谱 · __TITLE__</title>
+<style>
+  /* 知识图谱页 · 视觉对齐 diagnosis-template（暗色系）。
+     零外部依赖：系统字体栈、内联样式、数据生成时内联；只读数据，不回 call kit（ARCHITECTURE §9 不变量 6）。
+     交互收敛（kitapp 图谱的零依赖复刻）：拖拽节点 / 画布平移 / 滚轮缩放 / 悬停显名 /
+     分类图例（点击隔离高亮）/ 度数定半径 / 枢纽名常显。 */
+  :root { --bg:#16181d; --panel:#1d2027; --border:#2a2e37; --ink:#d8d4cb; --dim:#8a8375; --gold:#e8b33d;
+          --mono:ui-monospace,Consolas,monospace; }
+  * { box-sizing:border-box; }
+  html, body { height:100%; }
+  body { margin:0; background:var(--bg); color:var(--ink); overflow:hidden;
+         font:14px/1.6 "Noto Sans SC","Microsoft YaHei",system-ui,sans-serif; }
+  header { padding:12px 20px 10px; border-bottom:1px solid var(--border); background:var(--bg);
+           position:relative; z-index:3; }
+  header h1 { margin:0; font-size:16px; letter-spacing:2px; display:inline; }
+  header .scope { font-family:var(--mono); font-size:12px; color:var(--dim); margin-left:10px; }
+  header .chips { margin-top:6px; display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+  .chip { font-family:var(--mono); font-size:11px; color:var(--dim); border:1px solid var(--border);
+          border-radius:999px; padding:1px 10px; }
+  .legend { display:flex; gap:5px; flex-wrap:wrap; margin-top:6px; max-height:64px; overflow:auto; }
+  .lg { font-family:var(--mono); font-size:11px; color:var(--ink); border:1px solid var(--border);
+        border-radius:999px; padding:1px 9px; cursor:pointer; user-select:none; background:var(--panel); }
+  .lg .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; vertical-align:-1px; }
+  .lg.off { opacity:0.32; }
+  .lg.src { border-color:var(--gold); color:var(--gold); cursor:default; }
+  #wrap { position:absolute; inset:0; top:auto; height:calc(100% - 118px); }
+  canvas { display:block; width:100%; height:100%; cursor:grab; }
+  canvas.dragging { cursor:grabbing; }
+  #tip { position:absolute; z-index:4; pointer-events:none; display:none; max-width:360px;
+         background:var(--panel); border:1px solid var(--border); border-radius:8px;
+         padding:8px 12px; font-size:12px; box-shadow:0 4px 16px rgba(0,0,0,.5); }
+  #tip .t { font-weight:600; margin-bottom:2px; }
+  #tip .m { font-family:var(--mono); font-size:11px; color:var(--dim); overflow-wrap:anywhere; }
+  #tip .badge { color:var(--gold); border:1px solid var(--gold); border-radius:999px;
+                font-size:10px; padding:0 7px; margin-left:6px; }
+  .hint { font-family:var(--mono); font-size:11px; color:var(--dim); margin-left:auto; }
+</style>
+</head>
+<body>
+<header>
+  <h1>知识图谱</h1><span class="scope">__TITLE__ · storyflow-hypergraph@1</span>
+  <div class="chips" id="chips"></div>
+  <div class="legend" id="legend"></div>
+</header>
+<div id="wrap"><canvas id="cv"></canvas></div>
+<div id="tip"></div>
+<script>
+"use strict";
+const G = __GRAPH__;
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+// ── 调色板（域着色，按 G.domains 顺序循环取色；固定 16 色够 12 个全局域 + 项目域用）──
+const PALETTE = ["#e8b33d","#6ea8fe","#5f9c7a","#d98a83","#8a6fb0","#c9a227","#4fb3c9","#b0765a",
+                 "#7f9e4a","#c97ba3","#88b0d8","#a3907c","#6fc0a8","#d089c0","#9aa7e0","#c0b28a"];
+const domainColor = {};
+(G.domains || []).forEach((d, i) => { domainColor[d.name + "|" + (d.source || "global")] = PALETTE[i % PALETTE.length]; });
+const colorOf = n => domainColor[n.domain + "|" + (n.source || "global")] || "#8a8375";
+
+// ── 数据准备：度数定半径；枢纽（度数前 12）名常显 ──
+const nodes = (G.nodes || []).map((n, i) => ({ ...n, i, deg: n.degree || 0 }));
+const idxOf = new Map(nodes.map((n, i) => [n.id, i]));
+const links = (G.links || [])
+  .map(l => ({ a: idxOf.get(l.s), b: idxOf.get(l.t), k: l.k }))
+  .filter(l => l.a !== undefined && l.b !== undefined && l.a !== l.b);
+const byDeg = [...nodes].sort((x, y) => y.deg - x.deg || String(x.id).localeCompare(String(y.id)));
+const HUB_N = 12;
+const hubs = new Set(byDeg.slice(0, Math.min(HUB_N, nodes.length)).map(n => n.id));
+for (const n of nodes) { n.r = Math.min(3 + Math.sqrt(n.deg) * 1.7, 16); }
+const isProject = G.scope === "project+global";
+
+// ── 画布与视图（平移/缩放）──
+const cv = document.getElementById("cv");
+const tip = document.getElementById("tip");
+const ctx = cv.getContext("2d");
+let W = 0, H = 0, DPR = 1;
+const view = { tx: 0, ty: 0, scale: 1 };
+function resize() {
+  DPR = window.devicePixelRatio || 1;
+  W = cv.clientWidth; H = cv.clientHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+}
+window.addEventListener("resize", resize);
+
+// ── 力导向布局（确定性初始位：黄金角螺旋；reheat 于拖拽）──
+let alpha = 1;
+const GOLDEN = Math.PI * (3 - Math.sqrt(5));
+nodes.forEach((n, i) => {
+  const t = i + 0.5, rad = 14 * Math.sqrt(t);
+  n.x = W / 2 + rad * Math.cos(t * GOLDEN);
+  n.y = H / 2 + rad * Math.sin(t * GOLDEN);
+  n.vx = 0; n.vy = 0;
+});
+const REPULSE = 2400, SPRING = 0.015, REST = 34, CENTER = 0.012, DAMP = 0.86, MIN_ALPHA = 0.02;
+function step() {
+  // 斥力（O(n²)：百级节点完全可行）
+  for (let i = 0; i < nodes.length; i++) {
+    const a = nodes[i];
+    for (let j = i + 1; j < nodes.length; j++) {
+      const b = nodes[j];
+      let dx = a.x - b.x, dy = a.y - b.y;
+      let d2 = dx * dx + dy * dy;
+      if (d2 < 1) { d2 = 1; dx = Math.random(); dy = Math.random(); }
+      const f = REPULSE / d2, d = Math.sqrt(d2);
+      const fx = (dx / d) * f, fy = (dy / d) * f;
+      a.vx += fx; a.vy += fy; b.vx -= fx; b.vy -= fy;
+    }
+  }
+  // 弹簧（关系边拉近）
+  for (const l of links) {
+    const a = nodes[l.a], b = nodes[l.b];
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const d = Math.sqrt(dx * dx + dy * dy) || 1;
+    const f = (d - REST) * SPRING;
+    const fx = (dx / d) * f, fy = (dy / d) * f;
+    a.vx += fx; a.vy += fy; b.vx -= fx; b.vy -= fy;
+  }
+  // 向心 + 积分
+  for (const n of nodes) {
+    n.vx += (W / 2 - n.x) * CENTER; n.vy += (H / 2 - n.y) * CENTER;
+    if (n.fixed) { n.vx = 0; n.vy = 0; continue; }
+    n.vx *= DAMP; n.vy *= DAMP;
+    n.x += Math.max(-30, Math.min(30, n.vx)) * alpha;
+    n.y += Math.max(-30, Math.min(30, n.vy)) * alpha;
+  }
+  alpha = Math.max(MIN_ALPHA, alpha * 0.994);
+}
+
+// ── 域开关（图例点击 = 隔离高亮：未选域与相关边降暗）──
+const offDomains = new Set();
+const keyOf = n => n.domain + "|" + (n.source || "global");
+const isOff = n => offDomains.has(keyOf(n));
+
+// ── 绘制 ──
+function draw() {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+  ctx.setTransform(DPR * view.scale, 0, 0, DPR * view.scale, DPR * view.tx, DPR * view.ty);
+  // 边
+  ctx.lineWidth = 1 / view.scale;
+  for (const l of links) {
+    const a = nodes[l.a], b = nodes[l.b];
+    const dim = isOff(a) || isOff(b) || (hover && hover !== a && hover !== b);
+    ctx.strokeStyle = dim ? "rgba(138,131,117,0.05)" : "rgba(138,131,117,0.16)";
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+  }
+  // 点
+  for (const n of nodes) {
+    const dim = isOff(n);
+    ctx.globalAlpha = dim ? 0.12 : 1;
+    ctx.fillStyle = colorOf(n);
+    ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, 6.2832); ctx.fill();
+    if (n.source === "project") { // 项目卡描金环（--project 合并档时区分双根）
+      ctx.strokeStyle = "#e8b33d"; ctx.lineWidth = 2 / view.scale;
+      ctx.beginPath(); ctx.arc(n.x, n.y, n.r + 1.5 / view.scale, 0, 6.2832); ctx.stroke();
+    }
+    if (hubs.has(n.id)) { // 枢纽名常显
+      ctx.font = `${11 / view.scale}px "Noto Sans SC",system-ui,sans-serif`;
+      ctx.fillStyle = "#d8d4cb";
+      ctx.textAlign = "center"; ctx.textBaseline = "top";
+      const label = usableTitle(n);
+      ctx.fillText(label, n.x, n.y + n.r + 2 / view.scale);
+    }
+    ctx.globalAlpha = 1;
+  }
+  // 悬停：高亮该点的边
+  if (hover) {
+    ctx.strokeStyle = "rgba(232,179,61,0.55)"; ctx.lineWidth = 1.5 / view.scale;
+    for (const l of links) {
+      if (l.a !== hover.i && l.b !== hover.i) continue;
+      const a = nodes[l.a], b = nodes[l.b];
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    }
+  }
+}
+function usableTitle(n) {
+  const t = String(n.title || "").trim();
+  return t && !/^-+$/.test(t) ? t : String(n.id || "");
+}
+
+// ── 交互：拖节点 / 平移 / 缩放 / 悬停 ──
+let hover = null, dragNode = null, panning = false, px = 0, py = 0;
+function toWorld(mx, my) {
+  return { x: (mx - view.tx) / view.scale, y: (my - view.ty) / view.scale };
+}
+function pick(mx, my) {
+  const p = toWorld(mx, my);
+  let best = null, bd = 1e9;
+  for (const n of nodes) {
+    const dx = n.x - p.x, dy = n.y - p.y, d = dx * dx + dy * dy;
+    const rr = n.r + 4;
+    if (d < rr * rr && d < bd) { best = n; bd = d; }
+  }
+  return best;
+}
+cv.addEventListener("mousedown", e => {
+  const r = cv.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+  const n = pick(mx, my);
+  if (n) { dragNode = n; n.fixed = true; alpha = Math.max(alpha, 0.5); }
+  else { panning = true; cv.classList.add("dragging"); }
+  px = mx; py = my;
+});
+window.addEventListener("mousemove", e => {
+  const r = cv.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+  if (dragNode) {
+    const p = toWorld(mx, my);
+    dragNode.x = p.x; dragNode.y = p.y;
+    alpha = Math.max(alpha, 0.3);
+    px = mx; py = my;
+    return;
+  }
+  if (panning) { view.tx += mx - px; view.ty += my - py; px = mx; py = my; return; }
+  if (e.target !== cv) { if (hover) { hover = null; tip.style.display = "none"; } return; }
+  const n = pick(mx, my);
+  hover = n;
+  if (n) {
+    tip.innerHTML = `<div class="t">${esc(usableTitle(n))}` +
+      (n.source === "project" ? `<span class="badge">项目</span>` : "") + `</div>` +
+      `<div class="m">${esc(n.id)}</div>` +
+      `<div class="m">${esc(n.domain)} 域 · 度 ${n.deg}` + (n.path ? ` · ${esc(n.path)}` : "") + `</div>`;
+    tip.style.display = "block";
+    const tw = tip.offsetWidth, th = tip.offsetHeight;
+    tip.style.left = Math.min(mx + 14, W - tw - 8) + "px";
+    tip.style.top = Math.min(my + 14, H - th - 8) + "px";
+    cv.style.cursor = "pointer";
+  } else { tip.style.display = "none"; cv.style.cursor = "grab"; }
+});
+window.addEventListener("mouseup", () => {
+  if (dragNode) { dragNode.fixed = false; dragNode = null; }
+  panning = false; cv.classList.remove("dragging");
+});
+cv.addEventListener("wheel", e => {
+  e.preventDefault();
+  const r = cv.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+  const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+  const ns = Math.max(0.05, Math.min(8, view.scale * factor));
+  view.tx = mx - (mx - view.tx) * (ns / view.scale);
+  view.ty = my - (my - view.ty) * (ns / view.scale);
+  view.scale = ns;
+}, { passive: false });
+
+// ── 头部：统计 chips + 分类图例（点击 = 隔离高亮）──
+function header() {
+  document.getElementById("chips").innerHTML = [
+    `<span class="chip">scope: ${esc(G.scope)}</span>`,
+    `<span class="chip">词条 ${nodes.length}</span>`,
+    `<span class="chip">关系 ${links.length}</span>`,
+    `<span class="chip">域 ${(G.domains || []).length}</span>`,
+    isProject ? `<span class="chip" style="color:#e8b33d;border-color:#e8b33d">项目卡描金环</span>` : "",
+    `<span class="hint">拖节点 · 空白处平移 · 滚轮缩放 · 悬停显名 · 图例点击隔离</span>`,
+  ].join("");
+  const lg = document.getElementById("legend");
+  lg.innerHTML = (G.domains || []).map(d => {
+    const key = d.name + "|" + (d.source || "global");
+    return `<span class="lg" data-key="${esc(key)}">` +
+      `<span class="dot" style="background:${PALETTE[(G.domains || []).indexOf(d) % PALETTE.length]}"></span>` +
+      `${esc(d.name)} ${d.count}${d.source === "project" ? "·项目" : ""}</span>`;
+  }).join("");
+  lg.querySelectorAll(".lg").forEach(el => {
+    el.addEventListener("click", () => {
+      const k = el.dataset.key;
+      if (offDomains.has(k)) { offDomains.delete(k); el.classList.remove("off"); }
+      else { offDomains.add(k); el.classList.add("off"); }
+    });
+  });
+}
+
+// ── 主循环 ──
+resize(); header();
+(function loop() {
+  if (alpha > MIN_ALPHA) step();
+  draw();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

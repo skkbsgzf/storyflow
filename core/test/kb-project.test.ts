@@ -1,6 +1,9 @@
 /**
  * R2.2 · KB 检索双根合并（core/src/kb.ts）：全局 kit 图 + 项目 kit 图（projects/<id>/kit/hypergraph.rag.json）。
  * 契约：命中带 source 标记（global|project）；项目档缺席（未编译/目录不存在）= 行为与历史版本完全一致（零回归）。
+ * R2.5 P2 合并策略三语义：①去重（同一卡两根命中只留项目侧：id 或归一 ref 判重）
+ * ②同分 tie-break（分数为主，同分项目排前）③k 分配（各根 top-k ⊕ 去重排序截回 k，项目命中是补充不设保留席）；
+ * 另 kbRead 项目回落返回体带 source 溯源。策略口径详见 kb.ts kbSearch 函数注释。
  * fixture 全合成（临时目录，不含真实项目数据）。
  */
 import * as fs from "node:fs";
@@ -159,5 +162,102 @@ describe("KB 双根合并检索（全局 kit + 项目 kit，R2.2）", () => {
     expect(scoped.hits.length).toBe(1);
     expect(scoped.hits[0].id).toBe("pj-style/p1/voice");
     expect(scoped.hits[0].source).toBe("project");
+  });
+
+  // ── R2.5 P2 合并策略：去重 / 同分项目优先 / k 分配 / kbRead 溯源 ──
+
+  it("⑧去重：同一卡两根都命中只留项目侧（归一 ref 判重：项目放了与全局同相对路径的卡）", () => {
+    const f = tmpFixture();
+    // 项目根下放一张与全局 aesthetic/curve.md 同相对路径的卡（id 不同、分数也更低）
+    fs.mkdirSync(path.join(f.p1, "aesthetic"), { recursive: true });
+    fs.writeFileSync(
+      path.join(f.p1, "aesthetic", "curve.md"),
+      `# 曲线卡备份\n\n这是项目本地副本，正文不含检索词。\n`,
+      "utf-8",
+    );
+    const g = JSON.parse(fs.readFileSync(path.join(f.p1, "kit", "hypergraph.rag.json"), "utf-8"));
+    g.entries.push({ id: "pj/aesthetic/curve", title: "曲线卡备份", domain: "aesthetic", path: "aesthetic/curve.md", tags: [] });
+    fs.writeFileSync(path.join(f.p1, "kit", "hypergraph.rag.json"), JSON.stringify(g), "utf-8");
+    // 「曲线」命中全局卡（标题+正文=10 分）与项目副本（仅标题=8 分）——归一 ref 同为 aesthetic/curve
+    const r = kbSearch(f.kb, { q: "曲线", projectDir: f.p1 });
+    expect(r.hits.length).toBe(1); // 只留一条
+    expect(r.hits[0].source).toBe("project"); // 保留项目侧（即使分数更低）
+    expect(r.hits[0].id).toBe("pj/aesthetic/curve");
+    expect(r.hits[0].file).toBe("aesthetic/curve.md");
+  });
+
+  it("⑨去重（id 判重）：项目卡 frontmatter 抄了全局 id 时同样只留项目侧", () => {
+    const f = tmpFixture();
+    // 项目档条目直接抄全局 id（kit-compile 的 fm id 优先，项目里完全可以出现 kb/ 前缀条目）
+    const g = JSON.parse(fs.readFileSync(path.join(f.p1, "kit", "hypergraph.rag.json"), "utf-8"));
+    g.entries.push({ id: "kb/aesthetic/curve", title: "备份副本", domain: "备份", path: "备份/curve.md", tags: [] });
+    fs.writeFileSync(path.join(f.p1, "kit", "hypergraph.rag.json"), JSON.stringify(g), "utf-8");
+    fs.mkdirSync(path.join(f.p1, "备份"), { recursive: true });
+    fs.writeFileSync(path.join(f.p1, "备份", "curve.md"), `# 备份\n\n曲线的原件副本存于此。\n`, "utf-8");
+    const r = kbSearch(f.kb, { q: "曲线", projectDir: f.p1 });
+    expect(r.hits.length).toBe(1);
+    expect(r.hits[0].source).toBe("project");
+    expect(r.hits[0].file).toBe("备份/curve.md"); // 留的是项目侧命中
+  });
+
+  it("⑩同分 tie-break：分数相同时 project 条排前（分数不同则分数说了算）", () => {
+    const f = tmpFixture();
+    // 项目加一张与全局 curve 同分（标题+正文各中「曲线」=10）的卡
+    fs.mkdirSync(path.join(f.p1, "规则"), { recursive: true });
+    fs.writeFileSync(path.join(f.p1, "规则", "基准.md"), `# 曲线基准\n\n本项目以曲线为准绳。\n`, "utf-8");
+    const g = JSON.parse(fs.readFileSync(path.join(f.p1, "kit", "hypergraph.rag.json"), "utf-8"));
+    g.entries.push({ id: "pj/规则/基准", title: "曲线基准", domain: "规则", path: "规则/基准.md", tags: [] });
+    fs.writeFileSync(path.join(f.p1, "kit", "hypergraph.rag.json"), JSON.stringify(g), "utf-8");
+    const r = kbSearch(f.kb, { q: "曲线", projectDir: f.p1 });
+    expect(r.hits.length).toBe(2);
+    expect(r.hits[0].score).toBe(r.hits[1].score); // 同分
+    expect(r.hits[0].source).toBe("project"); // 项目排前
+    expect(r.hits[0].id).toBe("pj/规则/基准");
+    // 反例锚定：分数不同时分数优先（全局 10 分卡不会被 8 分项目卡压过——见 ⑧ 的分数断言前提）
+    const r2 = kbSearch(f.kb, { q: "情绪", projectDir: f.p1 });
+    expect(r2.hits[0].source).toBe("global"); // 全局标题「情绪曲线标准」8 分独中
+  });
+
+  it("⑪k 分配：各根 top-k ⊕ 去重排序截回 k——项目命中是补充（能进榜）但不挤占更高分的全局命中", () => {
+    const f = tmpFixture();
+    // 全局再加两张：gA 10 分（标题+正文）、gB 8 分（仅标题）、gC 2 分（仅正文）
+    const gg = JSON.parse(fs.readFileSync(path.join(f.root, "kit", "hypergraph.rag.json"), "utf-8"));
+    fs.mkdirSync(path.join(f.kb, "craft"), { recursive: true });
+    fs.writeFileSync(path.join(f.kb, "craft", "aa.md"), `# 甲\n\n正文含检索词的字样。\n`, "utf-8");
+    // gB/px 文件正文刻意不含「检索词」——graphSearch 正文打分扫整份原文（含标题行），
+    // 想造「仅元数据标题命中 = 8 分」就必须让盘上文件全篇无该词（分数=8 才能与项目卡同分）。
+    fs.writeFileSync(path.join(f.kb, "craft", "bb.md"), `# 丙\n\n无关正文。\n`, "utf-8");
+    fs.writeFileSync(path.join(f.kb, "craft", "cc.md"), `# 无关题\n\n正文里藏了检索词。\n`, "utf-8");
+    gg.entries.push(
+      { id: "kb/craft/aa", title: "检索词甲", domain: "craft", path: "knowledge/craft/aa.md", tags: [] },
+      { id: "kb/craft/bb", title: "检索词丙", domain: "craft", path: "knowledge/craft/bb.md", tags: [] },
+      { id: "kb/craft/cc", title: "无关题", domain: "craft", path: "knowledge/craft/cc.md", tags: [] },
+    );
+    fs.writeFileSync(path.join(f.root, "kit", "hypergraph.rag.json"), JSON.stringify(gg), "utf-8");
+    // 项目加一张 8 分卡（仅标题中「检索词」）——与 gB 同分
+    fs.writeFileSync(path.join(f.p1, "规则", "px.md"), `# 乙\n\n项目本地条文，正文与此无涉。\n`, "utf-8");
+    const pg = JSON.parse(fs.readFileSync(path.join(f.p1, "kit", "hypergraph.rag.json"), "utf-8"));
+    pg.entries.push({ id: "pj/规则/px", title: "检索词乙", domain: "规则", path: "规则/px.md", tags: [] });
+    fs.writeFileSync(path.join(f.p1, "kit", "hypergraph.rag.json"), JSON.stringify(pg), "utf-8");
+
+    const r = kbSearch(f.kb, { q: "检索词", k: 3, projectDir: f.p1 });
+    expect(r.hits.length).toBe(3); // 池 ≤ 2k 但总量守用户 k
+    expect(r.hits[0].id).toBe("kb/craft/aa"); // 10 分全局第一——项目卡不挤占更高分
+    expect(r.hits[1].source).toBe("project"); // 8 分同分，项目排前（补充进场）
+    expect(r.hits[1].id).toBe("pj/规则/px");
+    expect(r.hits[1].score).toBe(r.hits[2].score); // 与 gB 同分
+    expect(r.hits[2].id).toBe("kb/craft/bb");
+    expect(r.hits.map((h) => h.id)).not.toContain("kb/craft/cc"); // 2 分被截掉
+    expect(r.total).toBe(4); // 全局 3 + 项目 1 − 重复 0（total 是全量命中账，不是截断后条数）
+  });
+
+  it("⑫kbRead 溯源：项目回落命中返回体 source=project，全局命中 source=global", () => {
+    const f = tmpFixture();
+    const proj = kbRead(f.kb, "世界书/设定.md", undefined, undefined, undefined, f.p1);
+    expect(proj.source).toBe("project");
+    const glob = kbRead(f.kb, "kb/aesthetic/curve", undefined, undefined, undefined, f.p1);
+    expect(glob.source).toBe("global");
+    // 无项目上下文时也恒有标记（词汇表与 kb_search 的 source 一致）
+    expect(kbRead(f.kb, "kb/aesthetic/curve").source).toBe("global");
   });
 });

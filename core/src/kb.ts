@@ -133,6 +133,13 @@ function graphSearch(g: HyperGraph, baseDir: string, opts: { q: string; dir?: st
   return { total: hits.length, hits: hits.slice(0, k) };
 }
 
+/** 命中判重的归一 ref：file 去 knowledge/ 前缀与 .md、反斜杠归一、小写。
+ *  全局条目 file 带 knowledge/ 前缀、项目条目 file 是项目根相对——前缀剥掉后同一张卡在两根的
+ *  相对形态一致，才能判「同一 ref」。id 不参与该键（id 判重单独做，见合并策略）。 */
+function normRef(h: KbHit): string {
+  return h.file.replaceAll("\\", "/").replace(/^knowledge\//i, "").replace(/\.md$/i, "").toLowerCase();
+}
+
 export function kbSearch(
   knowledgeDir: string,
   opts: { q: string; dir?: string; k?: number; projectDir?: string },
@@ -140,8 +147,21 @@ export function kbSearch(
   path: IFsPath = nodePath,
 ): { total: number; hits: KbHit[] } {
   // R2.2 双根合并检索：全局 kit/hypergraph.rag.json + projects/<id>/kit/hypergraph.rag.json 各查一遍，
-  // 同一打分排序后合并，命中带 source 标记（global|project）。项目档缺席（未编译）= 只查全局，
-  // 行为与历史版本完全一致（仅多出 source 字段）；两图都缺 = 回落扫盘（历史行为原样）。
+  // 命中带 source 标记（global|project）。项目档缺席（未编译）= 只查全局，行为与历史版本完全一致
+  // （仅多出 source 字段）；两图都缺 = 回落扫盘（历史行为原样）。
+  //
+  // R2.5 P2 合并策略（确定性、内置默认不引配置面——可配化随批次3 快诊断，口径宁简勿繁）：
+  //   ① k 分配：各根独立取自身 top-k（graphSearch 内已截，单根池 ≤ k），两池 ⊕ 成候选池 ≤ 2k，
+  //      排序后截回 k——总量守用户 k；项目命中是全局 top-k 之外的「补充」进场机会，不设项目保留席，
+  //      也不把项目配额压成 k−全局数。
+  //   ② 去重：同一张卡在两根都命中只留一条，保留项目侧命中（source=project，打分基于项目卡本地
+  //      正文，对项目语境更准）。判重 = 卡片 id（小写）或归一 ref（normRef）任一相同：
+  //      项目卡 frontmatter 抄了全局 id（kit-compile 的 fm id 优先）走 id 判重；项目里放了与全局
+  //      同相对路径的卡走 ref 判重。
+  //   ③ 排序：分数为主；同分时 project 条排前；再按 file 中文序稳定收尾——项目优先只在同分生效，
+  //      不让项目卡无条件压过全局高分卡。
+  //   total = 全局命中数 + 项目命中数 − 双根重复数（重复按两根候选池判重计；项目缺席时 = 全局
+  //   全量命中数，与历史逐字一致——零回归承诺不动 total）。
   const graph = loadGraph(knowledgeDir, fs, path);
   const pGraph = opts.projectDir ? loadProjectGraph(opts.projectDir, fs, path) : null;
   if (graph || pGraph) {
@@ -150,8 +170,20 @@ export function kbSearch(
     const p = pGraph && opts.projectDir
       ? graphSearch(pGraph, opts.projectDir, opts, fs, path, "project")
       : { total: 0, hits: [] as KbHit[] };
-    const merged = [...g.hits, ...p.hits].sort((a, b) => b.score - a.score || a.file.localeCompare(b.file, "zh"));
-    return { total: g.total + p.total, hits: merged.slice(0, k) };
+    // 项目侧先占位（去重保留项目侧），全局侧撞键即弃
+    const seenId = new Set(p.hits.map((h) => h.id.toLowerCase()));
+    const seenRef = new Set(p.hits.map(normRef));
+    const merged = [...p.hits];
+    for (const h of g.hits) {
+      if (seenId.has(h.id.toLowerCase()) || seenRef.has(normRef(h))) continue;
+      merged.push(h);
+    }
+    merged.sort((a, b) =>
+      b.score - a.score
+      || (a.source === "project" ? 0 : 1) - (b.source === "project" ? 0 : 1)
+      || a.file.localeCompare(b.file, "zh"));
+    const dupCount = g.hits.length + p.hits.length - merged.length;
+    return { total: g.total + p.total - dupCount, hits: merged.slice(0, k) };
   }
   const q = (opts.q ?? "").trim().toLowerCase();
   const terms = q.split(/[\s,，、;；/]+/).filter(Boolean);
@@ -236,7 +268,7 @@ export function kbRead(
   fs: IFileSystem = nodeFs,
   path: IFsPath = nodePath,
   projectDir?: string,
-): { file: string; content: string } {
+): { file: string; content: string; source: "global" | "project" } {
   let resolved = kbResolve(knowledgeDir, ref, fs, path);
   let fromProject = false;
   if (!resolved && projectDir) {
@@ -255,5 +287,11 @@ export function kbRead(
   const content = fs.readText(resolved);
   // file 字段锚在命中根上：全局卡相对 knowledge/，项目卡相对项目根（与 kb_search 命中的 file 口径一致）
   const base = fromProject && projectDir ? projectDir : knowledgeDir;
-  return { file: path.relative(base, resolved).replaceAll("\\", "/"), content: content.length > maxChars ? content.slice(0, maxChars) + `\n…(截断，全长 ${content.length})` : content };
+  // R2.5 P2 溯源：source=project 表示本读来自项目回落（消费方据此区分「方法论」与「本项目设定」）；
+  // 全局命中恒 global（与 kb_search 的 source 词汇表一致）。
+  return {
+    file: path.relative(base, resolved).replaceAll("\\", "/"),
+    source: fromProject ? "project" : "global",
+    content: content.length > maxChars ? content.slice(0, maxChars) + `\n…(截断，全长 ${content.length})` : content,
+  };
 }

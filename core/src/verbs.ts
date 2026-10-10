@@ -482,7 +482,8 @@ export const VERBS: VerbDef[] = [
     name: "kb_search",
     description:
       "检索知识库（95 张方法论/标尺卡：aesthetic/craft/market/structure/rules/trope…）——标题/标签/正文打分排序。" +
-      "带 project 时双根合并：全局 kit 图 + projects/<id>/kit/hypergraph.rag.json 项目档一起查，命中带 source=global|project",
+      "带 project 时双根合并：全局 kit 图 + projects/<id>/kit/hypergraph.rag.json 项目档一起查，命中带 source=global|project。" +
+      "合并口径：同一卡两根都命中只留项目侧（source=project）；分数为主、同分项目排前；总量仍守 k（各根 top-k 合并去重后截回 k）",
     group: "知识库（KB 只读）",
     params: [
       { name: "q", type: "string", required: true, desc: "查询词（标题/标签/正文，多词空格分隔）" },
@@ -499,7 +500,7 @@ export const VERBS: VerbDef[] = [
   },
   {
     name: "kb_read",
-    description: "读知识卡正文（ref = 卡片 id 如 kb/aesthetic/character，或相对 knowledge/ 的路径；带 project 时全局未命中回落读 projects/<id>/ 项目卡）",
+    description: "读知识卡正文（ref = 卡片 id 如 kb/aesthetic/character，或相对 knowledge/ 的路径；带 project 时全局未命中回落读 projects/<id>/ 项目卡，返回体 source=project|global 标记读自哪根）",
     group: "知识库（KB 只读）",
     params: [
       { name: "ref", type: "string", required: true, desc: "卡片 id 或相对路径" },
