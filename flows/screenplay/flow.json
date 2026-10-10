@@ -3,7 +3,7 @@
   "id": "screenplay",
   "title": "短剧流 v1（模块化）",
   "desc": "短剧剧本流 v1.1：选题报告 → 剧本 → 分镜剧本（含旁白/背景快切）。应用户口径：暂不转 docx，把剧本 md 做好。",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "status": "official",
   "inputs": {
     "direction": {
@@ -44,6 +44,7 @@
     {
       "id": "m2",
       "module": "plot",
+      "link": "manual",
       "caps": [
         "结构",
         "主线",
@@ -88,6 +89,13 @@
     }
   ],
   "changelog": [
+    {
+      "version": "1.2.1",
+      "date": "2026-10-11",
+      "changes": [
+        "m2(plot) 补 link:manual（T3 拍板）：四线对齐——选题段完成后、结构设计开始前挂人工门（进编剧域前拍板，与 topic 流 m3 门同边界语义）；此前 screenplay 是唯一全自动线"
+      ]
+    },
     {
       "version": "1.2.0",
       "date": "2026-09-22",

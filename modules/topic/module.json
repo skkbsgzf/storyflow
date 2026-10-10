@@ -389,7 +389,7 @@
     "topic-report": {
       "skill": "topic-report",
       "title": "选题报告师",
-      "desc": "选题模块唯一交付工具：输入灵感 → 选题报告（梗选型+竞品对标+结构解剖+可用话题）。输入职责=灵感；输出职责=选题报告单件；验收职责=AE-REPORT-DENSITY",
+      "desc": "选题模块唯一交付工具：输入灵感 → 选题报告（梗选型+竞品对标+结构解剖+可用话题）。输入职责=灵感；输出职责=选题报告单件；验收职责=AE-REPORT-DENSITY。梗卡引用（chongsheng-fuchou/dalian-nuezha）系刻意精选记账：梗族库为 generated 滚动重建，硬编码两卡锚定基线语料（T6/N6 拍板 2026-10-11）",
       "kind": "produce",
       "knowledge": [
         "kb/trope/chongsheng-fuchou",

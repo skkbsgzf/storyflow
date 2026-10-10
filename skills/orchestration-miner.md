@@ -45,7 +45,7 @@ bind: { kit: tool, op: orchestration-mine }
   "at": "<ISO 时间>",
   "findings": [
     {
-      "id": "Mctx@search.find-trope:kb/trope/saturation",
+      "id": "Mctx@search.find-trope:kb/trope/shenhao-baofu",
       "dimension": "ctx | coverage | structure | quality | cost",
       "severity": "high | medium | low",
       "title": "一句话",
