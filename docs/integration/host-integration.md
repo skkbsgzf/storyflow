@@ -60,3 +60,17 @@ storyharness 的 pinax 桥是把 kit 能力接进 Pinax 写作软件的**活样�
 3. 按 `docs/PROTOCOL-REVIEW.md` 挂审核（gate 暂停点 ＋ 裁决回传）。
 4. 可视化：直接嵌 kit 自包含页（形态②），或按 page-payload@2 自渲染（形态③）。
 5. 深度适配：照第三节四条范式建自己的桥，逐文件读 `storyharness/src/pinax/`。
+
+## 六、项目阶段动作（宿主/人随项目进展的确定性动作约定）
+
+仓库根跑 `python tools/<工具>`（全部零 token、幂等、退出码约定见各工具 docstring）：
+
+| 项目节点 | 动作 | 工具命令 | 产出物 |
+| --- | --- | --- | --- |
+| 项目 init（`project-init` / `--upgrade`）后 | 建全量索引 | `python tools/project-index.py build <id>` | `projects/<id>/project-index.json` |
+| 世界书/文风/规则 大改后 | 重编项目 RAG 档（可先 `--check` 干跑比对） | `python tools/kit-compile.py --project <id>` | `projects/<id>/kit/hypergraph.rag.json` |
+| 交付/验收门后 | 增量对账（报数必附收据） | `python tools/project-index.py diff <id> --receipt` | 三态清单 ＋ `registry/receipts/project-index-diff-*.json` |
+| 会话段落结束后 | 会话 JSONL → 记忆卡 | `python tools/project-index.py memory <id> [--session <sid>]` | `世界书/记忆卡-<sid>.md`（建议随后重跑 build） |
+| 阶段收口 | 卡↔消费者亲和对账 | `python tools/kb-affinity.py --project <id>` | `projects/_reports/kb-affinity-<id>.json`（非门禁） |
+
+> 记忆卡是可重建派生物，重建整卡覆盖；`kit/` 产物在索引里属 generated 角色，diff 按 hash 记账。

@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """rules-init · v5.0 批A-1：断言台账 → knowledge/rules/ 规则语料卡生成器。
 
+> ⚠ 防覆盖警示（批次2.5 P4）：**重生成会整卡覆盖**。knowledge/rules/ 现卡已带
+> rule-card@1 收敛字段（clauses / scanner_qids / format）——那是批A 之后人工/工具逐卡
+> 收敛进去的，生成器输出里没有。重跑前必须先做字段保留；本脚本现在默认检测到存量
+> 收敛字段即**拒绝整批写入**（一个文件都不写，不做半新半旧混合盘），确要覆盖必须
+> 显式加 ``--force``（整卡覆盖语义，收敛字段照样被抹掉——后果自担）。
+
 依据 docs/v5.0工单-断言体系退役与规则语料化.md §二：
   T 轨（有确定性校验器）→ 归 quality-scan 工具链（core/src/quality-cli.ts 桥），不进语料；
   X 轨（红蓝/监管/随协议作废）→ 直接删，不进语料；
@@ -9,7 +15,8 @@
 纪律：
   - 规则原文一字不改（台账是事实源，去闸化靠卡头语义声明，不做有损改写）；
   - 每条保留来源 AE-id，可回溯；
-  - 幂等：重跑覆盖卡片；--dry-run 只打印分诊结果。
+  - 幂等：重跑覆盖卡片；--dry-run 只打印分诊结果；
+  - 防覆盖：检测到目标卡带 rule-card@1 收敛字段即默认拒绝（见顶部警示），--force 才覆盖。
 """
 import json
 import sys
@@ -84,9 +91,25 @@ DOMAIN_CN = {
     "deconstruct": "拆解纪律", "continuity": "连续性", "setting": "设定底座", "meme": "梗",
 }
 
+# 防覆盖门（批次2.5 P4）：收敛字段指纹——卡头 frontmatter 出现任一即视为「现卡已收敛」。
+# 生成器输出不含这两样（clauses/scanner_qids 是批A 后人工逐卡收敛的，format 是收编标记），
+# 所以「带指纹的存量卡」被整卡覆盖 = 收敛成果丢失，这正是本门要挡的事故。
+CONVERGENCE_HINTS = ("rule-card@1", '"clauses"')
+
+
+def _has_convergence(p: Path) -> bool:
+    """卡头（--- 界定的 frontmatter）是否带 rule-card@1 收敛字段。读不了 = 视为没带。"""
+    try:
+        text = p.read_text(encoding="utf-8")
+    except OSError:
+        return False
+    head = text.split("---", 2)[1] if text.startswith("---") else ""
+    return any(h in head for h in CONVERGENCE_HINTS)
+
 
 def main() -> int:
     dry = "--dry-run" in sys.argv
+    force = "--force" in sys.argv
     lp = LEDGER_PATH()
     if not lp:
         print("无断言台账（开源发布形态）——分诊表仅供 lint 引用，规则卡生成跳过。")
@@ -109,6 +132,22 @@ def main() -> int:
         print(f"  rules/{d}.md  {DOMAIN_CN.get(d, d)}  ×{len(es)}")
     if dry:
         return 0
+
+    # ── 防覆盖门（批次2.5 P4）：先全量体检再动笔，拒绝时一个文件都不写（README 也不写，
+    #    不做「卡没动、README 先翻新」的半新半旧盘）。整卡覆盖会抹掉现卡的
+    #    rule-card@1 收敛字段（clauses/scanner_qids/format）——故默认拒绝，--force 才放行。
+    guarded = sorted(
+        d for d in by_domain
+        if _has_convergence(OUT_DIR / f"{d}.md")
+    )
+    if guarded and not force:
+        print("检测到存量卡已带 rule-card@1 收敛字段（clauses/scanner_qids/format），"
+              "重生成会整卡覆盖将其抹掉：")
+        for d in guarded:
+            print(f"  {OUT_DIR / (d + '.md')}")
+        print("重跑前必须先做字段保留（把 clauses/scanner_qids/format 摘出来，覆盖后回填）；"
+              "确要整卡覆盖请显式加 --force。本次未写任何文件。")
+        return 1
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     today = datetime.now().strftime("%Y-%m-%d")

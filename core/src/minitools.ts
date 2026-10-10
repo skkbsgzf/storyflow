@@ -1,5 +1,5 @@
 import type { FlowDescriptor, RunState, Validation } from "./types.js";
-import { nodeFs, nodePath, nodeProc } from "./abstraction/defaults.js";
+import { nodeEnv, nodeFs, nodePath, nodeProc } from "./abstraction/defaults.js";
 import type { IFileSystem, IFsPath } from "./abstraction/fs.js";
 import type { IProcessLauncher } from "./abstraction/proc.js";
 import { rootOf } from "./schema.js";
@@ -72,7 +72,7 @@ export async function runCoreNode(
   // ── script 执行体（module@1 kind=check 壳，R6 §一.11「script 壳入箱」）──
   // 外部确定性脚本，零 token，内核 spawn。调用约定：
   //   <python|node> <rootOf()>/<script> <projects/<id>/<src>> <projects/<id>/<out>> --title <首标题> --node <id> --flow <flowId>
-  //   执行器按脚本扩展名选：.py → python，.js/.cjs/.mjs → node。
+  //   执行器按脚本扩展名选：.py → python（解释器可由 MINIFLOW_PYTHON / STORYFLOW_PYTHON 覆盖，缺省 python），.js/.cjs/.mjs → node。
   // src = 沿上游边 BFS（跳过 link/gate 等无产物接缝）找到的最近 md 产物；
   // 快照由脚本自带 --node 完成（铁律 7），这里只补 artifact 注册。
   const script = (node as { script?: string }).script;
@@ -115,8 +115,15 @@ export async function runCoreNode(
     // （与阶段 A 修的 agent 侧悬置同一类故障）。值由调用方按「节点 config > op/overlay config >
     // 通用默认 60000ms」（GENERIC_CONFIG.timeoutMs）解析后传入；到时显式报错，不静默挂死。
     const timeoutMs = opts.timeoutMs && opts.timeoutMs >= 1000 ? opts.timeoutMs : SCRIPT_TIMEOUT_MS;
-    // 执行器按扩展名选：.py → python（原口径），.js/.cjs/.mjs → node（JS 确定性件如 delivery/method-brief）
-    const runner = /\.(?:m|c)?js$/.test(scriptPath) ? "node" : "python";
+    // 执行器按扩展名选：.py → python 壳（原口径），.js/.cjs/.mjs → node（JS 确定性件如 delivery/method-brief）。
+    // 解释器可配置（批次2.5 P4）：python 壳的解释器走环境面（IEnv，R7-2 入册）——
+    //   MINIFLOW_PYTHON 优先（与 compat.ts regenPages 同一旋钮，单点不另立山头），
+    //   其次 STORYFLOW_PYTHON（本批命名口径）；都缺省回退 `python`，与历史行为逐字节一致，零破坏。
+    //   背景（AGENTS.md 已知坑）：Windows 商店 python stub（exit 49 秒退）会让脚本壳
+    //   误报「退出非零」而非走到超时路径——把真 python 全路径配进任一变量即治本。
+    const runner = /\.(?:m|c)?js$/.test(scriptPath)
+      ? "node"
+      : nodeEnv.get("MINIFLOW_PYTHON") ?? nodeEnv.get("STORYFLOW_PYTHON") ?? "python";
     const startedAt = Date.now();
     const r = await proc.runAsync(
       runner,

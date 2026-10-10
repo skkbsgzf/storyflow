@@ -46,6 +46,9 @@ root_scope 永不指向 repoRoot；本工具对 projects/<id>/ 之外零写入�
 用法：
   python tools/project-index.py <build|diff|memory> <projectId> [选项]
 退出码：成功 0；拒绝/失败 1。
+
+项目阶段动作全景（init 后 build / 大改后 kit-compile --project / 交付后 diff --receipt /
+会话后 memory / 阶段收口 kb-affinity 对账）见 docs/integration/host-integration.md §六。
 """
 import hashlib
 import json

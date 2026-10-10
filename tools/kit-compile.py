@@ -18,7 +18,14 @@
 用法：
   python tools/kit-compile.py [--root .]                    # 全局
   python tools/kit-compile.py --project <id> [--root .]     # 项目档
-退出码：成功 0；失败 1。
+  python tools/kit-compile.py [--project <id>] --check      # 干跑（批次2.5 P4）
+退出码：成功 0；失败 1；--check 下不一致/盘上无产物也为 1（一致 0）。
+
+--check（干跑，零写盘）：按同一构建逻辑在内存里重编译，与盘上现存产物逐键比对——
+  一致            exit 0，打印「一致」；
+  不一致          exit 1，打印差异摘要（条目/边数变化 + 首个不一致 key）；
+  盘上无产物      exit 1，提示先编译。
+全局与 --project 两模式均支持；幂等，任何情况下不写盘。
 """
 import json, re, sys
 from pathlib import Path
@@ -32,7 +39,8 @@ def parse_args(argv: list[str]):
             if i + 1 >= len(argv):
                 raise SystemExit('[ABORT] --project 缺项目 id')
             project = argv[i + 1]
-    return root, project
+    check = '--check' in argv
+    return root, project, check
 
 
 def front(text: str) -> dict:
@@ -93,25 +101,24 @@ def write_doc(out: Path, note: str, entries: list, relations: list, extra_stats:
     }, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
 
-def main() -> int:
-    root, project = parse_args(sys.argv[1:])
+def compile_doc(root: Path, project: str | None):
+    """构建但不写盘 → (out, note, entries, relations, extra_stats)；无可编译语料返回 None。
+
+    --check 干跑（批次2.5 P4）与正式编译共用此函数，保证「比对的就是会写盘的那份」。
+    """
     if project is None:
-        # ── 全局模式（行为与历史版本逐字节一致）──
+        # ── 全局模式（与历史版本同构）──
         src = root / 'knowledge'
         out = root / 'kit' / 'hypergraph.rag.json'
         files = [(p.relative_to(src).as_posix(), p) for p in src.rglob('*.md')]
         entries, relations = build_graph(files, 'kb', 'knowledge/')
-        write_doc(out,
-                  'knowledge 语料的 HyperGraphRAG 编译产物（词条+关系边）。源 md 是本地可插拔层，不进 git；改 md 后重跑 tools/kit-compile.py。',
-                  entries, relations, {})
-        print(f'kit/hypergraph.rag.json ← {len(entries)} 词条 / {len(relations)} 边')
-        return 0
-
+        return out, ('knowledge 语料的 HyperGraphRAG 编译产物（词条+关系边）。源 md 是本地可插拔层，不进 git；改 md 后重跑 tools/kit-compile.py。',
+                     entries, relations, {})
     # ── 项目档模式（R2.2）：只读 projects/<id>/，只写 projects/<id>/kit/ ──
     proj = root / 'projects' / project
     if not proj.is_dir():
         print(f'[ABORT] 项目目录不存在：{proj}')
-        return 1
+        return None
     files: list = []
     # 世界书（含记忆卡）+ 项目级规则卡 + 文风卡（批次2.5 P1）；有 md 才编，
     # 空目录（只有 README）零贡献不报错——README 本就不入图（见 build_graph）。
@@ -121,13 +128,70 @@ def main() -> int:
             files.extend((p.relative_to(proj).as_posix(), p) for p in d.rglob('*.md'))
     if not files:
         print(f'[ABORT] 项目无可编译语料（世界书/ 规则/ 文风/ 下无 md）：{proj}')
-        return 1
+        return None
     out = proj / 'kit' / 'hypergraph.rag.json'
     entries, relations = build_graph(files, 'pj', '')
-    write_doc(out,
-              f'项目档 HyperGraphRAG 编译产物（scope=project；源=projects/{project}/ 世界书、规则卡与文风卡，含记忆卡）。'
-              f'改源后重跑 tools/kit-compile.py --project {project}；本产物绝不写全局 kit/。',
-              entries, relations, {'scope': 'project'})
+    return out, (f'项目档 HyperGraphRAG 编译产物（scope=project；源=projects/{project}/ 世界书、规则卡与文风卡，含记忆卡）。'
+                 f'改源后重跑 tools/kit-compile.py --project {project}；本产物绝不写全局 kit/。',
+                 entries, relations, {'scope': 'project'})
+
+
+def check_doc(out: Path, entries: list, relations: list) -> int:
+    """干跑比对（批次2.5 P4）：内存重编译结果 vs 盘上现存产物。零写盘、幂等。
+
+    一致 exit 0；不一致/盘上无产物 exit 1，差异摘要 = 条目/边数变化 + 首个不一致 key。
+    """
+    if not out.exists():
+        print(f'[CHECK] 盘上无产物：{out} —— 先跑 tools/kit-compile.py（项目档加 --project <id>）编译后再 --check')
+        return 1
+    try:
+        disk = json.loads(out.read_text(encoding='utf-8'))
+    except (OSError, ValueError) as e:
+        print(f'[CHECK] 盘上产物不可读/非法 JSON：{out}（{e}）—— 重跑编译重建后再 --check')
+        return 1
+    disk_e: list = disk.get('entries') or []
+    disk_r: list = disk.get('relations') or []
+    if disk_e == entries and disk_r == relations:
+        print(f'一致：{out}（{len(entries)} 词条 / {len(relations)} 边，与重编译结果逐键一致）')
+        return 0
+    # ── 差异摘要：先报数量变化，再定位首个不一致 key ──
+    print(f'不一致：{out}')
+    if len(disk_e) != len(entries) or len(disk_r) != len(relations):
+        print(f'  数量变化：词条 盘上 {len(disk_e)} → 编译 {len(entries)}；边 盘上 {len(disk_r)} → 编译 {len(relations)}')
+    def _first_diff(label: str, disk_list: list, new_list: list) -> None:
+        for i in range(min(len(disk_list), len(new_list))):
+            if disk_list[i] != new_list[i]:
+                key = next((k for k in set(disk_list[i]) | set(new_list[i])
+                            if (disk_list[i] or {}).get(k) != (new_list[i] or {}).get(k)), '')
+                print(f'  首个不一致：{label}[{i}].{key}（盘上 {(disk_list[i] or {}).get(key)!r} → 编译 {(new_list[i] or {}).get(key)!r}）')
+                return
+        side = '盘上多出' if len(disk_list) > len(new_list) else '编译多出'
+        i = min(len(disk_list), len(new_list))
+        print(f'  首个不一致：{label}[{i}]（{side}：盘上 {disk_list[i] if i < len(disk_list) else "—"} / 编译 {new_list[i] if i < len(new_list) else "—"}）')
+    if disk_e != entries:
+        _first_diff('entries', disk_e, entries)
+    else:
+        _first_diff('relations', disk_r, relations)
+    print('  重跑 tools/kit-compile.py（项目档加 --project <id>）可重建产物')
+    return 1
+
+
+def main() -> int:
+    root, project, check = parse_args(sys.argv[1:])
+    built = compile_doc(root, project)
+    if built is None:
+        return 1
+    out, (note, entries, relations, extra_stats) = built
+    if check:
+        return check_doc(out, entries, relations)
+    if project is None:
+        # ── 全局模式（行为与历史版本逐字节一致）──
+        write_doc(out, note, entries, relations, extra_stats)
+        print(f'kit/hypergraph.rag.json ← {len(entries)} 词条 / {len(relations)} 边')
+        return 0
+
+    # ── 项目档模式（R2.2）：只读 projects/<id>/，只写 projects/<id>/kit/ ──
+    write_doc(out, note, entries, relations, extra_stats)
     print(f'projects/{project}/kit/hypergraph.rag.json ← {len(entries)} 词条 / {len(relations)} 边（scope=project；全局 kit/ 未动）')
     return 0
 
