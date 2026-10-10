@@ -9385,6 +9385,252 @@
         }
       }
     },
+    "/api/v1/verbs/diag_scan": {
+      "post": {
+        "summary": "[快诊断（批次3a）] 快诊断：对一段文本/一个文件做确定性体检，产出 diagnosis-report@1（机器只出证据不裁决，零 LLM）。S 级=aesthetic 引擎真身进程内直调（quality-cli 同一实现，毫秒级）；消费 项目配置.validation 声明位（tierThreshold 通道门槛 / cardScope 装卡范围 / severityFloor 优先级下限，缺省 S+A·both·minor）；items 由规则卡条款机械投影（建议=条款 repair 反向表达）；A 级 laya 学生头仅在 proposal=true 显式开启时跑，venv/权重缺失显式报 LAYA_UNAVAILABLE 带回填指引（绝不回落 4B/API）",
+        "description": "动词直通 · 三面同源（CLI/MCP/HTTP 同一条执行路径）。入参形状派生自 core/src/verbs.ts 的动词表。",
+        "tags": [
+          "verbs"
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "project": {
+                    "type": "string",
+                    "description": "项目 id（声明位与落盘都挂在项目上）"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "待诊文本（与 path 二选一；落 <项目>/内部/诊断暂存/ 留档，证据可回查）"
+                  },
+                  "path": {
+                    "type": "string",
+                    "description": "待诊文件（项目内相对路径，与 text 二选一）"
+                  },
+                  "dims": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "规则域子集（dimension 名或 kb/rules/<域>，逗号分隔；缺省不过滤；对得上卡域的按域过滤，对不上的如实全跑并注明）"
+                  },
+                  "proposal": {
+                    "type": "boolean",
+                    "description": "A 级 laya 学生头开关（缺省关；开启且 tierThreshold 含 A 才跑）"
+                  }
+                },
+                "required": [
+                  "project"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "统一包装：ok=true，动词返回在 data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "description": "端点各自形状，见本操作 description；未规范化字段一律显式标出，不静默丢弃"
+                    },
+                    "meta": {
+                      "type": "object",
+                      "required": [
+                        "apiVersion",
+                        "route",
+                        "at"
+                      ],
+                      "properties": {
+                        "apiVersion": {
+                          "type": "string",
+                          "enum": [
+                            "v1"
+                          ]
+                        },
+                        "route": {
+                          "type": "string",
+                          "description": "来源路由（含参数名，等于 V1_ROUTES 的 path）"
+                        },
+                        "at": {
+                          "type": "string",
+                          "description": "响应产生时刻（ISO 8601）"
+                        },
+                        "verb": {
+                          "type": "string",
+                          "description": "动词直通时回显动词名"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "入参不合表定义（VALIDATION：detail 逐条列出哪个键缺/哪种型不对）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "error",
+                    "meta"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "领域错误码（KernelError.code / ApiError.code，如 NO_RUN、STALE_GATE、VALIDATION、UNKNOWN_VERB）"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "detail": {
+                          "type": "string",
+                          "description": "找回路径（怎么改对），能给出时必须给"
+                        }
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "required": [
+                        "apiVersion",
+                        "route",
+                        "at"
+                      ],
+                      "properties": {
+                        "apiVersion": {
+                          "type": "string",
+                          "enum": [
+                            "v1"
+                          ]
+                        },
+                        "route": {
+                          "type": "string",
+                          "description": "来源路由（含参数名，等于 V1_ROUTES 的 path）"
+                        },
+                        "at": {
+                          "type": "string",
+                          "description": "响应产生时刻（ISO 8601）"
+                        },
+                        "verb": {
+                          "type": "string",
+                          "description": "动词直通时回显动词名"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "统一错误包装",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "error",
+                    "meta"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "description": "领域错误码（KernelError.code / ApiError.code，如 NO_RUN、STALE_GATE、VALIDATION、UNKNOWN_VERB）"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "detail": {
+                          "type": "string",
+                          "description": "找回路径（怎么改对），能给出时必须给"
+                        }
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "required": [
+                        "apiVersion",
+                        "route",
+                        "at"
+                      ],
+                      "properties": {
+                        "apiVersion": {
+                          "type": "string",
+                          "enum": [
+                            "v1"
+                          ]
+                        },
+                        "route": {
+                          "type": "string",
+                          "description": "来源路由（含参数名，等于 V1_ROUTES 的 path）"
+                        },
+                        "at": {
+                          "type": "string",
+                          "description": "响应产生时刻（ISO 8601）"
+                        },
+                        "verb": {
+                          "type": "string",
+                          "description": "动词直通时回显动词名"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/openapi.json": {
       "get": {
         "summary": "本文档自身（不套信封：它是文件，不是数据）",

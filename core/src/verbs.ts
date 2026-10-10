@@ -27,6 +27,7 @@ import { loadState } from "./state.js";
 import { KernelError } from "./kernel.js";
 import { kbRead, kbSearch } from "./kb.js";
 import { loadIntentGraph, syncIntentDecisions, IntentError } from "./intent.js";
+import { diagScan } from "./diagnosis.js";
 
 export type VerbParamType = "string" | "number" | "boolean" | "record" | "string[]";
 
@@ -105,6 +106,7 @@ const G_CHOICE = "选择面（R8）";
 const G_WB = "世界书（GraphHyperRAG）";
 const G_IG = "立意图（决策桥）";
 const G_BRIDGE = "底座工具桥（挂表）";
+const G_DIAG = "快诊断（批次3a）";
 
 /** 子进程转发：脚本本体出真相，本函数只拼参数、捕获 stdout、失败带 stderr 摘要抛错。
  *  JSON 输出自动解析；PYTHONIOENCODING=utf-8 规避 Windows GBK 解码缺陷（v5.0.1 已知问题）。 */
@@ -684,6 +686,41 @@ export const VERBS: VerbDef[] = [
         ...(a.budget ? ["--budget", JSON.stringify(a.budget)] : []),
         ...(a.no_receipt ? ["--no-receipt"] : []),
       ]),
+  },
+  // ── 快诊断（批次3a P6）：编辑器静默追写的服务化入口。逻辑本体在 diagnosis.ts；
+  //    零 LLM 零 token（D5 决议：大模型不进静默诊断链路），产出 = diagnosis-report@1
+  //    （contracts/diagnosis-report.schema.json，报告落 <项目>/reports/、收据落 registry/receipts/）。
+  //    宿主节拍与保守律见 docs/integration/silent-follow.md。
+  {
+    name: "diag_scan",
+    description:
+      "快诊断：对一段文本/一个文件做确定性体检，产出 diagnosis-report@1（机器只出证据不裁决，零 LLM）。" +
+      "S 级=aesthetic 引擎真身进程内直调（quality-cli 同一实现，毫秒级）；" +
+      "消费 项目配置.validation 声明位（tierThreshold 通道门槛 / cardScope 装卡范围 / severityFloor 优先级下限，缺省 S+A·both·minor）；" +
+      "items 由规则卡条款机械投影（建议=条款 repair 反向表达）；" +
+      "A 级 laya 学生头仅在 proposal=true 显式开启时跑，venv/权重缺失显式报 LAYA_UNAVAILABLE 带回填指引（绝不回落 4B/API）",
+    group: G_DIAG,
+    params: [
+      { name: "project", type: "string", required: true, desc: "项目 id（声明位与落盘都挂在项目上）" },
+      { name: "text", type: "string", desc: "待诊文本（与 path 二选一；落 <项目>/内部/诊断暂存/ 留档，证据可回查）" },
+      { name: "path", type: "string", desc: "待诊文件（项目内相对路径，与 text 二选一）" },
+      { name: "dims", type: "string[]", desc: "规则域子集（dimension 名或 kb/rules/<域>，逗号分隔；缺省不过滤；对得上卡域的按域过滤，对不上的如实全跑并注明）" },
+      { name: "proposal", type: "boolean", desc: "A 级 laya 学生头开关（缺省关；开启且 tierThreshold 含 A 才跑）" },
+    ],
+    run: (kernel, a) => {
+      const dims = Array.isArray(a.dims)
+        ? a.dims.map(String).filter(Boolean)
+        : typeof a.dims === "string" && a.dims
+          ? a.dims.split(",").map((x) => x.trim()).filter(Boolean)
+          : undefined;
+      return diagScan(kernel, {
+        project: String(a.project),
+        text: S(a.text),
+        path: S(a.path),
+        dims,
+        proposal: B(a.proposal) ?? false,
+      });
+    },
   },
 ];
 

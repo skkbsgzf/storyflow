@@ -203,7 +203,7 @@ def config_json(pid: str) -> str:
                 "tierThreshold=本项目评审跑哪些分级（S/A/B 子集，缺省 S+A；B 级主观审美归 agent 评审通道）；"
                 "cardScope=规则卡装载范围（global=全局 knowledge/rules 卡 / project=本项目 文风+规则 卡 / both=双家，缺省 both）；"
                 "severityFloor=评审优先级下限（block|major|minor，缺省 minor=全量；是评审优先级不是提交闸）。"
-                "声明位先行：消费方随批次3 快诊断接入，当前不改任何运行行为。",
+                "声明位已变现（批次3a P6）：diag_scan 快诊断消费三旋钮（tierThreshold 定分级通道 / cardScope 定装卡 / severityFloor 定产出下限），口径见 core/src/diagnosis.ts。",
     }, ensure_ascii=False, indent=2) + "\n"
 
 

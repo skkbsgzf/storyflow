@@ -41,7 +41,7 @@ R4 的纪律是**载荷逐字节不变、只在响应头标弃用**：所有 leg
 | PUT | `/api/projects/{id}/config` | 配置对象 | 带 schema 校验；run 已绑定字段的修改只对重跑/下次 `flow_run` 生效（响应含 `boundWarning`） |
 | POST | `/api/projects/{id}/gate` | `{nodeId, verdict, comment?, rootCauseStage?, round?, token?}` | 人工裁决便利端点（与动词表同源同语义；`verdict` ∈ pass / pass-with-conditions / send-back / reject） |
 | POST | `/api/projects/{id}/rerun` | `{nodeId, dryRun?}` | **`dryRun` 缺省 `true`**（不传 = 只推演不落盘） |
-| POST | `/api/verbs/{verb}` | 归一化入参对象 | **动词直通：27 个动词全部可从此进入**（见下） |
+| POST | `/api/verbs/{verb}` | 归一化入参对象 | **动词直通：28 个动词全部可从此进入**（见下） |
 | POST | `/api/agent/model` | `{baseUrl, model, apiKey?, maxTokens?, temperature?}` | 落 `.external/agent-model.json`；缺 baseUrl/model → 400 |
 | POST | `/api/projects/{id}/agent/sessions` | `{title?}` | 项目不存在 → 404 `NO_PROJECT` |
 | POST | `/api/projects/{id}/agent/sessions/{sid}/rename` | `{title}` | 404 会话不存在 |
@@ -124,6 +124,20 @@ POST /api/verbs/<verb>     body = 归一化入参（键名用 VerbParam.name，�
 - 入参折平：`flagsToArgs` 之外的脏值由动词自己的 `S/B/N` 归一化吃平（`"true"`/`"1"`/空串都有确定语义）
 - **这一面不收 zod 前置校验**（形状冻结）；要严格校验走 `POST /api/v1/verbs/{verb}`（见 2.4）
 
+### 3.1 `diag_scan`（快诊断，批次3a P6）
+
+编辑器静默追写的数据源动词（节拍与保守三律见 [silent-follow.md](silent-follow.md)）。入参（★必填）：
+
+| 键 | 型 | 说明 |
+| --- | --- | --- |
+| `project` ★ | string | 项目 id（声明位与落盘都挂在项目上） |
+| `text` / `path` | string | 待诊文本 / 项目内相对路径，**二选一**（`text` 落 `<项目>/内部/诊断暂存/` 留档） |
+| `dims` | string[] | 规则域子集（`dimension` 名或 `kb/rules/<域>`；对得上卡域的按域过滤，对不上的如实全跑并注明） |
+| `proposal` | boolean | A 级 laya 学生头开关（缺省关；权重/venv 缺位显式 503 带回填指引，不回落 4B/API） |
+
+成功 `data`：`{ ok, report（diagnosis-report@1 本体）, report_path（<项目>/reports/…）, receipt_path（<项目>/registry/receipts/…）, timing_ms: {total, s_scan, a_scan?}, applied_validation }`。
+零 LLM 零 token；消费 `项目配置.json.validation` 声明位（tierThreshold/cardScope/severityFloor），消费口径随 `applied_validation` 回显。宿主节拍与错误路径契约见 [silent-follow.md](silent-follow.md)。
+
 ## 四、错误响应形状（两套：legacy 冻结、v1 统一）
 
 **legacy `/api/*`（三种形状并存，按冻结契约保留）**：`KernelError` 经 `httpError()` → 状态码取 `e.http`、体为 `{error:<code>, message:<msg>}`；
@@ -159,7 +173,7 @@ node scripts/gen-openapi.mjs --check  # 对账：漂移 / 漏动词 / 孤儿路�
 ```
 
 `--check` 查四件事：①提交的文件与生成结果**逐字节**一致；②`V1_ROUTES` 每条都在文档里有对应 method；
-③文档里没有表外的孤儿路径；④27 个动词逐个有 `/api/v1/verbs/{name}` 条目，且其必填参数进了该条 `schema.required`。
+③文档里没有表外的孤儿路径；④28 个动词逐个有 `/api/v1/verbs/{name}` 条目，且其必填参数进了该条 `schema.required`。
 运行时 `GET /api/v1/openapi.json` 与提交文件同一份（`core/test/r8-server.test.ts` 断言三方相等）。
 
 ## 九、尚未实现（诚实面）

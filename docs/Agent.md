@@ -11,7 +11,7 @@
 CLI、HTTP、MCP 三面各自**遍历这张表派生**自己，任何一面都不许再手抄一份清单。
 
 ```
-core/src/verbs.ts  （27 个动词 + 参数描述 + run 实现；R4 起还派生 zod 形状与 JSON Schema）
+core/src/verbs.ts  （28 个动词 + 参数描述 + run 实现；R4 起还派生 zod 形状与 JSON Schema）
    ├─ CLI   core/src/cli.ts    →  usage() 由表生成，按表分派
    ├─ HTTP  core/src/http.ts   →  POST /api/verbs/:verb 按表分派（legacy 面，冻结载荷）
    │        core/src/api-v1.ts →  V1_ROUTES ⊕ VERBS ⇒ /api/v1/*（统一信封）＋ 自生成 openapi.json
@@ -52,7 +52,7 @@ npx tsx src/cli.ts                     # 无参数 = 打印由表生成的 usage
 `--check` 用于对账（门禁之一）。
 
 <!-- GEN:VERBS:BEGIN 由 scripts/gen-verbs-doc.mjs 从 core/src/verbs.ts 生成，勿手改 -->
-动词共 **27** 个，分 7 组：`内核动词（七动词）` ｜ `生成式编排（R5）` ｜ `选择面（R8）` ｜ `知识库（KB 只读）` ｜ `世界书（GraphHyperRAG）` ｜ `立意图（决策桥）` ｜ `底座工具桥（挂表）`。
+动词共 **28** 个，分 8 组：`内核动词（七动词）` ｜ `生成式编排（R5）` ｜ `选择面（R8）` ｜ `知识库（KB 只读）` ｜ `世界书（GraphHyperRAG）` ｜ `立意图（决策桥）` ｜ `底座工具桥（挂表）` ｜ `快诊断（批次3a）`。
 
 | 动词 | 组 | 入参（★=必填，其余可缺省） | 说明 |
 | --- | --- | --- | --- |
@@ -83,8 +83,9 @@ npx tsx src/cli.ts                     # 无参数 = 打印由表生成的 usage
 | `whereami` | 底座工具桥（挂表） | `--project <string>` · `--json <boolean>` | 我在哪：项目/当前节点/必读输入/应产输出（tools/whereami.py 转发；开工定位） |
 | `snapshot` | 底座工具桥（挂表） | `--action <capture\|diff>` ★ · `--flow <string>` · `--project <string>` ★ · `--node <string>` ★ · `--files <a,b>` · `--note <string>` · `--a <string>` · `--b <string>` | 交付快照 capture / 两版 diff（tools/snapshot.py 转发；铁律 7：产物落盘后留档） |
 | `quality_scan` | 底座工具桥（挂表） | `--project <string>` ★ · `--file <string>` ★ · `--budget <json>` · `--no_receipt <boolean>` | 确定性质量扫描：证据聚合器（tools/quality-scan.py 转发 = core quality-cli 桥 aesthetic 真身，禁止第二份计数逻辑）；只出证据+收据，裁决归 agent/人裁 |
+| `diag_scan` | 快诊断（批次3a） | `--project <string>` ★ · `--text <string>` · `--path <string>` · `--dims <a,b>` · `--proposal <boolean>` | 快诊断：对一段文本/一个文件做确定性体检，产出 diagnosis-report@1（机器只出证据不裁决，零 LLM）。S 级=aesthetic 引擎真身进程内直调（quality-cli 同一实现，毫秒级）；消费 项目配置.validation 声明位（tierThreshold 通道门槛 / cardScope 装卡范围 / severityFloor 优先级下限，缺省 S+A·both·minor）；items 由规则卡条款机械投影（建议=条款 repair 反向表达）；A 级 laya 学生头仅在 proposal=true 显式开启时跑，venv/权重缺失显式报 LAYA_UNAVAILABLE 带回填指引（绝不回落 4B/API） |
 
-> 三面同源（表即面）：CLI `core/src/cli.ts` ｜ HTTP `POST /api/verbs/:verb` ｜ MCP stdio 注册 27 个同名工具。改动词只需改 `core/src/verbs.ts` 一处。
+> 三面同源（表即面）：CLI `core/src/cli.ts` ｜ HTTP `POST /api/verbs/:verb` ｜ MCP stdio 注册 28 个同名工具。改动词只需改 `core/src/verbs.ts` 一处。
 <!-- GEN:VERBS:END -->
 
 ## 四、数据与目录契约

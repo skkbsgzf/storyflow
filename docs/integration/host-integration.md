@@ -11,6 +11,7 @@
 | --- | --- | --- | --- |
 | 协议面（七端点） | storyharness `:8431` | `adapter/` 协议 + `adapter/storyflow-client.mjs` 零依赖客户端 | [`adapter/README.md`](../../adapter/README.md) |
 | 动词面（/api/v1） | core `:8421` | 19 路由统一信封 + `POST /api/v1/verbs/{verb}` 直通动词表 | [`rest-api-reference.md`](rest-api-reference.md) |
+| 静默追写（编辑器标红） | core `:8421` | `diag_scan` 快诊断动词（S 级毫秒级确定性，零 LLM）＋ 保守三律节拍 | [`silent-follow.md`](silent-follow.md) |
 | 事件流（SSE） | core `:8421` ＋ storyharness `:8431` | 项目流（journal.jsonl 台账投影）、会话回合流、run 事件流 | [`sse-events.md`](sse-events.md) |
 | MCP 面 | core（stdio） | 宿主拉起 `node dist/mcp.js`，与 HTTP 同一张动词表 | [`mcp-reference.md`](mcp-reference.md) |
 | 进程内嵌入 | 宿主进程 | `new Kernel(opts)` + FS 抽象层注入 | [`embedding-modes.md`](embedding-modes.md) |

@@ -50,7 +50,7 @@
     },
     "validation": {
       "type": "object",
-      "description": "批次2.5 P1（2026-10-10）：校验标准声明位——「每个项目允许独立的文风、规则、校验标准」（需求1）的第三根支柱。立场：**声明位先行**——本块当前只做声明与配置回显，不改任何运行时行为；消费方（快诊断按项目裁分级、评审通道按 cardScope 选卡）随批次3 接入，接入时本契约只增不改。缺省语义（整块缺省 = 按各字段缺省值理解）：tierThreshold 缺省 [\"S\",\"A\"]（B 级主观审美归 agent 评审通道，不进确定性诊断）；cardScope 缺省 both（全局 knowledge/rules 卡与本项目 文风//规则/ 卡都参与评审）；severityFloor 缺省 minor（全优先级都报）。",
+      "description": "批次2.5 P1（2026-10-10）：校验标准声明位——「每个项目允许独立的文风、规则、校验标准」（需求1）的第三根支柱。立场：**声明位先行**——批次2.5 只做声明与配置回显；消费方已随批次3a P6（2026-10-10）接入：diag_scan 快诊断按 tierThreshold 定跑哪些分级通道、按 cardScope 装载哪家规则卡、按 severityFloor 过滤产出项（消费口径随动词响应 applied_validation 回显）；评审通道按 cardScope 选卡随批次3 后续。接入只增不改，本契约字段面未动。缺省语义（整块缺省 = 按各字段缺省值理解）：tierThreshold 缺省 [\"S\",\"A\"]（B 级主观审美归 agent 评审通道，不进确定性诊断）；cardScope 缺省 both（全局 knowledge/rules 卡与本项目 文风//规则/ 卡都参与评审）；severityFloor 缺省 minor（全优先级都报）。",
       "additionalProperties": false,
       "properties": {
         "tierThreshold": {
