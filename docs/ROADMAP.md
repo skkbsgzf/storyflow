@@ -70,6 +70,18 @@
 | 卡驱动诊断动词 | ✅ `core/src/agent.ts`：`mf_analyze_card`（card=kb 卡 id，path/text=正文）通用卡驱动诊断；`mf_analyze_curve` 保留薄别名（协议面 storyharness analysis.ts 与 sse-events.md 点名过该名，宿主可见面不断，内部调通用实现卡固定 emotion-curve）。agent 工具环局部工具族，动词单表未动 |
 | 三相一致性测试 | ✅ `core/test/r24-triphase.test.ts` 7 例：工具注册 / 16 卡逐卡 prompt 组装（条款 id+repair 同入 prompt＝诊建同源结构断言）/ 输出契约字段位 / 别名行为 / 错误路径显式；LLM 走 fetch 打桩不打真端点。「修改可回滚」随批次3 拆（逆向）与服务化落地 |
 
+## 三·五、批次2.5 · 项目知识与改相收尾（2026-10-10 追加，四相盘点产出的漏项）
+
+> 来源：批次2 后按原始四需求复盘，四相框架之外的六项漏项（A–F）。C 已拍板：图谱页由 kit 补自包含生成器（与诊断页/时间轴同模式，零外部资源）。
+
+| # | 项 | 需求归属 | 说明 |
+| --- | --- | --- | --- |
+| P1 | 项目知识生产面 | 需求1 | project-init 骨架增 文风/、规则/ 目录＋卡模板（rule-card@1）；kit-compile --project 纳入两目录；校验标准声明位（project-config.schema 增 optional validation，additive 不破代数，消费随批次3） |
+| P2 | kb-rag 亲和 + 图谱页 | 需求1/3 | 双根合并策略升级（同分项目优先、去重、k 分配）；tools/kb-affinity.py 卡↔消费者对账（孤儿卡清单收据）；tools/kb-graph-page.py 自包含力导向图谱页（kitapp 图谱交互的零依赖复刻：拖拽/缩放/悬停/分类图例） |
+| P3 | 改相闭环 + 诊产物对齐 | 需求4 | contracts/repair-plan.schema.json（契约先行）；core mf_apply_repairs 工具（按 repair 策略产修订 diff，**不直接写盘**，B 级条款拒绝进入＝D5 决议）；tools/repair-apply.py 校验/投影；diagnosis-report@1 校验器；扫描器条款↔卡反向对账（无 id 体系则如实报不可对账，不硬造） |
+| P4 | 收尾杂项 | — | 阶段动作清单（节点→rebuild/compile 约定）；minitools.ts 解释器可配置（python stub 治本尝试）；kit-compile --check 干跑；rules-init.py 字段保留/退役警示；文档收口 |
+| — | 存量 ops 过堂（F） | 需求4 | module-lint 39 条 warning（meme_harvest planned、同槽多件）——随批次3 逐个归并或清退，不进本批次 |
+
 ## 四、批次3 · 缓做（架构重建后慢慢排期）
 
 | 项 | 前置 | 说明 |
