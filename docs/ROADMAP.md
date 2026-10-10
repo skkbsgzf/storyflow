@@ -76,7 +76,7 @@
 
 | # | 项 | 需求归属 | 说明 |
 | --- | --- | --- | --- |
-| P1 | 项目知识生产面 | 需求1 | project-init 骨架增 文风/、规则/ 目录＋卡模板（rule-card@1）；kit-compile --project 纳入两目录；校验标准声明位（project-config.schema 增 optional validation，additive 不破代数，消费随批次3） |
+| P1 | 项目知识生产面 | 需求1 | ✅ 已落地 2026-10-10：`tools/project-init.py` 骨架增 文风/、规则/ 两目录＋README＋rule-card@1 卡模板（文风卡 dimension=style / id 用 pj-style 命名空间；规则卡 dimension 留空待填；模板即范式——kit 只给形不猜内容，条款注释态），另增 `--upgrade` 子命令为存量项目补目录（只补缺失件、已存在一律跳过不覆盖）；`tools/kit-compile.py --project` 扫描范围纳入 文风/（规则/ 已在，R2.2）；`tools/project-index.py` 文风//规则/ 首标 role=human；`contracts/project-config.schema.json` 增 optional `validation` 校验标准声明位（tierThreshold/cardScope/severityFloor，additive 不破代数，声明位先行——消费方随批次3 快诊断接入）；`core/test/kb-project.test.ts` 增「项目卡含文风目录」例 |
 | P2 | kb-rag 亲和 + 图谱页 | 需求1/3 | 双根合并策略升级（同分项目优先、去重、k 分配）；tools/kb-affinity.py 卡↔消费者对账（孤儿卡清单收据）；tools/kb-graph-page.py 自包含力导向图谱页（kitapp 图谱交互的零依赖复刻：拖拽/缩放/悬停/分类图例） |
 | P3 | 改相闭环 + 诊产物对齐 | 需求4 | contracts/repair-plan.schema.json（契约先行）；core mf_apply_repairs 工具（按 repair 策略产修订 diff，**不直接写盘**，B 级条款拒绝进入＝D5 决议）；tools/repair-apply.py 校验/投影；diagnosis-report@1 校验器；扫描器条款↔卡反向对账（无 id 体系则如实报不可对账，不硬造） |
 | P4 | 收尾杂项 | — | 阶段动作清单（节点→rebuild/compile 约定）；minitools.ts 解释器可配置（python stub 治本尝试）；kit-compile --check 干跑；rules-init.py 字段保留/退役警示；文档收口 |

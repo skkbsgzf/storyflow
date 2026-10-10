@@ -37,6 +37,7 @@ root_scope 永不指向 repoRoot；本工具对 projects/<id>/ 之外零写入�
   human（人写，工具只读不覆写）：
     - 输入/**
     - 世界书/**（上面三类 generated 除外）
+    - 文风/**、规则/**     项目文风与规则卡（批次2.5 P1，人写知识）
 
 机器区排除（默认从索引纳管中剔除；--all 全量纳管）：
   registry/（含 registry/receipts/）、snapshots/、kit/、内部/sessions/、内部/telemetry/、
@@ -139,7 +140,7 @@ def is_machine(rel: str) -> bool:
 
 
 def role_of(rel: str) -> str:
-    """首标角色：generated 命中表 → generated；输入/世界书人写区 → human；其余默认 generated（产物区口径）。"""
+    """首标角色：generated 命中表 → generated；输入/世界书/文风/规则人写区 → human；其余默认 generated（产物区口径）。"""
     if rel in GENERATED_EXACT:
         return "generated"
     if re.fullmatch(r"世界书/记忆卡-[^/]+\.md", rel):
@@ -148,6 +149,8 @@ def role_of(rel: str) -> str:
         return "generated"
     if rel.startswith("输入/") or rel.startswith("世界书/"):
         return "human"
+    if rel.startswith("文风/") or rel.startswith("规则/"):
+        return "human"  # 批次2.5 P1：项目文风/规则卡是人写知识（索引只读不覆写）
     if rel.startswith("交付/"):
         return "generated"
     if rel.startswith("内部/"):
@@ -179,6 +182,10 @@ def kind_of(rel: str) -> str:
         return "配置"
     if rel.startswith("世界书/"):
         return "设定"
+    if rel.startswith("文风/"):
+        return "文风"  # 批次2.5 P1
+    if rel.startswith("规则/"):
+        return "规则"  # 批次2.5 P1
     if rel.endswith(".md"):
         return "文档"
     return "文件"

@@ -258,6 +258,7 @@ docs/
 | 诊断报告契约（三相承载体） | 批次2 R2.1（✅ 契约已落地 2026-10-10）＋ R2.4 实现（✅ 已落地 2026-10-10：`mf_analyze_card` 输出对齐 items 语义，诊断/建议同源由卡驱动结构保证） | `contracts/diagnosis-report.schema.json` |
 | HTML 页面件补齐（时间轴整页/诊断报告页） | 批次2 R2.3（✅ 已落地 2026-10-10：`tools/journal-page.py` / `tools/diagnosis-page.py`） | `tools/worldbook*.py` / `journal-template.html` 扩展 |
 | 能力归并（一次性工具 → 卡驱动诊断动词） | 批次2 R2.4（✅ 已落地 2026-10-10：`core/src/agent.ts` `mf_analyze_card`，`mf_analyze_curve` 转薄别名；agent 工具环局部工具族，动词单表未动） | `core/src/agent.ts` + verbs |
+| 项目知识生产面（项目文风/规则目录＋卡模板、项目档编译纳入、校验标准声明位） | 批次2.5 P1（✅ 已落地 2026-10-10：`tools/project-init.py` 文风//规则/ 骨架＋rule-card@1 模板＋`--upgrade` 存量补目录；`tools/kit-compile.py --project` 纳入 文风/；`tools/project-index.py` 两目录标 human；`contracts/project-config.schema.json` 增 optional `validation`——声明位先行，消费随批次3） | `tools/project-init.py` + `tools/kit-compile.py` + `contracts/project-config.schema.json` |
 | 拆（逆向）契约 | 批次3 | `contracts/deconstruct.schema.json` |
 | 本地快诊断服务化（S 级 + laya 环境回填 + 静默追写） | 批次3 | `tools/laya-scan.py` 服务化 + 协议面端点 |
 | 图文视频能力（seedance 族） | 批次3 | 届时按声明式口径重建 |

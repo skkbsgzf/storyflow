@@ -134,4 +134,30 @@ describe("KB 双根合并检索（全局 kit + 项目 kit，R2.2）", () => {
     const f = tmpFixture();
     expect(() => kbRead(f.kb, "kb/aesthetic/none", undefined, undefined, undefined, f.p1)).toThrow(/知识卡不存在/);
   });
+
+  it("⑦项目卡含文风目录（批次2.5 P1）：文风/ 目录卡可编译进项目档并被 dir 过滤命中", () => {
+    const f = tmpFixture();
+    // 文风/ 目录卡 + 项目档编译产物里的对应条目（kit-compile.py --project 扫 文风/ 后的真实形状：
+    // id 取 frontmatter id（pj-style/… 命名空间）、domain=目录名「文风」、path=项目根相对）
+    fs.mkdirSync(path.join(f.p1, "文风"), { recursive: true });
+    fs.writeFileSync(
+      path.join(f.p1, "文风", "文风规则-主线.md"),
+      `---\n{\n  "id": "pj-style/p1/voice",\n  "type": "rule-corpus",\n  "title": "主线文风规则",\n  "dimension": "style",\n  "version": "0.1.0",\n  "status": "active",\n  "activation_hint": ["m3.成文", "polish"],\n  "provenance": { "source": "项目自建", "refs": [] },\n  "updated": "2026-10-10",\n  "format": "rule-card@1"\n}\n---\n\n# 主线文风规则\n\n短句为主，单句不超过 25 字；全稿禁用机味词「赋能」。\n`,
+      "utf-8",
+    );
+    const graph = JSON.parse(fs.readFileSync(path.join(f.p1, "kit", "hypergraph.rag.json"), "utf-8"));
+    graph.entries.push({ id: "pj-style/p1/voice", title: "主线文风规则", domain: "文风", path: "文风/文风规则-主线.md", tags: ["style"] });
+    fs.writeFileSync(path.join(f.p1, "kit", "hypergraph.rag.json"), JSON.stringify(graph), "utf-8");
+    // 不带 dir：文风卡与既有项目卡同榜，source=project
+    const all = kbSearch(f.kb, { q: "文风 赋能", projectDir: f.p1 });
+    const voice = all.hits.find((h) => h.id === "pj-style/p1/voice");
+    expect(voice?.source).toBe("project");
+    expect(voice?.file).toBe("文风/文风规则-主线.md");
+    expect(voice?.excerpt).toContain("25 字"); // 正文摘要来自文风卡真实正文
+    // dir=文风：按 domain 过滤只中文风卡
+    const scoped = kbSearch(f.kb, { q: "文风", dir: "文风", projectDir: f.p1 });
+    expect(scoped.hits.length).toBe(1);
+    expect(scoped.hits[0].id).toBe("pj-style/p1/voice");
+    expect(scoped.hits[0].source).toBe("project");
+  });
 });

@@ -47,6 +47,28 @@
       "type": "object",
       "description": "OS-02 阶段 C（2026-09-20）：阈值预算面。键名与合法区间白名单 = core/src/budget.ts::DEFAULT_BUDGET（出厂默认 + 项目可覆盖），未知键/非数/越界一律在任务包「阈值预算告警」区显式回显，绝不静默丢弃。合成优先级：flow.policy.budget（模板层） < 本键（实例层） < 项目 overlay 的 set-policy{budget}（运行时调整层）。消费点：assembler / aesthetic / optimize / metrics。",
       "additionalProperties": { "type": "number" }
+    },
+    "validation": {
+      "type": "object",
+      "description": "批次2.5 P1（2026-10-10）：校验标准声明位——「每个项目允许独立的文风、规则、校验标准」（需求1）的第三根支柱。立场：**声明位先行**——本块当前只做声明与配置回显，不改任何运行时行为；消费方（快诊断按项目裁分级、评审通道按 cardScope 选卡）随批次3 接入，接入时本契约只增不改。缺省语义（整块缺省 = 按各字段缺省值理解）：tierThreshold 缺省 [\"S\",\"A\"]（B 级主观审美归 agent 评审通道，不进确定性诊断）；cardScope 缺省 both（全局 knowledge/rules 卡与本项目 文风//规则/ 卡都参与评审）；severityFloor 缺省 minor（全优先级都报）。",
+      "additionalProperties": false,
+      "properties": {
+        "tierThreshold": {
+          "type": "array",
+          "items": { "enum": ["S", "A", "B"] },
+          "uniqueItems": true,
+          "minItems": 1,
+          "description": "本项目评审跑哪些分级（= rule-card@1 条款 tier：S=硬约束可精确定义 / A=有明确模式需上下文 / B=主观审美）。子集且不重复，缺省 [\"S\",\"A\"]"
+        },
+        "cardScope": {
+          "enum": ["global", "project", "both"],
+          "description": "规则卡装载范围：global=只用全局 knowledge/rules/ 域卡 / project=只用本项目 文风/ 与 规则/ 项目卡 / both=双家都装（缺省 both）。项目卡的形由 project-init 骨架模板给出（rule-card@1 信封）"
+        },
+        "severityFloor": {
+          "enum": ["block", "major", "minor"],
+          "description": "评审优先级下限（v5.0 去闸化语义：这是评审优先级，**不是提交闸**）。minor=全量都报（缺省）/ major=minor 不报 / block=只看最高优先"
+        }
+      }
     }
   }
 }

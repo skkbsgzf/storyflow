@@ -6,7 +6,7 @@
     GitHub 上 knowledge 层只发布**一个向量图文件**（词条 + 关系边 + 统计），
     松散 md 是**本地可插拔层**（引擎现读盘；不进 git）。用户改/增 md 后重跑本脚本重建图。
   项目档（--project <id>）：projects/<id>/ 的 世界书/**/*.md（含记忆卡）+ 规则/**/*.md（若有）
-    → projects/<id>/kit/hypergraph.rag.json（stats.scope=project）。
+    + 文风/**/*.md（若有，批次2.5 P1）→ projects/<id>/kit/hypergraph.rag.json（stats.scope=project）。
     **项目档绝不写全局 kit/；全局模式行为一字不变。**
 
 图形态与内核 worldbook/graph.json 同族（worldbook-graph@1）：
@@ -113,17 +113,19 @@ def main() -> int:
         print(f'[ABORT] 项目目录不存在：{proj}')
         return 1
     files: list = []
-    for sub in ('世界书', '规则'):  # 世界书（含记忆卡）+ 项目级规则卡（若有）
+    # 世界书（含记忆卡）+ 项目级规则卡 + 文风卡（批次2.5 P1）；有 md 才编，
+    # 空目录（只有 README）零贡献不报错——README 本就不入图（见 build_graph）。
+    for sub in ('世界书', '规则', '文风'):
         d = proj / sub
         if d.is_dir():
             files.extend((p.relative_to(proj).as_posix(), p) for p in d.rglob('*.md'))
     if not files:
-        print(f'[ABORT] 项目无可编译语料（世界书/ 规则/ 下无 md）：{proj}')
+        print(f'[ABORT] 项目无可编译语料（世界书/ 规则/ 文风/ 下无 md）：{proj}')
         return 1
     out = proj / 'kit' / 'hypergraph.rag.json'
     entries, relations = build_graph(files, 'pj', '')
     write_doc(out,
-              f'项目档 HyperGraphRAG 编译产物（scope=project；源=projects/{project}/ 世界书与规则卡，含记忆卡）。'
+              f'项目档 HyperGraphRAG 编译产物（scope=project；源=projects/{project}/ 世界书、规则卡与文风卡，含记忆卡）。'
               f'改源后重跑 tools/kit-compile.py --project {project}；本产物绝不写全局 kit/。',
               entries, relations, {'scope': 'project'})
     print(f'projects/{project}/kit/hypergraph.rag.json ← {len(entries)} 词条 / {len(relations)} 边（scope=project；全局 kit/ 未动）')
