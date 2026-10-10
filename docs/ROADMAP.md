@@ -61,14 +61,14 @@
 | panel/kitapp 冻结执行 | 存量保留、零新投入 —— `panel/FROZEN.md` |
 | 宿主接入文档 | pinax-bridge 四范式（任务化接口/契约镜像/预算归属/工具环桥）提炼进 `docs/integration/host-integration.md` |
 
-### R2.4 三相打通 + 能力归并（2–3 周，需求4）
+### R2.4 三相打通 + 能力归并（2–3 周，需求4）✅ 已落地 2026-10-10
 
 | 交付物 | 说明 |
 | --- | --- |
-| `diagnosis-report.schema.json` | `evidence[]`（程序判定）与 `opinion{}`（模型观点）硬分离 |
-| 一源两视图收敛 | rules 17 卡 ↔ 扫描器 13 qid 对账：卡引用 qid、扫描器按卡执行 |
-| 卡驱动诊断动词 | `mf_analyze_curve` 型一次性工具泛化为 `diag(dimension)` |
-| 三相一致性测试 | 同卡诊/建/改结构上不可能矛盾；修改可回滚 |
+| `diagnosis-report.schema.json` | ✅ R2.1 契约先行；R2.4 实现落点＝`mf_analyze_card` 输出对齐 items 语义（rule_ref/tier/severity/evidence/suggestion，prompt 明示建议必须是条款 repair 的反向表达） |
+| 一源两视图收敛 | ✅ 16 张域卡 frontmatter 铺 `format: rule-card@1` + `clauses[]`（rule_id 沿用 AE-id，tier/severity/repair 升格，规则原文零改写）+ `scanner_qids[]`（逐卡人工核对：curve/dialogue/scene/reversal/ai-trace 五卡有真实 qid 对应共 6 条，其余卡空数组记账「已对账无对应」——宁缺毋滥）；kit-lint W10 记账 16/16→0，E12/E13 保持 0 error |
+| 卡驱动诊断动词 | ✅ `core/src/agent.ts`：`mf_analyze_card`（card=kb 卡 id，path/text=正文）通用卡驱动诊断；`mf_analyze_curve` 保留薄别名（协议面 storyharness analysis.ts 与 sse-events.md 点名过该名，宿主可见面不断，内部调通用实现卡固定 emotion-curve）。agent 工具环局部工具族，动词单表未动 |
+| 三相一致性测试 | ✅ `core/test/r24-triphase.test.ts` 7 例：工具注册 / 16 卡逐卡 prompt 组装（条款 id+repair 同入 prompt＝诊建同源结构断言）/ 输出契约字段位 / 别名行为 / 错误路径显式；LLM 走 fetch 打桩不打真端点。「修改可回滚」随批次3 拆（逆向）与服务化落地 |
 
 ## 四、批次3 · 缓做（架构重建后慢慢排期）
 

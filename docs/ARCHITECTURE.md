@@ -124,7 +124,7 @@ rule_id / tier(S|A|B) / scope / 检测目标
 - **建议视图**：应该怎么改 + 理由（修复策略的反向表达）
 - **修改视图**：自动应用（必须宿主确认，走 tool 链，可回滚）
 
-现状：`knowledge/rules/` 17 张卡（`tools/rules-init.py` 生成，AE-id 可溯）与 `tools/laya-ft/questions.spec.json` 13 条款是两本账——批次 2 收敛。
+现状（R2.4 已收敛 2026-10-10）：16 张域卡（`tools/rules-init.py` 生成，AE-id 可溯，README 索引页除外）frontmatter 已铺 `rule-card@1` 收敛字段——`clauses[]`（条款结构化升格，正文零改写）+ `scanner_qids[]`（卡 ↔ laya 学生头 qid 对账：curve/dialogue/scene/reversal/ai-trace 五卡有真实对应，其余空数组记账）；卡驱动诊断动词 `mf_analyze_card`（`core/src/agent.ts`，`mf_analyze_curve` 转薄别名）按卡组装诊断 prompt、输出对齐 diagnosis-report@1。`contracts/rule.schema.json` 是收敛字段的契约面。
 
 ### 3.5 拆（逆向能力）
 
@@ -252,12 +252,12 @@ docs/
 
 | 项 | 批次 | 落点 |
 | --- | --- | --- |
-| 规则 DSL 契约 | 批次2 R2.1（✅ 已落地 2026-10-10；收敛字段随 R2.4 铺开） | `contracts/rule.schema.json` |
+| 规则 DSL 契约 | 批次2 R2.1（✅ 已落地 2026-10-10）＋ R2.4 收敛字段铺开（✅ 已落地 2026-10-10：16 张域卡 clauses/scanner_qids 逐卡核对，kit-lint W10 清零） | `contracts/rule.schema.json` |
 | `project-index.json` 契约 | 批次2 R2.1（✅ 契约已落地 2026-10-10）＋ R2.2 实现（✅ 已落地 2026-10-10：`tools/project-index.py`） | `contracts/project-index.schema.json` |
 | 项目索引生成器（路径探索→索引→增量→记忆→项目级 RAG） | 批次2 R2.2（✅ 已落地 2026-10-10：`tools/project-index.py` build/diff/memory ＋ `tools/kit-compile.py --project` ＋ core kb_search 双根合并检索） | `tools/project-index.py` |
-| 诊断报告契约（三相承载体） | 批次2 R2.1（✅ 契约已落地 2026-10-10；实现随 R2.4） | `contracts/diagnosis-report.schema.json` |
+| 诊断报告契约（三相承载体） | 批次2 R2.1（✅ 契约已落地 2026-10-10）＋ R2.4 实现（✅ 已落地 2026-10-10：`mf_analyze_card` 输出对齐 items 语义，诊断/建议同源由卡驱动结构保证） | `contracts/diagnosis-report.schema.json` |
 | HTML 页面件补齐（时间轴整页/诊断报告页） | 批次2 R2.3（✅ 已落地 2026-10-10：`tools/journal-page.py` / `tools/diagnosis-page.py`） | `tools/worldbook*.py` / `journal-template.html` 扩展 |
-| 能力归并（一次性工具 → 卡驱动诊断动词，如 `mf_analyze_curve`） | 批次2 | `core/src/agent.ts` + verbs |
+| 能力归并（一次性工具 → 卡驱动诊断动词） | 批次2 R2.4（✅ 已落地 2026-10-10：`core/src/agent.ts` `mf_analyze_card`，`mf_analyze_curve` 转薄别名；agent 工具环局部工具族，动词单表未动） | `core/src/agent.ts` + verbs |
 | 拆（逆向）契约 | 批次3 | `contracts/deconstruct.schema.json` |
 | 本地快诊断服务化（S 级 + laya 环境回填 + 静默追写） | 批次3 | `tools/laya-scan.py` 服务化 + 协议面端点 |
 | 图文视频能力（seedance 族） | 批次3 | 届时按声明式口径重建 |

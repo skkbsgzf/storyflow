@@ -108,7 +108,12 @@ data: [DONE]
   worldbook_search / whereami / quality_scan / skill_patch / ig_load / ig_propose`
 - 项目文件系统：`fs_tree` / `fs_read` / `fs_write` / `fs_grep`（路径越出项目目录 → `INVALID_INPUT`）＋ `flow_lint`
   （改 `flows/*/flow.json` 后必跑）。
-- 分析工具：`mf_analyze_curve`（情绪曲线六型判别）、`mf_analyze_character`（人物塑造三维），都要走模型端点。
+- 分析工具（都要走模型端点）：`mf_analyze_card`（**卡驱动诊断**：`card`=kb 卡 id（规则卡/方法论卡）＋
+  `path|text`=正文，prompt 按卡组装，输出对齐 diagnosis-report@1 items 语义——
+  `rule_ref/tier/severity/evidence/suggestion`，建议必须是卡内条款修复策略的反向表达；卡不存在报
+  `CARD_NOT_FOUND`）；`mf_analyze_curve` 为其**薄别名**（card 固定 `kb/aesthetic/emotion-curve`，兼容历史点名）；
+  `mf_analyze_character`（人物塑造三维）。注意：协议面（storyharness `src/analysis.ts`）自装同名单工具，
+  其输出形状仍是各自专档 JSON——两个进程的工具环互不隶属。
 - MCP 内联：仅当 `.external/agent-mcp.json` 配了外部 MCP server 时出现（`mcp__` 前缀）；
   连接失败时**塞一个 `mcp_unavailable` 占位工具**并说明原因，其余工具不受影响。
 

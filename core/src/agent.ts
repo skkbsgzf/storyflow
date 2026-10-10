@@ -346,13 +346,47 @@ export function buildSystemPrompt(kernel: Kernel, projectId: string): string {
 }
 
 // ── 回合循环（SSE 事件流）────────────────────────────────────────────────────
-/** 分析手法工具（曲线/人物）：方法论卡自 knowledge/ 动态装载，嵌套补全产结构化 JSON。 */
-function analysisTools(cfg: AgentModelConfig, kernel: Kernel, projectDir: string, repoRoot: string): AgentTool[] {
+/**
+ * 卡驱动诊断 prompt 组装（R2.4 写诊改三相打通）：诊（条款判定）与建（修复建议）共用同一张卡，
+ * 同源铁律（ARCHITECTURE §3.2）由结构保证——prompt 同时携带卡内条款与修复策略，并明示
+ * 「suggestion 必须是所引条款 repair 的反向表达；无对应条款不得出建议」。输出 JSON 对齐
+ * diagnosis-report@1（contracts/diagnosis-report.schema.json）的 items 语义字段位。
+ * 纯函数：不碰网络与盘，便于测试对「诊与建同一来源」做结构断言。
+ */
+export function buildCardDiagnosisPrompt(cardId: string, cardText: string, text: string): string {
+  return `你是写稿诊断器。严格按以下规则卡执行条款判定（诊），只报卡内条款、不发明卡外语义：
+
+${cardText}
+
+【待诊断正文】
+${text.slice(0, 24000)}
+
+输出 JSON（对齐 diagnosis-report@1 的 items 语义）：
+{"items":[{"rule_ref":"<卡id>#<条款id>","tier":"S|A|B","severity":"block|major|minor","evidence":{"location":"…","quote":"…"},"suggestion":"…"}],"opinion":{"by":"<模型标识>","text":"卡外整体观感（仅供参考）"}}
+字段纪律：
+- rule_ref 必须指向卡内真实条款（kb/<域>/<名>#<条款 id>）；卡里没有的条款不得出条目。
+- tier/severity 沿用卡内标注（frontmatter clauses 或条目前的【AE-id｜级别】），卡未标注时按卡头优先级语义判。
+- evidence 只收可定位证据（位置+原文引用）；判 block/major 的条目必须给证据。
+- suggestion 必须是所引条款修复策略（clauses[].repair / 卡文修复语义）的反向表达——同源铁律，禁止脱离条款重新建议；无修复策略的条款只出证据不出建议。
+- 卡外整体观感只能进 opinion，不得混进 items；opinion 不是证据。`;
+}
+
+/**
+ * 分析手法工具族（曲线/人物/通用卡驱动）：方法论卡自 knowledge/ 动态装载，嵌套补全产结构化 JSON。
+ * R2.4 能力归并：一次性 mf_analyze_curve（prompt 骨架写死、只包一张 KB 卡）泛化为
+ * mf_analyze_card（card 参数驱动，一张规则卡即一个诊断能力）；mf_analyze_curve 保留为薄别名
+ * （协议面 storyharness/src/analysis.ts 与 docs/integration/sse-events.md 点名过该工具名，宿主可见面不断）。
+ */
+export function analysisTools(cfg: AgentModelConfig, kernel: Kernel, projectDir: string, repoRoot: string): AgentTool[] {
   // 越界判定收编到 withinProject 单点：原先这里抄了一份同逻辑的 resolve+sep 检查，
   // 两份判据正是「fs_read 拒了、mf_analyze_curve 放行」那类漂移的来源
   const readIn = (rel: string): string => kernel.fs.readText(withinProject(kernel, projectDir, rel));
   const readCard = (id: string): string => {
     const p = kernel.path.join(repoRoot, "knowledge", id.replace(/^kb\//, "") + ".md");
+    if (!kernel.fs.exists(p)) {
+      // 显式报错不静默：卡驱动诊断只吃真实在盘的 kb 卡（按盘上核账，双根纪律下卡在 repoRoot）
+      throw new KernelError("CARD_NOT_FOUND", 404, `卡不存在：${id}（knowledge/ 盘上无 ${p}）——mf_analyze_card 只接受在盘 kb 卡 id`);
+    }
     return kernel.fs.readText(p);
   };
   const chatOnce = async (prompt: string): Promise<string> => {
@@ -373,27 +407,33 @@ function analysisTools(cfg: AgentModelConfig, kernel: Kernel, projectDir: string
     if (!text) throw new Error(`分析补全空输出（HTTP ${resp.status}）`);
     return text;
   };
-  const mk = (name: string, label: string, desc: string, props: Record<string, unknown>, build: (args: Record<string, unknown>) => Promise<string>): AgentTool => ({
+  const mk = (name: string, label: string, desc: string, props: Record<string, unknown>, build: (args: Record<string, unknown>) => Promise<string>, required?: string[]): AgentTool => ({
     name,
     description: `[分析手法] ${desc}（方法论卡自 knowledge/ 动态装载）`,
-    parameters: { type: "object", properties: props, required: Object.keys(props).filter((k) => k !== "text" && k !== "names") },
+    parameters: { type: "object", properties: props, required: required ?? Object.keys(props).filter((k) => k !== "text" && k !== "names") },
     exec: async (args) => build(args),
   });
+  // 通用卡驱动诊断体：card（kb 卡 id）+ path|text（正文）→ prompt 组装 → LLM 结构化 JSON
+  const analyzeCard = async (args: Record<string, unknown>): Promise<string> => {
+    const cardId = String(args.card ?? "").trim();
+    if (!cardId) throw new KernelError("INVALID_INPUT", 400, "缺 card 参数（kb 卡 id，如 kb/rules/curve 或 kb/aesthetic/emotion-curve）");
+    const text = typeof args.text === "string" && args.text.trim() ? args.text : readIn(String(args.path ?? ""));
+    const card = readCard(cardId);
+    return await chatOnce(buildCardDiagnosisPrompt(cardId, card, text));
+  };
   return [
-    mk("mf_analyze_curve", "剧情曲线分析", "按 emotion-curve 六型判别卡分析正文，输出曲线主型/逐段张力/失衡条款/换轨建议 JSON",
+    mk("mf_analyze_card", "卡驱动诊断", "按任意 kb 卡（规则卡/方法论卡）分析正文：条款判定 + 同源修复建议 JSON（diagnosis-report@1 items 语义：rule_ref/tier/severity/evidence/suggestion）",
+      {
+        card: { type: "string", description: "kb 卡 id，如 kb/rules/curve（规则卡，条款+repair 同源）或 kb/aesthetic/emotion-curve（方法论卡）" },
+        path: { type: "string", description: "项目内正文路径（与 text 二选一）" },
+        text: { type: "string", description: "直接传正文（与 path 二选一）" },
+      },
+      analyzeCard, ["card"]),
+    // 兼容别名（薄壳，内部调通用实现）：历史宿主/会话点名过 mf_analyze_curve，卡固定 emotion-curve，
+    // 输出统一为诊断 items 语义（原曲线专档 JSON 形状由通用契约收编）
+    mk("mf_analyze_curve", "剧情曲线分析", "mf_analyze_card 的曲线专档别名（card 固定 kb/aesthetic/emotion-curve）：六型判别 + 失衡条款 + 同源换轨建议 JSON",
       { path: { type: "string", description: "项目内正文路径" }, text: { type: "string", description: "直接传正文（与 path 二选一）" } },
-      async (args) => {
-        const text = typeof args.text === "string" && args.text.trim() ? args.text : readIn(String(args.path ?? ""));
-        const card = readCard("kb/aesthetic/emotion-curve");
-        return await chatOnce(`你是剧情曲线分析师。严格按以下方法论卡执行六型判别与失衡扫描：
-
-${card}
-
-【待分析正文】
-${text.slice(0, 24000)}
-
-输出 JSON：{"curve_type":"六型之一","confidence":"high|medium|low","segments":[{"range":"…","tension":1-10,"note":"…"}],"violations":[{"clause":"…","level":"major|minor","note":"…"}],"suggestions":["换轨建议（必须含前2拍铺垫代价）"]}`);
-      }),
+      (args) => analyzeCard({ ...args, card: "kb/aesthetic/emotion-curve" })),
     mk("mf_analyze_character", "人物塑造分析", "按 character 卡三维与弧线评估人物塑造，附出场统计",
       { path: { type: "string", description: "项目内正文路径" }, text: { type: "string" }, names: { type: "string", description: "逗号分隔人物名单" } },
       async (args) => {
