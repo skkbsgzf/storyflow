@@ -480,28 +480,34 @@ export const VERBS: VerbDef[] = [
   },
   {
     name: "kb_search",
-    description: "检索知识库（95 张方法论/标尺卡：aesthetic/craft/market/structure/rules/trope…）——标题/标签/正文打分排序",
+    description:
+      "检索知识库（95 张方法论/标尺卡：aesthetic/craft/market/structure/rules/trope…）——标题/标签/正文打分排序。" +
+      "带 project 时双根合并：全局 kit 图 + projects/<id>/kit/hypergraph.rag.json 项目档一起查，命中带 source=global|project",
     group: "知识库（KB 只读）",
     params: [
       { name: "q", type: "string", required: true, desc: "查询词（标题/标签/正文，多词空格分隔）" },
       { name: "dir", type: "string", desc: "限定子目录（aesthetic/craft/market/structure/rules/trope…）" },
       { name: "k", type: "number", desc: "条数上限（默认 8）" },
+      { name: "project", type: "string", desc: "项目 id（可选）：并入项目档检索（先编译：python tools/kit-compile.py --project <id>；项目档命中 file 为项目相对路径）" },
     ],
     run: (kernel, a) => kbSearch(kernel.path.join(kernel.repoRoot, "knowledge"), {
       q: String(a.q ?? ""),
       dir: a.dir === undefined ? undefined : String(a.dir),
       k: a.k === undefined ? undefined : Number(a.k),
+      projectDir: a.project === undefined ? undefined : kernel.projectDir(String(a.project)),
     }, kernel.fs, kernel.path),
   },
   {
     name: "kb_read",
-    description: "读知识卡正文（ref = 卡片 id 如 kb/aesthetic/character，或相对 knowledge/ 的路径）",
+    description: "读知识卡正文（ref = 卡片 id 如 kb/aesthetic/character，或相对 knowledge/ 的路径；带 project 时全局未命中回落读 projects/<id>/ 项目卡）",
     group: "知识库（KB 只读）",
     params: [
       { name: "ref", type: "string", required: true, desc: "卡片 id 或相对路径" },
       { name: "max_chars", flag: "max-chars", type: "number", desc: "截断上限（默认 16000）" },
+      { name: "project", type: "string", desc: "项目 id（可选）：全局未命中时在项目根下找（如 ref=世界书/设定.md）" },
     ],
-    run: (kernel, a) => kbRead(kernel.path.join(kernel.repoRoot, "knowledge"), String(a.ref ?? ""), a.max_chars === undefined ? undefined : Number(a.max_chars), kernel.fs, kernel.path),
+    run: (kernel, a) => kbRead(kernel.path.join(kernel.repoRoot, "knowledge"), String(a.ref ?? ""), a.max_chars === undefined ? undefined : Number(a.max_chars), kernel.fs, kernel.path,
+      a.project === undefined ? undefined : kernel.projectDir(String(a.project))),
   },
   {
     name: "worldbook_search",

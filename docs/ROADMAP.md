@@ -41,16 +41,16 @@
 | `contracts/rule.schema.json` | `rule_id / tier(S\|A\|B) / scope / 检测目标 / 判定逻辑 / 证据字段 / 严重度 / 修复策略 / provenance.refs` |
 | 三 lint 增规则卡校验 | 卡面 ↔ 扫描器 qid 对账起步 |
 
-### R2.2 项目文件体系（2–3 周，需求1）
+### R2.2 项目文件体系（2–3 周，需求1）✅ 已落地 2026-10-10
 
 | 交付物 | 说明 |
 | --- | --- |
-| `project-index.schema.json` + 索引生成器 | 路径探索 → `project-index.json`；角色标注（人写/生成）首问一次；项目根 v1 收纳 `projects/<id>/`（双根铁律） |
-| 增量更新 | 生成物 vs 手写物区分标记；手改后索引正确失效 |
-| 记忆本地化 | 会话 JSONL → 人机双读项目记忆卡 |
-| 项目级 RAG | 项目内容 → 项目级 rag 包，与全局 `kit/` 严格隔离 |
+| `project-index.schema.json` + 索引生成器 | ✅ `tools/project-index.py build`：路径探索 → `projects/<id>/project-index.json`（符合 project-index@1，写盘前过内置 schema 校验）；角色标注按目录规则首标（输入/世界书=human，交付/内部/台账=generated），机器区（registry/snapshots/kit/内部会话等）默认排除留 `--all`；双根铁律 root_scope 钉死 `projects/<id>/` |
+| 增量更新 | ✅ `tools/project-index.py diff`：与存量索引比对 hash+mtime → 三态清单（新增/变更/失踪）；generated 条目与盘上不一致 ⇒ 升格 hybrid 并注「疑似手改」（契约失效策略）；human 条目只记账不覆写；`--receipt` 落收据（报数附收据） |
+| 记忆本地化 | ✅ `tools/project-index.py memory`：会话 JSONL（`内部/sessions/`）→ `世界书/记忆卡-<sid>.md` 人机双读（frontmatter 带 session_id/turns/updated/source，正文=逐轮「用户输入首句+时间戳」确定性抽取，不编内容）；派生物整卡可重建 |
+| 项目级 RAG | ✅ `tools/kit-compile.py --project <id>`：世界书（含记忆卡）+ 规则卡 → `projects/<id>/kit/hypergraph.rag.json`（与全局产物同构，stats.scope=project；全局模式行为逐字节不变，sha256 前后一致）；core `kb_search` 双根合并检索（`--project` 透传，命中带 `source=global\|project`，项目档缺席=零回归，`core/test/kb-project.test.ts` 钉住） |
 
-验收：真实项目跑通 init→index→增量→RAG；全局 KB 零混入。
+验收：合成项目跑通 build→diff（手改升格 hybrid）→memory→项目档编译→双根检索；全局 KB 零混入（项目档只落 `projects/<id>/kit/`，全局 `kit/hypergraph.rag.json` sha256 不变）。
 
 ### R2.3 输出面收拢（1–2 周，需求3，可与 R2.2 并行）✅ 已落地 2026-10-10
 

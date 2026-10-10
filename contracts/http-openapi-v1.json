@@ -6734,7 +6734,7 @@
     },
     "/api/v1/verbs/kb_search": {
       "post": {
-        "summary": "[知识库（KB 只读）] 检索知识库（95 张方法论/标尺卡：aesthetic/craft/market/structure/rules/trope…）——标题/标签/正文打分排序",
+        "summary": "[知识库（KB 只读）] 检索知识库（95 张方法论/标尺卡：aesthetic/craft/market/structure/rules/trope…）——标题/标签/正文打分排序。带 project 时双根合并：全局 kit 图 + projects/<id>/kit/hypergraph.rag.json 项目档一起查，命中带 source=global|project",
         "description": "动词直通 · 三面同源（CLI/MCP/HTTP 同一条执行路径）。入参形状派生自 core/src/verbs.ts 的动词表。",
         "tags": [
           "verbs"
@@ -6758,6 +6758,10 @@
                   "k": {
                     "type": "number",
                     "description": "条数上限（默认 8）"
+                  },
+                  "project": {
+                    "type": "string",
+                    "description": "项目 id（可选）：并入项目档检索（先编译：python tools/kit-compile.py --project <id>；项目档命中 file 为项目相对路径）"
                   }
                 },
                 "required": [
@@ -6969,7 +6973,7 @@
     },
     "/api/v1/verbs/kb_read": {
       "post": {
-        "summary": "[知识库（KB 只读）] 读知识卡正文（ref = 卡片 id 如 kb/aesthetic/character，或相对 knowledge/ 的路径）",
+        "summary": "[知识库（KB 只读）] 读知识卡正文（ref = 卡片 id 如 kb/aesthetic/character，或相对 knowledge/ 的路径；带 project 时全局未命中回落读 projects/<id>/ 项目卡）",
         "description": "动词直通 · 三面同源（CLI/MCP/HTTP 同一条执行路径）。入参形状派生自 core/src/verbs.ts 的动词表。",
         "tags": [
           "verbs"
@@ -6989,6 +6993,10 @@
                   "max_chars": {
                     "type": "number",
                     "description": "截断上限（默认 16000）"
+                  },
+                  "project": {
+                    "type": "string",
+                    "description": "项目 id（可选）：全局未命中时在项目根下找（如 ref=世界书/设定.md）"
                   }
                 },
                 "required": [
