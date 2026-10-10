@@ -121,6 +121,14 @@ data: [DONE]
   人裁后用 `tools/repair-apply.py status` 推进并落收据，回滚走 snapshots；B 级条款进单 `INVALID_INPUT`
   （B 级绝不自动改稿）、条款不存在 `CLAUSE_NOT_FOUND`、repair 与卡面不一致 `INVALID_INPUT`
   （同源铁律：改单不得发明卡外策略））。
+- 拆相工具（要走模型端点）：`mf_deconstruct`（**样本片段→规则卡草稿**：`samples`=采样单元文本片段
+  （以 `【单元id】` 行标注单元边界，≤6 单元——超限显式拒绝，抽样优先回 `tools/deconstruct.py sample`）
+  ＋`dimension`=落卡域＋`hint`/`source_title` 选传，输出 deconstruct-report@1 findings 草稿
+  （契约 `contracts/deconstruct.schema.json`，`status=draft`——**findings 不等于规则**）。护栏：
+  每条 claim 必须带样本内 evidence 引文，无引文的 claim 不许产出（防编造）；provenance.refs 悬空拒绝；
+  条款 rule_id 非 DC- 前缀拒绝（防搬运台账 id）；清单式 samples（只有元数据没有文本）显式拒绝。
+  **本工具绝不落卡不写盘**——回流归人审后的 `tools/deconstruct.py land`（draft 拒绝、同 id 卡已存在拒绝覆盖；
+  全局落 `knowledge/deconstruct/`、项目落 `projects/<id>/规则/`））。
 - MCP 内联：仅当 `.external/agent-mcp.json` 配了外部 MCP server 时出现（`mcp__` 前缀）；
   连接失败时**塞一个 `mcp_unavailable` 占位工具**并说明原因，其余工具不受影响。
 

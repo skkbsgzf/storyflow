@@ -1,0 +1,93 @@
+{
+  "format": "deconstruct-report@1",
+  "source": {
+    "title": "合成样本：钩子与对白技法示例（纯合成文本，非任何真实书籍）",
+    "file": "tmp/合成样本-钩子对白.md",
+    "scope": "全本抽样 3 单元（头/中/尾）"
+  },
+  "sampling": {
+    "mode": "章节",
+    "units": [
+      { "id": "u001", "location": "L1-L40", "chars": 812, "title": "第1章 合成开篇" },
+      { "id": "u002", "location": "L188-L246", "chars": 1043, "title": "第3章 合成中段" },
+      { "id": "u003", "location": "L402-L455", "chars": 977, "title": "第5章 合成收束" }
+    ],
+    "expanded": false,
+    "note": "合成 fixture：单元元数据为示例值，仅供 tools/deconstruct.py --selfcheck 与文档示例使用。"
+  },
+  "findings": [
+    {
+      "dimension": "hook",
+      "claim": "合成样本的开篇钩子都压在首段末句，且以未完成的动作收束——悬念来自动作中断而非信息隐瞒",
+      "evidence": [
+        { "location": "u001 首段末句", "quote": "她伸手去够那封信，门铃在这时响了。" },
+        { "location": "u002 首段末句", "quote": "他把最后一枚棋子按在棋盘上，整个大厅安静得能听见灯丝的嗡鸣。" }
+      ],
+      "provenance": { "refs": ["u001", "u002"] },
+      "candidate_card": {
+        "format": "rule-card@1",
+        "id": "kb/deconstruct/hook-hecheng-gouzi",
+        "type": "rule-corpus",
+        "title": "钩子域 · 合成样本提炼（动作中断式首拍钩）",
+        "dimension": "hook",
+        "version": "0.1.0",
+        "status": "active",
+        "activation_hint": ["m2.编剧", "成稿端尾"],
+        "provenance": {
+          "source": "拆书样本回流：合成样本（章节×3 单元），人审后落卡",
+          "refs": ["u001", "u002"]
+        },
+        "updated": "2026-10-10",
+        "clauses": [
+          {
+            "rule_id": "DC-HOOK-ACTION-CUT",
+            "tier": "A",
+            "severity": "major",
+            "detect": "每集首拍的钩子句",
+            "judge": "钩子以未完成的动作收束（动作进行中被外部事件切断）；纯信息隐瞒式钩子不计入",
+            "repair": "把首拍钩子改写为一个进行中的动作并让外部事件在最紧处切断它",
+            "provenance_refs": ["u001", "u002"]
+          }
+        ],
+        "scanner_qids": []
+      }
+    },
+    {
+      "dimension": "dialogue",
+      "claim": "合成样本的对白交锋用「答非所答」制造张力——B 的回应总是偏移 A 的问句轴心，偏移量即信息量",
+      "evidence": [
+        { "location": "u003 对话段", "quote": "「你到底拿没拿？」「你先说清楚，谁让你进来的。」" }
+      ],
+      "provenance": { "refs": ["u003"] },
+      "candidate_card": {
+        "format": "rule-card@1",
+        "id": "kb/deconstruct/dialogue-yangban-duibai",
+        "type": "rule-corpus",
+        "title": "对白域 · 合成样本提炼（偏轴应答式交锋）",
+        "dimension": "dialogue",
+        "version": "0.1.0",
+        "status": "active",
+        "activation_hint": ["m2.编剧", "m3.成文"],
+        "provenance": {
+          "source": "拆书样本回流：合成样本（章节×3 单元），人审后落卡",
+          "refs": ["u003"]
+        },
+        "updated": "2026-10-10",
+        "clauses": [
+          {
+            "rule_id": "DC-DLG-OFF-AXIS",
+            "tier": "A",
+            "severity": "minor",
+            "detect": "对峙双方的对白回合",
+            "judge": "优势方的应答偏移问句轴心且偏移处携带新信息；连续三个回合贴轴直答判平",
+            "repair": "让被追问一方的回应偏开问句轴心，并在偏移处补一枚新信息筹码",
+            "provenance_refs": ["u003"]
+          }
+        ],
+        "scanner_qids": []
+      }
+    }
+  ],
+  "summary": "合成示例拆书报告（deconstruct-report@1）：2 条草稿发现（hook×1、dialogue×1），每条 claim 均带样本内 evidence 引文，refs 可回溯采样单元；status=reviewed 表示人审已过、可经 tools/deconstruct.py land 回流。findings 不等于规则——land 前须人审，draft 落卡显式拒绝。",
+  "status": "reviewed"
+}

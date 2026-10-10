@@ -1,6 +1,6 @@
 # 契约层导读（contracts/）
 
-> 30 份 JSON Schema + 2 份 OpenAPI 生成物。**所有跨进程数据结构必须有 schema**——这是本目录存在的唯一理由。
+> 31 份 JSON Schema + 2 份 OpenAPI 生成物。**所有跨进程数据结构必须有 schema**——这是本目录存在的唯一理由。
 > 规格全文见 [`ARCHITECTURE.md`](ARCHITECTURE.md)。
 
 ## 硬规矩
@@ -65,6 +65,7 @@
 | `rule.schema.json` | `rule-card@1` 规则卡：knowledge/rules/*.md 的规则 DSL 信封（ARCHITECTURE §3.4）。必填信封 = 存量卡实际形状（零迁移）；`clauses` / `scanner_qids` / `format` 是批次2.4（写诊改三相打通）收敛字段，铺开前缺省合法。**语料不是闸**——severity 是评审优先级，不构成提交拦截 |
 | `diagnosis-report.schema.json` | `diagnosis-report@1` 诊断报告：写/诊/改三相承载体，**人 / agent / 宿主三方可读**。`evidence[]`（程序判定，机读证据）与 `opinion{}`（模型观点，仅供参考）硬分离；建议必须 = 规则修复策略的反向表达（ARCHITECTURE §3.2 同源铁律）。与 `diagnostics.schema.json` 分工：那边记「机器检查没跑成」（旁路留痕），这边承载「跑成了的检查的结果」 |
 | `repair-plan.schema.json` | `repair-plan@1` 修复改单：诊→改的承载（批次2.5 P3）。`rule_ref`（`kb/rules/<域>#<AE-id>`，须指卡上真实条款）+ `repair`（逐字取自卡内 `clauses[].repair`，同源铁律）+ `diff`（unified diff，产出后回填）+ `status` 生命周期（proposed→applied/rejected、applied→rolled_back，**推进归人**）。tier 值域 **S\|A 不含 B**——B 级绝不入单（ARCHITECTURE §3.3）；工具链只产 diff 绝不写正文，回滚走 snapshots。校验/记账面 = `tools/repair-apply.py`，执行件 = `mf_apply_repairs`（`core/src/agent.ts`），诊产物过门 = `tools/diagnosis-validate.py` |
+| `deconstruct.schema.json` | `deconstruct-report@1` 拆书报告：拆（逆向）的承载（批次3a P5）。`sampling` 抽样策略与单元清单（**抽样优先，禁止全书记忆化冒充拆书**——报告只带引用位置与引文，quote 截断限长 200 字）+ `findings`（claim 归因 + evidence 样本内引文——**无引文的 claim 不许产出**（防编造）+ provenance 单元回溯 + candidate_card 草稿卡：rule-card@1 信封同构、id 走 `kb/deconstruct/`/`pj-rules/` 命名空间、条款 id 用 DC- 前缀标记「样本提取」出身）+ `status` draft→reviewed→landed（**findings 不等于规则，归因是人审后的落卡前置**——land 只收 reviewed，draft 拒绝）。采样/校验/落卡 = `tools/deconstruct.py`，归因件 = `mf_deconstruct`（`core/src/agent.ts`） |
 | `project-index.schema.json` | `project-index@1` 项目文件体系索引：`role` 角色标注（human=人写 / generated=工具产物 / hybrid=生成后人手改）+ `hash`/`mtime` 失效策略基础（对比即知手改，generated 被手改须升 hybrid）。只落数据根，双根不合一 |
 
 ### 协议面
@@ -85,8 +86,4 @@
 
 ## 待补契约（对应 ARCHITECTURE.md §10）
 
-| 拟新增 schema | 批次 | 用途 |
-| --- | --- | --- |
-| `deconstruct.schema.json` | 批次3 | 拆（逆向）产出：带 `provenance.refs` 的规则卡（与 rule-card@1 同构） |
-
-**契约先行**：以上落地前不写对应实现。rule / diagnosis-report / project-index 三份已于 2026-10-10（批次2 R2.1）落地，见「四相能力与项目索引」节。
+暂无——批次3a P5 落地后，四相能力契约（rule / diagnosis-report / repair-plan / deconstruct / project-index）全部到位。**契约先行**：后续新增能力仍先出 schema 再写实现。

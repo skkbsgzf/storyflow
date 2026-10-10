@@ -52,7 +52,7 @@ agent runtime（pi-agent-core）+ 模块化 flow + MCP + 确定性工具链 + �
 
 ## 2 · 契约层（contracts/）
 
-30 份 JSON Schema + 2 份 OpenAPI 生成物。**所有跨进程数据结构必须有 schema**。核心几张：
+31 份 JSON Schema + 2 份 OpenAPI 生成物。**所有跨进程数据结构必须有 schema**。核心几张：
 
 | schema | 作用 |
 | --- | --- |
@@ -139,6 +139,8 @@ rule_id / tier(S|A|B) / scope / 检测目标
 ```
 
 **统一形态**：拆与诊是同一台机器的两个方向——诊输入文本、规则来自 KB；拆输入文本、**产出**规则卡。**成本纪律**：抽样优先，先小样本验证规则假设再扩大采样；禁止「全书记忆化」冒充拆书（那是 RAG，不是拆）。拆的产物与写的产物**同构**（带 provenance 的规则卡）。
+
+现状（批次3a P5 已落地 2026-10-10）：`contracts/deconstruct.schema.json`（deconstruct-report@1 拆书报告——source 样本标识 / sampling 抽样策略与单元清单（含 --expand 痕迹）/ findings（claim 归因 + evidence 样本内引文 + provenance 单元回溯 + candidate_card 草稿卡内嵌）/ status 生命周期 draft→reviewed→landed——**findings 不等于规则，归因是人审后的落卡前置**）；确定性件 `tools/deconstruct.py`（sample 三切分采样器：默认头/中/尾小样本、--expand 等距扩采、章节/场景/字数三模式、清单只带单元元数据绝不搬运正文；report 契约手工等价校验+摘要；land 回流通道：draft 拒绝、rule-card@1 信封自检、同 id 卡已存在拒绝覆盖，全局落 `knowledge/deconstruct/<域>-<来源slug>.md`、项目落 `projects/<id>/规则/`）；归因件 `mf_deconstruct`（`core/src/agent.ts`，与 mf_analyze_card 同模式的 agent 工具环局部件，**动词单表未动**——输入单元数超上限显式拒绝、每条 claim 必须带样本内引文否则拒绝（防编造）、只产 status=draft 草稿绝不落卡）。落卡是 rule-card@1 信封形状但**不走 kb/rules 家法**：id 用 `kb/deconstruct/`（项目落点 `pj-rules/`）命名空间，clauses[].rule_id 用 DC- 前缀标记「样本提取」出身（与台账迁移的 AE-id 区分，防搬运别卡条款 id），kit-lint E12 不扫 knowledge/deconstruct/（落卡自检归 land）。
 
 ---
 
@@ -264,7 +266,7 @@ docs/
 | kb-rag 亲和 + 知识图谱自包含页 | 批次2.5 P2（✅ 已落地 2026-10-10：`core/src/kb.ts` 双根合并策略升级——去重/同分项目优先/k 分配（各根 top-k ⊕ 截回 k）＋kbRead `source` 溯源，口径见函数注释、`kb-project.test.ts` 12 例钉死；`tools/kb-affinity.py` 卡↔消费者对账收据（孤儿记账不失败、structural 悬空才 exit 1，kit-lint 门禁口径不动）；`tools/kb-graph-page.py`＋`kb-graph-template.html` 零依赖力导向图谱页（拖拽/平移/缩放/悬停/图例隔离/枢纽常显，--project 双根合并，零外部资源断言＋幂等）） | `core/src/kb.ts` + `tools/kb-affinity.py` + `tools/kb-graph-page.py` |
 | 改相闭环 + 诊产物对齐 | 批次2.5 P3（✅ 已落地 2026-10-10：`contracts/repair-plan.schema.json` repair-plan@1 ＋ `mf_apply_repairs`（`core/src/agent.ts`，产 diff 不写盘、B 级拒绝、repair 同卡面强校验）＋ `tools/repair-apply.py`（validate/dry-run/status 记账，不做 diff 应用）＋ `tools/diagnosis-validate.py`（diagnosis-report@1 校验＋quality-scan 收据映射 --map）＋ qid 反向对账诚实边界（见 §3.4 改相段，不硬造随批次3）） | `contracts/repair-plan.schema.json` + `core/src/agent.ts` + `tools/repair-apply.py` + `tools/diagnosis-validate.py` |
 | 收尾杂项（阶段动作清单/解释器可配置/干跑/防覆盖） | 批次2.5 P4（✅ 已落地 2026-10-10：`docs/integration/host-integration.md` §六 项目阶段动作五节点约定表；`core/src/minitools.ts` 脚本壳解释器可配置——`MINIFLOW_PYTHON`/`STORYFLOW_PYTHON` 覆盖、缺省回退 `python` 零破坏（python stub 环境例治本入口）；`tools/kit-compile.py --check` 干跑（双模式、零写盘）；`tools/rules-init.py` 防覆盖门（存量 rule-card@1 收敛字段默认拒绝，--force 才覆盖）） | `docs/integration/host-integration.md` + `core/src/minitools.ts` + `tools/kit-compile.py` + `tools/rules-init.py` |
-| 拆（逆向）契约 | 批次3 | `contracts/deconstruct.schema.json` |
+| 拆（逆向）——契约+采样器+归因件+回流通道（四相收口） | 批次3a P5（✅ 已落地 2026-10-10：`contracts/deconstruct.schema.json` deconstruct-report@1 ＋ `tools/deconstruct.py`（sample/report/land，--selfcheck）＋ `mf_deconstruct`（`core/src/agent.ts`，agent 工具环局部件，动词单表未动）＋ `core/test/p5-deconstruct.test.ts`；归因走 LLM 打桩测试，采样/校验/落卡是确定性件） | `contracts/deconstruct.schema.json` + `tools/deconstruct.py` + `core/src/agent.ts` |
 | 本地快诊断服务化（S 级 + laya 环境回填 + 静默追写） | 批次3 | `tools/laya-scan.py` 服务化 + 协议面端点 |
 | 图文视频能力（seedance 族） | 批次3 | 届时按声明式口径重建 |
 

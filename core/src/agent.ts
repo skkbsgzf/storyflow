@@ -619,6 +619,247 @@ export function repairTools(cfg: AgentModelConfig, kernel: Kernel, projectDir: s
   ];
 }
 
+// ── 拆相（批次3a P5）：样本片段 → 规则卡草稿（deconstruct-report@1 findings）─────
+/**
+ * 拆相成本纪律的两个硬数（ARCHITECTURE §3.5：抽样优先，禁止全书记忆化冒充拆书）：
+ *  · 输入单元数上限——超出显式拒绝（回 tools/deconstruct.py sample 重新小样本）；
+ *  · evidence 引文限长——截断限长（报告只带引文，绝不搬运全文；与 tools/deconstruct.py QUOTE_MAX 一致）。
+ */
+export const DECONSTRUCT_MAX_UNITS = 6;
+export const DECONSTRUCT_QUOTE_MAX = 200;
+
+/**
+ * 采样单元解析（确定性）：samples 里按出现顺序取 distinct【标记】→ u001 式单元 id；
+ * 无标记 = 整段视为 1 单元。chars = 本标记到下一标记之间的字符数（清单元数据，不搬运正文）。
+ */
+export function deconstructUnits(samples: string): { id: string; label: string; chars: number }[] {
+  const marks = [...samples.matchAll(/【([^】\n]{1,40})】/g)];
+  if (!marks.length) return [{ id: "u001", label: "（未标注·整段）", chars: samples.length }];
+  const first: { label: string; pos: number; end: number }[] = [];
+  const seen = new Set<string>();
+  for (const m of marks) {
+    const label = (m[1] ?? "").trim();
+    if (!label || seen.has(label) || m.index === undefined) continue;
+    seen.add(label);
+    first.push({ label, pos: m.index, end: m.index + m[0].length });
+  }
+  return first.map((m, i) => ({
+    id: `u${String(i + 1).padStart(3, "0")}`,
+    label: m.label,
+    chars: Math.max(0, (first[i + 1]?.pos ?? samples.length) - m.end),
+  }));
+}
+
+/**
+ * 拆相 prompt 组装（与 buildCardDiagnosisPrompt / buildCardRepairPrompt 同先例的纯函数）：
+ * 采样单元文本 → 归因结论 + rule-card@1 信封草稿卡。拆相纪律全部压进 prompt：
+ *  · 每条 claim 必须带样本内 evidence 引文（location + quote），无引文的 claim 不许产出——防编造；
+ *  · 只基于所给采样单元归纳（抽样优先），没读过的内容不得进结论或引文——不做全文记忆化；
+ *  · candidate_card 是 rule-card@1 信封草稿：id=kb/deconstruct/<域>-<来源slug>，clauses[].rule_id
+ *    用 DC- 前缀新 id（绝不复用其他卡的 AE-id——那是台账迁移出身，搬来即拆书结论造假），
+ *    scanner_qids 留空数组（qid 未经逐卡人工核对不得编造）。
+ * 输出 JSON 对齐 deconstruct-report@1（contracts/deconstruct.schema.json）的 findings 语义字段位。
+ */
+export function buildDeconstructPrompt(samples: string, dimension: string, hint?: string, sourceTitle?: string): string {
+  const units = deconstructUnits(samples);
+  const unitLine = units.map((u) => `${u.id}（标记：${u.label}，${u.chars} 字）`).join("、");
+  return `你是拆书归因器（拆相：从样本反向提取规则草稿，回流 KB 供写/诊/改复用）。只依据下面给出的采样单元做归因。
+
+【采样单元（按标记出现顺序编号）】${unitLine}
+【落卡域】${dimension}
+【拆解方向（可选提示）】${hint || "（未给——按样本可见的可复用规律自由提炼）"}
+【样本名】${sourceTitle || "（未提供——人审时补全）"}
+
+【采样单元文本】
+${samples.slice(0, 24000)}
+
+输出 JSON（deconstruct-report@1 的 findings 语义）：
+{"findings":[{"dimension":"${dimension}","claim":"<归因结论：为什么有效，不是样本复述>","evidence":[{"location":"<单元id+单元内定位，如 u001 首段末句>","quote":"<原文摘录≤${DECONSTRUCT_QUOTE_MAX}字>"}],"provenance":{"refs":["<采样单元id>"]},"candidate_card":{"id":"kb/deconstruct/${dimension}-<来源slug小写连字符>","type":"rule-corpus","title":"<域> · <样本>提炼（<一句话>）","dimension":"${dimension}","version":"0.1.0","status":"active","activation_hint":["<生产线相位，如 m2.编剧>"],"provenance":{"source":"拆书样本回流（人审后落卡）","refs":["<采样单元id>"]},"clauses":[{"rule_id":"DC-<域大写>-<号>","tier":"S|A|B","severity":"block|major|minor","detect":"<这条条款看什么>","judge":"<判定逻辑：可复现或可归因>","repair":"<修复策略：命中后怎么改>","provenance_refs":["<采样单元id>"]}],"scanner_qids":[]}}],"summary":"<人读总结>"}
+字段纪律（拆相铁律）：
+- 每条 claim 必须带样本内 evidence 引文（location=单元id+单元内定位，quote ≤${DECONSTRUCT_QUOTE_MAX} 字原文摘录）；无引文的 claim 不许产出——防编造，B 级主观规律同样必须给引文。
+- 只基于所给采样单元归纳（抽样优先）：没出现在上面的内容不得写进结论或引文；禁止全书记忆化——那是 RAG，不是拆。
+- candidate_card 是 rule-card@1 信封草稿：clauses[].rule_id 用 DC- 前缀新 id，绝不复用其他卡的 AE-id（那是台账迁移出身，搬来即造假）；scanner_qids 留空数组——qid 未经逐卡人工核对不得编造。
+- findings 不等于规则：产物是待人审草稿（status=draft），人审通过后由 tools/deconstruct.py land 回流，本工具不落卡、不写盘。`;
+}
+
+/** 从模型回复里取 JSON：剥代码围栏后解析；失败返回 undefined（调用方显式报错，不静默）。 */
+function parseJsonLenient(resp: string): Record<string, unknown> | undefined {
+  const t = resp.trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+  try {
+    return JSON.parse(t) as Record<string, unknown>;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * 拆相工具族（批次3a P5）：与 mf_analyze_card 同模式（LLM 走 chatOnce，fetch 打桩可测），但方向相反——
+ * 诊吃「卡 + 正文」出证据；拆吃「样本片段」出规则卡草稿。纪律：
+ *  · 输入单元数超上限显式拒绝（INVALID_INPUT）——抽样优先，不做全文记忆化；
+ *  · 清单式 samples（只有单元元数据没有文本）显式拒绝——归因必须有文本可读；
+ *  · 模型产物逐条硬校验：无 evidence 引文的 claim 拒绝（防编造）、refs 悬空拒绝（机器可溯断链）、
+ *    条款缺柱子（detect/judge/repair）拒绝（拆的目的是一等公民条款）、rule_id 非 DC- 前缀拒绝（防搬运台账 id）；
+ *  · 确定性盖章（不劳模型猜）：format/type/updated/version/scanner_qids=[]，引文超长截断，
+ *    产出 status=draft 的完整 deconstruct-report@1 骨架；**绝不落卡不写盘**——回流归人审后的 tools/deconstruct.py land。
+ */
+export function deconstructTools(cfg: AgentModelConfig): AgentTool[] {
+  const chatOnce = mkChatOnce(cfg);
+
+  const deconstruct = async (args: Record<string, unknown>): Promise<string> => {
+    const samples = String(args.samples ?? "").trim();
+    if (!samples) {
+      throw new KernelError("INVALID_INPUT", 400, "缺 samples 参数（采样单元文本片段，以【单元id】行标注单元边界——tools/deconstruct.py sample --dump 的输出可直接拼接）");
+    }
+    // 清单式输入显式拒绝：采样清单只有单元元数据（id/位置/字数），没有可归因的文本
+    try {
+      const j = JSON.parse(samples) as { units?: unknown } | null;
+      if (j && typeof j === "object" && Array.isArray(j.units)) {
+        throw new KernelError("INVALID_INPUT", 400, "samples 是采样清单（只有单元元数据，没有文本）——用 tools/deconstruct.py sample --dump 逐单元取原文，以【单元id】行标注后拼接再调");
+      }
+    } catch (e) {
+      if (e instanceof KernelError) throw e;
+      // 非 JSON——正常文本，继续
+    }
+    const units = deconstructUnits(samples);
+    if (units.length > DECONSTRUCT_MAX_UNITS) {
+      throw new KernelError("INVALID_INPUT", 400, `采样单元 ${units.length} 个超上限 ${DECONSTRUCT_MAX_UNITS}——抽样优先（ARCHITECTURE §3.5）：回 tools/deconstruct.py sample 重新小样本或减少单元，不做全文记忆化`);
+    }
+    const dimension = String(args.dimension ?? "").trim();
+    if (!/^[a-z][a-z0-9-]*$/.test(dimension)) {
+      throw new KernelError("INVALID_INPUT", 400, `dimension 形状非法：${dimension || "（空）"}（落卡域须小写 slug，如 hook / pacing）`);
+    }
+    const parsed = parseJsonLenient(await chatOnce(buildDeconstructPrompt(samples, dimension, args.hint === undefined ? undefined : String(args.hint), args.source_title === undefined ? undefined : String(args.source_title))));
+    if (!parsed || !Array.isArray(parsed.findings)) {
+      throw new KernelError("INVALID_INPUT", 400, "模型输出缺 findings 数组——拆相产物必须是 deconstruct-report@1 findings 草稿（契约 contracts/deconstruct.schema.json），请重试或收紧 hint");
+    }
+    const ids = units.map((u) => u.id);
+    const notes: string[] = [];
+    let truncated = 0;
+    const findings = (parsed.findings as Record<string, unknown>[]).map((f, i) => {
+      const claim = String(f.claim ?? "").trim();
+      const dim = /^[a-z][a-z0-9-]*$/.test(String(f.dimension ?? "")) ? String(f.dimension) : dimension;
+      if (dim !== dimension) notes.push(`findings[${i}].dimension=${dim} 与目标域 ${dimension} 不一致，已按目标域归一`);
+      // ① evidence 纪律（防编造的锚）：无引文的 claim 显式拒绝，引文超长截断限长
+      const ev = f.evidence;
+      if (!Array.isArray(ev) || ev.length === 0) {
+        throw new KernelError("INVALID_INPUT", 400, `findings[${i}] 无 evidence 引文——每条 claim 必须带样本内引文，无引文的 claim 不许产出（防编造）：claim=${claim.slice(0, 60)}`);
+      }
+      const evidence = (ev as Record<string, unknown>[]).map((e, j) => {
+        const location = String(e.location ?? "").trim();
+        let quote = String(e.quote ?? "").trim();
+        if (!location || !quote) {
+          throw new KernelError("INVALID_INPUT", 400, `findings[${i}].evidence[${j}] 缺 location/quote——无引文的证据不是证据（防编造，B 级同样必须给引文）`);
+        }
+        if (quote.length > DECONSTRUCT_QUOTE_MAX) {
+          quote = quote.slice(0, DECONSTRUCT_QUOTE_MAX);
+          truncated++;
+        }
+        return { location, quote };
+      });
+      // ② 机器可溯：refs 必须能对回采样单元（悬空即拒绝）
+      const provRefs = (f.provenance as { refs?: unknown } | undefined)?.refs;
+      const refs = Array.isArray(provRefs) ? (provRefs as unknown[]).map((r) => String(r)) : [];
+      const dangling = refs.filter((r) => !ids.includes(r));
+      if (!refs.length || dangling.length) {
+        throw new KernelError("INVALID_INPUT", 400, `findings[${i}].provenance.refs 悬空或缺失（可用单元：${ids.join("、")}；非法：${dangling.join("、") || "无"}）——机器可溯断链即拒绝`);
+      }
+      // ③ 草稿卡结构齐备性：缺柱子的条款只是读后感；id 非 DC- 前缀 = 搬运台账出身，拒绝
+      const card = f.candidate_card;
+      if (!card || typeof card !== "object" || Array.isArray(card)) {
+        throw new KernelError("INVALID_INPUT", 400, `findings[${i}] 缺 candidate_card——拆的产物是 rule-card@1 信封草稿，没有草稿卡的 claim 只是读后感`);
+      }
+      const c = card as Record<string, unknown>;
+      const clauses = c.clauses;
+      if (!Array.isArray(clauses) || clauses.length === 0) {
+        throw new KernelError("INVALID_INPUT", 400, `findings[${i}].candidate_card.clauses 缺失或空——草稿卡至少一条结构化条款（rule_id/tier/severity/detect/judge/repair/provenance_refs）`);
+      }
+      for (const [j, raw] of (clauses as Record<string, unknown>[]).entries()) {
+        const cl = raw as Record<string, unknown>;
+        for (const k of ["rule_id", "tier", "severity", "detect", "judge", "repair"] as const) {
+          if (!String(cl[k] ?? "").trim()) {
+            throw new KernelError("INVALID_INPUT", 400, `findings[${i}].candidate_card.clauses[${j}] 缺 ${k}——拆的目的是一等公民条款（诊改同源：无 detect/judge/repair 的条款用不了）`);
+          }
+        }
+        if (!/^DC-[A-Z0-9-]+$/.test(String(cl.rule_id))) {
+          throw new KernelError("INVALID_INPUT", 400, `findings[${i}].candidate_card.clauses[${j}].rule_id=${String(cl.rule_id)} 非 DC- 前缀——条款 id 必须是新提炼 id，复用其他卡的 AE-id = 拆书结论造假（冒充台账出身）`);
+        }
+        if (!["S", "A", "B"].includes(String(cl.tier)) || !["block", "major", "minor"].includes(String(cl.severity))) {
+          throw new KernelError("INVALID_INPUT", 400, `findings[${i}].candidate_card.clauses[${j}] tier/severity 非法（tier∈S|A|B，severity∈block|major|minor，口径 contracts/rule.schema.json）`);
+        }
+      }
+      const cardId = /^kb\/deconstruct\/[a-z0-9-]+$/.test(String(c.id ?? "")) ? String(c.id) : `kb/deconstruct/${dim}-draft`;
+      if (cardId !== c.id) notes.push(`findings[${i}].candidate_card.id 缺失或形状非法，已按落点命名空间补为 ${cardId}`);
+      const hint0 = Array.isArray(c.activation_hint) ? (c.activation_hint as unknown[]).map(String).filter(Boolean) : [];
+      const prov = (c.provenance ?? {}) as { source?: unknown };
+      const normCard: Record<string, unknown> = {
+        format: "rule-card@1",
+        id: cardId,
+        type: "rule-corpus",
+        title: String(c.title ?? "").trim() || `${dimension} 域拆流草稿（待命名）`,
+        dimension,
+        version: String(c.version ?? "").trim() || "0.1.0",
+        status: c.status === "retired" ? "retired" : "active",
+        activation_hint: hint0.length ? hint0 : ["拆流草稿——人审时定激活相位"],
+        provenance: {
+          source: String(prov.source ?? "").trim() || "拆书样本回流（deconstruct-report@1 草稿，人审后由 tools/deconstruct.py land 落卡）",
+          refs,
+        },
+        updated: new Date().toISOString().slice(0, 10),
+        clauses: (clauses as Record<string, unknown>[]).map((cl) => ({
+          rule_id: String(cl.rule_id),
+          tier: cl.tier,
+          severity: cl.severity,
+          detect: String(cl.detect),
+          judge: String(cl.judge),
+          repair: String(cl.repair),
+          // 条款级来源（拆（逆向）回流条款必须带，rule-card@1 家法）：缺省回填本 finding 的单元 refs
+          provenance_refs: Array.isArray(cl.provenance_refs) && (cl.provenance_refs as unknown[]).length
+            ? (cl.provenance_refs as unknown[]).map(String)
+            : refs,
+        })),
+        // 拆流草稿一律留空：qid 未经逐卡人工核对不得编造（kit-lint E13 同款防编造家法）
+        scanner_qids: [],
+      };
+      return { dimension, claim, evidence, provenance: { refs }, candidate_card: normCard };
+    });
+    const report = {
+      format: "deconstruct-report@1",
+      source: {
+        title: String(args.source_title ?? "").trim() || "（未提供——人审时补全）",
+        file: "（未标注——人审时补全）",
+      },
+      sampling: {
+        mode: "片段",
+        units: units.map((u) => ({ id: u.id, location: `片段标记「${u.label}」`, chars: u.chars })),
+        expanded: false,
+        note: notes.join("；") || undefined,
+      },
+      findings,
+      summary: `${String(parsed.summary ?? "").trim()}｜status=draft：findings 不等于规则，人审（对引文、认归因、定条款）后手工把 status 推为 reviewed，再以 tools/deconstruct.py land 回流（draft 落卡拒绝）；${truncated ? `${truncated} 条引文超 ${DECONSTRUCT_QUOTE_MAX} 字已截断限长；` : ""}本工具不落卡不写盘。`,
+      status: "draft",
+    };
+    return JSON.stringify(report, null, 1);
+  };
+
+  return [
+    {
+      name: "mf_deconstruct",
+      description: "[拆相] 样本片段→规则卡草稿（deconstruct-report@1 findings，status=draft）：samples=采样单元文本片段（以【单元id】行标注边界，≤6 单元——超限显式拒绝，抽样优先用 tools/deconstruct.py sample）+dimension=落卡域+hint/source_title 选传。每条 claim 必须带样本内 evidence 引文，无引文的 claim 不许产出（防编造）；只产草稿不等于规则——落卡归人审后的 tools/deconstruct.py land（draft 拒绝、同 id 拒绝覆盖），本工具绝不落卡不写盘",
+      parameters: {
+        type: "object",
+        properties: {
+          samples: { type: "string", description: "采样单元文本片段（≤6 单元，以【单元id】行标注单元边界；tools/deconstruct.py sample --dump 的输出可直接拼接）" },
+          dimension: { type: "string", description: "落卡域（小写 slug，如 hook / pacing——草稿卡回流到哪张卡的家）" },
+          hint: { type: "string", description: "拆解方向提示（可选：想提炼什么，如「开篇钩子的结构规律」）" },
+          source_title: { type: "string", description: "样本名（可选：书名/样本标识，进报告 source.title 供人审溯源）" },
+        },
+        required: ["samples", "dimension"],
+      },
+      exec: deconstruct,
+    },
+  ];
+}
+
 export type AgentEvent =
   | { type: "delta"; text: string }
   | { type: "thinking_delta"; text: string }
@@ -670,6 +911,7 @@ export async function* runTurn(
     ...await buildTools(kernel, projectId, mcp),
     ...analysisTools(cfg, kernel, projectDir, repoRoot),
     ...repairTools(cfg, kernel, projectDir, repoRoot),
+    ...deconstructTools(cfg),
   ];
   const llmTools = tools.map((t) => ({ type: "function", function: { name: t.name, description: t.description, parameters: t.parameters } }));
   const systemMsg: AgentMessage = { role: "system", content: buildSystemPrompt(kernel, projectId) };

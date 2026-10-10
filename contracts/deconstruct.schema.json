@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "miniflow/deconstruct-report",
+  "title": "deconstruct-report@1 · 拆书报告（拆（逆向）的承载体）",
+  "description": "拆（从既有样本反向提取规则，回流 KB）的契约（批次3a P5 契约先行，ARCHITECTURE §3.5）：拆与诊是同一台机器的两个方向——诊输入文本、规则来自 KB；拆输入文本、**产出**规则卡。三条硬规矩：① **抽样优先，禁止全书记忆化冒充拆书**——sampling 必须声明切分模式与采样单元清单，报告只带引用位置与引文（evidence.quote 截断限长 200 字）；搬全书进报告的是 RAG，不是拆。② **findings 不等于规则**——每条 finding 是待人审的草稿：claim 是归因结论、candidate_card 是 rule-card@1 信封草稿（原样内嵌）；归因是人审后的落卡前置——人审（对引文、认归因、定条款）把 status 推到 reviewed 后才可经 tools/deconstruct.py land 回流（draft 落卡显式拒绝；状态推进是人的动作，工具链自己永不把 draft 推成 reviewed——与 repair-plan@1 同纪律）。③ **机器可溯**——每条 claim 必须带样本内 evidence（location + quote），无引文的 claim 不许产出（防编造）；provenance.refs 回溯 sampling.units 采样单元，report/land 逐条对账、悬空点名。candidate_card 沿用 rule-card@1 信封字段（contracts/rule.schema.json）但**不走 kb/rules 家法**：id 用 kb/deconstruct/<域>-<来源slug>（落项目时由 land 显式改写 pj-rules/<项目id>/<stem>），provenance.refs 回溯采样单元而非台账 AE-id，clauses[].rule_id 用 DC- 前缀（标记「样本提取」出身，与「台账迁移」的 AE-id 区分，兼防搬运别卡条款 id）。",
+  "type": "object",
+  "required": ["format", "source", "sampling", "findings", "summary", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "const": "deconstruct-report@1" },
+    "source": {
+      "type": "object",
+      "description": "样本标识：拆的是哪部/哪份样本。发布口径：真实项目语料不入库——file 只是持有人本机定位，报告入库/传输前自行脱敏",
+      "required": ["title", "file"],
+      "additionalProperties": false,
+      "properties": {
+        "title": { "type": "string", "description": "书名/样本名（人读；land 由卡 id 派生落盘文件名，title 供溯源）" },
+        "file": { "type": "string", "description": "样本文件路径（机读定位；样本盘不在手时报告仍可读——evidence 引文即唯一随卡凭据）" },
+        "scope": { "type": "string", "description": "拆解范围声明（如「全本抽样 3 单元」「第 1–12 章」）" }
+      }
+    },
+    "sampling": {
+      "type": "object",
+      "description": "抽样策略与单元清单（抽样优先纪律的承载体）：默认小样本（头/中/尾各一单元），--expand 才扩大。sampling.units 是 evidence 可溯性的坐标系——finding.provenance.refs 引用的单元 id 必须在此清单内",
+      "required": ["mode", "units", "expanded"],
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "enum": ["章节", "场景", "片段"],
+          "description": "切分模式（tools/deconstruct.py sample --unit 三切分）：章节=按 md 标题 / 场景=按空行块 / 字数=定长窗格；片段=调用方自备文本片段（mf_deconstruct 直喂的缺省态）"
+        },
+        "units": {
+          "type": "array",
+          "minItems": 1,
+          "description": "采样单元清单（只含元数据：id/位置/字数——绝不全量搬运文本）",
+          "items": { "$ref": "#/definitions/unit" }
+        },
+        "expanded": {
+          "type": "boolean",
+          "description": "扩采痕迹：false=默认小样本（头/中/尾）；true=用过 --expand N 扩采。成本纪律：先小样本验证规则假设再扩大"
+        },
+        "note": { "type": "string", "description": "采样说明（OCR 缺漏/单元缺失等风险标注——样本不足不归纳，沿 knowledge/deconstruct/protocol.md 三态纪律）" }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "description": "拆解发现：每条 = 归因结论（claim）+ 样本内证据（evidence）+ 草稿卡（candidate_card）。允许空数组（拆完一无所获也是诚实结论，summary 说明即可）；land 要求至少一条",
+      "items": { "$ref": "#/definitions/finding" }
+    },
+    "summary": {
+      "type": "string",
+      "description": "人读总结。凡计数声明（「拆出 N 条」类）须与 findings 可对账——报数必附收据，无收据 = 删声明（铁律 2）"
+    },
+    "status": {
+      "enum": ["draft", "reviewed", "landed"],
+      "description": "报告生命周期：draft=LLM 草稿待人审（mf_deconstruct 产出的初始态；归因是人审后的落卡前置）→ reviewed=人已核（引文对过样本、归因与条款认可——只有人能推到此态）→ landed=已回流落卡（land 成功后回写）。draft 落卡在 land 显式拒绝"
+    }
+  },
+  "definitions": {
+    "unit": {
+      "type": "object",
+      "description": "采样单元（元数据，不含正文）",
+      "required": ["id", "location", "chars"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^u[0-9]{3,}$", "description": "单元 id（u001 起确定性编号；evidence.location 与 provenance.refs 引用它）" },
+        "location": { "type": "string", "description": "样本内位置（行号段 L12-L88 / 字符段 C0-C1999；章节模式另给 title）" },
+        "chars": { "type": "integer", "minimum": 0, "description": "单元字符数" },
+        "title": { "type": "string", "description": "单元标题（章节模式 = md 标题文本；其他模式可空）" }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "description": "单条样本内证据（防编造的锚）：location 可定位、quote 可对照——引文必须真的出自采样单元",
+      "required": ["location", "quote"],
+      "additionalProperties": false,
+      "properties": {
+        "location": { "type": "string", "description": "样本内定位：单元 id + 单元内定位（如「u001 开篇第 2 段」）" },
+        "quote": { "type": "string", "minLength": 1, "maxLength": 200, "description": "原文引用（摘录，截断限长 200 字——报告只带引文，绝不搬运全文）" }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "description": "单条拆解发现：归因（claim）+ 证据（evidence ≥1——无引文的 claim 不许产出）+ 草稿卡（candidate_card）",
+      "required": ["dimension", "claim", "evidence", "provenance", "candidate_card"],
+      "additionalProperties": false,
+      "properties": {
+        "dimension": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "落卡域（小写 slug，如 hook / pacing）；与 candidate_card.dimension 一致（report/land 校验点名）"
+        },
+        "claim": {
+          "type": "string",
+          "minLength": 1,
+          "description": "归因结论：从「有什么」到「为什么有效」的判断（不是样本复述）。findings 不等于规则——这是待人审的草稿"
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "description": "样本内证据（≥1 条）：无引文的 claim 不许产出（防编造）",
+          "items": { "$ref": "#/definitions/evidence" }
+        },
+        "provenance": {
+          "type": "object",
+          "description": "来源账：回溯采样单元（与 evidence 同源）",
+          "required": ["refs"],
+          "additionalProperties": false,
+          "properties": {
+            "refs": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "pattern": "^u[0-9]{3,}$" },
+              "description": "采样单元 id 清单——必须能在 sampling.units[].id 里对上（report/land 逐条核账，悬空点名）"
+            }
+          }
+        },
+        "candidate_card": { "$ref": "#/definitions/candidate-card" }
+      }
+    },
+    "candidate-card": {
+      "type": "object",
+      "description": "草稿卡：rule-card@1 信封 + clauses（原样内嵌，与 contracts/rule.schema.json 同构；落卡 = md 文件，frontmatter 即本信封、正文由 land 确定性组装）。不走 kb/rules 家法：id 命名空间 kb/deconstruct/，refs 回溯采样单元，条款 id 用 DC- 前缀",
+      "required": ["id", "type", "title", "dimension", "version", "status", "activation_hint", "provenance", "updated", "clauses"],
+      "additionalProperties": false,
+      "properties": {
+        "format": { "const": "rule-card@1", "description": "契约代数标记（与 rule-card@1 同构的信封；mf_deconstruct 产出时由工具盖章）" },
+        "id": {
+          "type": "string",
+          "pattern": "^kb/deconstruct/[a-z0-9-]+$",
+          "description": "草稿卡 id = kb/deconstruct/<域>-<来源slug>，与落盘文件名 knowledge/deconstruct/<stem>.md 一一对应；land --to project 时由工具显式改写为 pj-rules/<项目id>/<stem>（项目规则命名空间，与全局不撞号）"
+        },
+        "type": { "const": "rule-corpus", "description": "语料卡标记（同 rule-card@1；回流卡按盘上核账，不入 knowledge/index.json——规则语料卡的家法）" },
+        "title": { "type": "string", "description": "卡名（人读）" },
+        "dimension": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "规则域（与所属 finding.dimension 一致）" },
+        "version": { "type": "string", "description": "卡版本（草稿 0.1.0 起，semver）" },
+        "status": { "enum": ["active", "retired"], "description": "卡生命周期（沿用 rule-card@1 值域；草稿落卡即 active）" },
+        "activation_hint": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" },
+          "description": "激活提示（沿用 rule-card@1：本卡在哪些生产线相位有用武之地；仅提示——选择权在 orchestrator 激活决策并记账，未激活不是悬空）"
+        },
+        "provenance": {
+          "type": "object",
+          "description": "来源账：拆（逆向）产物的出身声明——**refs 不带 AE-id 模式**（那是台账迁移卡的家法），回溯采样单元",
+          "required": ["source", "refs"],
+          "additionalProperties": false,
+          "properties": {
+            "source": { "type": "string", "description": "来源描述（如「拆书样本回流：<书名> <模式>×N 单元，人审后落卡」）" },
+            "refs": { "type": "array", "items": { "type": "string" }, "description": "来源引用清单（采样单元 id 等；与所属 finding.provenance.refs 同源）" }
+          }
+        },
+        "updated": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "description": "卡最后更新日期（YYYY-MM-DD；mf_deconstruct 产出时由工具盖当日，不劳模型猜日期）" },
+        "clauses": {
+          "type": "array",
+          "minItems": 1,
+          "description": "结构化条款（rule-card@1 clauses 同构）：每条是新提炼的规则条款，rule_id 用 DC- 前缀（样本提取出身）",
+          "items": { "$ref": "#/definitions/candidate-clause" }
+        },
+        "scanner_qids": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z]+\\.[a-z0-9-]+\\.v[0-9]+\\.(noul|choice|score)$" },
+          "description": "卡↔扫描器对账（沿用 rule-card@1 字段）：拆流草稿**留空数组**——qid 未经逐卡人工核对不得编造（kit-lint E13 同款防编造家法）"
+        }
+      }
+    },
+    "candidate-clause": {
+      "type": "object",
+      "description": "草稿条款（rule-card@1 clause 同构，contracts/rule.schema.json definitions.clause；tier/severity 口径以彼为准）。detect/judge/repair 在此为必填——拆的目的是产出可复用的一等公民条款（诊断/建议/修改三视图共用），缺柱子的条款只是读后感",
+      "required": ["rule_id", "tier", "severity", "detect", "judge", "repair", "provenance_refs"],
+      "additionalProperties": false,
+      "properties": {
+        "rule_id": { "type": "string", "pattern": "^DC-[A-Z0-9-]+$", "description": "条款 id：DC- 前缀（deconstruct 样本出身；新条款新 id——复用其他卡的 AE-id = 拆书结论造假，把别家台账出身冒充本样本提取）" },
+        "tier": { "enum": ["S", "A", "B"], "description": "分级（rule-card@1：S=确定性 / A=模式+上下文窗口 / B=主观审美）。B 级规则可以被拆出（它们真实存在），但 B 级绝不自动改稿的纪律不因拆而变" },
+        "severity": { "enum": ["block", "major", "minor"], "description": "评审优先级（v5.0 去闸化——**不是提交闸**）" },
+        "detect": { "type": "string", "minLength": 1, "description": "检测目标：这条条款看什么（对象+范围）" },
+        "judge": { "type": "string", "minLength": 1, "description": "判定逻辑（可复现或可归因；不写「由模型自行判断」式空话）" },
+        "repair": { "type": "string", "minLength": 1, "description": "修复策略（诊改同源铁律：无 repair 的条款出不了建议，只能出证据——拆流条款原则上都带）" },
+        "provenance_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" },
+          "description": "本条款级来源（rule-card@1 clause 家法：拆（逆向）回流条款**必须带**，区分「台账迁移」与「样本提取」两种出身）——回溯采样单元 id"
+        }
+      }
+    }
+  }
+}

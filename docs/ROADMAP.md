@@ -88,7 +88,7 @@
 
 | 包 | 内容 | 边界 |
 | --- | --- | --- |
-| P5 拆·逆向 | `contracts/deconstruct.schema.json`（契约先行）；确定性采样器 + agent 归因工具（样本→规则卡草稿，provenance.refs 回溯）；回流通道（草稿→人审→`knowledge/deconstruct/` 或项目 规则/）；抽样优先纪律（默认小样本，--expand 才扩大） | 归因是语义工作走 LLM（agent 工具形态，打桩测试）；采样/组装/落卡是确定性件 |
+| P5 拆·逆向 | ✅ 已落地 2026-10-10：①契约 `contracts/deconstruct.schema.json`（deconstruct-report@1 拆书报告——source/sampling（抽样策略+单元清单+expand 痕迹）/findings（claim 归因+evidence 样本内引文+provenance 单元回溯+candidate_card 草稿卡内嵌）/status draft→reviewed→landed）；②确定性采样器与回流通道 `tools/deconstruct.py`（sample 默认头/中/尾小样本、--expand 等距扩采、章节/场景/字数三切分、清单零正文、--dump 单单元限长；report 手工等价校验+摘要+证据覆盖度点名；land 人审前置——draft/landed 拒绝、rule-card@1 信封自检、同 id 卡已存在拒绝覆盖、全局落 `knowledge/deconstruct/<域>-<来源slug>.md` / 项目落 `projects/<id>/规则/` 并显式改写 pj-rules 命名空间、落完提示 kit-compile；--selfcheck 全链合成 fixture 自测零真实写盘）；③agent 归因工具 `mf_deconstruct`（`core/src/agent.ts`，与 mf_analyze_card 同模式——单元数超 6 显式拒绝、无样本内引文的 claim 拒绝（防编造）、rule_id 非 DC- 前缀拒绝（防搬运台账 id）、只产 status=draft 草稿绝不落卡；agent 工具环局部件，动词单表未动）；④四相一致性测试 `core/test/p5-deconstruct.test.ts` 8 例（注册/prompt 纪律/单元解析/实跑盖章与截断/阈值拒绝/草稿硬校验拒绝路径/前置拒绝/契约字段位；LLM 走 fetch 打桩） | 归因是语义工作走 LLM（agent 工具形态，打桩测试）✅；采样/组装/落卡是确定性件 ✅ |
 | P6 快诊断服务化（S 级全量 · A 级适配器） | 诊断动词进 verbs 单表（三脸同源）；S 级确定性诊断产出 diagnosis-report@1；`project-config.validation` 声明位变现（tierThreshold/cardScope/severityFloor 接入诊断路径）；静默追写宿主协议成文（默认保守：高置信 top1–2，绝不大模型进链路）；laya A 级适配器（服务形态接口 + **权重缺失显式失败带回填指引**——`runs/` 权重与 `_vendor/laya-venv` 缺位是用户侧动作，非代码可解） | 延迟预算 <100ms 若受 Python 子进程 spawn 制约，如实报告架构取舍，不为达标硬造 |
 | P7 存量 ops 过堂 + 杂项 | module-lint 39 warnings / flow-lint 3 warnings 逐条 triage（修声明/清占位/解同槽，或文档化留账）；图文视频现状核对（prose seedance 完整性，按「留库备用」口径记录）；scripts/ops 启动器注入 MINIFLOW_PYTHON（.vbs 纯 ASCII 纪律） | 凡涉及能力删留的裁决列出待拍板清单，不擅自删 op |
 
