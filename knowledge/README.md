@@ -59,6 +59,10 @@ track，不契合任何板块给 `通用`。与 track 并行的**算法维度**�
 cluster 回答「语料怎么聚」。检索消费见 `kb_search` 两段式聚簇检索；视图见
 `python tools/kb-health.py --by track|cluster`。
 
+> 习惯卡落位（批次3c R3）：用户创作习惯提炼走 `tools/habit-distill.py`——草稿期落
+> `projects/_reports/habit-drafts/`（gitignore 域，knowledge/ 零改动），人审（填 HB- 条款、推
+> status）后 `land` 落 `knowledge/craft/`（track=文风 或 通用），落完 `kit-compile` 重编译。
+
 ## 类型分类（当前定义）
 
 | type | 目录 | 回答什么 | 状态 |

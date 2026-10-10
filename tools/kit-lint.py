@@ -38,6 +38,10 @@ v5.0（工单 §三「断言覆盖/漂移类检查改挂规则引用有效性口
      重复家无害但须记账。事故前身：kit@1 时代同技能跨 kit 会静默取首个家）
   W10 规则卡收敛字段（clauses/scanner_qids）待铺开的记账（批次2.4 写诊改三相打通时收敛，
      现状缺省合法不阻断；clauses 条目缺 rule_id/tier/severity 同账）
+N3 豁免口径（批次3c R3，表 = tools/lintlib.py，逐类显式回显非静默吞）：
+  W1 孤儿技能 / W2 未用技能 / W3 悬空知识 三账先过豁免再出 warn——
+  ① 目录可达（id 级互引闭包 + 域级检索域变体）② stage:meta/留库备用/草稿待审占位
+  ③ 人工链路证据件；豁免名单指向不存在的技能 = 名单陈旧，显式点名
 用法：python tools/kit-lint.py [--strict]   # --strict 让 warning 也失败
 """
 import json, sys, glob, re
@@ -46,8 +50,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
 from lintlib import (  # noqa: E402  台账口径唯一实现（三个 lint 共用）
+    CARD_MANUAL_EXEMPT,
     DECLARED_GAPS,
+    KB_SEARCH_DOMAINS,
+    SKILL_META_EXEMPT,
+    draft_card,
+    kb_card_edges,
     ledger_entries,
+    reach_closure,
     rule_cards,
     scanner_coverage,
     sweep_retired,
@@ -274,14 +284,40 @@ def main():
                 E.append(f"[{fid}/{nid}] 同时存在 kb 与 kit/op（两套真相）")
 
     # ── 覆盖率 ────────────────────────────────────────────────
+    # N3 豁免账（批次3c R3）：三类口径显式豁免（表与裁决出处 = tools/lintlib.py），逐类回显，不是静默吞。
+    # 豁免表自检：名单指向已不存在的技能 = 名单陈旧，显式点名（防豁免名单静默失效/静默扩权）。
+    for s in sorted(SKILL_META_EXEMPT):
+        if s not in have_skill:
+            W.append(f"N3 豁免表陈旧：技能 {s} 不在 skills/——请清理 tools/lintlib.py SKILL_META_EXEMPT（豁免名单失效即删）")
+    exempt_meta_skill: list = []
     for s in sorted(have_skill - set(skill_home)):
+        if s in SKILL_META_EXEMPT:  # ② stage:meta/占位标注（T4：装配手册不绑模块是本性）
+            exempt_meta_skill.append(s)
+            continue
         W.append(f"孤儿技能（无模块归属，内核不会装载其标尺）: {s}")
     # 内核动词直调的技能不挂 flow 节点（如 orchestration-miner 由 flow_mine 组装派发）——豁免记账
     VERB_SKILLS = {"orchestration-miner"}
     for s in sorted(set(skill_home) - used_skills - VERB_SKILLS):
+        if s in SKILL_META_EXEMPT:  # ② 留库备用/待拍板占位（T5 改编族、render-prompt-seedance、T6 改判）
+            exempt_meta_skill.append(s)
+            continue
         W.append(f"未用技能（有模块归属但无 flow 引用）: {s}")
+    # ① 目录可达（id 互引闭包）＋ 域级变体（检索域）＋ ②草稿待审 ＋ ③人工链路：悬空知识四路豁免
+    reach = reach_closure(op_kb, kb_card_edges())
+    dom_wired = {i.split("/")[1] for i in op_kb if i.count("/") >= 2 and i.startswith("kb/")}
+    exempt_reach, exempt_dom, exempt_draft, exempt_manual = [], [], [], []
     for kb in sorted(kb_index - op_kb - rule_ids):
-        W.append(f"悬空知识条目（无 op 引用）: {kb}")
+        dom = kb.split("/")[1] if kb.count("/") >= 2 else ""
+        if kb in reach:  # ① 目录可达：被有消费的卡正文 id 级互引覆盖（catalog 导航 + R8 激活）
+            exempt_reach.append(kb)
+        elif dom in KB_SEARCH_DOMAINS and dom in dom_wired:  # ①域级变体：域已接线、卡面按需检索（R1 口径）
+            exempt_dom.append(kb)
+        elif draft_card(kb):  # ② 草稿待审：转正前零执行面消费属设计（Q3 §2.2）
+            exempt_draft.append(kb)
+        elif any(kb.startswith(pfx) for pfx in CARD_MANUAL_EXEMPT):  # ③ 人工链路证据件
+            exempt_manual.append(kb)
+        else:
+            W.append(f"悬空知识条目（无 op 引用）: {kb}")
 
     # ── v5.0 规则语料与扫描器台账（原「断言覆盖/声明空转」账本改挂此口径）────────
     # 口径唯一实现在 tools/lintlib.py：T/X 轨名单来自 rules-init.py，引擎实现面来自
@@ -447,6 +483,16 @@ def main():
     print(f"          ｜ R5 内容配置项 {n_cfg} 个（{len(op_configs)} 个 op 已声明）"
           f" ｜ flow 显式覆盖 {len(node_cfg_used)} ｜ overlay {len(overlay_files)} 份 / {n_patch} 条补丁")
     print(f"          ｜ rule-card@1 信封校验 {n_rule_cards} 张规则卡 ｜ laya spec qid 对账源 {n_spec_qids} 条")
+    # N3 豁免账回显（显式可审计：机制与名单 = tools/lintlib.py N3 节；逐类计数 + 目录可达逐条点名）
+    n_exempt = (len(exempt_reach) + len(exempt_dom) + len(exempt_draft)
+                + len(exempt_manual) + len(exempt_meta_skill))
+    dom_detail = "、".join(
+        f"{d}×{sum(1 for k in exempt_dom if k.split('/')[1] == d)}" for d in sorted(KB_SEARCH_DOMAINS))
+    print(f"          ｜ N3 豁免账 {n_exempt} 条（显式豁免非静默吞）"
+          f"：目录可达 {len(exempt_reach)}（{'、'.join(exempt_reach) if exempt_reach else '—'}）"
+          f" ＋ 检索域 {len(exempt_dom)}（{dom_detail}）＋ 草稿待审 {len(exempt_draft)}"
+          f" ＋ 人工链路 {len(exempt_manual)} ＋ meta/占位技能 {len(exempt_meta_skill)}"
+          f"（{'、'.join(sorted(set(exempt_meta_skill))) or '—'}）")
     for x in E:
         print("ERROR", x)
     for x in W:

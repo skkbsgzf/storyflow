@@ -29,6 +29,10 @@
   豁免）——孤儿账按 kind 细分呈现，不特判豁免、不隐藏。
   项目卡多为孤儿是正常形态（世界书/文风卡由项目 RAG 档与决策面消费，不走 op 引用）——
   如实记账，不因孤儿而失败（孤儿是语料自由，悬空才是断链）。
+  N3 豁免口径（批次3c R3，与 kit-lint 同一张表 = tools/lintlib.py，逐类回显非静默吞）：
+  孤儿账先过三类豁免再定「真孤儿」——①目录可达（被有消费的卡正文 id 级互引覆盖的闭包 +
+  域级检索域变体）②占位标注（id 以 -draft 结尾的草稿待审区）③人工链路证据件
+  （CARD_MANUAL_EXEMPT 前缀表）；豁免明细进收据 orphans_exempt 字段（逐卡带理由）。
 
 用法：
   python tools/kb-affinity.py [--project <id>] [--out <json>] [--root <dir>]
@@ -43,6 +47,14 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "tools"))
+from lintlib import (  # noqa: E402  N3 豁免口径与 kit-lint 同源（一张表，两处消费）
+    CARD_MANUAL_EXEMPT,
+    KB_SEARCH_DOMAINS,
+    draft_card,
+    kb_card_edges,
+    reach_closure,
+)
 
 # 文本面 kb 引用 token：kb/<段>/<名> 或 glob kb/<段>/*。`<` 不在字符集里，
 # 「kb/<域>/<名>」这类占位写法天然不匹配；尾斜杠截断形（kb/benchmark/）不匹配。
@@ -308,8 +320,29 @@ def main() -> int:
         rows.append({"id": cid, **card, "positive_consumers": positive, "consumers": faces})
         if positive == 0:
             orphans.append(cid)
-    orphans_by_kind: dict = {}
+
+    # ── N3 豁免账（批次3c R3）：孤儿账先过三类豁免再定「真孤儿」——与 kit-lint 同表同口径（tools/lintlib.py）
+    reach = reach_closure({r["id"] for r in rows if r["positive_consumers"] > 0}, kb_card_edges(root))
+    orphans_exempt: list = []
+    real_orphans: list = []
     for cid in orphans:
+        reason = None
+        if cid in reach:  # ① 目录可达：被有消费的卡正文 id 级互引覆盖（catalog 导航 + R8 激活）
+            reason = "目录可达（被有消费的卡正文 id 级互引覆盖；检索/装载经导航与 R8 激活可达）——N3①"
+        elif draft_card(cid):  # ② 草稿待审：-draft 占位，转正前零执行面消费属设计（Q3 §2.2）
+            reason = "草稿待审（id 以 -draft 结尾＝待审区占位，转正后接消费）——N3②"
+        else:
+            for pfx, why in CARD_MANUAL_EXEMPT.items():  # ③ 人工链路证据件
+                if cid.startswith(pfx):
+                    reason = f"人工链路证据件（{why}）——N3③"
+                    break
+        if reason:
+            orphans_exempt.append({"id": cid, "rule": reason})
+        else:
+            real_orphans.append(cid)
+
+    orphans_by_kind: dict = {}
+    for cid in real_orphans:
         k = cards[cid]["kind"]
         orphans_by_kind[k] = orphans_by_kind.get(k, 0) + 1
 
@@ -328,8 +361,17 @@ def main() -> int:
             "cards": len(rows),
             "by_kind": {k: by_kind[k] for k in sorted(by_kind)},
             "referenced_cards": len(rows) - len(orphans),
-            "orphans": len(orphans),
+            # 孤儿账 = N3 豁免后的「真孤儿」（批次3c R3）；豁免前全量在 orphans_exempt 逐卡可审计
+            "orphans": len(real_orphans),
             "orphans_by_kind": {k: orphans_by_kind[k] for k in sorted(orphans_by_kind)},
+            "orphan_exemptions": {
+                "total": len(orphans_exempt),
+                "by_rule": {
+                    "N3①目录可达": sum(1 for e in orphans_exempt if e["rule"].startswith("目录可达")),
+                    "N3②草稿待审": sum(1 for e in orphans_exempt if e["rule"].startswith("草稿待审")),
+                    "N3③人工链路": sum(1 for e in orphans_exempt if e["rule"].startswith("人工链路")),
+                },
+            },
             "dangling_structural": len(dangling_structural),
             "dangling_textual": len(textual),
             "faces": {"modules_ops": n_ops, "flows": n_flows,
@@ -337,7 +379,8 @@ def main() -> int:
             "duplicate_ids": dup,
         },
         "cards": rows,
-        "orphans": orphans,
+        "orphans": real_orphans,
+        "orphans_exempt": sorted(orphans_exempt, key=lambda e: e["id"]),
         "dangling": {
             "structural": sorted(dangling_structural, key=lambda d: (d["ref"], d["face"])),
             "textual": sorted(textual, key=lambda d: (d["ref"], d["face"])),
@@ -351,12 +394,18 @@ def main() -> int:
     print(f"kb-affinity ｜ 全局卡 {n_global}（kb {n_kb} + 规则卡 {n_rule}）"
           + (f" ｜ 项目卡 {n_proj}" if args.project else "")
           + f" ｜ 消费面：modules ops {n_ops} · flows {n_flows} · skills {face_counts['skills']} 文件 · core/src {face_counts['core_src']} 文件")
-    print(f"  ｜ 有正向引用的卡 {report['summary']['referenced_cards']} ｜ 孤儿 {len(orphans)}（零正向引用，只记账不失败——语料自由）")
+    print(f"  ｜ 有正向引用的卡 {report['summary']['referenced_cards']} ｜ 零正向引用 {len(orphans)}"
+          f"（只记账不失败——语料自由）")
     if orphans:
-        detail = "、".join(f"{k} {n}" for k, n in sorted(orphans_by_kind.items()))
-        print(f"    孤儿按类：{detail}"
+        n_exempt = len(orphans_exempt)
+        by_rule = report["summary"]["orphan_exemptions"]["by_rule"]
+        print(f"    N3 豁免 {n_exempt} 条（显式豁免非静默吞，明细进收据 orphans_exempt）："
+              f"目录可达 {by_rule['N3①目录可达']}、草稿待审 {by_rule['N3②草稿待审']}、人工链路 {by_rule['N3③人工链路']}")
+        print(f"    真孤儿 {len(real_orphans)} 条"
+              + (f"（按类：{'、'.join(f'{k} {n}' for k, n in sorted(orphans_by_kind.items()))}）" if real_orphans else "（零）")
               + ("（规则卡零 op 引用属已知正常形态：激活归决策，kit-lint W3 同因豁免）" if orphans_by_kind.get("rule-card") else ""))
-        print("    孤儿样例（前 10）：" + "、".join(orphans[:10]) + ("…" if len(orphans) > 10 else ""))
+        if real_orphans:
+            print("    真孤儿样例（前 10）：" + "、".join(real_orphans[:10]) + ("…" if len(real_orphans) > 10 else ""))
     print(f"  ｜ 悬空引用：结构化（断链，exit 1）{len(dangling_structural)} 条 ｜ 文本（注释示例/笔误，人裁）{len(textual)} 条")
     for d in dangling_structural:
         print(f"    STRUCTURAL {d['ref']} @ {d['face']}（{d['why']}）")
