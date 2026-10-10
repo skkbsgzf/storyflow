@@ -1,0 +1,68 @@
+{
+  "format": "diagnosis-report@1",
+  "project": "p-demo-synthetic",
+  "target": "正文/第02章.md",
+  "engines": {
+    "s": { "ran": true, "note": "quality-scan 确定性扫描（AE-禁词 / AE-标点 / AE-数值冲突），零 token" },
+    "a": { "ran": true, "note": "laya 学生头批扫 qid=slop.*（13 条款，本地算力）" },
+    "agent": { "ran": true, "note": "B 级评审参与——产物只进 opinion 与 items[].suggestion，绝不进 evidence" }
+  },
+  "evidence": [
+    {
+      "rule_ref": "kb/rules/去AI味#禁句式-排比",
+      "location": "正文/第02章.md:142",
+      "quote": "他不知道的是，这不是结束，不是开始，也不是转折。",
+      "scanner": "AE-sentence-pattern",
+      "metric": "同段 3 连「不是……」排比",
+      "receipt": "projects/p-demo-synthetic/receipts/scan-synthetic-01.json"
+    },
+    {
+      "rule_ref": "kb/rules/连续性#数值-余额",
+      "location": "正文/第02章.md:87",
+      "quote": "他数了数，口袋里还剩三百二十块。",
+      "scanner": "AE-number-conflict",
+      "metric": "与第01章:203 记录的 470 块冲突",
+      "receipt": "projects/p-demo-synthetic/receipts/scan-synthetic-01.json"
+    },
+    {
+      "rule_ref": "kb/rules/去AI味#slop.neg-pattern",
+      "location": "正文/第02章.md:56-59",
+      "quote": "空气仿佛凝固了。时间仿佛静止了。世界仿佛只剩下他们两个人。",
+      "scanner": "slop.neg-pattern.v3.regex",
+      "metric": 3,
+      "receipt": "projects/p-demo-synthetic/receipts/laya-synthetic-01.json"
+    }
+  ],
+  "items": [
+    {
+      "rule_ref": "kb/rules/去AI味#禁句式-排比",
+      "tier": "S",
+      "severity": "major",
+      "suggestion": "拆掉三连「不是……」排比：保留一层否定，另两层改写成具体动作或细节（规则卡修复策略：排比降级为单层否定 + 具象补充）。"
+    },
+    {
+      "rule_ref": "kb/rules/连续性#数值-余额",
+      "tier": "S",
+      "severity": "block",
+      "suggestion": "把余额改回 470 块，或在第02章内补一笔可回查的支出使其自然落到 320（规则卡修复策略：数值变动必须留消耗事件）。"
+    },
+    {
+      "rule_ref": "kb/rules/去AI味#slop.neg-pattern",
+      "tier": "A",
+      "severity": "minor",
+      "suggestion": "三句「仿佛」删两句，留下的一句换成身体感受描写（条款修复策略：negation-emphasis 密度压到每千字 ≤1）。"
+    },
+    {
+      "rule_ref": "kb/rules/审美#节奏-爆点",
+      "tier": "B",
+      "severity": "minor",
+      "suggestion": "章末钩子偏平，可把底牌揭晓提前半拍（主观审美，仅供参考，不构成修改依据）。"
+    }
+  ],
+  "opinion": {
+    "by": "glm-demo（B 级评审通道，合成示例）",
+    "text": "第02章前半节奏偏慢，两名配角的对话信息密度低；主角在余额冲突处的反应缺少情绪层次。以上为模型观点，仅供参考，请以 S/A 级证据为准。"
+  },
+  "summary": "S 级确定性扫描检出 2 处（收据 projects/p-demo-synthetic/receipts/scan-synthetic-01.json），A 级学生头检出 1 处（收据 projects/p-demo-synthetic/receipts/laya-synthetic-01.json）；B 级观点见 opinion 区，仅供参考。诊断与建议同源：每条 suggestion 都能经 rule_ref 回到规则卡的修复策略。",
+  "receipt": "projects/p-demo-synthetic/receipts/scan-synthetic-01.json"
+}

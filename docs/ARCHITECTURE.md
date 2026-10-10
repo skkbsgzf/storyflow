@@ -256,7 +256,7 @@ docs/
 | `project-index.json` 契约 | 批次2 R2.1（✅ 契约已落地 2026-10-10；实现随 R2.2） | `contracts/project-index.schema.json` |
 | 项目索引生成器（路径探索→索引→增量→记忆→项目级 RAG） | 批次2 | `tools/project-init.py` 扩展 |
 | 诊断报告契约（三相承载体） | 批次2 R2.1（✅ 契约已落地 2026-10-10；实现随 R2.4） | `contracts/diagnosis-report.schema.json` |
-| HTML 页面件补齐（时间轴整页/诊断报告页） | 批次2 | `tools/worldbook*.py` / `journal-template.html` 扩展 |
+| HTML 页面件补齐（时间轴整页/诊断报告页） | 批次2 R2.3（✅ 已落地 2026-10-10：`tools/journal-page.py` / `tools/diagnosis-page.py`） | `tools/worldbook*.py` / `journal-template.html` 扩展 |
 | 能力归并（一次性工具 → 卡驱动诊断动词，如 `mf_analyze_curve`） | 批次2 | `core/src/agent.ts` + verbs |
 | 拆（逆向）契约 | 批次3 | `contracts/deconstruct.schema.json` |
 | 本地快诊断服务化（S 级 + laya 环境回填 + 静默追写） | 批次3 | `tools/laya-scan.py` 服务化 + 协议面端点 |

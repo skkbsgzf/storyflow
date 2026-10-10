@@ -52,14 +52,14 @@
 
 验收：真实项目跑通 init→index→增量→RAG；全局 KB 零混入。
 
-### R2.3 输出面收拢（1–2 周，需求3，可与 R2.2 并行）
+### R2.3 输出面收拢（1–2 周，需求3，可与 R2.2 并行）✅ 已落地 2026-10-10
 
 | 交付物 | 说明 |
 | --- | --- |
-| 立场入规格 | kit 三输出（文档/自包含 HTML/数据包）；HTML 只读、零依赖、不回 call kit |
-| 页面件补齐 | 时间轴大事记整页、诊断报告页（依赖 R2.4 契约） |
-| panel/kitapp 冻结执行 | 存量保留、零新投入 |
-| 宿主接入文档 | pinax-bridge 经验提炼进 `docs/integration/` |
+| 立场入规格 | kit 三输出（文档/自包含 HTML/数据包）；HTML 只读、零依赖、不回 call kit —— `docs/ARCHITECTURE.md` §0 ＋ §9 不变量 6 |
+| 页面件补齐 | `tools/journal-page.py`（journal.jsonl → 大事记整页，`journal-template.html` 渲染）＋ `tools/diagnosis-page.py`（diagnosis-report@1 → 诊断报告页，evidence/opinion 分区，fixture＋`--selfcheck`） |
+| panel/kitapp 冻结执行 | 存量保留、零新投入 —— `panel/FROZEN.md` |
+| 宿主接入文档 | pinax-bridge 四范式（任务化接口/契约镜像/预算归属/工具环桥）提炼进 `docs/integration/host-integration.md` |
 
 ### R2.4 三相打通 + 能力归并（2–3 周，需求4）
 

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>诊断报告 · __TITLE__</title>
+<style>
+  /* 诊断报告页 · 视觉对齐 journal-template（暗色系）。
+     零外部依赖：系统字体栈、内联样式、数据生成时内联；只读数据，不回 call kit。 */
+  :root { --bg:#16181d; --panel:#1d2027; --border:#2a2e37; --ink:#d8d4cb; --dim:#8a8375; --gold:#e8b33d;
+          --block:#d98a83; --major:#e8b33d; --minor:#8a9bb0;
+          --s:#5f9c7a; --a:#6ea8fe; --b:#8a6fb0; --mono:ui-monospace,Consolas,monospace; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.7 "Noto Sans SC","Microsoft YaHei",system-ui,sans-serif; }
+  header { padding:14px 20px 10px; border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--bg); z-index:2; }
+  header h1 { margin:0; font-size:16px; letter-spacing:2px; display:inline; }
+  header .proj { font-family:var(--mono); font-size:12px; color:var(--dim); margin-left:10px; }
+  header .chips { margin-top:6px; display:flex; gap:6px; flex-wrap:wrap; }
+  .chip { font-family:var(--mono); font-size:11px; color:var(--dim); border:1px solid var(--border); border-radius:999px; padding:1px 10px; }
+  main { max-width:960px; margin:0 auto; padding:18px 20px 60px; }
+  h2 { font-size:13px; letter-spacing:1px; color:var(--gold); margin:26px 0 10px; border-bottom:1px dashed var(--border); padding-bottom:5px; }
+  h2 .n { color:var(--dim); font-weight:400; }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:10px 14px; margin:8px 0; }
+  .summary { white-space:pre-wrap; overflow-wrap:anywhere; }
+  .receipt { font-family:var(--mono); font-size:11.5px; color:var(--dim); margin-top:6px; overflow-wrap:anywhere; }
+  .receipt b { color:var(--gold); font-weight:400; }
+  .engines { display:flex; gap:8px; flex-wrap:wrap; }
+  .engine { flex:1; min-width:220px; background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:8px 12px; font-size:12px; }
+  .engine .ran { font-size:11px; border-radius:999px; padding:0 8px; border:1px solid var(--border); }
+  .engine .ran.on { color:var(--s); border-color:var(--s); }
+  .engine .ran.off { color:var(--dim); }
+  .engine .note { color:var(--dim); margin-top:4px; }
+  .item, .ev { border-left:3px solid var(--border); }
+  .badges { display:flex; gap:6px; align-items:baseline; flex-wrap:wrap; }
+  .badge { font-size:11px; border-radius:999px; padding:0 9px; border:1px solid var(--border); flex:0 0 auto; }
+  .sev-block { color:var(--block); border-color:var(--block); }
+  .sev-major { color:var(--major); border-color:var(--major); }
+  .sev-minor { color:var(--minor); border-color:var(--minor); }
+  .tier-S { color:var(--s); border-color:var(--s); }
+  .tier-A { color:var(--a); border-color:var(--a); }
+  .tier-B { color:var(--b); border-color:var(--b); }
+  .ruleref { font-family:var(--mono); font-size:12px; color:var(--gold); overflow-wrap:anywhere; }
+  .sugg { margin-top:5px; font-size:13px; overflow-wrap:anywhere; white-space:pre-wrap; }
+  .ev .loc { font-family:var(--mono); font-size:12px; color:var(--a); overflow-wrap:anywhere; }
+  .ev .quote { margin:6px 0 2px; padding:6px 10px; border-left:2px solid var(--border); color:var(--ink); font-size:12.5px; overflow-wrap:anywhere; white-space:pre-wrap; }
+  .ev .meta { font-family:var(--mono); font-size:11px; color:var(--dim); margin-top:4px; overflow-wrap:anywhere; }
+  .opinion-head { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .op-badge { font-size:11px; color:var(--b); border:1px solid var(--b); border-radius:999px; padding:0 10px; }
+  .op-by { font-family:var(--mono); font-size:11.5px; color:var(--dim); }
+  .op-text { margin-top:8px; white-space:pre-wrap; overflow-wrap:anywhere; }
+  .empty { padding:40px 20px; text-align:center; color:var(--dim); }
+  .hint { color:var(--dim); font-size:12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>诊断报告</h1><span class="proj">__TITLE__ · diagnosis-report@1</span>
+  <div class="chips" id="chips"></div>
+</header>
+<main id="app"><div class="empty">装载…</div></main>
+<script>
+const R = __REPORT__;
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const SEV_LABEL = { block:"block·最高优先", major:"major", minor:"minor" };
+const TIER_LABEL = { S:"S·确定性", A:"A·学生头", B:"B·审美" };
+const ENGINES = [
+  ["s", "S 级 · 确定性扫描", "证据进 evidence[]"],
+  ["a", "A 级 · 学生头（laya）", "证据进 evidence[]（带 qid）"],
+  ["agent", "B 级 · agent 评审", "只进 opinion 与建议，绝不进 evidence"],
+];
+
+function render() {
+  const app = document.getElementById("app");
+  if (!R || R.format !== "diagnosis-report@1") {
+    app.innerHTML = '<div class="empty">不是 diagnosis-report@1 报告——本页只渲染 contracts/diagnosis-report.schema.json 形状的数据</div>';
+    return;
+  }
+  document.getElementById("chips").innerHTML =
+    `<span class="chip">project: ${esc(R.project)}</span><span class="chip">target: ${esc(R.target)}</span>`;
+
+  let html = "";
+  // —— 人读总结 + 收据（报数必附收据）——
+  html += `<h2>总结</h2><div class="card"><div class="summary">${esc(R.summary)}</div><div class="receipt">` +
+    (R.receipt ? `<b>收据</b> ${esc(R.receipt)}` : `<b>收据</b> 无（本次无可附收据——总结不应含「已扫描 N 处」式计数声明）`) +
+    `</div></div>`;
+
+  // —— 三引擎参与声明 ——
+  const eng = R.engines || {};
+  html += `<h2>引擎参与</h2><div class="engines">` + ENGINES.map(([k, name, rule]) => {
+    const e = eng[k] || {};
+    return `<div class="engine"><div class="badges"><span class="badge">${esc(name)}</span>` +
+      `<span class="ran ${e.ran ? "on" : "off"}">${e.ran ? "已参与" : "未参与"}</span></div>` +
+      `<div class="note">${esc(e.note || rule)}</div></div>`;
+  }).join("") + `</div>`;
+
+  // —— 诊断项（rule_ref + tier + severity + 同源建议）——
+  const items = R.items || [];
+  const bySev = { block: 0, major: 0, minor: 0 };
+  for (const it of items) bySev[it.severity] = (bySev[it.severity] || 0) + 1;
+  html += `<h2>诊断项 <span class="n">${items.length} 项 · block ${bySev.block} / major ${bySev.major} / minor ${bySev.minor}（severity 是评审优先级，不是提交拦截）</span></h2>`;
+  html += items.length ? items.map(it =>
+    `<div class="card item"><div class="badges">` +
+    `<span class="badge tier-${esc(it.tier)}" title="${esc(TIER_LABEL[it.tier] || "")}">${esc(it.tier)}</span>` +
+    `<span class="badge sev-${esc(it.severity)}" title="${esc(SEV_LABEL[it.severity] || "")}">${esc(it.severity)}</span>` +
+    `<span class="ruleref">${esc(it.rule_ref)}</span></div>` +
+    `<div class="sugg">${esc(it.suggestion)}</div></div>`
+  ).join("") : '<div class="empty">（无诊断项）</div>';
+
+  // —— 程序判定证据（机读·可复核）——
+  const evs = R.evidence || [];
+  html += `<h2>程序判定证据 <span class="n">${evs.length} 条 · 机读，位置可定位、原文可对、数值可算</span></h2>`;
+  html += evs.length ? evs.map(ev =>
+    `<div class="card ev">` +
+    (ev.rule_ref ? `<div class="ruleref">${esc(ev.rule_ref)}</div>` : "") +
+    `<div class="loc">${esc(ev.location)}</div>` +
+    (ev.quote ? `<div class="quote">${esc(ev.quote)}</div>` : "") +
+    `<div class="meta">` + [
+      ev.metric !== undefined && ev.metric !== null ? `metric=${esc(ev.metric)}` : "",
+      ev.scanner ? `scanner=${esc(ev.scanner)}` : "",
+      ev.receipt ? `receipt=${esc(ev.receipt)}` : "",
+    ].filter(Boolean).join(" · ") + `</div></div>`
+  ).join("") : '<div class="empty">（无程序判定证据——若为纯 B 级评审，engines.agent 必须声明参与）</div>';
+
+  // —— 模型观点（仅供参考，非裁决；与证据硬分离）——
+  const op = R.opinion;
+  if (op && (op.text || op.by)) {
+    html += `<h2 class="opinion-head">模型观点 <span class="op-badge">模型观点 · 仅供参考</span>` +
+      `<span class="op-by">by ${esc(op.by)}</span></h2>` +
+      `<div class="card"><div class="op-text">${esc(op.text)}</div>` +
+      `<div class="receipt">观点没有机读证据地位——宿主与 agent 不得把它当「已检出的事实」消费</div></div>`;
+  } else {
+    html += `<h2>模型观点 <span class="n">（本次无）</span></h2>`;
+  }
+  app.innerHTML = html;
+}
+render();
+</script>
+</body>
+</html>
