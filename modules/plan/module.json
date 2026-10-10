@@ -65,8 +65,12 @@
       "desc": "选题流程·选题方案步的工作规范——纯内容呈现：选题、人设、冲突设计、大纲、前三集初稿；市场结论只以「创作约束移交单」为输入，报告里禁止商业分析语言。",
       "kind": "produce",
       "knowledge": [
-        "kb/aesthetic/*",
-        "kb/benchmark/*"
+        "kb/benchmark/b001-cn",
+        "kb/benchmark/b004-cn",
+        "kb/benchmark/b012-cn",
+        "kb/benchmark/b013-fam",
+        "kb/aesthetic/hook-3s",
+        "kb/aesthetic/character"
       ],
       "config": {
         "outlineDepth": {
@@ -120,6 +124,14 @@
       "title": "审美总编·选题方案质量观",
       "desc": "审美总编技能（监管位）——以对标已出品爆款为强度标尺，对选题方案做爆点强度/钩子冲击力/名场面可视化三维把控；写入方案即视为总编终审通过。",
       "kind": "produce",
+      "knowledge": [
+        "kb/benchmark/b001-cn",
+        "kb/benchmark/b004-cn",
+        "kb/benchmark/b013-fam",
+        "kb/aesthetic/hook-3s",
+        "kb/aesthetic/unreasonable-highlight",
+        "kb/aesthetic/visual-poster"
+      ],
       "config": {
         "benchmark": {
           "type": "enum",
