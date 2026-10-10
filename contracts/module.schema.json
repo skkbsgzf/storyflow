@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "miniflow/module",
   "title": "module@1 · 工种工具箱（模块化 flow 的能力单元）",
-  "description": "modules/<id>/module.json。模块 = 一个认知工种的完整工具箱（ops）+ 默认骨架（skeleton）+ 插槽表 + 能力清单（caps）。取代 kit@1（见 contracts/kit.schema.json，已废弃）。flow@3 只引用模块序列，节点与边由内核 modules.ts::expandFlow 从骨架派生（R6 规范 §一/§三）。设计源：docs/规范-模块化flow与工具箱-R6.md。",
+  "description": "modules/<id>/module.json。模块 = 一个认知工种的完整工具箱（ops）+ 默认骨架（skeleton）+ 插槽表 + 能力清单（caps）。取代 kit@1（见 contracts/kit.schema.json，已废弃）。flow@3 只引用模块序列，节点与边由内核 modules.ts::expandFlow 从骨架派生（R6 规范 §一/§三）。设计源：docs/_archive/规范-模块化flow与工具箱-R6.md。",
   "type": "object",
   "required": [
     "format",

@@ -22,6 +22,6 @@ JSON Schema（draft 2020-12）是全部插件与内核数据模型的**唯一权
 - `kit.schema.json` — 由 `module.schema.json`（module@1）取代
 - `stage.schema.json` — 由模块化模型（连接件取代 Stage 验收门）取代
 
-规格全文：`docs/规范-模块化flow与工具箱-R6.md`（现行，含 §十一 勘误）；历史：`docs/底座规格-miniflow-harness.md`、R4/R5 规范。
+规格全文：`docs/_archive/规范-模块化flow与工具箱-R6.md`（现行，含 §十一 勘误）；历史：`docs/_archive/底座规格-miniflow-harness.md`、R4/R5 规范。
 
-**使用方式**：TS 内核由 schema 生成/校验类型；Python 侧 `jsonschema` 直读校验；`tools/*-lint.py` 是契约在静态门的手工等价物。变更契约 = 立 WO 改本目录（冻结纪律见 WO-00）。全局产品版本治理：根 `VERSION` + `CHANGELOG.md`（v4.0.0 起，见 `docs/版本宣告-v4.0.0.md`）；契约 `@N` 与产品 semver 是两个轴。
+**使用方式**：TS 内核由 schema 生成/校验类型；Python 侧 `jsonschema` 直读校验；`tools/*-lint.py` 是契约在静态门的手工等价物。变更契约 = 立 WO 改本目录（冻结纪律见 WO-00）。全局产品版本治理：根 `VERSION` + `CHANGELOG.md`（v4.0.0 起，见 `docs/_archive/版本宣告-v4.0.0.md`）；契约 `@N` 与产品 semver 是两个轴。

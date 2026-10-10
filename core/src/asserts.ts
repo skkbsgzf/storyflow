@@ -245,7 +245,7 @@ export function runHeaderAsserts(projectDir: string, relPath: string, expect: He
 
   const head = parseArtifactHeader(text);
   if (!head) {
-    return [sev(`缺 artifact@1 头部（须以 --- 开头，见 docs/规范-项目文件与流程配置-R4.md）: ${rel}`)];
+    return [sev(`缺 artifact@1 头部（须以 --- 开头，见 docs/_archive/规范-项目文件与流程配置-R4.md）: ${rel}`)];
   }
 
   const problems: string[] = [];

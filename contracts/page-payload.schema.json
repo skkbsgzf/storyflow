@@ -2,7 +2,7 @@
  "$schema": "https://json-schema.org/draft/2020-12/schema",
  "$id": "miniflow/page-payload",
  "title": "page-payload@2 · 工作台页注入数据（冻结契约）",
- "description": "tools/project-pages.py 注入 workflow.html 的 JSON 数据形状——本契约冻结顶层五键（DATA/EFF/OVERLAY/OPTIMIZE/METRICS）及各子键，供前端布局与面板（WO-04/WO-05/WO-07）并行消费。新增键须立新 WO 改本契约，禁止页面侧私加。替代 payload@1（单 DATA 形态，见 docs/规范-模块化flow与工具箱-R6.md §五/§六）。",
+ "description": "tools/project-pages.py 注入 workflow.html 的 JSON 数据形状——本契约冻结顶层五键（DATA/EFF/OVERLAY/OPTIMIZE/METRICS）及各子键，供前端布局与面板（WO-04/WO-05/WO-07）并行消费。新增键须立新 WO 改本契约，禁止页面侧私加。替代 payload@1（单 DATA 形态，见 docs/_archive/规范-模块化flow与工具箱-R6.md §五/§六）。",
  "type": "object",
  "required": [
   "DATA",

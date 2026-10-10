@@ -1,7 +1,7 @@
 /**
  * FS 抽象层的 Node 实现。这里的每条方法都直接落到内核现在已在用的 node:* 调用，
  * 不新增行为——R3 迁移的原则是「换管道，不换水性」。
- * 规范：`docs/规范-FS抽象层-FS1.md` §4.1。
+ * 规范：`docs/_archive/规范-FS抽象层-FS1.md` §4.1。
  */
 import crypto from "node:crypto";
 import { execFile, execFileSync, spawn, spawnSync } from "node:child_process";

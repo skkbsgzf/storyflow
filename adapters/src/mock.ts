@@ -2,7 +2,7 @@
  * FS 抽象层的内存实现。用途有二：R3 的「可嵌入」冒烟（内核跑在假盘上），以及抽象层自身的
  * 契约自测——它的错误语义刻意对齐 node（ENOENT / EEXIST / ENOTDIR），因为 aesthetic.ts 会按
  * code 分流，mock 若不带 code 就等于换了行为。
- * 规范：`docs/规范-FS抽象层-FS1.md` §4.2。
+ * 规范：`docs/_archive/规范-FS抽象层-FS1.md` §4.2。
  */
 import type {
   CopyOptions,

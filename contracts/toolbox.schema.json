@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "miniflow/toolbox",
   "title": "toolbox@1 · 能力标签 → 工具映射（渲染与选工具共用）",
-  "description": "由 module@1 + flow 模块实例的 caps 派生的渲染视图：前端工具箱抽屉（toolboxPaper）与能力标签条按此形状绘制，内核选工具（expandFlow）按同一映射接线。形状来源 contracts/module.schema.json；启用态 = flow 实例 caps/insert 的运行时结果。勾选工具 → 生成 overlay patch（set-module caps / insert-tool），不直接改 flow.json。见 docs/规范-模块化flow与工具箱-R6.md §六/§七。",
+  "description": "由 module@1 + flow 模块实例的 caps 派生的渲染视图：前端工具箱抽屉（toolboxPaper）与能力标签条按此形状绘制，内核选工具（expandFlow）按同一映射接线。形状来源 contracts/module.schema.json；启用态 = flow 实例 caps/insert 的运行时结果。勾选工具 → 生成 overlay patch（set-module caps / insert-tool），不直接改 flow.json。见 docs/_archive/规范-模块化flow与工具箱-R6.md §六/§七。",
   "type": "object",
   "required": ["format", "modules"],
   "additionalProperties": false,

@@ -1,5 +1,5 @@
 /**
- * 进程发起抽象。规范：`docs/规范-FS抽象层-FS1.md` §2.2。
+ * 进程发起抽象。规范：`docs/_archive/规范-FS抽象层-FS1.md` §2.2。
  * 三种形态各对应现网真实调用：compat.ts/verbs.ts 的 spawnSync·execFileSync（一个看 status 不抛、
  * 一个非零即抛），minitools.ts 的 promisify(execFile)（异步、带超时终止信号）。
  * 抽象层不合并它们，否则迁移时要改判断逻辑。

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "miniflow/flow",
   "title": "flow@3 · 模块序列流程",
-  "description": "flows/<id>/flow.json。flow 不再手写节点与边——只写「模块序列」：走哪几个模块、每个模块要什么能力（caps）、模块之间怎么放行（link）。节点与边由内核 modules.ts::expandFlow 从 module@1 骨架派生（R6 规范 §二/§三）。取代 flow@2（graph/stages 手画形态已随 v4.0.0 工单批A 迁移完毕处决，一次性转换工具退役；老格式存量由 flow-lint E-FORMAT 硬拒）。设计源：docs/规范-模块化flow与工具箱-R6.md。",
+  "description": "flows/<id>/flow.json。flow 不再手写节点与边——只写「模块序列」：走哪几个模块、每个模块要什么能力（caps）、模块之间怎么放行（link）。节点与边由内核 modules.ts::expandFlow 从 module@1 骨架派生（R6 规范 §二/§三）。取代 flow@2（graph/stages 手画形态已随 v4.0.0 工单批A 迁移完毕处决，一次性转换工具退役；老格式存量由 flow-lint E-FORMAT 硬拒）。设计源：docs/_archive/规范-模块化flow与工具箱-R6.md。",
   "type": "object",
   "required": ["format", "id", "title", "version", "status", "modules"],
   "additionalProperties": false,

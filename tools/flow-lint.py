@@ -61,8 +61,8 @@ def exec_note(flow_path: Path) -> str:
         rel = flow_path.relative_to(ROOT).as_posix()
     except ValueError:
         rel = str(flow_path)
-    return (f"；{rel}：flow@1/@2 已随 v4.0.0 处决（宣告见 docs/版本宣告-v4.0.0.md），"
-            f"转换器已退役——按 docs/规范-模块化flow与工具箱-R6.md §八 手工重建为模块序列")
+    return (f"；{rel}：flow@1/@2 已随 v4.0.0 处决（宣告见 docs/_archive/版本宣告-v4.0.0.md），"
+            f"转换器已退役——按 docs/_archive/规范-模块化flow与工具箱-R6.md §八 手工重建为模块序列")
 
 
 def strict_load(path: Path):

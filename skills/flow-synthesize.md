@@ -4,7 +4,7 @@ stage: meta
 trigger: 用户用自然语言描述想要什么流程/项目（「我想写个番茄快餐文」「做个短剧工作流」），需要产出 flow@3 草稿时；或 flow_synthesize 生成循环的装配规则源。
 inputs: 用户需求原话；modules/*/module.json（能力与工具箱的唯一事实源）；docs/骨架与文件格式-速查.md（一页纸速查）
 outputs: 合法 flow@3 草稿（JSON）。交付前必须 `python tools/skeleton-lint.py --file <草稿>` 全绿
-rubric: docs/规范-模块化flow与工具箱-R6.md §二/§三；契约 contracts/flow.schema.json（冻结）
+rubric: docs/_archive/规范-模块化flow与工具箱-R6.md §二/§三；契约 contracts/flow.schema.json（冻结）
 bind: 无（装配手册不绑 kit op；机器校验归 tools/skeleton-lint.py，生成器实现 flow_synthesize 留待下批）
 ---
 

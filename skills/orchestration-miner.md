@@ -4,7 +4,7 @@ stage: meta
 trigger: 一轮 flow_run 结束 / 里程碑验收后；flow_effect 的 mine.due=true 时；或用户要求「复盘这轮编排」时。
 inputs: registry/mine-package.json（flow_mine 组装：journal 尾部/打回记录/指标游标/证据文件清单）+ 其引用的证据文件
 outputs: registry/miner-findings.json（findings@1）+ 内部/意见/编排挖掘-<runId>.md（人读报告）
-rubric: docs/规范-生成式flow与运行时编排-R5.md §六（提案契约/落地边界）
+rubric: docs/_archive/规范-生成式flow与运行时编排-R5.md §六（提案契约/落地边界）
 bind: { kit: tool, op: orchestration-mine }
 ---
 

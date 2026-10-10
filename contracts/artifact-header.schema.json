@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "miniflow/artifact-header",
   "title": "过程交付件头部（artifact@1 · R6 模块化布局）",
-  "description": "projects/**/*.md 的 YAML 头部解析结果。R6 变更：新增 module（产物归属模块实例）；删除 class/round/version（目录准入改按模块分段目录，版本由 git + snapshots 承担——避免第二处真相）；review 改挂连接件（只在经由 manual 连接件放行后写入）。头部是上游与审核背景的唯一真相——正文不得复述。见 docs/规范-模块化flow与工具箱-R6.md §五。",
+  "description": "projects/**/*.md 的 YAML 头部解析结果。R6 变更：新增 module（产物归属模块实例）；删除 class/round/version（目录准入改按模块分段目录，版本由 git + snapshots 承担——避免第二处真相）；review 改挂连接件（只在经由 manual 连接件放行后写入）。头部是上游与审核背景的唯一真相——正文不得复述。见 docs/_archive/规范-模块化flow与工具箱-R6.md §五。",
   "type": "object",
   "required": ["artifact", "id", "module", "node", "state", "at", "by", "upstream"],
   "additionalProperties": false,
