@@ -1,6 +1,6 @@
 {
   "format": "storyflow-hypergraph@1",
-  "note": "knowledge 语料的 HyperGraphRAG 编译产物（词条+关系边）。源 md 是本地可插拔层，不进 git；改 md 后重跑 tools/kit-compile.py。",
+  "note": "knowledge 语料的 HyperGraphRAG 编译产物（词条+关系边+编译期聚类簇）。源 md 是本地可插拔层，不进 git；改 md 后重跑 tools/kit-compile.py。",
   "stats": {
     "entries": 120,
     "relations": 0,
@@ -17,6 +17,220 @@
       "semif-calibration",
       "structure",
       "trope"
+    ],
+    "clusters": [
+      {
+        "name": "簇#01[不做,两级,位外]",
+        "size": 1
+      },
+      {
+        "name": "簇#02[不看,乎无,了本]",
+        "size": 1
+      },
+      {
+        "name": "簇#03[一定,一面,三维]",
+        "size": 1
+      },
+      {
+        "name": "簇#04[一因,不写,与危]",
+        "size": 1
+      },
+      {
+        "name": "簇#05[基本,实基,律选]",
+        "size": 2
+      },
+      {
+        "name": "簇#06[一种,一行,三对]",
+        "size": 1
+      },
+      {
+        "name": "簇#07[一型,不动,不扣]",
+        "size": 1
+      },
+      {
+        "name": "簇#08[一幕,一强,与冲]",
+        "size": 1
+      },
+      {
+        "name": "簇#09[之一,四型,铺垫]",
+        "size": 2
+      },
+      {
+        "name": "簇#10[一只,一样,一潭]",
+        "size": 1
+      },
+      {
+        "name": "簇#11[一内,不为,与媒]",
+        "size": 1
+      },
+      {
+        "name": "簇#12[专家,份碎,双专]",
+        "size": 2
+      },
+      {
+        "name": "簇#13[不念,么目,么表]",
+        "size": 1
+      },
+      {
+        "name": "簇#14[一例,一合,不漏]",
+        "size": 1
+      },
+      {
+        "name": "簇#15[一修,一场,事价]",
+        "size": 1
+      },
+      {
+        "name": "簇#16[与心,且叙,中可]",
+        "size": 1
+      },
+      {
+        "name": "簇#17[一官,不算,事套]",
+        "size": 1
+      },
+      {
+        "name": "簇#18[一下,一档,三秒]",
+        "size": 1
+      },
+      {
+        "name": "簇#19[一安,不会,不断]",
+        "size": 1
+      },
+      {
+        "name": "簇#20[一张,一答,三条]",
+        "size": 1
+      },
+      {
+        "name": "簇#21[举逆,元开,族科]",
+        "size": 3
+      },
+      {
+        "name": "簇#22[手握,冷面,末世]",
+        "size": 6
+      },
+      {
+        "name": "簇#23[种田,流放,放种]",
+        "size": 6
+      },
+      {
+        "name": "簇#24[万爽,全库,和度]",
+        "size": 15
+      },
+      {
+        "name": "簇#25[三年,不惜,与治]",
+        "size": 1
+      },
+      {
+        "name": "簇#26[灾难,场男,男频]",
+        "size": 6
+      },
+      {
+        "name": "簇#27[冷血,材超,超自]",
+        "size": 2
+      },
+      {
+        "name": "簇#28[不懂,与运,业大]",
+        "size": 1
+      },
+      {
+        "name": "簇#29[一击,万额,三金]",
+        "size": 1
+      },
+      {
+        "name": "簇#30[一台,与状,么典]",
+        "size": 1
+      },
+      {
+        "name": "簇#31[一目,与特,书体]",
+        "size": 1
+      },
+      {
+        "name": "簇#32[两成,分场,卷积]",
+        "size": 2
+      },
+      {
+        "name": "簇#33[一为,与梗,个机]",
+        "size": 1
+      },
+      {
+        "name": "簇#34[一维,上限,不进]",
+        "size": 1
+      },
+      {
+        "name": "簇#35[个文,了判,付流]",
+        "size": 1
+      },
+      {
+        "name": "簇#36[义半,义提,人审]",
+        "size": 10
+      },
+      {
+        "name": "簇#37[三类,与溯,与纪]",
+        "size": 1
+      },
+      {
+        "name": "簇#38[一核,么不,习协]",
+        "size": 1
+      },
+      {
+        "name": "簇#39[一允,一篇,一集]",
+        "size": 1
+      },
+      {
+        "name": "簇#40[一工,三个,三账]",
+        "size": 1
+      },
+      {
+        "name": "簇#41[业单,位是,定单]",
+        "size": 2
+      },
+      {
+        "name": "簇#42[一问,下点,东西]",
+        "size": 1
+      },
+      {
+        "name": "簇#43[售剧,在售,析报]",
+        "size": 2
+      },
+      {
+        "name": "簇#44[三天,下室,且每]",
+        "size": 1
+      },
+      {
+        "name": "簇#45[一层,与传,与发]",
+        "size": 1
+      },
+      {
+        "name": "簇#46[一设,与再,与医]",
+        "size": 1
+      },
+      {
+        "name": "簇#47[一堆,上来,下不]",
+        "size": 1
+      },
+      {
+        "name": "簇#48[一细,与拍,个场]",
+        "size": 1
+      },
+      {
+        "name": "簇#49[一循,一轮,一遍]",
+        "size": 1
+      },
+      {
+        "name": "簇#50[不用,中的,交拦]",
+        "size": 16
+      },
+      {
+        "name": "簇#51[与节,场对,型三]",
+        "size": 6
+      },
+      {
+        "name": "簇#52[一结,上而,二结]",
+        "size": 1
+      },
+      {
+        "name": "簇#53[一串,一座,一杠]",
+        "size": 1
+      }
     ]
   },
   "entries": [
@@ -25,693 +239,792 @@
       "title": "AI 味检测口径卡（本地打分 × 朱雀对照 · 两级门）",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/ai-detection-sources.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#01[不做,两级,位外]"
     },
     {
       "id": "kb/aesthetic/ai-trace",
       "title": "AI 痕迹标准（结构级去机味）",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/ai-trace.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#02[不看,乎无,了本]"
     },
     {
       "id": "kb/aesthetic/character",
       "title": "人物审美标准（三维·真相·维度）",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/character.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#03[一定,一面,三维]"
     },
     {
       "id": "kb/aesthetic/conflict-escalation",
       "title": "冲突升级标准（代价梯与危机选择）",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/conflict-escalation.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#04[一因,不写,与危]"
     },
     {
       "id": "kb/aesthetic/constitution",
       "title": "审美体系总纲",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/constitution.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#05[基本,实基,律选]"
     },
     {
       "id": "kb/aesthetic/dialogue",
       "title": "对白标准（对白即行动）",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/dialogue.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#06[一种,一行,三对]"
     },
     {
       "id": "kb/aesthetic/emotion-curve",
       "title": "情绪曲线标准（六型判别）",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/emotion-curve.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#07[一型,不动,不扣]"
     },
     {
       "id": "kb/aesthetic/ending",
       "title": "结局标准（反推五条件与禁止项）",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/ending.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#08[一幕,一强,与冲]"
     },
     {
       "id": "kb/aesthetic/hook-3s",
       "title": "开场钩子标准（3 秒公式）",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/hook-3s.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#09[之一,四型,铺垫]"
     },
     {
       "id": "kb/aesthetic/metaphor-zh",
       "title": "中文叙事比喻规范（悬浮比喻五病 + 场景内喻体）",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/metaphor-zh.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#10[一只,一样,一潭]"
     },
     {
       "id": "kb/aesthetic/naturalness-zh",
       "title": "中文自然度标准（24 类去模板化清单）",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/naturalness-zh.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#11[一内,不为,与媒]"
     },
     {
       "id": "kb/aesthetic/oversight",
       "title": "双专家监管标准（审美总编 × 需求交付监理）",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/oversight.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#12[专家,份碎,双专]"
     },
     {
       "id": "kb/aesthetic/pacing-density",
       "title": "节奏与爆点密度标准",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/pacing-density.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#12[专家,份碎,双专]"
     },
     {
       "id": "kb/aesthetic/perspective-review",
       "title": "视角评审协议（红方 v2：代入人，不念指标）",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/perspective-review.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#13[不念,么目,么表]"
     },
     {
       "id": "kb/aesthetic/platform-compliance",
       "title": "平台适配与合规标准",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/platform-compliance.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#14[一例,一合,不漏]"
     },
     {
       "id": "kb/aesthetic/redline-scoring",
       "title": "红方评分标准（对抗式打分）",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/redline-scoring.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#05[基本,实基,律选]"
     },
     {
       "id": "kb/aesthetic/reversal",
       "title": "反转标准（类型学与铺垫合规）",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/reversal.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#09[之一,四型,铺垫]"
     },
     {
       "id": "kb/aesthetic/scene-value",
       "title": "场景价值转变标准",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/scene-value.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#15[一修,一场,事价]"
     },
     {
       "id": "kb/aesthetic/sensory-detail",
       "title": "感官细节密度与心理距离标准",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/sensory-detail.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#16[与心,且叙,中可]"
     },
     {
       "id": "kb/aesthetic/slop-list",
       "title": "AI 味禁则清单（官方 8 类 + 叙事套话黑名单 + 句式级黑名单 + 分级词表）",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/slop-list.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#17[一官,不算,事套]"
     },
     {
       "id": "kb/aesthetic/style-routes",
       "title": "风格路线参数表（爽版 / 合理版）",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/style-routes.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#18[一下,一档,三秒]"
     },
     {
       "id": "kb/aesthetic/unreasonable-highlight",
       "title": "不合理亮点标准（被磨平的冒险选择）",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/unreasonable-highlight.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#19[一安,不会,不断]"
     },
     {
       "id": "kb/aesthetic/visual-poster",
       "title": "名场面可视化标准（海报级分镜）",
       "domain": "aesthetic",
       "path": "knowledge/aesthetic/visual-poster.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#20[一张,一答,三条]"
     },
     {
       "id": "kb/benchmark/b001-cn",
       "title": "对标 · 仵作状元：开局金殿断奇案",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b001-cn.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#21[举逆,元开,族科]"
     },
     {
       "id": "kb/benchmark/b002-cn",
       "title": "对标 · 败家状元：开局做空敌国商会",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b002-cn.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#21[举逆,元开,族科]"
     },
     {
       "id": "kb/benchmark/b003-cn",
       "title": "对标 · 草包状元：开局沙盘点崩十军",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b003-cn.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#21[举逆,元开,族科]"
     },
     {
       "id": "kb/benchmark/b004-cn",
       "title": "对标 · 天灾流放，我靠百亿空间养活瞎眼杀神",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b004-cn.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#22[手握,冷面,末世]"
     },
     {
       "id": "kb/benchmark/b005-cn",
       "title": "对标 · 荒漠驿站：光脑美食养战神",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b005-cn.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#22[手握,冷面,末世]"
     },
     {
       "id": "kb/benchmark/b006-cn",
       "title": "对标 · 深海炼金：我把人鱼养成了皇",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b006-cn.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#23[种田,流放,放种]"
     },
     {
       "id": "kb/benchmark/b007-cn",
       "title": "对标 · 荒沙之上，罪妻手握机械狂潮",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b007-cn.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#22[手握,冷面,末世]"
     },
     {
       "id": "kb/benchmark/b008-cn",
       "title": "对标 · 流放荒岛：我契约巨兽养出海上帝王",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b008-cn.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#23[种田,流放,放种]"
     },
     {
       "id": "kb/benchmark/b009-cn",
       "title": "对标 · 暴雪封关，我靠种田捂热冷酷战神",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b009-cn.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#23[种田,流放,放种]"
     },
     {
       "id": "kb/benchmark/b010-cn",
       "title": "对标 · 大漠狂沙：我驯服异兽与糙汉将军",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b010-cn.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#23[种田,流放,放种]"
     },
     {
       "id": "kb/benchmark/b011-cn",
       "title": "对标 · 冰原种田：发配边关养大猫",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b011-cn.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#23[种田,流放,放种]"
     },
     {
       "id": "kb/benchmark/b012-cn",
       "title": "对标 · 拆盲盒后，我把渣男净身出户了",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b012-cn.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#24[万爽,全库,和度]"
     },
     {
       "id": "kb/benchmark/b013-fam",
       "title": "对标 · 白月光归来：前夫，牢房已满员",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b013-fam.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#24[万爽,全库,和度]"
     },
     {
       "id": "kb/benchmark/b014-fam",
       "title": "对标 · 离婚后，前夫跪求当我的贴身男仆",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b014-fam.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#24[万爽,全库,和度]"
     },
     {
       "id": "kb/benchmark/b015-fam",
       "title": "对标 · 被嫌弃的真千金手握封神配方",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b015-fam.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#24[万爽,全库,和度]"
     },
     {
       "id": "kb/benchmark/b016-fam",
       "title": "对标 · 扫地姑娘是百亿精算师",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b016-fam.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#24[万爽,全库,和度]"
     },
     {
       "id": "kb/benchmark/b017-fam",
       "title": "对标 · 废土她不等你",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b017-fam.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#25[三年,不惜,与治]"
     },
     {
       "id": "kb/benchmark/b018-fam",
       "title": "对标 · 全员听我心声，豪门保姆成了团宠",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b018-fam.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#24[万爽,全库,和度]"
     },
     {
       "id": "kb/benchmark/b019-na",
       "title": "对标 · Inferno Tower Savior",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b019-na.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#26[灾难,场男,男频]"
     },
     {
       "id": "kb/benchmark/b020-na",
       "title": "对标 · Crush Depth",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b020-na.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#26[灾难,场男,男频]"
     },
     {
       "id": "kb/benchmark/b021-na",
       "title": "对标 · Mayday: The Shadow Pilot",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b021-na.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#26[灾难,场男,男频]"
     },
     {
       "id": "kb/benchmark/b022-na",
       "title": "对标 · Deadman Velocity",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b022-na.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#26[灾难,场男,男频]"
     },
     {
       "id": "kb/benchmark/b023-na",
       "title": "对标 · Deep Abyss Master",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b023-na.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#26[灾难,场男,男频]"
     },
     {
       "id": "kb/benchmark/b024-na",
       "title": "对标 · Tower Inferno: The Lone Architect",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b024-na.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#26[灾难,场男,男频]"
     },
     {
       "id": "kb/benchmark/b025-s",
       "title": "对标 · I Heard The Baby Alpha Whimper",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b025-s.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#27[冷血,材超,超自]"
     },
     {
       "id": "kb/benchmark/b026-s",
       "title": "对标 · The Beast Prince Refuses Any Other Nanny",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b026-s.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#27[冷血,材超,超自]"
     },
     {
       "id": "kb/benchmark/b027-s",
       "title": "对标 · 给大妈爆改后我成了顶流",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b027-s.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#28[不懂,与运,业大]"
     },
     {
       "id": "kb/benchmark/b028-s",
       "title": "对标 · 重回前夫假死那天，我大摆招魂席",
       "domain": "benchmark",
       "path": "knowledge/benchmark/b028-s.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#29[一击,万额,三金]"
     },
     {
       "id": "kb/continuity/state-ledger",
       "title": "长程连续性与状态台账标准",
       "domain": "continuity",
       "path": "knowledge/continuity/state-ledger.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#30[一台,与状,么典]"
     },
     {
       "id": "kb/continuity/worldbook",
       "title": "世界书体系标准（小说/剧本双变体）",
       "domain": "continuity",
       "path": "knowledge/continuity/worldbook.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#31[一目,与特,书体]"
     },
     {
       "id": "kb/craft/convolution-waves",
       "title": "卷积波次写作法（逐波推进·超额写·滚动回看收敛）",
       "domain": "craft",
       "path": "knowledge/craft/convolution-waves.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#32[两成,分场,卷积]"
     },
     {
       "id": "kb/craft/highlight-loop",
       "title": "亮点闭环（卖点 → 台词范式 → 成文消费）",
       "domain": "craft",
       "path": "knowledge/craft/highlight-loop.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#33[一为,与梗,个机]"
     },
     {
       "id": "kb/craft/prose-constraints",
       "title": "成文约束总纲（六维路由——写前看什么、盖章查什么）",
       "domain": "craft",
       "path": "knowledge/craft/prose-constraints.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#34[一维,上限,不进]"
     },
     {
       "id": "kb/craft/section-pipeline",
       "title": "节卷积写作纪律（一节一验收，过点再滚上下文）",
       "domain": "craft",
       "path": "knowledge/craft/section-pipeline.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#32[两成,分场,卷积]"
     },
     {
       "id": "kb/craft/user-style-rules",
       "title": "用户补充 · 文学规则（公用 md，手动追加区）",
       "domain": "craft",
       "path": "knowledge/craft/user-style-rules.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#35[个文,了判,付流]"
     },
     {
       "id": "kb/deconstruct/ai-trace-dashabuse",
       "title": "破折号滥用条款草案（slop-list S1/S5 · SemIf dash-abuse 校准回流）",
       "domain": "deconstruct",
       "path": "knowledge/deconstruct/ai-trace-dashabuse-draft.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#36[义半,义提,人审]"
     },
     {
       "id": "kb/deconstruct/ai-trace-negpattern",
       "title": "否定排比条款草案（slop-list S2 · SemIf neg-pattern 校准回流）",
       "domain": "deconstruct",
       "path": "knowledge/deconstruct/ai-trace-negpattern-draft.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#36[义半,义提,人审]"
     },
     {
       "id": "kb/deconstruct/ai-trace-revealstack",
       "title": "揭示三连与假对比条款草案（slop-list S3/S4 · SemIf reveal-stack 校准回流）",
       "domain": "deconstruct",
       "path": "knowledge/deconstruct/ai-trace-revealstack-draft.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#36[义半,义提,人审]"
     },
     {
       "id": "kb/deconstruct/craft-similesuspend",
       "title": "悬浮比喻条款草案（metaphor-zh 病1 · SemIf simile-suspend 校准回流）",
       "domain": "deconstruct",
       "path": "knowledge/deconstruct/craft-similesuspend-draft.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#36[义半,义提,人审]"
     },
     {
       "id": "kb/deconstruct/dialogue-daisychain",
       "title": "顶真电报腔条款草案（user-style-rules R7 · SemIf daisy-chain 校准回流）",
       "domain": "deconstruct",
       "path": "knowledge/deconstruct/dialogue-daisychain-draft.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#36[义半,义提,人审]"
     },
     {
       "id": "kb/deconstruct/protocol",
       "title": "拆书总协议（六槽位与溯源纪律）",
       "domain": "deconstruct",
       "path": "knowledge/deconstruct/protocol.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#37[三类,与溯,与纪]"
     },
     {
       "id": "kb/deconstruct/style-learning",
       "title": "文风学习协议（情绪决定笔墨密度）",
       "domain": "deconstruct",
       "path": "knowledge/deconstruct/style-learning.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#38[一核,么不,习协]"
     },
     {
       "id": "kb/formats/comic-drama-adapt",
       "title": "漫剧改编标尺（篇幅配额·代入三要素·爽点配额·冷开场）",
       "domain": "formats",
       "path": "knowledge/formats/comic-drama-adapt.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#39[一允,一篇,一集]"
     },
     {
       "id": "kb/formats/method-brief",
       "title": "编排交底标尺（工具账·手法账·情节曲线账，随大纲交付）",
       "domain": "formats",
       "path": "knowledge/formats/method-brief.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#40[一工,三个,三账]"
     },
     {
       "id": "kb/formats/webnovel-fastfood",
       "title": "快餐抽象网文形态标准（番茄线）",
       "domain": "formats",
       "path": "knowledge/formats/webnovel-fastfood.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#41[业单,位是,定单]"
     },
     {
       "id": "kb/formats/webnovel-longform",
       "title": "长篇网文形态标准（章末钩子与批量生成）",
       "domain": "formats",
       "path": "knowledge/formats/webnovel-longform.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#41[业单,位是,定单]"
     },
     {
       "id": "kb/market/brief-four-questions",
       "title": "命题四问确认单（开工前对题）",
       "domain": "market",
       "path": "knowledge/market/brief-four-questions.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#42[一问,下点,东西]"
     },
     {
       "id": "kb/market/constraints",
       "title": "生产约束基线（短剧/漫剧实盘值）",
       "domain": "market",
       "path": "knowledge/market/constraints.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#43[售剧,在售,析报]"
     },
     {
       "id": "kb/market/internet-feel",
       "title": "网感公式标准（标题 / 卖点 / 共情点句式）",
       "domain": "market",
       "path": "knowledge/market/internet-feel-formulas.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#44[三天,下室,且每]"
     },
     {
       "id": "kb/market/structure",
       "title": "短剧市场结构标准（咔咔猩语料蒸馏）",
       "domain": "market",
       "path": "knowledge/market/market-structure.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#43[售剧,在售,析报]"
     },
     {
       "id": "kb/market/meme-rules",
       "title": "梗密度与发散性约束（S1 网感输入源）",
       "domain": "market",
       "path": "knowledge/market/meme-rules.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#45[一层,与传,与发]"
     },
     {
       "id": "kb/market/setting-rules",
       "title": "设定体系约束（项目级：世界观代入成本红线）",
       "domain": "market",
       "path": "knowledge/market/setting-rules.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#46[一设,与再,与医]"
     },
     {
       "id": "kb/market/topic-anatomy",
       "title": "题材解剖学（素材聚合与关系逆位选题法）",
       "domain": "market",
       "path": "knowledge/market/topic-anatomy.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#47[一堆,上来,下不]"
     },
     {
       "id": "kb/method/longform-engineering",
       "title": "长篇工程方法（细纲节拍/递归重提示/双层记忆/大纲贴附）",
       "domain": "method",
       "path": "knowledge/method/longform-engineering.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#48[一细,与拍,个场]"
     },
     {
       "id": "kb/method/revision-loop",
       "title": "多轮精修循环协议（判分→定向修订→防劣化收敛）",
       "domain": "method",
       "path": "knowledge/method/revision-loop.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#49[一循,一轮,一遍]"
     },
     {
       "id": "kb/rules/ai-trace",
       "title": "结构机味域规则语料（断言台账退役迁移，agent 可激活条款）",
       "domain": "rules",
       "path": "knowledge/rules/ai-trace.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#50[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/character",
       "title": "人物域规则语料（断言台账退役迁移，agent 可激活条款）",
       "domain": "rules",
       "path": "knowledge/rules/character.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#50[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/conflict",
       "title": "冲突域规则语料（断言台账退役迁移，agent 可激活条款）",
       "domain": "rules",
       "path": "knowledge/rules/conflict.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#50[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/continuity",
       "title": "连续性域规则语料（断言台账退役迁移，agent 可激活条款）",
       "domain": "rules",
       "path": "knowledge/rules/continuity.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#50[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/curve",
       "title": "情绪曲线域规则语料（断言台账退役迁移，agent 可激活条款）",
       "domain": "rules",
       "path": "knowledge/rules/curve.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#50[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/deconstruct",
       "title": "拆解纪律域规则语料（断言台账退役迁移，agent 可激活条款）",
       "domain": "rules",
       "path": "knowledge/rules/deconstruct.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#50[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/dialogue",
       "title": "对白域规则语料（断言台账退役迁移，agent 可激活条款）",
       "domain": "rules",
       "path": "knowledge/rules/dialogue.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#50[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/ending",
       "title": "结局域规则语料（断言台账退役迁移，agent 可激活条款）",
       "domain": "rules",
       "path": "knowledge/rules/ending.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#50[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/hook",
       "title": "钩子域规则语料（断言台账退役迁移，agent 可激活条款）",
       "domain": "rules",
       "path": "knowledge/rules/hook.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#50[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/meme",
       "title": "梗域规则语料（断言台账退役迁移，agent 可激活条款）",
       "domain": "rules",
       "path": "knowledge/rules/meme.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#50[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/pacing",
       "title": "节奏与密度域规则语料（断言台账退役迁移，agent 可激活条款）",
       "domain": "rules",
       "path": "knowledge/rules/pacing.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#50[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/platform",
       "title": "卡点域规则语料（断言台账退役迁移，agent 可激活条款）",
       "domain": "rules",
       "path": "knowledge/rules/platform.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#50[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/reversal",
       "title": "反转域规则语料（断言台账退役迁移，agent 可激活条款）",
       "domain": "rules",
       "path": "knowledge/rules/reversal.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#50[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/scene",
       "title": "场景域规则语料（断言台账退役迁移，agent 可激活条款）",
       "domain": "rules",
       "path": "knowledge/rules/scene.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#50[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/setting",
       "title": "设定底座域规则语料（断言台账退役迁移，agent 可激活条款）",
       "domain": "rules",
       "path": "knowledge/rules/setting.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#50[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/visual",
       "title": "视觉可拍性域规则语料（断言台账退役迁移，agent 可激活条款）",
       "domain": "rules",
       "path": "knowledge/rules/visual.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#50[不用,中的,交拦]"
     },
     {
       "id": "kb/semif-calibration/daisy-chain/report-批D-20260922",
       "title": "顶真电报腔条款体检卷 · 批D 报告（2026-09-22）",
       "domain": "semif-calibration",
       "path": "knowledge/semif-calibration/daisy-chain/report-批D-20260922.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#36[义半,义提,人审]"
     },
     {
       "id": "kb/semif-calibration/dash-abuse/report-批A-20260922",
       "title": "破折号条款体检卷 · 批A 报告（2026-09-22）",
       "domain": "semif-calibration",
       "path": "knowledge/semif-calibration/dash-abuse/report-批A-20260922.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#36[义半,义提,人审]"
     },
     {
       "id": "kb/semif-calibration/neg-pattern/report-批D-20260922",
       "title": "否定排比条款体检卷 · 批D 报告（2026-09-22）",
       "domain": "semif-calibration",
       "path": "knowledge/semif-calibration/neg-pattern/report-批D-20260922.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#36[义半,义提,人审]"
     },
     {
       "id": "kb/semif-calibration/reveal-stack/report-批D-20260922",
       "title": "揭示三连与假对比条款体检卷 · 批D 报告（2026-09-22）",
       "domain": "semif-calibration",
       "path": "knowledge/semif-calibration/reveal-stack/report-批D-20260922.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#36[义半,义提,人审]"
     },
     {
       "id": "kb/semif-calibration/simile-suspend/report-批D-20260922",
       "title": "悬浮比喻条款体检卷 · 批D 报告（2026-09-22）",
       "domain": "semif-calibration",
       "path": "knowledge/semif-calibration/simile-suspend/report-批D-20260922.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#36[义半,义提,人审]"
     },
     {
       "id": "kb/structure/ascent",
@@ -724,7 +1037,8 @@
         "神豪",
         "赘婿",
         "系统流"
-      ]
+      ],
+      "cluster": "簇#51[与节,场对,型三]"
     },
     {
       "id": "kb/structure/barbell-return",
@@ -737,14 +1051,16 @@
         "回环",
         "深沉档",
         "长线IP"
-      ]
+      ],
+      "cluster": "簇#51[与节,场对,型三]"
     },
     {
       "id": "kb/structure/catalog",
       "title": "叙事结构选型目录（第二阶段深挖用）",
       "domain": "structure",
       "path": "knowledge/structure/catalog.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#52[一结,上而,二结]"
     },
     {
       "id": "kb/structure/dual-line",
@@ -756,7 +1072,8 @@
         "悬疑",
         "商战",
         "身份错位"
-      ]
+      ],
+      "cluster": "簇#51[与节,场对,型三]"
     },
     {
       "id": "kb/structure/episodic-fate",
@@ -769,14 +1086,16 @@
         "模拟器",
         "无限流",
         "循环"
-      ]
+      ],
+      "cluster": "簇#51[与节,场对,型三]"
     },
     {
       "id": "kb/structure/episodic-webnovel",
       "title": "单元剧网文结构标准（多故事集合体 · 暗线先行）",
       "domain": "structure",
       "path": "knowledge/structure/episodic-webnovel.md",
-      "tags": []
+      "tags": [],
+      "cluster": "簇#53[一串,一座,一杠]"
     },
     {
       "id": "kb/structure/revenge",
@@ -789,7 +1108,8 @@
         "熟龄复仇",
         "赘婿",
         "重生"
-      ]
+      ],
+      "cluster": "簇#51[与节,场对,型三]"
     },
     {
       "id": "kb/structure/save-the-cat",
@@ -801,7 +1121,8 @@
         "情感",
         "成长",
         "家庭"
-      ]
+      ],
+      "cluster": "簇#51[与节,场对,型三]"
     },
     {
       "id": "kb/trope/chongsheng-fuchou",
@@ -813,7 +1134,8 @@
         "重生",
         "复仇",
         "年代"
-      ]
+      ],
+      "cluster": "簇#22[手握,冷面,末世]"
     },
     {
       "id": "kb/trope/dalian-nuezha",
@@ -825,7 +1147,8 @@
         "大女主",
         "赘婿逆袭",
         "都市"
-      ]
+      ],
+      "cluster": "簇#24[万爽,全库,和度]"
     },
     {
       "id": "kb/trope/liufang-zhongtian",
@@ -837,7 +1160,8 @@
         "追妻火葬场",
         "悔婚",
         "都市情感"
-      ]
+      ],
+      "cluster": "簇#23[种田,流放,放种]"
     },
     {
       "id": "kb/trope/majia-diaoma",
@@ -849,7 +1173,8 @@
         "身份错位",
         "马甲",
         "逆袭"
-      ]
+      ],
+      "cluster": "簇#24[万爽,全库,和度]"
     },
     {
       "id": "kb/trope/na-billionaire",
@@ -861,7 +1186,8 @@
         "北美",
         "亿万富翁",
         "契约婚姻"
-      ]
+      ],
+      "cluster": "簇#24[万爽,全库,和度]"
     },
     {
       "id": "kb/trope/na-fantasy",
@@ -873,7 +1199,8 @@
         "北美",
         "奇幻",
         "魔法"
-      ]
+      ],
+      "cluster": "簇#24[万爽,全库,和度]"
     },
     {
       "id": "kb/trope/na-werewolf",
@@ -885,7 +1212,8 @@
         "北美",
         "狼人",
         "命定之恋"
-      ]
+      ],
+      "cluster": "簇#24[万爽,全库,和度]"
     },
     {
       "id": "kb/trope/shenhao-baofu",
@@ -897,7 +1225,8 @@
         "神豪",
         "暴富",
         "都市爽文"
-      ]
+      ],
+      "cluster": "簇#24[万爽,全库,和度]"
     },
     {
       "id": "kb/trope/tuanchong",
@@ -909,7 +1238,8 @@
         "团宠",
         "萌宝",
         "家庭亲情"
-      ]
+      ],
+      "cluster": "簇#24[万爽,全库,和度]"
     },
     {
       "id": "kb/trope/xianhun-lianai",
@@ -921,7 +1251,8 @@
         "仙侠",
         "修仙",
         "跨世之恋"
-      ]
+      ],
+      "cluster": "簇#22[手握,冷面,末世]"
     },
     {
       "id": "kb/trope/zhenjia-qianjin",
@@ -933,7 +1264,8 @@
         "真假千金",
         "身份错位",
         "豪门"
-      ]
+      ],
+      "cluster": "簇#24[万爽,全库,和度]"
     },
     {
       "id": "kb/trope/zhuiqi-huozangchang",
@@ -945,7 +1277,8 @@
         "追妻火葬场",
         "悔过",
         "情感虐恋"
-      ]
+      ],
+      "cluster": "簇#24[万爽,全库,和度]"
     },
     {
       "id": "kb/trope/zhuxu-zhanshen",
@@ -957,7 +1290,8 @@
         "主神游戏",
         "系统流",
         "无限流"
-      ]
+      ],
+      "cluster": "簇#22[手握,冷面,末世]"
     }
   ],
   "relations": []

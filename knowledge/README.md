@@ -31,6 +31,34 @@
 （正文：标准条款，每条带判定级别 block / major / minor）
 ```
 
+## 板块 track（批次3c R2 · 人工职能维度）
+
+每张卡 frontmatter 带一个 `track` 字段（additive，中文值），回答「这张卡归哪个人工职能管」：
+
+```json
+{
+  "id": "kb/aesthetic/hook-3s",
+  "track": "编剧",
+  "...": "其余信封字段不变"
+}
+```
+
+| track | 收什么 | 映射口径（存量 120 卡定案，`scripts/r2-add-track.py` 为映射与红线审计的留档件） |
+| --- | --- | --- |
+| `文风` | 词句层：AI 味/去模板化/比喻/感官/风格档/成文约束/文风学习/词句校准 | `aesthetic/{ai-detection-sources,ai-trace,metaphor-zh,naturalness-zh,sensory-detail,slop-list,style-routes}`、`craft/{prose-constraints,user-style-rules}`、`deconstruct/*-draft` 与 `style-learning`、`rules/ai-trace`、`semif-calibration/` 五卷 |
+| `编剧` | 故事设计：人物/冲突/对白/钩子/节奏/反转/场景/结局/可视化/结构母型 | `aesthetic/{character,conflict-escalation,dialogue,ending,hook-3s,pacing-density,reversal,scene-value,unreasonable-highlight,visual-poster}`、`rules/{character,conflict,dialogue,ending,hook,pacing,reversal,scene,visual}`、`structure/` 全部 |
+| `选材` | 题材/市场/对标/梗族/设定/平台合规 | `market/` 全部、`benchmark/` 全部、`trope/` 全部、`rules/{meme,platform,setting}`、`aesthetic/platform-compliance` |
+| `情绪` | 情绪曲线族 | `aesthetic/emotion-curve`、`rules/curve` |
+| `连续性` | 长程台账/世界书 | `continuity/` 全部、`rules/continuity` |
+| `立意` | **本批空白（Q3 确认无卡）**——缺口入 R3 补缺清单写题目；立意组建卡前该值不得出现 | — |
+| `通用` | 横切流程/总纲/监管/评审协议/形态标准/工程方法/拆书协议 | `aesthetic/{constitution,oversight,perspective-review,redline-scoring}`、`craft/{convolution-waves,highlight-loop,section-pipeline}`、`deconstruct/protocol`、`formats/` 全部、`method/` 全部、`rules/deconstruct` |
+
+纪律：track 是**人工维度**，逐卡亲读裁定、正文零改写（只加 frontmatter 行）；新增卡入库时人工填
+track，不契合任何板块给 `通用`。与 track 并行的**算法维度**是编译期聚类（`tools/kit-compile.py`
+簇标签进产物 `entries[].cluster` + `stats.clusters`，不回写卡）——双层组织：track 回答「人怎么分」，
+cluster 回答「语料怎么聚」。检索消费见 `kb_search` 两段式聚簇检索；视图见
+`python tools/kb-health.py --by track|cluster`。
+
 ## 类型分类（当前定义）
 
 | type | 目录 | 回答什么 | 状态 |

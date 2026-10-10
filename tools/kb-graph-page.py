@@ -118,6 +118,17 @@ def build_payload(global_g: dict, project_g: dict | None, project: str | None) -
         degree[l["t"]] += 1
     for n, d in zip(nodes, degree):
         n["degree"] = d
+    # R2 簇着色：entries[].cluster（kit-compile 编译期聚类）随节点进 payload；
+    # clusters = 簇清单（名+节点数，按数降序名字升序）——模板侧有簇即按簇着色，无簇回落域着色。
+    cl_count: dict = {}
+    for n in nodes:
+        c = n.get("cluster") or ""
+        if c:
+            cl_count[c] = cl_count.get(c, 0) + 1
+    clusters = [
+        {"name": k, "count": v}
+        for k, v in sorted(cl_count.items(), key=lambda kv: (-kv[1], kv[0]))
+    ]
     dom_count: dict = {}
     for n in nodes:
         key = f"{n['domain']}|{n['source']}"
@@ -130,6 +141,7 @@ def build_payload(global_g: dict, project_g: dict | None, project: str | None) -
         "format": "kb-graph-page@1",
         "scope": "project+global" if project_g is not None else "global",
         "project": project,
+        "clusters": clusters,
         "domains": domains,
         "nodes": nodes,
         "links": links,
@@ -176,8 +188,9 @@ def cmd_build(project: str | None, out: str | None, root_dir: str) -> int:
     dst.parent.mkdir(parents=True, exist_ok=True)
     dst.write_text(page, encoding="utf-8")
     sc = "（scope=project+global，项目卡描金环）" if pg is not None else ""
+    cl = f" / 簇 {len(payload['clusters'])}" if payload["clusters"] else ""
     print(f"kb-graph-page → {dst}（节点 {len(payload['nodes'])} / 边 {len(payload['links'])} / "
-          f"域 {len(payload['domains'])}{sc}；悬边丢弃 {payload['meta']['dropped_links']}）零外部资源引用")
+          f"域 {len(payload['domains'])}{cl}{sc}；悬边丢弃 {payload['meta']['dropped_links']}）零外部资源引用")
     return 0
 
 
@@ -228,6 +241,13 @@ def cmd_selfcheck() -> int:
     if p1 != p2:
         print("[FAIL] 幂等破坏：同一输入两次渲染不一致", file=sys.stderr)
         return 1
+    # R2 簇着色：给部分词条补 cluster 再构建——clusters 清单随节点聚合，缺 cluster 的节点不进清单
+    g2 = copy.deepcopy(g)
+    g2["entries"][0]["cluster"] = "簇#01[枢纽,测试]"
+    g2["entries"][1]["cluster"] = "簇#01[枢纽,测试]"
+    pl2 = build_payload(g2, None, None)
+    assert [c["name"] for c in pl2["clusters"]] == ["簇#01[枢纽,测试]"] and pl2["clusters"][0]["count"] == 2, pl2["clusters"]
+    assert not payload["clusters"], "无 cluster 字段的图不应产出簇清单"
     hits = external_hits(p1)
     if hits:
         print("[FAIL] 产物含外部资源引用（零依赖红线）:", file=sys.stderr)

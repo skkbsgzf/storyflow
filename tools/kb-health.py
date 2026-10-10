@@ -32,8 +32,9 @@
 用法：
   python tools/kb-health.py [inventory|dups|edges|coverage|all] [--root <dir>] [--out-dir <dir>]
                             [--top <N>] [--body-threshold <F>] [--title-threshold <F>]
+  python tools/kb-health.py --by track|cluster    # 板块/簇汇总视图（批次3c R2，组内卡数·字数·消费数·孤儿数）
   缺省子命令 = all（四账各写一份收据）。退出码：0 正常；2 用法错误；3 材料缺失（产物/目录）。
-  收据缺省 projects/_reports/kb-health-{inventory,dups,edges,coverage}.json
+  收据缺省 projects/_reports/kb-health-{inventory,dups,edges,coverage,rollup}.json
   （projects/ 不入 git，写坏不脏库）；内容不含生成时刻，同一状态重跑逐字节一致。
 """
 import argparse
@@ -104,9 +105,10 @@ def load_cards(root: Path) -> dict:
         path_id = "kb/" + rel.removesuffix(".md")
         cid = declared or path_id
         body = raw[FM_RE.match(raw).end():] if FM_RE.match(raw) else raw
-        # 产物回落标题形态（kit-compile 对 JSON frontmatter 解析不出 title 时取首行 = '---'）
-        first_line = raw.lstrip("# \n").splitlines()[0][:60] if raw.strip() else rel
-        title = (fm or {}).get("title") or first_line
+        # 产物回落标题形态（kit-compile 对带信封无 title 的卡回落首个正文行——R2 起与 kit-compile
+        # 同式先剥信封再取行；旧式取 raw 首行会把带信封无 title 的卡打成『---』伪标题）
+        first_line = next((l for l in body.splitlines() if l.strip()), '')
+        title = (fm or {}).get("title") or (first_line.lstrip("# \n")[:60] if first_line.strip() else rel)
         kind = "rule-card" if rel.startswith("rules/") else "kb"
         clauses = (fm or {}).get("clauses") or []
         cards[cid] = {
@@ -735,11 +737,66 @@ def account_coverage(root: Path, out_dir: Path, args) -> int:
     return 0
 
 
+# ── 视图：板块/簇汇总（批次3c R2 ·--by track|cluster）──────────────────────
+def account_rollup(root: Path, out_dir: Path, args) -> int:
+    """--by track|cluster 视图：板块（人工维度，卡面 frontmatter track）或簇（算法维度，
+    产物 entries[].cluster）分组——组内卡数·正文字数·消费 op 数·文本消费面数·孤儿数。
+    只读汇总，与四账互补：track 是人打的职能标签，cluster 是编译期聚类；孤儿 = op+文本双零。"""
+    cards = load_cards(root)
+    op_face, text_face, _opdom, _dang = scan_consumers(root, cards)
+    by_key: dict = defaultdict(list)
+    if args.by == "track":
+        for cid, c in cards.items():
+            by_key[str((c["fm"] or {}).get("track") or "").strip() or "(缺 track)"].append(cid)
+    else:
+        prod = load_product(root)
+        cluster_of = {e["id"]: (e.get("cluster") or "") for e in (prod or {}).get("entries") or []}
+        for cid, c in cards.items():
+            cl = cluster_of.get(cid, "")
+            by_key[cl or ("(产物无此卡)" if cid not in cluster_of else "(无簇)")].append(cid)
+    groups = []
+    for key in sorted(by_key):
+        ids = sorted(by_key[key])
+        consumers = sorted({f for cid in ids for f in op_face.get(cid, ())})
+        text_files = sorted({f for cid in ids for f in text_face.get(cid, ())})
+        orphans = [cid for cid in ids if not op_face.get(cid) and not text_face.get(cid)]
+        groups.append({
+            "group": key,
+            "cards": len(ids),
+            "body_chars": sum(cards[cid]["body_chars"] for cid in ids),
+            "op_consumers": len(consumers),
+            "text_consumers": len(text_files),
+            "orphans": len(orphans),
+            "orphan_ids": orphans[:12],
+            "ids": ids if args.by == "track" else ids[:24],
+        })
+    payload = {
+        "format": f"kb-health-rollup-{args.by}@1",
+        "root": root.as_posix(),
+        "口径": ("track=人工职能板块（卡面 frontmatter，缺标 '(缺 track)'）；" if args.by == "track"
+                 else "cluster=编译期聚类（kit-compile 产物 entries[].cluster；盘上卡不在产物/无簇单列）；"),
+        "summary": {"groups": len(groups), "cards": sum(g["cards"] for g in groups),
+                    "orphans": sum(g["orphans"] for g in groups)},
+        "groups": groups,
+    }
+    path = write_receipt(root, out_dir, "kb-health-rollup.json", payload)
+    print(f"kb-health rollup（--by {args.by}）｜ {len(groups)} 组 / {payload['summary']['cards']} 卡"
+          f" ｜ 孤儿（op+文本双零）{payload['summary']['orphans']} 张")
+    for g in groups:
+        print(f"  {g['group']:<28} 卡 {g['cards']:>3} ｜ 字数 {g['body_chars']:>6} ｜ "
+              f"消费 op {g['op_consumers']:>2} ｜ 文本面 {g['text_consumers']:>2} ｜ 孤儿 {g['orphans']}")
+    print(f"收据 → {path}")
+    return 0
+
+
 # ── 入口 ────────────────────────────────────────────────────────
 def main() -> int:
     ap = argparse.ArgumentParser(description="知识库体检四账（画像/查重/边审计/覆盖矩阵；只读收据，非门禁）")
     ap.add_argument("account", nargs="?", default="all",
                     choices=["inventory", "dups", "edges", "coverage", "all"])
+    ap.add_argument("--by", choices=["track", "cluster"], default=None,
+                    help="汇总视图（批次3c R2）：track=板块（人工维度）/ cluster=聚类簇（算法维度）；"
+                         "给出时只跑该视图（组内卡数·字数·消费数·孤儿数），四账不跑")
     ap.add_argument("--root", default=str(ROOT), help="仓库根（缺省本脚本上一级）")
     ap.add_argument("--out-dir", default=None, help="收据目录（缺省 projects/_reports）")
     ap.add_argument("--top", type=int, default=25, help="dups 输出候选对上限（缺省 25）")
@@ -750,6 +807,8 @@ def main() -> int:
 
     root = Path(args.root).resolve()
     out_dir = Path(args.out_dir) if args.out_dir else root / "projects" / "_reports"
+    if args.by:
+        return account_rollup(root, out_dir, args)
     runners = {"inventory": account_inventory, "dups": account_dups,
                "edges": account_edges, "coverage": account_coverage}
     if args.account == "all":

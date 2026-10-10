@@ -54,12 +54,19 @@
 const G = __GRAPH__;
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
-// ── 调色板（域着色，按 G.domains 顺序循环取色；固定 16 色够 12 个全局域 + 项目域用）──
+// ── 调色板（R2 簇着色优先：产物带编译期聚类（G.clusters 非空）时按 cluster 着色，
+//    缺簇字段/旧产物回落域着色。16 色循环——簇数（可至 50+）超色数时同色不同簇，
+//    以图例文字与悬停簇名区分；域着色同表循环。）──
 const PALETTE = ["#e8b33d","#6ea8fe","#5f9c7a","#d98a83","#8a6fb0","#c9a227","#4fb3c9","#b0765a",
                  "#7f9e4a","#c97ba3","#88b0d8","#a3907c","#6fc0a8","#d089c0","#9aa7e0","#c0b28a"];
+const byCluster = (G.clusters || []).length > 0;
+const clusterColor = {};
+(G.clusters || []).forEach((c, i) => { clusterColor[c.name] = PALETTE[i % PALETTE.length]; });
 const domainColor = {};
 (G.domains || []).forEach((d, i) => { domainColor[d.name + "|" + (d.source || "global")] = PALETTE[i % PALETTE.length]; });
-const colorOf = n => domainColor[n.domain + "|" + (n.source || "global")] || "#8a8375";
+const colorOf = n => byCluster
+  ? (clusterColor[n.cluster] || "#8a8375")
+  : (domainColor[n.domain + "|" + (n.source || "global")] || "#8a8375");
 
 // ── 数据准备：度数定半径；枢纽（度数前 12）名常显 ──
 const nodes = (G.nodes || []).map((n, i) => ({ ...n, i, deg: n.degree || 0 }));
@@ -130,9 +137,9 @@ function step() {
   alpha = Math.max(MIN_ALPHA, alpha * 0.994);
 }
 
-// ── 域开关（图例点击 = 隔离高亮：未选域与相关边降暗）──
+// ── 开关（图例点击 = 隔离高亮：未选项与相关边降暗）。簇着色档按簇隔离，域着色档按域隔离 ──
 const offDomains = new Set();
-const keyOf = n => n.domain + "|" + (n.source || "global");
+const keyOf = n => byCluster ? (n.cluster || "") : (n.domain + "|" + (n.source || "global"));
 const isOff = n => offDomains.has(keyOf(n));
 
 // ── 绘制 ──
@@ -223,6 +230,7 @@ window.addEventListener("mousemove", e => {
     tip.innerHTML = `<div class="t">${esc(usableTitle(n))}` +
       (n.source === "project" ? `<span class="badge">项目</span>` : "") + `</div>` +
       `<div class="m">${esc(n.id)}</div>` +
+      (n.cluster ? `<div class="m">${esc(n.cluster)}</div>` : "") +
       `<div class="m">${esc(n.domain)} 域 · 度 ${n.deg}` + (n.path ? ` · ${esc(n.path)}` : "") + `</div>`;
     tip.style.display = "block";
     const tw = tip.offsetWidth, th = tip.offsetHeight;
@@ -246,23 +254,29 @@ cv.addEventListener("wheel", e => {
   view.scale = ns;
 }, { passive: false });
 
-// ── 头部：统计 chips + 分类图例（点击 = 隔离高亮）──
+// ── 头部：统计 chips + 分类图例（点击 = 隔离高亮；簇着色档图例=簇，域着色档图例=域）──
 function header() {
   document.getElementById("chips").innerHTML = [
     `<span class="chip">scope: ${esc(G.scope)}</span>`,
     `<span class="chip">词条 ${nodes.length}</span>`,
     `<span class="chip">关系 ${links.length}</span>`,
+    byCluster ? `<span class="chip">簇 ${(G.clusters || []).length}</span>` : "",
     `<span class="chip">域 ${(G.domains || []).length}</span>`,
     isProject ? `<span class="chip" style="color:#e8b33d;border-color:#e8b33d">项目卡描金环</span>` : "",
     `<span class="hint">拖节点 · 空白处平移 · 滚轮缩放 · 悬停显名 · 图例点击隔离</span>`,
   ].join("");
   const lg = document.getElementById("legend");
-  lg.innerHTML = (G.domains || []).map(d => {
-    const key = d.name + "|" + (d.source || "global");
-    return `<span class="lg" data-key="${esc(key)}">` +
-      `<span class="dot" style="background:${PALETTE[(G.domains || []).indexOf(d) % PALETTE.length]}"></span>` +
-      `${esc(d.name)} ${d.count}${d.source === "project" ? "·项目" : ""}</span>`;
-  }).join("");
+  lg.innerHTML = byCluster
+    ? (G.clusters || []).map(c =>
+        `<span class="lg" data-key="${esc(c.name)}" title="${esc(c.name)}">` +
+        `<span class="dot" style="background:${clusterColor[c.name]}"></span>` +
+        `${esc(c.name)} ${c.count}</span>`).join("")
+    : (G.domains || []).map(d => {
+        const key = d.name + "|" + (d.source || "global");
+        return `<span class="lg" data-key="${esc(key)}">` +
+          `<span class="dot" style="background:${PALETTE[(G.domains || []).indexOf(d) % PALETTE.length]}"></span>` +
+          `${esc(d.name)} ${d.count}${d.source === "project" ? "·项目" : ""}</span>`;
+      }).join("");
   lg.querySelectorAll(".lg").forEach(el => {
     el.addEventListener("click", () => {
       const k = el.dataset.key;

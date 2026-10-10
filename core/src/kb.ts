@@ -58,8 +58,22 @@ function scanFiles(knowledgeDir: string, fs: IFileSystem = nodeFs, path: IFsPath
 
 // ── v0.8 目标4 · HyperGraphRAG 装载（kit/hypergraph.rag.json = knowledge 层的 GitHub 发布形态）──
 
-interface GraphEntry { id: string; title: string; domain: string; path: string; tags: string[] }
+interface GraphEntry { id: string; title: string; domain: string; path: string; tags: string[]; cluster?: string }
 interface HyperGraph { format?: string; entries?: GraphEntry[]; relations?: { from: string; to: string; kind: string; weight: number }[] }
+
+// ── 批次3c R2 · 两段式聚簇检索常量 ──
+// 第一段：查询先按「簇名 + 簇内卡词面」给簇打分，取最高簇；簇内有任一词面命中（簇分 > 0）
+// 即视为簇内置信足，簇成员获得锚定加分进入优先排序（含词面零命中但同簇的成员——语义关联
+// 经共簇传导）；簇内无任何命中 = 置信不足，回落全局纯词面排序（与历史行为逐字节一致）。
+// 锚定加分刻意低于标题命中权重（8）：簇锚只能重排词面弱命中，永不掀翻标题直击的卡。
+const CLUSTER_BOOST = 6;
+// 簇名（如 簇#03[钩子,开篇,悬念]）含查询词时的选簇加分——只在选簇时生效，不进条目分。
+const CLUSTER_NAME_BONUS = 4;
+
+/** 编译图是否携带聚类数据（kit-compile ≥ R2 的产物；旧产物/项目档无 cluster 字段 = 两段式整体不启用）。 */
+function graphHasClusters(g: HyperGraph): boolean {
+  return (g.entries ?? []).some((e) => typeof e.cluster === "string" && e.cluster.length > 0);
+}
 
 /** 编译图定位：<knowledgeDir>/../kit/hypergraph.rag.json；缺失或损坏返回 null（回落扫盘检索）。 */
 export function loadGraph(knowledgeDir: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): HyperGraph | null {
@@ -82,13 +96,24 @@ export function loadProjectGraph(projectDir: string, fs: IFileSystem = nodeFs, p
   } catch { return null; }
 }
 
-function graphSearch(g: HyperGraph, baseDir: string, opts: { q: string; dir?: string; k?: number }, fs: IFileSystem, path: IFsPath, source: "global" | "project"): { total: number; hits: KbHit[] } {
+function graphSearch(g: HyperGraph, baseDir: string, opts: { q: string; dir?: string; k?: number; cluster?: string }, fs: IFileSystem, path: IFsPath, source: "global" | "project"): { total: number; hits: KbHit[] } {
   const q = (opts.q ?? "").trim().toLowerCase();
   const terms = q.split(/[\s,，、;；/]+/).filter(Boolean);
   const k = Math.min(Math.max(opts.k ?? 8, 1), 30);
-  const hits: KbHit[] = [];
+  // R2 聚簇：cluster 参数 = 显式簇过滤（全名或「簇#NN」前缀）；产物无聚类数据时该参数整体忽略（零回归）
+  const wantCluster = typeof opts.cluster === "string" && opts.cluster.trim().length > 0 ? opts.cluster.trim() : null;
+  const useClusters = graphHasClusters(g);
+  const clusterFilter = (e: GraphEntry): boolean => {
+    if (!wantCluster || !useClusters) return true;
+    const c = e.cluster ?? "";
+    return c.length > 0 && (c === wantCluster || c.startsWith(wantCluster));
+  };
+  // 第一遍：全量候选词面打分（分数可为 0——聚簇锚定档允许同簇零词面成员进场）
+  type Cand = { e: GraphEntry; score: number; excerpt: string; usableTitle: boolean; rawTitle: string };
+  const cands: Cand[] = [];
   for (const e of g.entries ?? []) {
     if (opts.dir && e.domain !== opts.dir) continue;
+    if (!clusterFilter(e)) continue;
     // 编译图已知缺陷：多数 title 被压缩成 "---"（front-matter 分隔线误提）——
     // 这类 title 不参与标题打分，展示回退 id/路径，避免「标题全废→查询恒 0」。
     const rawTitle = (e.title ?? "").trim();
@@ -124,8 +149,41 @@ function graphSearch(g: HyperGraph, baseDir: string, opts: { q: string; dir?: st
         if (bodyHit && body) excerpt = body.slice(0, 160);
       } catch { /* 源卡不在本地：仅元数据打分 */ }
     }
-    if (score > 0) hits.push({
-      id: e.id, title: usableTitle ? rawTitle : (e.id || e.path), file: e.path, dir: e.domain, score,
+    cands.push({ e, score, excerpt, usableTitle, rawTitle });
+  }
+  // 第二段（R2 两段式）：先选簇，再决定排序档
+  let best: { name: string; score: number } | null = null;
+  if (useClusters) {
+    const clusterScores = new Map<string, number>();
+    for (const { e, score } of cands) {
+      const c = (e.cluster ?? "").trim();
+      if (!c) continue;
+      if (score > 0) clusterScores.set(c, (clusterScores.get(c) ?? 0) + score);
+    }
+    if (terms.length) {
+      for (const c of clusterScores.keys()) {
+        const low = c.toLowerCase();
+        let s = clusterScores.get(c) ?? 0;
+        for (const t of terms) {
+          if (low.includes(t)) s += CLUSTER_NAME_BONUS;
+        }
+        clusterScores.set(c, s);
+      }
+    }
+    for (const [name, score] of clusterScores) {
+      if (score <= 0) continue;
+      if (!best || score > best.score || (score === best.score && name < best.name)) best = { name, score };
+    }
+  }
+  const anchored = best; // 簇内置信足（簇内有任一词面命中）；null = 置信不足回落全局
+  const hits: KbHit[] = [];
+  for (const { e, score, excerpt, usableTitle, rawTitle } of cands) {
+    const member = anchored !== null && (e.cluster ?? "") === anchored.name;
+    if (score <= 0 && !member) continue; // 词面零命中且非锚定簇成员：与历史一致不进榜
+    hits.push({
+      id: e.id, title: usableTitle ? rawTitle : (e.id || e.path),
+      file: e.path, dir: e.domain,
+      score: member ? score + CLUSTER_BOOST : score,
       excerpt, source,
     });
   }
@@ -142,7 +200,7 @@ function normRef(h: KbHit): string {
 
 export function kbSearch(
   knowledgeDir: string,
-  opts: { q: string; dir?: string; k?: number; projectDir?: string },
+  opts: { q: string; dir?: string; k?: number; projectDir?: string; cluster?: string },
   fs: IFileSystem = nodeFs,
   path: IFsPath = nodePath,
 ): { total: number; hits: KbHit[] } {

@@ -6734,7 +6734,7 @@
     },
     "/api/v1/verbs/kb_search": {
       "post": {
-        "summary": "[知识库（KB 只读）] 检索知识库（95 张方法论/标尺卡：aesthetic/craft/market/structure/rules/trope…）——标题/标签/正文打分排序。带 project 时双根合并：全局 kit 图 + projects/<id>/kit/hypergraph.rag.json 项目档一起查，命中带 source=global|project。合并口径：同一卡两根都命中只留项目侧（source=project）；分数为主、同分项目排前；总量仍守 k（各根 top-k 合并去重后截回 k）",
+        "summary": "[知识库（KB 只读）] 检索知识库（95 张方法论/标尺卡：aesthetic/craft/market/structure/rules/trope…）——标题/标签/正文打分排序。带编译期聚类的产物（kit-compile ≥ R2）走两段式：查询先匹配最相关簇（簇名+簇内卡词面），簇内有词面命中即簇锚定优先排序（同簇成员含零词面卡一并进场），簇内无命中回落全局排序；cluster 参数可显式指定簇过滤（全名如 簇#03[钩子,开篇,悬念] 或前缀 簇#03；产物无聚类数据时忽略）。带 project 时双根合并：全局 kit 图 + projects/<id>/kit/hypergraph.rag.json 项目档一起查，命中带 source=global|project。合并口径：同一卡两根都命中只留项目侧（source=project）；分数为主、同分项目排前；总量仍守 k（各根 top-k 合并去重后截回 k）",
         "description": "动词直通 · 三面同源（CLI/MCP/HTTP 同一条执行路径）。入参形状派生自 core/src/verbs.ts 的动词表。",
         "tags": [
           "verbs"
@@ -6758,6 +6758,10 @@
                   "k": {
                     "type": "number",
                     "description": "条数上限（默认 8）"
+                  },
+                  "cluster": {
+                    "type": "string",
+                    "description": "簇过滤（可选）：编译期聚类簇名全称或「簇#NN」前缀（先 kb_search 无簇名查询或看产物 stats.clusters 得簇清单；产物无聚类数据时忽略）"
                   },
                   "project": {
                     "type": "string",
