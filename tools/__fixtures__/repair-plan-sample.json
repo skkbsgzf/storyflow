@@ -1,0 +1,34 @@
+{
+  "format": "repair-plan@1",
+  "project": "p-demo-synthetic",
+  "target": "正文/第02章.md",
+  "diagnosis_ref": "projects/p-demo-synthetic/reports/diagnosis-sample.json",
+  "items": [
+    {
+      "rule_ref": "kb/rules/curve#AE-CURVE-TYPE",
+      "repair": "按主型修整曲线走势，使全稿曲线可归入唯一六型",
+      "tier": "A",
+      "target": {
+        "file": "正文/第02章.md",
+        "line": 56,
+        "anchor": "空气仿佛凝固了。时间仿佛静止了。"
+      },
+      "diff": null,
+      "status": "proposed",
+      "receipt": null
+    },
+    {
+      "rule_ref": "kb/rules/meme#AE-MEME-DENSITY",
+      "repair": "补齐热梗素材表至 ≥10 条，并逐条给出传播度评级与可挂接场景",
+      "tier": "S",
+      "target": {
+        "file": "正文/第02章.md",
+        "anchor": "他数了数，口袋里还剩三百二十块。"
+      },
+      "diff": null,
+      "status": "proposed",
+      "receipt": null
+    }
+  ],
+  "summary": "合成示例改单（repair-plan@1）：两条 proposed 修订，diff 待 mf_apply_repairs 产出后回填；应用归宿主拿 diff 走 batch-edit，人裁后用 tools/repair-apply.py status 推进并落收据。tier 值域只有 S|A——B 级条款不入单（ARCHITECTURE §3.3）。"
+}

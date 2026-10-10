@@ -372,24 +372,22 @@ ${text.slice(0, 24000)}
 }
 
 /**
- * 分析手法工具族（曲线/人物/通用卡驱动）：方法论卡自 knowledge/ 动态装载，嵌套补全产结构化 JSON。
- * R2.4 能力归并：一次性 mf_analyze_curve（prompt 骨架写死、只包一张 KB 卡）泛化为
- * mf_analyze_card（card 参数驱动，一张规则卡即一个诊断能力）；mf_analyze_curve 保留为薄别名
- * （协议面 storyharness/src/analysis.ts 与 docs/integration/sse-events.md 点名过该工具名，宿主可见面不断）。
+ * 卡读取器（mf_analyze_card / mf_apply_repairs 共用）：kb 卡 id → 卡全文。
+ * 显式报错不静默：卡驱动诊断/修订只吃真实在盘的 kb 卡（按盘上核账，双根纪律下卡在 repoRoot）。
  */
-export function analysisTools(cfg: AgentModelConfig, kernel: Kernel, projectDir: string, repoRoot: string): AgentTool[] {
-  // 越界判定收编到 withinProject 单点：原先这里抄了一份同逻辑的 resolve+sep 检查，
-  // 两份判据正是「fs_read 拒了、mf_analyze_curve 放行」那类漂移的来源
-  const readIn = (rel: string): string => kernel.fs.readText(withinProject(kernel, projectDir, rel));
-  const readCard = (id: string): string => {
+function mkReadCard(kernel: Kernel, repoRoot: string): (id: string) => string {
+  return (id: string): string => {
     const p = kernel.path.join(repoRoot, "knowledge", id.replace(/^kb\//, "") + ".md");
     if (!kernel.fs.exists(p)) {
-      // 显式报错不静默：卡驱动诊断只吃真实在盘的 kb 卡（按盘上核账，双根纪律下卡在 repoRoot）
-      throw new KernelError("CARD_NOT_FOUND", 404, `卡不存在：${id}（knowledge/ 盘上无 ${p}）——mf_analyze_card 只接受在盘 kb 卡 id`);
+      throw new KernelError("CARD_NOT_FOUND", 404, `卡不存在：${id}（knowledge/ 盘上无 ${p}）——卡驱动工具只接受在盘 kb 卡 id`);
     }
     return kernel.fs.readText(p);
   };
-  const chatOnce = async (prompt: string): Promise<string> => {
+}
+
+/** 补全调用器（单轮 chat，OpenAI 兼容端点）：prompt → 模型文本。推理模型兜底取 reasoning_content。 */
+function mkChatOnce(cfg: AgentModelConfig): (prompt: string) => Promise<string> {
+  return async (prompt: string): Promise<string> => {
     const url = cfg.baseUrl.replace(/\/$/, "") + "/chat/completions";
     const resp = await fetch(url, {
       method: "POST",
@@ -407,6 +405,20 @@ export function analysisTools(cfg: AgentModelConfig, kernel: Kernel, projectDir:
     if (!text) throw new Error(`分析补全空输出（HTTP ${resp.status}）`);
     return text;
   };
+}
+
+/**
+ * 分析手法工具族（曲线/人物/通用卡驱动）：方法论卡自 knowledge/ 动态装载，嵌套补全产结构化 JSON。
+ * R2.4 能力归并：一次性 mf_analyze_curve（prompt 骨架写死、只包一张 KB 卡）泛化为
+ * mf_analyze_card（card 参数驱动，一张规则卡即一个诊断能力）；mf_analyze_curve 保留为薄别名
+ * （协议面 storyharness/src/analysis.ts 与 docs/integration/sse-events.md 点名过该工具名，宿主可见面不断）。
+ */
+export function analysisTools(cfg: AgentModelConfig, kernel: Kernel, projectDir: string, repoRoot: string): AgentTool[] {
+  // 越界判定收编到 withinProject 单点：原先这里抄了一份同逻辑的 resolve+sep 检查，
+  // 两份判据正是「fs_read 拒了、mf_analyze_curve 放行」那类漂移的来源
+  const readIn = (rel: string): string => kernel.fs.readText(withinProject(kernel, projectDir, rel));
+  const readCard = mkReadCard(kernel, repoRoot);
+  const chatOnce = mkChatOnce(cfg);
   const mk = (name: string, label: string, desc: string, props: Record<string, unknown>, build: (args: Record<string, unknown>) => Promise<string>, required?: string[]): AgentTool => ({
     name,
     description: `[分析手法] ${desc}（方法论卡自 knowledge/ 动态装载）`,
@@ -452,6 +464,158 @@ ${text.slice(0, 24000)}
 
 输出 JSON：{"characters":[{"name":"…","dimensions":{"欲望":"…","对抗":"…","真相":"…"},"arc":"…","score":1-10,"risk":"…"}],"relationships":[{"pair":"A-B","note":"…"}]}`);
       }),
+  ];
+}
+
+// ── 改相（批次2.5 P3）：修复策略驱动的修订产出 ──────────────────────────────
+/**
+ * 改相 prompt 组装（与 buildCardDiagnosisPrompt 同先例的纯函数）：按单条卡条款的修复策略（clauses[].repair）
+ * 产修订。改相铁律全部压进 prompt：只改本条款所涉（不做顺手美化）、策略来自卡原文（同源铁律）、
+ * 只出 unified diff（绝不整篇改写、绝不写盘——写盘归宿主 batch-edit，人裁）。
+ */
+export function buildCardRepairPrompt(
+  ruleRef: string,
+  clause: { rule_id: string; tier: string; detect?: string; judge?: string; repair: string },
+  text: string,
+): string {
+  return `你是修订器。按以下规则卡条款的修复策略产出修订（改相）：
+
+【条款】${ruleRef}（tier ${clause.tier}）
+【检测目标】${clause.detect ?? "（卡未标注）"}
+【判定逻辑】${clause.judge ?? "（卡未标注）"}
+【修复策略】${clause.repair}
+
+【目标正文】
+${text.slice(0, 24000)}
+
+只输出一个 JSON 对象：{"diff":"<unified diff 文本>"}
+纪律（改相铁律）：
+- 只修改本条款所涉内容，不做顺手美化、不动无关段落——改单是「诊→改」的承载，越界即违规。
+- 修订必须落实上述修复策略（同源铁律：repair 是规则卡 clauses[].repair 原文，不得另行发明策略）。
+- diff 用 unified 格式（含 ---/+++/@@ 行），绝不输出整篇改写文本；无可修订处输出 {"diff":""}。`;
+}
+
+/** 从卡全文解析 frontmatter clauses，取指定条款；卡面不合法或条款不存在都显式失败（不静默）。 */
+function clauseFromCard(cardText: string, ruleRef: string): { rule_id: string; tier: string; detect?: string; judge?: string; repair: string } {
+  const m = cardText.match(/^---\r?\n(.*?)\r?\n---\r?\n/s);
+  if (!m) throw new KernelError("CARD_MALFORMED", 500, `卡面不合法（缺 JSON frontmatter）：${ruleRef.split("#")[0]}`);
+  let fm: { clauses?: { rule_id: string; tier: string; detect?: string; judge?: string; repair?: string }[] };
+  try {
+    fm = JSON.parse(m[1] ?? "");
+  } catch (e) {
+    throw new KernelError("CARD_MALFORMED", 500, `卡 frontmatter 不是合法 JSON：${ruleRef.split("#")[0]}（${e instanceof Error ? e.message : String(e)}）`);
+  }
+  const clauseId = ruleRef.split("#")[1] ?? "";
+  const c = (fm.clauses ?? []).find((x) => x.rule_id === clauseId);
+  if (!c) throw new KernelError("CLAUSE_NOT_FOUND", 404, `条款不存在：${ruleRef}（卡内 clauses 无 rule_id=${clauseId}）——改单只接受卡上真实条款`);
+  if (!c.repair) throw new KernelError("CLAUSE_NO_REPAIR", 409, `条款无修复策略：${ruleRef}（clauses[].repair 缺失）——没有 repair 的条款出不了改单，只能出诊断证据`);
+  return c as { rule_id: string; tier: string; detect?: string; judge?: string; repair: string };
+}
+
+/** 从模型回复里取 unified diff：优先 JSON 的 diff 字段；兜底剥代码围栏后直接当 diff 文本。 */
+function extractDiff(resp: string): string {
+  const t = resp.trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+  try {
+    const j = JSON.parse(t) as { diff?: unknown };
+    if (typeof j.diff === "string") return j.diff;
+  } catch { /* 非 JSON——走兜底 */ }
+  return /^(--- |\+\+\+ |@@ |diff --git )/m.test(t) ? t : "";
+}
+
+/**
+ * 改相工具族（批次2.5 P3）：修复改单（repair-plan@1，contracts/repair-plan.schema.json）驱动的修订产出。
+ * 与 mf_analyze_card 同模式（卡自 knowledge/ 盘上装载、LLM 走 chatOnce），但纪律更硬：
+ *  · 只产 unified diff，**绝不写盘**——应用归宿主拿 diff 走 batch-edit/自家写盘面，人裁；回滚走 snapshots。
+ *  · B 级条款进单显式拒绝（INVALID_INPUT，ARCHITECTURE §3.3：B 级绝不自动改稿）——schema tier 值域
+ *    已不含 B，此处再拒一次是纵深防御（防 LLM 产出的改单绕过契约）。
+ *  · 卡条款不存在显式失败（CARD_NOT_FOUND / CLAUSE_NOT_FOUND）；repair 与卡面不一致显式失败
+ *    （同源铁律：改单不得发明卡外策略）。
+ *  · 先全量静态校验、再逐条动 LLM——任何一条违规整单拒绝，不产生半截修订。
+ */
+export function repairTools(cfg: AgentModelConfig, kernel: Kernel, projectDir: string, repoRoot: string): AgentTool[] {
+  const readIn = (rel: string): string => kernel.fs.readText(withinProject(kernel, projectDir, rel));
+  const readCard = mkReadCard(kernel, repoRoot);
+  const chatOnce = mkChatOnce(cfg);
+
+  const applyRepairs = async (args: Record<string, unknown>): Promise<string> => {
+    // 1. 载入改单：内联 JSON 文本或项目内 .json 路径（二相兼容，与 mf_analyze_card 的 path/text 风格一致）
+    const raw = String(args.repair_plan ?? "").trim();
+    if (!raw) throw new KernelError("INVALID_INPUT", 400, "缺 repair_plan 参数（改单 JSON 内联文本，或项目内改单文件相对路径）");
+    const tryParse = (s: string): unknown => { try { return JSON.parse(s); } catch { return undefined; } };
+    let plan = tryParse(raw);
+    if (!plan || typeof plan !== "object" || Array.isArray(plan)) {
+      try { plan = tryParse(readIn(raw)); } catch { /* 路径读不到——落入下方统一报错 */ }
+    }
+    if (!plan || typeof plan !== "object" || Array.isArray(plan)) {
+      throw new KernelError("INVALID_INPUT", 400, `repair_plan 既不是合法 JSON 对象，也读不到项目内文件：${raw.slice(0, 120)}`);
+    }
+    const p = plan as { format?: unknown; project?: unknown; target?: unknown; diagnosis_ref?: unknown; items?: unknown };
+    if (p.format !== "repair-plan@1") {
+      throw new KernelError("INVALID_INPUT", 400, `改单 format 必须是 repair-plan@1（现为 ${String(p.format)}）——契约 contracts/repair-plan.schema.json`);
+    }
+    if (!Array.isArray(p.items) || p.items.length === 0) {
+      throw new KernelError("INVALID_INPUT", 400, "改单 items 为空或缺失——至少一条修订才进得了改相");
+    }
+    const text = typeof args.text === "string" && args.text.trim() ? args.text : readIn(String(args.path ?? ""));
+
+    // 2. 逐条静态校验（卡存在 / 条款存在 / B 级拒绝 / repair 同源）：先全量过闸，再动 LLM
+    const resolved = p.items.map((it: unknown, i: number) => {
+      const ruleRef = String((it as { rule_ref?: unknown })?.rule_ref ?? "").trim();
+      const m = ruleRef.match(/^(kb\/rules\/[a-z0-9-]+)#(AE-[A-Z0-9-]+)$/);
+      if (!m) {
+        throw new KernelError("INVALID_INPUT", 400, `items[${i}].rule_ref 形状非法：${ruleRef || "（空）"}（须 kb/rules/<域>#<AE-id>，指向规则卡条款）`);
+      }
+      const clause = clauseFromCard(readCard(m[1] ?? ""), ruleRef);
+      if (clause.tier === "B") {
+        throw new KernelError("INVALID_INPUT", 400, `items[${i}].rule_ref=${ruleRef} 是 B 级条款——B 级主观审美绝不自动改稿（ARCHITECTURE §3.3），禁止入改单`);
+      }
+      const repair = String((it as { repair?: unknown })?.repair ?? "").trim();
+      if (!repair) throw new KernelError("INVALID_INPUT", 400, `items[${i}].repair 缺失（须逐字取自卡内 clauses[].repair）`);
+      if (repair !== clause.repair) {
+        throw new KernelError("INVALID_INPUT", 400, `items[${i}].repair 与卡面不一致——同源铁律：改单不得发明卡外策略（卡 ${ruleRef} 的 repair 原文：「${clause.repair}」）`);
+      }
+      const tier = (it as { tier?: unknown }).tier;
+      if (typeof tier === "string" && tier !== clause.tier) {
+        throw new KernelError("INVALID_INPUT", 400, `items[${i}].tier=${tier} 与卡面标注（${clause.tier}）不一致——分级以卡为唯一真源`);
+      }
+      return { ruleRef, clause, target: (it as { target?: unknown }).target ?? null };
+    });
+
+    // 3. 逐条款产修订（每条款一次 LLM 调用），只回填 diff，不碰盘
+    const outItems: Record<string, unknown>[] = [];
+    for (const r of resolved) {
+      const diff = extractDiff(await chatOnce(buildCardRepairPrompt(r.ruleRef, r.clause, text)));
+      outItems.push({
+        rule_ref: r.ruleRef, repair: r.clause.repair, tier: r.clause.tier,
+        target: r.target, diff, status: "proposed", receipt: null,
+      });
+    }
+    const nDiff = outItems.filter((x) => x.diff).length;
+    return JSON.stringify({
+      format: "repair-plan@1",
+      project: String(p.project ?? ""),
+      target: String(p.target ?? ""),
+      diagnosis_ref: p.diagnosis_ref ?? null,
+      items: outItems,
+      summary: `改单骨架：${nDiff}/${outItems.length} 条产出 unified diff（status=proposed，diagnosis_ref=${String(p.diagnosis_ref ?? "null")}）。diff 只是提案不是稿：应用归宿主拿 diff 走 batch-edit/自家写盘面，人裁后用 tools/repair-apply.py status 推进并落收据；回滚走 snapshots。`,
+    }, null, 1);
+  };
+
+  return [
+    {
+      name: "mf_apply_repairs",
+      description: "[改相] 按修复改单（repair-plan@1）逐条款产出修订 unified diff：只产 diff 绝不写盘（写盘归宿主 batch-edit，人裁后应用；回滚走 snapshots）；B 级条款进单显式拒绝；卡条款不存在显式失败；repair 与卡面不一致显式失败（同源铁律）",
+      parameters: {
+        type: "object",
+        properties: {
+          repair_plan: { type: "string", description: "修复改单：内联 JSON 文本，或项目内改单文件相对路径（format=repair-plan@1，契约 contracts/repair-plan.schema.json）" },
+          path: { type: "string", description: "项目内目标文本路径（与 text 二选一）" },
+          text: { type: "string", description: "直接传目标文本（与 path 二选一）" },
+        },
+        required: ["repair_plan"],
+      },
+      exec: applyRepairs,
+    },
   ];
 }
 
@@ -505,6 +669,7 @@ export async function* runTurn(
   const tools = [
     ...await buildTools(kernel, projectId, mcp),
     ...analysisTools(cfg, kernel, projectDir, repoRoot),
+    ...repairTools(cfg, kernel, projectDir, repoRoot),
   ];
   const llmTools = tools.map((t) => ({ type: "function", function: { name: t.name, description: t.description, parameters: t.parameters } }));
   const systemMsg: AgentMessage = { role: "system", content: buildSystemPrompt(kernel, projectId) };

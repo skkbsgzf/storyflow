@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "miniflow/repair-plan",
+  "title": "repair-plan@1 · 修复改单（诊→改的承载）",
+  "description": "改（有据可依）的契约（批次2.5 P3 契约先行，ARCHITECTURE §3.1/§3.2）：改单把诊断报告（diagnosis-report@1）里同源确认过的条款变成可执行、可记账、可回滚的修订单元。三条硬规矩：① **同源铁律**——items[].rule_ref 必须指向规则卡（rule-card@1）真实条款，items[].repair 必须是卡内 clauses[].repair 原文（不是转述更不是新主意）；改单不发明卡外策略，结构上保证「诊的是 A 条款、改的也是 A 条款」。② **B 级禁止入单**——tier 值域只有 S|A（schema 层面 enum 就不含 B）：B 级主观审美绝不自动改稿（ARCHITECTURE §3.3，2026-10-10 决议），B 级意见留在诊断报告的 opinion/suggestion 双通道。③ **工具链只产 diff、应用在人手里**——diff 由 mf_apply_repairs 等改相执行件产出后回填，本契约与 tools/repair-apply.py 只做校验与记账，绝不写正文；status 从 proposed 推进到 applied 必须经宿主/人确认（宿主拿 diff 走 batch-edit/自家写盘面），回滚走 snapshots 并把 status 记为 rolled_back、receipt 指向回滚收据。",
+  "type": "object",
+  "required": ["format", "project", "target", "diagnosis_ref", "items", "summary"],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "const": "repair-plan@1" },
+    "project": {
+      "type": "string",
+      "description": "项目 id（projects/<id>/ 的 <id>；与 diagnosis-report@1 的 project 同构）"
+    },
+    "target": {
+      "type": "string",
+      "description": "修改对象定位：文件路径、章节号等机读引用（一份改单只对一个 target，与诊断报告的 target 同构）"
+    },
+    "diagnosis_ref": {
+      "type": ["string", "null"],
+      "description": "来源诊断报告路径（diagnosis-report@1 产物落盘位置）；null = 无报告凭据（如人直接立项的改单）——合法但宿主/人裁时要格外把关：改的依据只剩卡本身，缺「检出了什么」的半边"
+    },
+    "items": {
+      "type": "array",
+      "description": "改单条款：每条 = 一个规则卡条款（rule_ref）+ 它的修复策略原文（repair）+ 修订产出（diff）+ 生命周期（status）。至少一条；B 级条款进不了这里（tier 值域不含 B）",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/item" }
+    },
+    "summary": {
+      "type": "string",
+      "description": "人读总结（改了哪些条款、修订产出与应用状态）。凡计数声明（「N 条已应用」类）必须与 items[].status 可对账或引用 receipt——报数必附收据，无收据 = 删声明（铁律 2）"
+    }
+  },
+  "definitions": {
+    "item": {
+      "type": "object",
+      "description": "单条修订：诊（rule_ref）→ 策略（repair，卡内原文）→ 产出（diff）→ 记账（status + receipt）",
+      "required": ["rule_ref", "repair", "tier", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "rule_ref": {
+          "type": "string",
+          "pattern": "^kb/rules/[a-z0-9-]+#AE-[A-Z0-9-]+$",
+          "description": "规则引用：kb/rules/<域>#<AE-id>，指向规则卡（rule-card@1）clauses[] 里真实存在的条款。同源铁律的锚点——诊、建议、改都经它回到唯一真源；卡上查无此条款 = 改单非法"
+        },
+        "repair": {
+          "type": "string",
+          "minLength": 1,
+          "description": "修复策略原文，逐字取自卡内 clauses[].repair（不是转述）：改相执行件按它产修订，校验器逐字比对卡面，对不上 = 改单发明了卡外策略 = 非法"
+        },
+        "tier": {
+          "enum": ["S", "A"],
+          "description": "规则分级（沿用 rule-card@1）：**值域刻意不含 B**——B 级主观审美绝不自动改稿（ARCHITECTURE §3.3），试图把 B 级条款写进改单在 schema 层即非法；执行件（mf_apply_repairs）与校验器（tools/repair-apply.py）各自再拒一次（纵深防御，防 LLM 产出绕过）"
+        },
+        "target": {
+          "type": "object",
+          "description": "本条的修改定位（可选——缺省落在改单顶层 target 的文件里）：file + 行号或原文锚",
+          "required": ["file"],
+          "additionalProperties": false,
+          "properties": {
+            "file": { "type": "string", "description": "项目内相对路径" },
+            "line": { "type": "integer", "description": "行号（诊断证据 location 可解析出行号时填）" },
+            "anchor": { "type": "string", "description": "原文锚（命中原文摘录，供 diff 定位与人核对照）" }
+          }
+        },
+        "diff": {
+          "type": ["string", "null"],
+          "description": "unified diff 文本（含 ---/+++/@@ 行），改相执行件产出后回填；null = 尚未产出（改单刚立项）。**diff 只是提案不是稿**——应用（写盘）归宿主拿 diff 走 batch-edit/自家写盘面，人裁后推进 status"
+        },
+        "status": {
+          "enum": ["proposed", "applied", "rejected", "rolled_back"],
+          "description": "生命周期：proposed（改相执行件产出 diff 后的初始态）→ applied（宿主/人确认应用后）或 rejected（人裁否决）→ applied 可再 rolled_back（回滚走 snapshots）。状态推进是人的动作：tools/repair-apply.py status 记账并落收据；工具链自己永不把 proposed 推成 applied",
+          "default": "proposed"
+        },
+        "receipt": {
+          "type": ["string", "null"],
+          "description": "本条的收据文件路径（应用/回滚动作的收据，tools/repair-apply.py status 落盘）；null = 尚无记账动作。报数必附收据：status=applied 而 receipt=null 的条目是不可信的",
+          "default": null
+        }
+      }
+    }
+  }
+}

@@ -114,6 +114,13 @@ data: [DONE]
   `CARD_NOT_FOUND`）；`mf_analyze_curve` 为其**薄别名**（card 固定 `kb/aesthetic/emotion-curve`，兼容历史点名）；
   `mf_analyze_character`（人物塑造三维）。注意：协议面（storyharness `src/analysis.ts`）自装同名单工具，
   其输出形状仍是各自专档 JSON——两个进程的工具环互不隶属。
+- 改相工具（要走模型端点）：`mf_apply_repairs`（**修复改单→修订 diff**：`repair_plan`=改单 JSON 内联文本
+  或项目内路径（契约 repair-plan@1，`contracts/repair-plan.schema.json`）＋`path|text`=目标正文，
+  逐条款回卡取 `clauses[].repair` 原文产 unified diff，输出 repair-plan@1 骨架（diff 回填、
+  `status=proposed`）。护栏：**只产 diff 绝不写盘**——应用归宿主拿 diff 走 batch-edit/自家写盘面，
+  人裁后用 `tools/repair-apply.py status` 推进并落收据，回滚走 snapshots；B 级条款进单 `INVALID_INPUT`
+  （B 级绝不自动改稿）、条款不存在 `CLAUSE_NOT_FOUND`、repair 与卡面不一致 `INVALID_INPUT`
+  （同源铁律：改单不得发明卡外策略））。
 - MCP 内联：仅当 `.external/agent-mcp.json` 配了外部 MCP server 时出现（`mcp__` 前缀）；
   连接失败时**塞一个 `mcp_unavailable` 占位工具**并说明原因，其余工具不受影响。
 

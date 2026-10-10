@@ -1,6 +1,6 @@
 # 契约层导读（contracts/）
 
-> 29 份 JSON Schema + 2 份 OpenAPI 生成物。**所有跨进程数据结构必须有 schema**——这是本目录存在的唯一理由。
+> 30 份 JSON Schema + 2 份 OpenAPI 生成物。**所有跨进程数据结构必须有 schema**——这是本目录存在的唯一理由。
 > 规格全文见 [`ARCHITECTURE.md`](ARCHITECTURE.md)。
 
 ## 硬规矩
@@ -64,6 +64,7 @@
 | --- | --- |
 | `rule.schema.json` | `rule-card@1` 规则卡：knowledge/rules/*.md 的规则 DSL 信封（ARCHITECTURE §3.4）。必填信封 = 存量卡实际形状（零迁移）；`clauses` / `scanner_qids` / `format` 是批次2.4（写诊改三相打通）收敛字段，铺开前缺省合法。**语料不是闸**——severity 是评审优先级，不构成提交拦截 |
 | `diagnosis-report.schema.json` | `diagnosis-report@1` 诊断报告：写/诊/改三相承载体，**人 / agent / 宿主三方可读**。`evidence[]`（程序判定，机读证据）与 `opinion{}`（模型观点，仅供参考）硬分离；建议必须 = 规则修复策略的反向表达（ARCHITECTURE §3.2 同源铁律）。与 `diagnostics.schema.json` 分工：那边记「机器检查没跑成」（旁路留痕），这边承载「跑成了的检查的结果」 |
+| `repair-plan.schema.json` | `repair-plan@1` 修复改单：诊→改的承载（批次2.5 P3）。`rule_ref`（`kb/rules/<域>#<AE-id>`，须指卡上真实条款）+ `repair`（逐字取自卡内 `clauses[].repair`，同源铁律）+ `diff`（unified diff，产出后回填）+ `status` 生命周期（proposed→applied/rejected、applied→rolled_back，**推进归人**）。tier 值域 **S\|A 不含 B**——B 级绝不入单（ARCHITECTURE §3.3）；工具链只产 diff 绝不写正文，回滚走 snapshots。校验/记账面 = `tools/repair-apply.py`，执行件 = `mf_apply_repairs`（`core/src/agent.ts`），诊产物过门 = `tools/diagnosis-validate.py` |
 | `project-index.schema.json` | `project-index@1` 项目文件体系索引：`role` 角色标注（human=人写 / generated=工具产物 / hybrid=生成后人手改）+ `hash`/`mtime` 失效策略基础（对比即知手改，generated 被手改须升 hybrid）。只落数据根，双根不合一 |
 
 ### 协议面

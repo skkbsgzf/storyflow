@@ -52,7 +52,7 @@ agent runtime（pi-agent-core）+ 模块化 flow + MCP + 确定性工具链 + �
 
 ## 2 · 契约层（contracts/）
 
-29 份 JSON Schema + 2 份 OpenAPI 生成物。**所有跨进程数据结构必须有 schema**。核心几张：
+30 份 JSON Schema + 2 份 OpenAPI 生成物。**所有跨进程数据结构必须有 schema**。核心几张：
 
 | schema | 作用 |
 | --- | --- |
@@ -125,6 +125,8 @@ rule_id / tier(S|A|B) / scope / 检测目标
 - **修改视图**：自动应用（必须宿主确认，走 tool 链，可回滚）
 
 现状（R2.4 已收敛 2026-10-10）：16 张域卡（`tools/rules-init.py` 生成，AE-id 可溯，README 索引页除外）frontmatter 已铺 `rule-card@1` 收敛字段——`clauses[]`（条款结构化升格，正文零改写）+ `scanner_qids[]`（卡 ↔ laya 学生头 qid 对账：curve/dialogue/scene/reversal/ai-trace 五卡有真实对应，其余空数组记账）；卡驱动诊断动词 `mf_analyze_card`（`core/src/agent.ts`，`mf_analyze_curve` 转薄别名）按卡组装诊断 prompt、输出对齐 diagnosis-report@1。`contracts/rule.schema.json` 是收敛字段的契约面。
+
+改相（批次2.5 P3 已落地 2026-10-10）：`contracts/repair-plan.schema.json`（repair-plan@1 改单契约——tier 值域 **S|A 不含 B**＝B 级绝不入单；status 生命周期 proposed→applied/rejected、applied→rolled_back，推进归宿主/人；diff 只回填不应用）+ 执行件 `mf_apply_repairs`（`core/src/agent.ts`，按改单条款回卡取 `clauses[].repair` 原文产 unified diff，**绝不写盘**——写盘归宿主 batch-edit，人裁；B 级进单 INVALID_INPUT）+ 记账面 `tools/repair-apply.py`（validate/dry-run（含盘上卡同源核账）/status 推进落收据，**不做 diff 应用**）。诊产物过门：`tools/diagnosis-validate.py`（diagnosis-report@1 契约等价校验；`--map` 出 quality-scan 收据→诊断报告字段映射表——quality-scan 输出格式不动，validations[].status 转 items[].severity 归 agent 裁决，机器只出证据）。qid 反向对账边界：S 级引擎条款有稳定 AE-id（T 轨台账＋`tools/lintlib.py` 已核账），但双轨设计下扫描器条款与卡条款刻意不同 id，逐条机械映射不存在——不硬造，细则 id 体系随批次3 快诊断服务化补立。
 
 ### 3.5 拆（逆向能力）
 
@@ -260,6 +262,7 @@ docs/
 | 能力归并（一次性工具 → 卡驱动诊断动词） | 批次2 R2.4（✅ 已落地 2026-10-10：`core/src/agent.ts` `mf_analyze_card`，`mf_analyze_curve` 转薄别名；agent 工具环局部工具族，动词单表未动） | `core/src/agent.ts` + verbs |
 | 项目知识生产面（项目文风/规则目录＋卡模板、项目档编译纳入、校验标准声明位） | 批次2.5 P1（✅ 已落地 2026-10-10：`tools/project-init.py` 文风//规则/ 骨架＋rule-card@1 模板＋`--upgrade` 存量补目录；`tools/kit-compile.py --project` 纳入 文风/；`tools/project-index.py` 两目录标 human；`contracts/project-config.schema.json` 增 optional `validation`——声明位先行，消费随批次3） | `tools/project-init.py` + `tools/kit-compile.py` + `contracts/project-config.schema.json` |
 | kb-rag 亲和 + 知识图谱自包含页 | 批次2.5 P2（✅ 已落地 2026-10-10：`core/src/kb.ts` 双根合并策略升级——去重/同分项目优先/k 分配（各根 top-k ⊕ 截回 k）＋kbRead `source` 溯源，口径见函数注释、`kb-project.test.ts` 12 例钉死；`tools/kb-affinity.py` 卡↔消费者对账收据（孤儿记账不失败、structural 悬空才 exit 1，kit-lint 门禁口径不动）；`tools/kb-graph-page.py`＋`kb-graph-template.html` 零依赖力导向图谱页（拖拽/平移/缩放/悬停/图例隔离/枢纽常显，--project 双根合并，零外部资源断言＋幂等）） | `core/src/kb.ts` + `tools/kb-affinity.py` + `tools/kb-graph-page.py` |
+| 改相闭环 + 诊产物对齐 | 批次2.5 P3（✅ 已落地 2026-10-10：`contracts/repair-plan.schema.json` repair-plan@1 ＋ `mf_apply_repairs`（`core/src/agent.ts`，产 diff 不写盘、B 级拒绝、repair 同卡面强校验）＋ `tools/repair-apply.py`（validate/dry-run/status 记账，不做 diff 应用）＋ `tools/diagnosis-validate.py`（diagnosis-report@1 校验＋quality-scan 收据映射 --map）＋ qid 反向对账诚实边界（见 §3.4 改相段，不硬造随批次3）） | `contracts/repair-plan.schema.json` + `core/src/agent.ts` + `tools/repair-apply.py` + `tools/diagnosis-validate.py` |
 | 拆（逆向）契约 | 批次3 | `contracts/deconstruct.schema.json` |
 | 本地快诊断服务化（S 级 + laya 环境回填 + 静默追写） | 批次3 | `tools/laya-scan.py` 服务化 + 协议面端点 |
 | 图文视频能力（seedance 族） | 批次3 | 届时按声明式口径重建 |
