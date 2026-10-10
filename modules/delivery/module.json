@@ -172,7 +172,7 @@
         "docx_ingest"
       ],
       "planned": true,
-      "desc": "（占位，内核未实现，触达即 blocked）解析客户回传 docx 批注 → 结构化意见清单（批注回流=on 时触达）。批D 落位：原挂 kits/tool，flow@2 时代遗留，现归交付域",
+      "desc": "（批次3 后排：占位，内核未实现，触达即 blocked）解析客户回传 docx 批注 → 结构化意见清单（批注回流=on 时触达）。批D 落位：原挂 kits/tool，flow@2 时代遗留，现归交付域",
       "kind": "check",
       "config": {
         "stripComments": {

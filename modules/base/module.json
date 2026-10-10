@@ -580,7 +580,7 @@
         "continuity_check"
       ],
       "planned": true,
-      "desc": "（占位，内核未实现，触达即 blocked）台账矛盾/知情范围越权/伏笔逾期——当前由 scan_quality 的 AE-CONT-* 承担，待拆为独立 minitool。批D 落位：原挂 kits/tool，caps「连续性校验」自此有主",
+      "desc": "（批次3 后排：占位，内核未实现，触达即 blocked）台账矛盾/知情范围越权/伏笔逾期——当前由 scan_quality 的 AE-CONT-* 承担，待拆为独立 minitool。批D 落位：原挂 kits/tool，caps「连续性校验」自此有主",
       "kind": "check",
       "config": {
         "dims": {

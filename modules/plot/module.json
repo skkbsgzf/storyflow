@@ -82,7 +82,7 @@
       "skill": "story-outline",
       "title": "全季故事简纲",
       "kind": "produce",
-      "desc": "把改编取向落成全季简纲：脊柱映射（哪一集踩在哪一章）＋与原著的差异清单（逐条带章号与理由）＋节拍分段＋贯穿型压迫装置＋逐节点 STAR 简纲＋曲线对账。只到集区粒度，不写逐集表／分场／台词。",
+      "desc": "把改编取向落成全季简纲：脊柱映射（哪一集踩在哪一章）＋与原著的差异清单（逐条带章号与理由）＋节拍分段＋贯穿型压迫装置＋逐节点 STAR 简纲＋曲线对账。只到集区粒度，不写逐集表／分场／台词。（批次3a 同槽链化：随 adapt-triage 之后，缺件回落 before:structure-design，展开序不变）",
       "knowledge": [
         "kb/formats/comic-drama-adapt",
         "kb/market/constraints",
@@ -131,9 +131,10 @@
       "capability": [
         "故事大纲"
       ],
-      "slot": "before:structure-design",
+      "slot": "after:adapt-triage",
       "also_fits": [
-        "before:adapt-episode-map",
+        "after:adapt-triage",
+        "before:structure-design",
         "end"
       ],
       "requires": [],
@@ -146,7 +147,7 @@
       "skill": "adapt-episode-map",
       "title": "分集重排表",
       "kind": "produce",
-      "desc": "原稿→目标集数的施工图：逐集「段落/一集一事/主辅爽点/字数配额/素材锚/卡点/交接/砍留」十列齐填；铺垫段末集必须停在展开点，先定末集再倒推。缺口与素材锚不许静默丢失。",
+      "desc": "原稿→目标集数的施工图：逐集「段落/一集一事/主辅爽点/字数配额/素材锚/卡点/交接/砍留」十列齐填；铺垫段末集必须停在展开点，先定末集再倒推。缺口与素材锚不许静默丢失。（批次3a 同槽链化：随 story-outline 之后，缺件回落 before:structure-design，展开序不变）",
       "knowledge": [
         "kb/formats/comic-drama-adapt",
         "kb/aesthetic/pacing-density",
@@ -197,8 +198,10 @@
       "capability": [
         "分集重排"
       ],
-      "slot": "before:structure-design",
+      "slot": "after:story-outline",
       "also_fits": [
+        "after:story-outline",
+        "before:structure-design",
         "end"
       ],
       "requires": [
@@ -598,7 +601,7 @@
     "world-forge": {
       "skill": "world-forge",
       "title": "world-forge",
-      "desc": "网文开书技能（单元剧标准）——选题后先搞世界观：力量体系/势力矛盾/主角力量来源与代价/世界规则四件套；产出世界观圣经（人读）+ wiki 词条库（RAG，index.json+条目交叉链接）；人物动机从世界观长出来，不硬安。",
+      "desc": "网文开书技能（单元剧标准）——选题后先搞世界观：力量体系/势力矛盾/主角力量来源与代价/世界规则四件套；产出世界观圣经（人读）+ wiki 词条库（RAG，index.json+条目交叉链接）；人物动机从世界观长出来，不硬安。（批次3a 同槽链化：改编链全启用时随 adapt-episode-map 之后，否则回落 before:structure-design，展开序不变）",
       "kind": "produce",
       "knowledge": [
         "kb/aesthetic/character",
@@ -671,8 +674,12 @@
       "capability": [
         "世界观"
       ],
-      "slot": "before:structure-design",
-      "also_fits": [],
+      "slot": "after:adapt-episode-map",
+      "also_fits": [
+        "after:adapt-episode-map",
+        "before:structure-design",
+        "end"
+      ],
       "requires": [],
       "adds": {
         "knowledge": [],
@@ -879,7 +886,7 @@
     "plot-redline": {
       "skill": "plot-redline",
       "title": "剧情红队·多方视角评审",
-      "desc": "红方评审技能 v2（视角代入制）——代入目标读者/一般读者/资深编剧/甲方四类人分别给意见，说人话不念指标；打回时指认根因阶段；框架可行但单薄时提案不确定因素注入。每个阶段验收门强制注入。",
+      "desc": "红方评审技能 v2（视角代入制）——代入目标读者/一般读者/资深编剧/甲方四类人分别给意见，说人话不念指标；打回时指认根因阶段；框架可行但单薄时提案不确定因素注入。每个阶段验收门强制注入。（批次3a 同槽链化：默认随 script-drama-beat 之后，缺件回落 after:scene-breakdown——与链化前各 flow 展开序逐字节一致）",
       "kind": "review",
       "knowledge": [
         "kb/aesthetic/ai-trace",
@@ -965,8 +972,10 @@
       "capability": [
         "红队评审"
       ],
-      "slot": "after:scene-breakdown",
+      "slot": "after:script-drama-beat",
       "also_fits": [
+        "after:script-drama-beat",
+        "after:scene-breakdown",
         "after:plot-choreographer",
         "before:structure-design",
         "end"
@@ -1156,7 +1165,7 @@
       "skill": "cold-open",
       "title": "登场桥段设计",
       "kind": "produce",
-      "desc": "横插独立剧本的第 1 集冷开场：三问一次答完（她是谁/要什么/凭什么狠）+ 本集代价；选一件与主线不重复的独立小事，并规定与正文第一场的接缝（承人/承物/承账），禁硬切旁白。",
+      "desc": "横插独立剧本的第 1 集冷开场：三问一次答完（她是谁/要什么/凭什么狠）+ 本集代价；选一件与主线不重复的独立小事，并规定与正文第一场的接缝（承人/承物/承账），禁硬切旁白。（批次3a 同槽链化：随 foreshadow-plant 之后，缺件回落 before:scene-breakdown，展开序不变）",
       "knowledge": [
         "kb/formats/comic-drama-adapt",
         "kb/aesthetic/character",
@@ -1207,8 +1216,10 @@
       "capability": [
         "登场桥段"
       ],
-      "slot": "before:scene-breakdown",
+      "slot": "after:foreshadow-plant",
       "also_fits": [
+        "after:foreshadow-plant",
+        "before:scene-breakdown",
         "after:structure-design",
         "end"
       ],

@@ -198,6 +198,32 @@ def main():
         if "graph" not in fl:
             # flow@3（模块序列）：无手画图。派生节点的 kit/op 声明以内核 effective@2 为准，
             # 声明层由 module-lint 守（v5.0：原「派生面节点断言采集」随协议下架，此处无其他消费方）。
+            # 批次3a P7：技能引用账按内核规则 1（工具选择）轻量展开——
+            # spine ∪ capability∩caps ∪ 显式 insert（不做槽位排序，与引用账无关）。
+            # 此前直接 continue 导致 flow@3 时代 used_skills 恒空、「未用技能」38 条全员误报。
+            for inst in fl.get("modules", []) or []:
+                if not isinstance(inst, dict):
+                    continue
+                spec = kits.get(inst.get("module"))
+                if not spec:
+                    E.append(f"[{fid}] kit 引用无效：{inst.get('module')!r}（flow@3 modules[].module）")
+                    continue
+                spine = set((spec.get("skeleton") or {}).get("spine", []))
+                caps_wanted = set(inst.get("caps") or [])
+                insert: set = set()
+                for tools in (inst.get("insert") or {}).values():
+                    insert.update(tools or [])
+                for vary in (inst.get("vary") or {}).values():
+                    for tools in (vary.get("insert") or {}).values():
+                        insert.update(tools or [])
+                for op_id, op_spec in spec.get("ops", {}).items():
+                    if op_id not in spine and op_id not in insert \
+                            and not (set(op_spec.get("capability") or []) & caps_wanted):
+                        continue
+                    s = op_spec.get("skill")
+                    if s:
+                        used_skills.add(s)
+                        n_nodes += 1
             continue
         for nid, n in fl["graph"]["nodes"].items():
             s, kit, op = n.get("skill"), n.get("kit"), n.get("op")

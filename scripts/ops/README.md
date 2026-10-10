@@ -35,4 +35,5 @@ schtasks /Create /TN kit-guard /TR "wscript.exe //B D:\storyflow-kit\scripts\ops
 - **长驻服务不挂在 agent 会话进程树下**——会被环境周期性回收（serve.py / next dev / core 全中过招），计划任务走的 svchost 作业树不受影响。
 - **一切无窗**：.vbs 以窗口 style 0 拉起，巡检/重启都不弹 cmd。
 - **工作区必须显式钉**：`set STORYHARNESS_WORKSPACE=D:\storyflow-kit`——用户环境变量指向 storymasterv4（另一项目），漏 set 会静默落到 v4。
+- **解释器必须显式钉**：各启动器 cmd 链里 `set MINIFLOW_PYTHON=C:\Users\Administrator\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\python.exe`——本机 PATH 上的 `python` 是 Windows 商店 stub（exit 49 无输出），不钉则 core 的 .py 脚本壳（minitools.ts 执行器）必踩；kit-guard.vbs 同样注入后经 bat 传导，三个服务 .vbs 各自再钉一遍（双保险）。
 - 日志是真相：排障看 `%TEMP%\kit-*.log`，不看窗口。

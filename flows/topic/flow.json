@@ -3,12 +3,12 @@
   "id": "topic",
   "title": "短剧成稿生产线（调研 → 结构与方案 → 小纲 → 成稿 → 交付页）",
   "desc": "id 沿用 v1 历史（当时只做选题），显示名反映真实交付物；命名规则：flow=生产线（端到端交付物），stage=生产线内的段落。四阶段推演：红方以四视角（目标读者/一般读者/资深编剧/甲方）逐段验收、说人话不念指标，机器可查项归扫描器证据、裁决归 agent（v5.0 起提交链无断言闸）；打回指认根因，定点重做。项目级约束：禁原创科幻/架空世界观，设定来源三级制（实事新闻底子首选/市面验证体系次选/原创一票否决），三分钟测试为调研期固定检查项；梗密度约束（热梗素材表 ≥10 条、前三章每集 ≥1 梗点）；成品剧本=连贯剧本（场次头/人物行动/表情/角色台词按角色归组，特殊镜头与旁白中括号），全部对白过 dialogue-polish 强制末环节；内部过程物件（梗卡/意见书/质量扫描收据/对账表）不随对外交付。第一阶段只做剧本：产物到剧本为止，不含分镜/视觉生产（render-prompt-seedance 留库备用）。",
-  "version": "6.0.1",
+  "version": "6.0.2",
   "status": "official",
   "inputs": {
     "project": { "type": "project", "required": true, "desc": "项目上下文（产物落点）" },
     "direction": { "type": "string", "required": true, "desc": "题材方向（自然语言）" },
-    "route": { "type": "enum", "options": ["hot", "calm", "dual"], "desc": "风格路线：爽版/合理版/双版本+基线（R8：选择无默认——显式选或由项目配置 风格/AB测试 推导；dual 时爽版基线件随行，监管增益必须可验证）" },
+    "route": { "type": "enum", "options": ["hot", "calm", "dual"], "feeds_decision": "route", "desc": "风格路线：爽版/合理版/双版本+基线（R8：选择无默认——显式选或由项目配置 风格/AB测试 推导；dual 时爽版基线件随行，监管增益必须可验证。批次3a 接线：给了即落 decision:route（by=user.preference 先验，已有决策不回填），消 W-ENUM-DEAD）" },
     "region": { "type": "enum", "options": ["CN", "NA"], "required": false, "feeds_decision": "region", "desc": "目标市场**先验**（可选）：给了就落 decision:region（by=user.preference）供梗卡池按区过滤；不填则 m1 调研双区都扫、交卷时以盘面证据 set_decision region 定案——市场归属是调研结论，不逼人开口" },
     "zeitgeist": { "type": "boolean", "default": true, "desc": "是否注入实时热点扫描（调研期必含项，建议开）" }
   },
@@ -29,6 +29,13 @@
     { "module": "m5", "title": "交付页（四件套合一，单文件移动版 HTML）", "audience": "甲方决策层" }
   ],
   "changelog": [
+    {
+      "version": "6.0.2",
+      "date": "2026-10-10",
+      "changes": [
+        "route 输入接 feeds_decision:route（批次3a P7 消 W-ENUM-DEAD）：人给了就落 decision:route（by=user.preference 开跑先验，已有决策不回填——调研步 set_decision 仍可覆盖）；模块级 when 条件派发仍未落地（6.0.0 口径不变），先验先入决策账供候选池/agent 消费"
+      ]
+    },
     {
       "version": "6.0.1",
       "date": "2026-09-21",

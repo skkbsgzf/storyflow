@@ -207,7 +207,7 @@
         "meme_harvest"
       ],
       "planned": true,
-      "desc": "（占位，内核未实现，触达即 blocked）外部热点/梗源确定性采集——现由宿主 agent 步（topic-zeitgeist）承担。批D 落位：原挂 kits/tool；能力面独立（未被任何 flow 的 caps 请求 = 不自动启用，planned 件绝不静默进生产）",
+      "desc": "（批次3 后排：占位，内核未实现，触达即 blocked）外部热点/梗源确定性采集——现由宿主 agent 步（topic-zeitgeist）承担。批D 落位：原挂 kits/tool；能力面独立（未被任何 flow 的 caps 请求 = 不自动启用，planned 件绝不静默进生产）",
       "kind": "check",
       "config": {
         "sinceDays": {

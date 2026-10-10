@@ -1,1 +1,1 @@
-CreateObject("Wscript.Shell").Run "cmd /c cd /d D:\storyflow-kit\core && set STORYHARNESS_WORKSPACE=D:\storyflow-kit&& npx tsx src/cli.ts up --port 8421 >> %TEMP%\kit-core.log 2>&1", 0, False
+CreateObject("Wscript.Shell").Run "cmd /c cd /d D:\storyflow-kit\core && set STORYHARNESS_WORKSPACE=D:\storyflow-kit&& set MINIFLOW_PYTHON=C:\Users\Administrator\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\python.exe&& npx tsx src/cli.ts up --port 8421 >> %TEMP%\kit-core.log 2>&1", 0, False

@@ -74,7 +74,7 @@
     "layer-scenes": {
       "skill": "layer-scenes",
       "title": "layer-scenes",
-      "desc": "成文流水线专科层二——从分场卡逐拍产出场景层稿：五感计划、身体反应、布景道具、笔墨密度配比；只管让读者站进场景，不写台词不推情节。",
+      "desc": "成文流水线专科层二——从分场卡逐拍产出场景层稿：五感计划、身体反应、布景道具、笔墨密度配比；只管让读者站进场景，不写台词不推情节。（批次3a 同槽链化：三专科并行件定序——随 layer-voices 之后，缺件回落 before:ghostwrite，展开序不变）",
       "kind": "produce",
       "model_tier": "high",
       "knowledge": [
@@ -129,18 +129,21 @@
       "capability": [
         "场景层"
       ],
-      "also_fits": [],
+      "slot": "after:layer-voices",
+      "also_fits": [
+        "after:layer-voices",
+        "before:ghostwrite"
+      ],
       "requires": [],
       "adds": {
         "knowledge": [],
         "config": {}
-      },
-      "slot": "before:ghostwrite"
+      }
     },
     "layer-canon": {
       "skill": "layer-canon",
       "title": "layer-canon",
-      "desc": "成文流水线专科层三——从分场卡逐拍产出设定层稿：知情范围切片、新词首现方案、台账增量、人设矛盾提示；只管世界观一致性与读者认知边界，不碰文笔。",
+      "desc": "成文流水线专科层三——从分场卡逐拍产出设定层稿：知情范围切片、新词首现方案、台账增量、人设矛盾提示；只管世界观一致性与读者认知边界，不碰文笔。（批次3a 同槽链化：随 layer-scenes 之后，缺件回落 before:ghostwrite，展开序不变）",
       "kind": "produce",
       "knowledge": [
         "kb/aesthetic/character",
@@ -192,13 +195,16 @@
       "capability": [
         "设定层"
       ],
-      "also_fits": [],
+      "also_fits": [
+        "after:layer-scenes",
+        "before:ghostwrite"
+      ],
       "requires": [],
       "adds": {
         "knowledge": [],
         "config": {}
       },
-      "slot": "before:ghostwrite"
+      "slot": "after:layer-scenes"
     },
     "prose-assembler": {
       "skill": "prose-assembler",
@@ -538,7 +544,7 @@
     "dialogue-polish": {
       "skill": "dialogue-polish",
       "title": "dialogue-polish",
-      "desc": "剧本强制末环节技能——全部人物对话逐句过三遍：人物声口校准（遮名可辨+说话习惯一致）、处境校准（压力与关系下的语言变化）、去AI味清单（24类+结构指纹）；基于人物和处境优化，不做通用润色。",
+      "desc": "剧本强制末环节技能——全部人物对话逐句过三遍：人物声口校准（遮名可辨+说话习惯一致）、处境校准（压力与关系下的语言变化）、去AI味清单（24类+结构指纹）；基于人物和处境优化，不做通用润色。（批次3a 修正：also_fits 首锚补 after:script-final——此前回退锚在 novel-deai 导致 topic 流里打磨早于成稿，违反「强制末环节」声明）",
       "kind": "produce",
       "model_tier": "high",
       "knowledge": [
@@ -602,6 +608,7 @@
       ],
       "slot": "after:script-final",
       "also_fits": [
+        "after:script-final",
         "after:novel-deai"
       ],
       "requires": [],
@@ -691,7 +698,7 @@
     "render-prompt-seedance": {
       "skill": "render-prompt-seedance",
       "title": "Seedance 分镜提示词",
-      "desc": "AI 生成视频的画面调度指令：@素材点名定岗/固定运镜词库/分时段描述/角色一致性锁图。",
+      "desc": "AI 生成视频的画面调度指令：@素材点名定岗/固定运镜词库/分时段描述/角色一致性锁图。（批次3a 同槽链化：slot 改 end，让 dialogue-polish 独占 after:script-final——留库备用，语义不变）",
       "kind": "produce",
       "knowledge": [
         "kb/aesthetic/visual-poster",
@@ -744,10 +751,8 @@
       "capability": [
         "视频提示词"
       ],
-      "slot": "after:script-final",
-      "also_fits": [
-        "end"
-      ],
+      "slot": "end",
+      "also_fits": [],
       "requires": [],
       "adds": {
         "knowledge": [],

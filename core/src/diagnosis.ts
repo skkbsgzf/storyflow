@@ -208,7 +208,7 @@ function layaGuidance(kernel: Kernel, missing: string[]): string {
   const student = kernel.path.join(kernel.repoRoot, ...LAYA_STUDENT_REL);
   const parts: string[] = [];
   if (missing.includes("venv")) parts.push(`学生头运行环境 ${venv}（torch cu126 venv，还原见 tools/_vendor/README.md「laya」节）`);
-  if (missing.includes("weights")) parts.push(`学生权重目录 ${student}（口径见 modules/detect/module.json 的 laya-screen op 说明）`);
+  if (missing.includes("weights")) parts.push(`学生权重目录 ${student}（口径见 tools/_vendor/README.md「laya」节）`);
   return [
     `A 级 laya 学生头不可用（缺 ${missing.join("、")}）——按人裁不回落 4B/API，停下报缺等人回填：`,
     `  ① 缺失件：${parts.join("；")}`,

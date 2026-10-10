@@ -1,1 +1,1 @@
-CreateObject("Wscript.Shell").Run "cmd /c cd /d D:\storyflow-kit\panel\kitapp && npx next dev -H 127.0.0.1 -p 30142 >> %TEMP%\kitapp-dev.log 2>&1", 0, False
+CreateObject("Wscript.Shell").Run "cmd /c cd /d D:\storyflow-kit\panel\kitapp && set MINIFLOW_PYTHON=C:\Users\Administrator\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\python.exe&& npx next dev -H 127.0.0.1 -p 30142 >> %TEMP%\kitapp-dev.log 2>&1", 0, False
