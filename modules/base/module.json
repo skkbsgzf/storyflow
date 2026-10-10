@@ -309,64 +309,6 @@
         "flow工具"
       ]
     },
-    "project-pages": {
-      "script": "tools/project-pages.py",
-      "title": "project-pages.py",
-      "desc": "每项目工作流页生成器（复用 v3 Canvas 语义：拖拽画布 / 检查器 / 节点快照查看·修改·重跑）",
-      "kind": "check",
-      "config": {
-        "theme": {
-          "type": "enum",
-          "default": "纸感",
-          "enum": [
-            "纸感",
-            "暗色"
-          ],
-          "desc": "工作台主题",
-          "effect": "换了 = 观感变化",
-          "tunable_by": [
-            "user",
-            "optimizer"
-          ]
-        },
-        "embedFiles": {
-          "type": "number",
-          "default": 20,
-          "min": 0,
-          "desc": "内嵌产物件数上限",
-          "effect": "提高 = 页面更全也更重",
-          "tunable_by": [
-            "user",
-            "optimizer"
-          ]
-        }
-      },
-      "capability": [
-        "页面生成"
-      ]
-    },
-    "author-home": {
-      "script": "tools/author-home.py",
-      "title": "author-home.py",
-      "desc": "作者之家聚合层：扫全部项目归纳 author-home.html（项目 Wiki 目录/合并时间轴/经验池），复用 worldbook_history 归纳函数，静态只读零新增账本",
-      "kind": "produce",
-      "config": {
-        "milestoneCap": {
-          "type": "number",
-          "default": 120,
-          "min": 20,
-          "desc": "合并时间轴保留条数上限",
-          "effect": "提高 = 时间轴更长",
-          "tunable_by": [
-            "user",
-            "optimizer"
-          ]
-        }
-      },
-      "capability": [
-        "作者之家"
-      ]
-    },
     "render-flow": {
       "script": "tools/render-flow.py",
       "title": "render-flow.py",
@@ -396,38 +338,6 @@
           ],
           "desc": "图示主题",
           "effect": "换了 = 观感变化",
-          "tunable_by": [
-            "user",
-            "optimizer"
-          ]
-        }
-      },
-      "capability": [
-        "页面生成"
-      ]
-    },
-    "serve": {
-      "script": "tools/serve.py",
-      "title": "serve.py",
-      "desc": "本地应用服务器（替代 python -m http.server）：",
-      "kind": "check",
-      "config": {
-        "port": {
-          "type": "number",
-          "default": 8421,
-          "min": 0,
-          "desc": "监听端口",
-          "effect": "占用时需改",
-          "tunable_by": [
-            "user",
-            "optimizer"
-          ]
-        },
-        "open": {
-          "type": "boolean",
-          "default": false,
-          "desc": "启动后自动打开浏览器",
-          "effect": "开启 = 更顺手",
           "tunable_by": [
             "user",
             "optimizer"
