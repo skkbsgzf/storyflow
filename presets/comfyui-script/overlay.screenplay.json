@@ -2,23 +2,6 @@
   "format": "flow-overlay@1",
   "flowId": "screenplay",
   "origin": "factory",
-  "reason": "ComfyUI Script 预设：分集分镜后追加 Seedance 视频提示词产出（insert-tool 同实例追加，不改拓扑）",
-  "patches": [
-    {
-      "kind": "insert-tool",
-      "module": "m3",
-      "tool": "render-prompt-seedance",
-      "slot": "end",
-      "reason": "在 drama 分集分镜后追加 Seedance 提示词生成（op 已注册进 drama 模块，requires 为空可直接插）"
-    },
-    {
-      "kind": "set-tool",
-      "kit": "drama",
-      "op": "render-prompt-seedance",
-      "config": {
-        "shotSec": 5
-      },
-      "reason": "出厂定档：单镜头 5 秒（cameraLock/consistencyLock 沿用 op 默认词库）"
-    }
-  ]
+  "reason": "ComfyUI Script 预设：Seedance 视频提示词插入已随 2026-10-10 图文视频冻结摘除（drama op 声明同步摘除；prose 原生声明与技能文件保留）。预设壳与 Auto 路由占位保留，批次3 图文视频重建时恢复 patches",
+  "patches": []
 }

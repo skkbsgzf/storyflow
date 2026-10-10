@@ -122,7 +122,7 @@ describe("production-preset · kernel 集成", () => {
     expect(ids.some((id) => id.startsWith("m2."))).toBe(true);
   });
 
-  it("comfyui-script 预设：screenplay 展开图含 m3.render-prompt-seedance", async () => {
+  it("comfyui-script 预设：Seedance 插入已随 2026-10-10 图文视频冻结摘除——screenplay 展开成功且不含 m3.render-prompt-seedance", async () => {
     const root = tmpRoot();
     const kernel = new Kernel({ root });
     const projectId = "p-comfyui";
@@ -130,7 +130,7 @@ describe("production-preset · kernel 集成", () => {
     await kernel.flow_run("screenplay", projectId, { direction: "霸总短剧 e2e" }, { preset: "comfyui-script" });
     const state = JSON.parse(fs.readFileSync(path.join(root, "projects", projectId, "state.json"), "utf-8"));
     const ids: string[] = Object.keys(state.nodes);
-    expect(ids).toContain("m3.render-prompt-seedance");
+    expect(ids).not.toContain("m3.render-prompt-seedance");
     expect(ids).toContain("m3.scene-breakdown");
   });
 
@@ -185,7 +185,7 @@ describe("production-preset · flow_chain 跨流水线级联", () => {
     }
     const state = JSON.parse(fs.readFileSync(path.join(root, "projects", r.projectId, "state.json"), "utf-8"));
     expect(state.preset).toBe("comfyui-script");
-    expect(Object.keys(state.nodes)).toContain("m3.render-prompt-seedance");
+    expect(Object.keys(state.nodes)).not.toContain("m3.render-prompt-seedance");
     const fromJournal = fs.readFileSync(path.join(root, "projects", fromId, "journal.jsonl"), "utf-8");
     expect(fromJournal).toContain("chain-out");
     const toJournal = fs.readFileSync(path.join(root, "projects", r.projectId, "journal.jsonl"), "utf-8");
@@ -233,7 +233,7 @@ describe("production-preset · Auto 路由（规则式 v1）", () => {
     await kernel.flow_run("screenplay", projectId, { direction: "把甲方点子做成分镜提示词视频" }, { preset: "auto" });
     const state = JSON.parse(fs.readFileSync(path.join(root, "projects", projectId, "state.json"), "utf-8"));
     expect(state.preset).toBe("comfyui-script");
-    expect(Object.keys(state.nodes)).toContain("m3.render-prompt-seedance");
+    expect(Object.keys(state.nodes)).not.toContain("m3.render-prompt-seedance");
     const journal = fs.readFileSync(path.join(root, "projects", projectId, "journal.jsonl"), "utf-8");
     expect(journal).toContain("preset-route");
     expect(journal).toMatch(/Auto 路由（规则式 v1）：comfyui-script/);
