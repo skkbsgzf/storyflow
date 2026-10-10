@@ -19,6 +19,12 @@ v5.0（工单 §三「断言覆盖/漂移类检查改挂规则引用有效性口
   E8 op.config 各项合法（type/default/enum/desc；enum 的 default 必须在枚举内）
   E9 op.exclude_knowledge 条目必须存在于 knowledge/index.json
   E11 overlay 补丁里出现已退役断言字段（add_asserts/remove_asserts/asserts）——v5.0 协议下架
+  E12 规则卡 frontmatter 信封不合法（缺必填字段 / type·status 值域 / activation_hint·provenance
+      形状）——契约 = contracts/rule.schema.json（rule-card@1，批次2 R2.1 契约先行），本 lint 是
+      它在静态门的手工等价物（contracts/README.md 口径）：纯 stdlib 结构校验，不引 jsonschema；
+      必填字段清单从 schema 读，不在 lint 里抄第二份名单（抄必漂移，见 _patch_kinds 教训）
+  E13 规则卡 scanner_qids 引用了 laya spec 里不存在的 qid（防编造：qid 事实源 =
+      tools/laya-ft/questions.spec.json + style.questions.spec.json，qid 永不复用）
   W1 孤儿技能：有档案但无模块归属（内核漏装）
   W2 未用技能：有模块归属但无任何 flow 引用
   W3 悬空知识：knowledge 条目从未被任何 op 引用（规则卡豁免：激活归决策，不归 op 引用）
@@ -30,6 +36,8 @@ v5.0（工单 §三「断言覆盖/漂移类检查改挂规则引用有效性口
   W8 跨模块重复技能：bySkill 反查歧义（批D 口径——原 E6 降级：铁律11 要求「必有 ≥1 家」而非
      「至多 1 家」；flow@3 派生节点一律携 kit+op 显式引用，反查只是无绑定节点的兜底路径，
      重复家无害但须记账。事故前身：kit@1 时代同技能跨 kit 会静默取首个家）
+  W10 规则卡收敛字段（clauses/scanner_qids）待铺开的记账（批次2.4 写诊改三相打通时收敛，
+     现状缺省合法不阻断；clauses 条目缺 rule_id/tier/severity 同账）
 用法：python tools/kit-lint.py [--strict]   # --strict 让 warning 也失败
 """
 import json, sys, glob, re
@@ -286,6 +294,92 @@ def main():
     except Exception as e:  # noqa: BLE001 - 台账读取失败必须显式回显，不许静默降级
         W.append(f"v5.0 规则语料/扫描器台账读取失败: {e}")
 
+    # ── 批次2 R2.1：规则卡信封结构校验（rule-card@1）──────────────────────────
+    # 口径：lint 是「契约在静态门的手工等价物」（contracts/README.md）——纯 stdlib 结构校验，
+    # 不引 jsonschema。必填清单与值域以 contracts/rule.schema.json 为唯一事实源（本文件不抄
+    # 第二份名单，同 _patch_kinds 的教训）。现状纪律：存量卡必须全绿（不得新增 error）；
+    # 收敛字段（clauses/scanner_qids）批次2.4 才铺开，缺失只记账 WARN 不阻断。
+    n_rule_cards, n_pending, n_spec_qids = 0, 0, 0
+    try:
+        rs = load(ROOT / "contracts" / "rule.schema.json")
+        req_env = rs["required"]
+        spec_qids = set()
+        for rel in ("tools/laya-ft/questions.spec.json", "tools/laya-ft/style.questions.spec.json"):
+            sp = ROOT / rel
+            if sp.exists():
+                spec_qids |= set(load(sp).get("questions", {}))
+        n_spec_qids = len(spec_qids)
+        for p in sorted((ROOT / "knowledge" / "rules").glob("*.md")):
+            if p.name == "README.md":  # 索引页，不是规则卡
+                continue
+            n_rule_cards += 1
+            rel = f"knowledge/rules/{p.name}"
+            txt = p.read_text(encoding="utf-8")
+            m = re.match(r"^---\r?\n(.*?)\r?\n---\r?\n", txt, re.S)
+            if not m:
+                E.append(f"{rel}: frontmatter 缺失（规则卡必须是 JSON frontmatter，rule-card@1 信封）")
+                continue
+            try:
+                fm = json.loads(m.group(1))
+            except Exception as ex:
+                E.append(f"{rel}: frontmatter 不是合法 JSON（{ex}）")
+                continue
+            if not isinstance(fm, dict):
+                E.append(f"{rel}: frontmatter 必须是 JSON 对象")
+                continue
+            miss = [k for k in req_env if k not in fm]
+            if miss:
+                E.append(f"{rel}: 缺信封必填字段 {miss}（契约 contracts/rule.schema.json）")
+            if fm.get("type") != "rule-corpus":
+                E.append(f"{rel}: type={fm.get('type')!r} 非法（须 rule-corpus）")
+            if fm.get("status") not in ("active", "retired"):
+                E.append(f"{rel}: status={fm.get('status')!r} 非法（∈ active|retired）")
+            ah = fm.get("activation_hint")
+            if ah is not None and (not isinstance(ah, list) or not ah
+                                   or not all(isinstance(x, str) and x for x in ah)):
+                E.append(f"{rel}: activation_hint 必须是非空字符串数组")
+            prov = fm.get("provenance")
+            if prov is not None and (not isinstance(prov, dict) or not prov.get("source")
+                                     or not isinstance(prov.get("refs"), list)):
+                E.append(f"{rel}: provenance 必须含 source + refs[]（来源账，铁律 6）")
+            # 收敛字段：缺失记账（W10），写错值是契约违规（E）
+            card_qids = fm.get("scanner_qids")
+            clauses = fm.get("clauses")
+            if not isinstance(card_qids, list) and not isinstance(clauses, list):
+                n_pending += 1
+            if card_qids is not None:
+                if not isinstance(card_qids, list):
+                    E.append(f"{rel}: scanner_qids 必须是数组")
+                else:
+                    for q in card_qids:
+                        if not isinstance(q, str) or not re.match(
+                                r"^[a-z]+\.[a-z0-9-]+\.v[0-9]+\.(noul|choice|score)$", q):
+                            E.append(f"{rel}: scanner_qid 形状非法 {q!r}"
+                                     f"（<family>.<slug>.v<N>.<noul|choice|score>）")
+                        elif spec_qids and q not in spec_qids:
+                            E.append(f"{rel}: scanner_qid 编造 {q!r}（不在 laya 两份 spec 的 questions 键里）")
+            if clauses is not None:
+                if not isinstance(clauses, list):
+                    E.append(f"{rel}: clauses 必须是数组")
+                else:
+                    for i, c in enumerate(clauses):
+                        if not isinstance(c, dict):
+                            E.append(f"{rel}#clauses[{i}]: 必须是对象")
+                            continue
+                        cmiss = [k for k in ("rule_id", "tier", "severity") if k not in c]
+                        if cmiss:
+                            W.append(f"{rel}#clauses[{i}]: 缺 {cmiss}（批次2.4 收敛字段，暂 WARN）")
+                        if "tier" in c and c["tier"] not in ("S", "A", "B"):
+                            E.append(f"{rel}#clauses[{i}]: tier={c['tier']!r} 非法（∈ S|A|B）")
+                        if "severity" in c and c["severity"] not in ("block", "major", "minor"):
+                            E.append(f"{rel}#clauses[{i}]: severity={c['severity']!r} 非法"
+                                     f"（∈ block|major|minor，去闸化后是优先级不是闸）")
+        if n_pending:
+            W.append(f"规则卡收敛字段（clauses/scanner_qids）待铺开：{n_pending}/{n_rule_cards} 张未带"
+                     f"（批次2.4 写诊改三相打通时收敛，现状不阻断）")
+    except Exception as e:  # noqa: BLE001 - 契约校验跑不成的显式回显
+        W.append(f"规则卡契约校验未跑成（contracts/rule.schema.json 读取/解析失败）: {e}")
+
     # ── overlay 校验（R5 生成式编排：改动必须可解释、optimizer 必须给证据）──
     overlay_files = (
         sorted(glob.glob(str(ROOT / "flows" / "*" / "overlay.default.json")))
@@ -326,6 +420,7 @@ def main():
     print(f"kit-lint ｜ {len(kits)} modules / {n_ops} ops ｜ {len(have_skill)} 技能 ｜ {n_nodes} agent 节点")
     print(f"          ｜ R5 内容配置项 {n_cfg} 个（{len(op_configs)} 个 op 已声明）"
           f" ｜ flow 显式覆盖 {len(node_cfg_used)} ｜ overlay {len(overlay_files)} 份 / {n_patch} 条补丁")
+    print(f"          ｜ rule-card@1 信封校验 {n_rule_cards} 张规则卡 ｜ laya spec qid 对账源 {n_spec_qids} 条")
     for x in E:
         print("ERROR", x)
     for x in W:

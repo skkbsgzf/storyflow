@@ -1,6 +1,6 @@
 # 契约层导读（contracts/）
 
-> 26 份 JSON Schema + 2 份 OpenAPI 生成物。**所有跨进程数据结构必须有 schema**——这是本目录存在的唯一理由。
+> 29 份 JSON Schema + 2 份 OpenAPI 生成物。**所有跨进程数据结构必须有 schema**——这是本目录存在的唯一理由。
 > 规格全文见 [`ARCHITECTURE.md`](ARCHITECTURE.md)。
 
 ## 硬规矩
@@ -58,6 +58,14 @@
 | `kit.schema.json` | kit 描述 |
 | `skill-overlay.schema.json` | 技能覆盖 |
 
+### 四相能力与项目索引（批次2 · R2.1 契约先行，2026-10-10 落地）
+
+| schema | 作用 |
+| --- | --- |
+| `rule.schema.json` | `rule-card@1` 规则卡：knowledge/rules/*.md 的规则 DSL 信封（ARCHITECTURE §3.4）。必填信封 = 存量卡实际形状（零迁移）；`clauses` / `scanner_qids` / `format` 是批次2.4（写诊改三相打通）收敛字段，铺开前缺省合法。**语料不是闸**——severity 是评审优先级，不构成提交拦截 |
+| `diagnosis-report.schema.json` | `diagnosis-report@1` 诊断报告：写/诊/改三相承载体，**人 / agent / 宿主三方可读**。`evidence[]`（程序判定，机读证据）与 `opinion{}`（模型观点，仅供参考）硬分离；建议必须 = 规则修复策略的反向表达（ARCHITECTURE §3.2 同源铁律）。与 `diagnostics.schema.json` 分工：那边记「机器检查没跑成」（旁路留痕），这边承载「跑成了的检查的结果」 |
+| `project-index.schema.json` | `project-index@1` 项目文件体系索引：`role` 角色标注（human=人写 / generated=工具产物 / hybrid=生成后人手改）+ `hash`/`mtime` 失效策略基础（对比即知手改，generated 被手改须升 hybrid）。只落数据根，双根不合一 |
+
 ### 协议面
 
 | schema | 作用 |
@@ -78,9 +86,6 @@
 
 | 拟新增 schema | 批次 | 用途 |
 | --- | --- | --- |
-| `rule.schema.json` | 批次2 先行 | 规则 DSL（S/A/B 分级 + 证据字段 + 修复策略 + provenance） |
-| `project-index.schema.json` | 批次2 随包 | 项目文件体系索引 |
-| `diagnosis-report.schema.json` | 批次2 三相前置 | 诊断报告 —— **人 / agent / 宿主三方可读**，`evidence[]` 与 `opinion{}` 硬分离 |
-| `deconstruct.schema.json` | 批次3 | 拆（逆向）产出：带 `provenance.refs` 的规则卡 |
+| `deconstruct.schema.json` | 批次3 | 拆（逆向）产出：带 `provenance.refs` 的规则卡（与 rule-card@1 同构） |
 
-**契约先行**：以上落地前不写对应实现。
+**契约先行**：以上落地前不写对应实现。rule / diagnosis-report / project-index 三份已于 2026-10-10（批次2 R2.1）落地，见「四相能力与项目索引」节。

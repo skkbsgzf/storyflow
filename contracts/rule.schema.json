@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "miniflow/rule",
+  "title": "rule-card@1 · 规则卡（写/诊/改/拆四相共用的规则唯一真源）",
+  "description": "knowledge/rules/<域>.md 的 JSON frontmatter 信封（批次2 R2.1 契约先行；ARCHITECTURE §3.4 规则 DSL 的契约面）。必填信封字段 = 存量域卡（tools/rules-init.py 生成）的实际形状，现有卡全部合法、零迁移；clauses / scanner_qids / format 是批次2.4（写诊改三相打通）的收敛字段，铺开前缺省合法。立场铁律：**本卡是语料不是闸**（v5.0 去闸化）——规则卡只供 orchestrator 激活、agent 裁决时引用，severity 是评审优先级（block=最高优先，agent 评审无解释不得放过），**绝不构成提交拦截**；能确定性计数的条款归扫描器出收据证据，不进语料卡。同源铁律（ARCHITECTURE §3.2）：诊断说违反某条款，建议就必须是该条款 repair 的反向表达——写/诊/改共用本卡，结构上不可能矛盾。kit-lint 的规则卡校验是本契约在静态门的手工等价物（contracts/README.md）。",
+  "type": "object",
+  "required": ["id", "type", "title", "dimension", "version", "status", "activation_hint", "provenance", "updated"],
+  "additionalProperties": false,
+  "properties": {
+    "format": {
+      "const": "rule-card@1",
+      "description": "契约代数标记。批次2.4 收敛后新卡/改卡必带；存量卡（rules-init.py 生成）无此字段，缺省合法"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^kb/rules/[a-z0-9-]+$",
+      "description": "卡 id，即 kb/rules/<域>；与文件名 knowledge/rules/<域>.md 一一对应。op.knowledge / io.acceptance.rules 引用它"
+    },
+    "type": {
+      "const": "rule-corpus",
+      "description": "语料卡标记（区别于 kb 检索台账条目：规则卡不入 knowledge/index.json，按盘上核账）"
+    },
+    "title": {
+      "type": "string",
+      "description": "卡名（人读，面板/装载回显用）"
+    },
+    "dimension": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "规则域（= 卡文件名 stem，如 hook / ai-trace）。orchestrator 按域选卡装载（K1 op.knowledge 单点，9000 字封顶，禁全塞）"
+    },
+    "version": {
+      "type": "string",
+      "description": "卡版本（semver；存量卡 1.0.0）"
+    },
+    "status": {
+      "enum": ["active", "retired"],
+      "description": "active=在库可被激活决策选中 / retired=已退役留档（选卡器必须跳过，不许当语料喂回）"
+    },
+    "activation_hint": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" },
+      "description": "激活提示：本卡在哪些生产线相位有用武之地（如 m2.编剧 / polish / 端尾验收）。仅提示——选择权在 orchestrator 激活决策并记账（R8：by + evidence + 未激活回显），「未激活」不是「悬空」"
+    },
+    "provenance": {
+      "type": "object",
+      "description": "来源账（铁律：决策与条款必须有来源；拆（逆向）产物同构地带 provenance）",
+      "required": ["source", "refs"],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string",
+          "description": "来源描述（如 台账 C 轨迁移 / 拆书样本回流）"
+        },
+        "refs": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^AE-[A-Z0-9-]+$" },
+          "description": "来源 AE-id 清单，可回溯到退役断言台账；kit-lint 核账 C 轨全覆盖用"
+        }
+      }
+    },
+    "updated": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "卡最后更新日期（YYYY-MM-DD）"
+    },
+    "clauses": {
+      "type": "array",
+      "description": "结构化条款表（批次2.4 收敛字段，缺省合法——存量卡条款以正文原子列表为准，收敛时逐条升格进这里，正文与 clauses 在收敛完成前并存）。每条是规则 DSL 的一等公民：诊断视图（命中+证据）、建议视图（repair 反向表达）、修改视图（宿主确认后自动应用）三者共用它",
+      "items": { "$ref": "#/definitions/clause" }
+    },
+    "scanner_qids": {
+      "type": "array",
+      "description": "卡 ↔ 扫描器条款对账（批次2.4 收敛字段）：本卡条款的 A 级语义半边由哪些 laya 学生头 qid 承载（事实源 = tools/laya-ft/questions.spec.json 与 style.questions.spec.json 的 questions 键）。qid 永不复用（rubric 改动 = 新 qid 或 spec 升版本）；kit-lint 校验引用不得编造。S 级确定性条款不经此对账——它们归 quality-scan 出收据",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]+\\.[a-z0-9-]+\\.v[0-9]+\\.(noul|choice|score)$",
+        "description": "qid 形状：<family>.<slug>.v<N>.<noul|choice|score>，如 slop.ai-trace.v2.noul"
+      }
+    }
+  },
+  "definitions": {
+    "clause": {
+      "type": "object",
+      "description": "单条结构化条款（规则 DSL 字段口径 = ARCHITECTURE §3.4）",
+      "required": ["rule_id", "tier", "severity"],
+      "additionalProperties": false,
+      "properties": {
+        "rule_id": {
+          "type": "string",
+          "description": "条款 id（诊断报告 items[].rule_ref 引用它，形如 kb/rules/<域>#<rule_id>）。存量条款沿用台账 AE-id；新条款新 id，不复用旧名"
+        },
+        "tier": {
+          "enum": ["S", "A", "B"],
+          "description": "分级（ARCHITECTURE §3.3，成本可控的关键）：S=硬约束可精确定义，Python 确定性规则、零 token（错别字/禁词/标点/数值冲突）；A=有明确模式需上下文窗口，KB 检索 + 本地学生头 laya、零 API 成本（句式/结构指纹、人物口吻）；B=主观审美，agent 评审通道、不进诊断服务（爽感/爆点/节奏）。B 级产物只能走「证据 + 建议」双通道，绝不自动改稿"
+        },
+        "severity": {
+          "enum": ["block", "major", "minor"],
+          "description": "优先级（v5.0 已去闸化——这是评审优先级，**不是提交闸**）：block=最高优先（agent 评审无解释不得放过）/ major=次优先 / minor=提示。原文中的「判 block/major」是台账历史措辞，一律读作优先级"
+        },
+        "detect": {
+          "type": "string",
+          "description": "检测目标：这条条款看什么（对象+范围，如「每集首拍的钩子」「全稿的结构节奏」）"
+        },
+        "judge": {
+          "type": "string",
+          "description": "判定逻辑，按 tier 三种写法：S=确定性规则描述（可直译成扫描器实现）/ A=判定口径描述 + 引用卡级 scanner_qids 里的 laya 条款 / B=agent rubric（评审标尺，须指向真实知识卡）。不写「由模型自行判断」这类空话——判定必须可复现或可归因"
+        },
+        "evidence_fields": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "命中时应给出的证据字段（对应 diagnosis-report@1 的 evidence[]：location / quote / metric / scanner / receipt），如 [\"location\",\"quote\"]。空 = 纯存在性判定"
+        },
+        "repair": {
+          "type": "string",
+          "description": "修复策略：命中后该怎么改。诊断报告 items[].suggestion 必须是它的反向表达（同源铁律，ARCHITECTURE §3.2）——没有 repair 的条款出不了建议，只能出证据"
+        },
+        "provenance_refs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "本条款级来源（卡级 provenance.refs 的细化；拆（逆向）回流条款必须带，区分「台账迁移」与「样本提取」两种出身）"
+        }
+      }
+    }
+  }
+}

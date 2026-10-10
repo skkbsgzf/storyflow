@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "miniflow/diagnosis-report",
+  "title": "diagnosis-report@1 · 诊断报告（写/诊/改三相的承载体）",
+  "description": "诊（逆向体检）与改（有据可依）之间的契约（批次2 R2.1 契约先行，ARCHITECTURE §3.1/§3.2）：人、agent、宿主三方可读——人看 summary 与建议，agent 拿 evidence 做裁决输入，宿主拿 receipt 核账。两条硬规矩：① **evidence[] 与 opinion{} 必须分成两个容器**——evidence 只收程序判定（带 location/quote/metric 等机读证据，可复核），opinion 只收模型观点（仅供参考，非裁决）；B 级 agent 评审的产物只能进 opinion 与建议，混进 evidence 即契约违规。② **诊断与建议同源**（ARCHITECTURE §3.2 铁律）——items[].suggestion 必须是所引规则修复策略（rule-card@1 clauses[].repair）的反向表达，没有对应规则条款不得出建议项。与 diagnostics@1（contracts/diagnostics.schema.json）的分工：diagnostics@1 记「机器检查没跑成」（旁路失败留痕，吞掉会改变结论的 catch 必须留痕），本契约承载「跑成了的检查的结果」——诊断本体；扫描器抛错走 diagnostics，扫描结论走这里。",
+  "type": "object",
+  "required": ["format", "project", "target", "engines", "evidence", "items", "summary", "receipt"],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "const": "diagnosis-report@1" },
+    "project": {
+      "type": "string",
+      "description": "项目 id（projects/<id>/ 的 <id>；诊断报告落盘 projects/<id>/reports/ 或按宿主协议上交）"
+    },
+    "target": {
+      "type": "string",
+      "description": "诊断对象定位：文件路径、章节号、场景 id 等机读引用（一份报告只对一个 target）"
+    },
+    "engines": {
+      "type": "object",
+      "description": "三引擎参与声明（ARCHITECTURE §3.3 分级）：本次诊断动了哪几相、各自角色。报告的可信度声明——读方据此知道证据来自哪条通道",
+      "additionalProperties": false,
+      "properties": {
+        "s": {
+          "$ref": "#/definitions/engine",
+          "description": "S 级确定性扫描（Python 工具链，零 token）：只出证据不裁决，产物进 evidence[]"
+        },
+        "a": {
+          "$ref": "#/definitions/engine",
+          "description": "A 级学生头（laya 本地算力，按 scanner qid 裁决）：产物进 evidence[]（带 qid）"
+        },
+        "agent": {
+          "$ref": "#/definitions/engine",
+          "description": "B 级 agent 评审（主观审美；不进诊断服务，2026-10-10 决议）：产物只能进 opinion{} 与 items[].suggestion，绝不进 evidence[]"
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "description": "程序判定证据容器（机读）：每条证据可独立复核（位置可定位、原文可对、数值可算）。可为空数组（如纯 B 级评审报告——此时 engines.agent 必须声明参与），但容器本身必须在",
+      "items": { "$ref": "#/definitions/evidence" }
+    },
+    "opinion": {
+      "type": "object",
+      "description": "模型观点容器（仅供参考，非裁决）：B 级主观审美判断的家。与 evidence 硬分离——观点没有机读证据地位，宿主与 agent 不得把它当「已检出的事实」消费；B 级永远走「证据 + 建议」双通道，绝不自动改稿",
+      "required": ["by", "text"],
+      "additionalProperties": false,
+      "properties": {
+        "by": {
+          "type": "string",
+          "description": "产出观点的引擎/模型标识（可溯）"
+        },
+        "text": {
+          "type": "string",
+          "description": "观点原文（模型自己的话，不加工成事实口径）"
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "description": "诊断项：每项 = 一条规则引用 + 一条同源建议（写/诊/改共用同一份规则定义，结构上不可能矛盾）",
+      "items": {
+        "type": "object",
+        "required": ["rule_ref", "tier", "severity", "suggestion"],
+        "additionalProperties": false,
+        "properties": {
+          "rule_ref": {
+            "type": "string",
+            "description": "规则引用：rule-card@1 的卡 id（kb/rules/<域>）或结构化条款（kb/rules/<域>#<rule_id>）。同源铁律的锚点——建议与修改都经它回到唯一真源"
+          },
+          "tier": {
+            "enum": ["S", "A", "B"],
+            "description": "规则分级（沿用 rule-card@1）：决定本项的证据地位——S/A 可进 evidence，B 只能进 opinion"
+          },
+          "severity": {
+            "enum": ["block", "major", "minor"],
+            "description": "评审优先级（沿用 rule-card@1，v5.0 已去闸化）：block=最高优先（agent 评审无解释不得放过），**不是提交拦截**；裁决权在 agent（人裁只在 kit 边界）"
+          },
+          "suggestion": {
+            "type": "string",
+            "description": "修复建议 = 所引规则修复策略（clauses[].repair）的反向表达（ARCHITECTURE §3.2 同源铁律）。通用大模型「重新思考一遍」式建议禁止——那是诊断与建议不一致的根源"
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "string",
+      "description": "人读总结。凡出现「已扫描 / 残留 N 处」类计数声明，必须能在 evidence[] 数出来或引用 receipt——报数必附收据，无收据 = 删声明（铁律 2）"
+    },
+    "receipt": {
+      "type": ["string", "null"],
+      "description": "扫描器收据文件路径（报数必附收据铁律的落点）：S/A 级扫描的收据落盘路径。null = 本次无可附收据（如纯 B 级评审），此时 summary 不得做任何「已扫描 N 处」式计数声明"
+    }
+  },
+  "definitions": {
+    "engine": {
+      "type": "object",
+      "description": "单引擎参与声明",
+      "required": ["ran"],
+      "additionalProperties": false,
+      "properties": {
+        "ran": {
+          "type": "boolean",
+          "description": "本引擎是否参与了本次诊断"
+        },
+        "note": {
+          "type": "string",
+          "description": "参与方式说明（如跑了哪些扫描器 / 哪组 qid / 哪个评审档位；未参与的引擎可写豁免原因）"
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "description": "单条程序判定证据（机读）",
+      "required": ["location"],
+      "additionalProperties": false,
+      "properties": {
+        "rule_ref": {
+          "type": "string",
+          "description": "关联规则（kb/rules/<域> 或 #<rule_id>）；纯计数类证据可缺"
+        },
+        "location": {
+          "type": "string",
+          "description": "机读定位：文件路径 + 行号 / 章节号 / 场景 id（必填——没有位置的证据不可复核）"
+        },
+        "quote": {
+          "type": "string",
+          "description": "命中原文引用（摘录，供人/agent 直接对照）"
+        },
+        "metric": {
+          "type": ["number", "string"],
+          "description": "数值证据（命中次数 / 密度 / 配额余量…）；字符串形态承载「3/8 段命中」式比值"
+        },
+        "scanner": {
+          "type": "string",
+          "description": "证据来源标识：S 级扫描器 id（AE-…）或 A 级 laya qid（<family>.<slug>.v<N>.<type>）"
+        },
+        "receipt": {
+          "type": "string",
+          "description": "本条证据的收据文件路径（收据制：机器只出证据且证据可回查）"
+        }
+      }
+    }
+  }
+}

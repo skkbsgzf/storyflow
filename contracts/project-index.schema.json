@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "miniflow/project-index",
+  "title": "project-index@1 · 项目文件体系索引",
+  "description": "projects/<id>/project-index.json（批次2 R2.1 契约先行；生成器与增量更新随 R2.2 落地，ARCHITECTURE §10）。一份报告说清项目数据根里「每个文件是谁的、能不能动」：entries[].role 是角色标注，hash+mtime 是失效策略的基础——增量更新时把索引记录与盘上现状对比：generated 条目的 hash/mtime 与盘上不一致 ⇒ 生成物被手改了（须升格 hybrid 或标脏重扫），human 条目工具永不全量覆盖（只追加索引行），hybrid 条目重扫前必须先问人。双根铁律：索引只描述数据根（projects/<id>/），root_scope 永不指向 repoRoot（flows/modules/knowledge/contracts 是仓库事实源，不入项目索引）。",
+  "type": "object",
+  "required": ["format", "project_id", "generated_at", "generator", "root_scope", "entries", "stats"],
+  "additionalProperties": false,
+  "properties": {
+    "format": { "const": "project-index@1" },
+    "project_id": {
+      "type": "string",
+      "description": "项目 id（= projects/<id>/ 的 <id>，= root_scope 的末段）"
+    },
+    "generated_at": {
+      "type": "string",
+      "description": "索引生成时间（ISO 8601）——失效对比的基准点"
+    },
+    "generator": {
+      "type": "string",
+      "description": "生成器标识（如 tools/project-init.py@1.0.0）——谁写的索引，增量更新可溯"
+    },
+    "root_scope": {
+      "type": "string",
+      "description": "索引覆盖的根：相对仓库根的 posix 路径，即 projects/<id>。双根不合一（红线 2）：索引是数据根的账，永不写 repoRoot 下的路径"
+    },
+    "entries": {
+      "type": "array",
+      "description": "文件条目表：项目数据根内被纳管的文件（采样式纳管即可——抽样优先是本仓纪律，不追求一次全量）",
+      "items": { "$ref": "#/definitions/entry" }
+    },
+    "stats": {
+      "type": "object",
+      "description": "计数汇总（键自定，值必须是整数）：如 total / human / generated / hybrid / entries 数量对账用。禁止把非计数值塞进 stats",
+      "additionalProperties": { "type": "integer" }
+    }
+  },
+  "definitions": {
+    "entry": {
+      "type": "object",
+      "description": "单个文件条目",
+      "required": ["path", "role"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "相对 root_scope 的 posix 路径（正斜杠，不带 ./ 前缀）"
+        },
+        "role": {
+          "enum": ["human", "generated", "hybrid"],
+          "description": "角色标注（首问一次、增量维护）：human=人写（人手创建维护，工具只读不覆写）/ generated=工具产物（索引器/生成器落盘，可随时按源重建）/ hybrid=生成后经人手改（工具产物 + 人工修订并存——重建会丢人工痕迹，覆盖前必须显式确认）。角色判断口径：增量更新时 generated 条目 hash/mtime 与盘上不一致即视为已手改，升格 hybrid"
+        },
+        "kind": {
+          "type": "string",
+          "description": "文件类别（人读语义标签，如 会话/大纲/章节/配置/收据/记忆卡）"
+        },
+        "hash": {
+          "type": "string",
+          "description": "索引时内容指纹（如 sha256 前 16 位）——失效对比的第一依据（内容变了必现形）"
+        },
+        "mtime": {
+          "type": "string",
+          "description": "索引时文件修改时间（ISO 8601）——失效对比的第二依据（比 hash 便宜，先比 mtime 不等再算 hash）"
+        },
+        "notes": {
+          "type": "string",
+          "description": "备注（如 生成来源命令 / 手改内容摘要 / 为什么是 hybrid）"
+        }
+      }
+    }
+  }
+}

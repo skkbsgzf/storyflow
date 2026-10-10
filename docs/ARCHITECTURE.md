@@ -52,7 +52,7 @@ agent runtime（pi-agent-core）+ 模块化 flow + MCP + 确定性工具链 + �
 
 ## 2 · 契约层（contracts/）
 
-26 份 JSON Schema + 2 份 OpenAPI 生成物。**所有跨进程数据结构必须有 schema**。核心几张：
+29 份 JSON Schema + 2 份 OpenAPI 生成物。**所有跨进程数据结构必须有 schema**。核心几张：
 
 | schema | 作用 |
 | --- | --- |
@@ -252,10 +252,10 @@ docs/
 
 | 项 | 批次 | 落点 |
 | --- | --- | --- |
-| 规则 DSL 契约 | 批次2（先行） | `contracts/rule.schema.json` |
-| `project-index.json` 契约 | 批次2（随包） | `contracts/project-index.schema.json` |
+| 规则 DSL 契约 | 批次2 R2.1（✅ 已落地 2026-10-10；收敛字段随 R2.4 铺开） | `contracts/rule.schema.json` |
+| `project-index.json` 契约 | 批次2 R2.1（✅ 契约已落地 2026-10-10；实现随 R2.2） | `contracts/project-index.schema.json` |
 | 项目索引生成器（路径探索→索引→增量→记忆→项目级 RAG） | 批次2 | `tools/project-init.py` 扩展 |
-| 诊断报告契约（三相承载体） | 批次2（三相前置） | `contracts/diagnosis-report.schema.json` |
+| 诊断报告契约（三相承载体） | 批次2 R2.1（✅ 契约已落地 2026-10-10；实现随 R2.4） | `contracts/diagnosis-report.schema.json` |
 | HTML 页面件补齐（时间轴整页/诊断报告页） | 批次2 | `tools/worldbook*.py` / `journal-template.html` 扩展 |
 | 能力归并（一次性工具 → 卡驱动诊断动词，如 `mf_analyze_curve`） | 批次2 | `core/src/agent.ts` + verbs |
 | 拆（逆向）契约 | 批次3 | `contracts/deconstruct.schema.json` |
