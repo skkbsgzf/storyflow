@@ -44,14 +44,27 @@ def parse_args(argv: list[str]):
 
 
 def front(text: str) -> dict:
+    """卡头解析（批次3b Q2 · A1 根因修复）：`---` 围栏内**先试 JSON**（本库卡信封约定，
+    knowledge/README.md「JSON frontmatter + 人可读正文」，存量 107/107 张带头卡全部 JSON），
+    失败再退 YAML 裸键行（历史行为，向后兼容——旧工具/手写裸键头仍可解析）。
+    旧版只认裸键行：JSON 卡的行以 `"key":` 开头永不匹配 → id/title 全回落
+    （title 落 `---` 分隔线、tags 空、声明 id 丢失），即 kb-health-20261011 A1 收据的伪边根因。"""
     FM = re.compile(r'\A---\s*\n(.*?)\n---\s*\n?', re.S)
     m = FM.match(text)
+    if not m:
+        return {}
+    raw = m.group(1)
+    try:
+        fm = json.loads(raw)
+        if isinstance(fm, dict):
+            return fm
+    except ValueError:  # 含 JSONDecodeError：非 JSON 才走裸键兜底
+        pass
     out = {}
-    if m:
-        for line in m.group(1).splitlines():
-            mm = re.match(r'^([A-Za-z_][\w-]*):\s*(.*)$', line)
-            if mm:
-                out[mm.group(1)] = mm.group(2).strip()
+    for line in raw.splitlines():
+        mm = re.match(r'^([A-Za-z_][\w-]*):\s*(.*)$', line)
+        if mm:
+            out[mm.group(1)] = mm.group(2).strip()
     return out
 
 
@@ -69,7 +82,12 @@ def build_graph(src_files: list, id_prefix: str, path_prefix: str):
         fm = front(text)
         eid = fm.get('id') or (id_prefix + '/' + rel.removesuffix('.md'))
         title = fm.get('title') or (text.lstrip('# \n').splitlines()[0][:60] if text.strip() else rel)
-        tags = re.findall(r'"?([\w\-组成]+)"?', fm.get('tags', '')) if fm.get('tags') else []
+        # tags：JSON 信封下是真列表（直取）；裸键兜底下是逗号串（历史正则提取）——两态都收敛为 str 列表
+        raw_tags = fm.get('tags')
+        if isinstance(raw_tags, list):
+            tags = [str(t).strip() for t in raw_tags if str(t).strip()]
+        else:
+            tags = re.findall(r'"?([\w\-组成]+)"?', raw_tags) if raw_tags else []
         entries.append({'id': eid, 'title': title, 'domain': domain, 'path': path_prefix + rel, 'tags': tags[:8]})
         by_title[title] = eid
 
@@ -185,7 +203,7 @@ def main() -> int:
     if check:
         return check_doc(out, entries, relations)
     if project is None:
-        # ── 全局模式（行为与历史版本逐字节一致）──
+        # ── 全局模式（A1 修复后产物=真 title/tags/声明 id；写盘路径行为与历史同构）──
         write_doc(out, note, entries, relations, extra_stats)
         print(f'kit/hypergraph.rag.json ← {len(entries)} 词条 / {len(relations)} 边')
         return 0

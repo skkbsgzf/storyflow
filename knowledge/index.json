@@ -1,8 +1,8 @@
 {
  "kb": "miniflow-knowledge",
  "version": "2026-09-15",
- "updated": "2026-09-22",
- "note": "知识库索引。md 条目由 frontmatter 汇总；generated 条目（trope/benchmark/market）随数据快照滚动重建（tools/distill-kakaxing.mjs）。v5.0：断言台账（kb/aesthetic/assertions）已退役归档，90 条去向见 projects/_archived/assertions-ledger-v5.0.0/README.md；规则语料卡 knowledge/rules/*.md 按盘上核账（不入本索引，激活归决策记账）。",
+ "updated": "2026-10-11",
+ "note": "知识库索引。md 条目由 frontmatter 汇总；generated 条目（trope/benchmark/market）随数据快照滚动重建（tools/distill-kakaxing.mjs）。v5.0：断言台账（kb/aesthetic/assertions）已退役归档，90 条去向见 projects/_archived/assertions-ledger-v5.0.0/README.md；规则语料卡 knowledge/rules/*.md 按盘上核账（不入本索引，激活归决策记账）。semif-calibration/ 的 5 张体检卷判分报告同口径不入本索引（证据件随各校准包 cases/gold/prompt 按目录核账，2026-10-11 Q2 补记）。",
  "types": {
   "aesthetic-standard": "审美判定标准（什么叫好：维度、条款、阈值）",
   "style-route": "风格路线参数档位",
