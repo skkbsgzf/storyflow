@@ -104,7 +104,7 @@ export function buildUserPrompt(req: TurnRequest): string {
   return [
     req.taskKind === "assistant" ? "按作者意图讨论、查证或创作。不要自行将讨论变为正文。" : `模式：${req.mode}。${modeHint[req.mode] || ""}`,
     req.intent ? `本轮意图：${req.intent}` : "",
-    `目标产出：若本轮是写作类请求，产出叙事正文（约 ${req.maxTokens || 1600} tokens 预算内，先查资料后动笔）；对话类请求直接回应即可。`,
+    "目标产出：若本轮是写作类请求，产出叙事正文（先查资料后动笔）；对话类请求直接回应即可。篇幅按内容需要决定，不要在正文或回应里提及字数、token、预算等计量口径。",
   ].filter(Boolean).join("\n");
 }
 
@@ -113,7 +113,7 @@ export function buildUserPrompt(req: TurnRequest): string {
 export function buildResumePrompt(req: TurnRequest): string {
   return [
     req.intent ? `作者追问/指令：${req.intent}` : "作者要求继续推进。请接着当前转录产出叙事正文，不重播已发生事件。",
-    `目标产出：若本轮是写作类请求，产出叙事正文（约 ${req.maxTokens || 1600} tokens 预算内，可先查资料）；对话类请求直接回应即可。`,
+    "目标产出：若本轮是写作类请求，产出叙事正文（可先查资料）；对话类请求直接回应即可。篇幅按内容需要决定，不要在正文或回应里提及字数、token、预算等计量口径。",
   ].join("\n");
 }
 

@@ -132,7 +132,8 @@ export function createRun(req: TurnRequest, cfg: AdapterConfig, snapshot: Resour
     },
     thinkingBudgets: THINKING_BUDGETS[cfg.thinking] ?? THINKING_BUDGETS.medium,
     streamFn: (m, context, options) =>
-      models.streamSimple(m, context as never, { ...(options as Record<string, unknown> | undefined), maxTokens: Math.max(200, Math.min(8000, req.maxTokens || 1600)), timeoutMs: budget.agentTimeoutMs } as never) as never,
+      // 请求声明了 maxTokens 才钳制透传；未声明即缺省（预算完全废弃口径——不再兜 1600）。
+      models.streamSimple(m, context as never, { ...(options as Record<string, unknown> | undefined), ...(req.maxTokens ? { maxTokens: Math.max(200, Math.min(8000, req.maxTokens)) } : {}), timeoutMs: budget.agentTimeoutMs } as never) as never,
     beforeToolCall: async (ctx) => {
       // 单轮调用限额（镜像 maxCallsPerRound）
       if (counters.toolCalls >= budget.maxCallsPerTurn) return { block: true, reason: "本次工具预算已用尽，请依据已有资料完成回答。" };
@@ -193,7 +194,14 @@ export function createRun(req: TurnRequest, cfg: AdapterConfig, snapshot: Resour
         counters.turnToolFlags = true;
         const args = (ev as { args?: Record<string, unknown> }).args || {};
         emit("tool.input.delta", { callId: (ev as { toolCallId?: string }).toolCallId, toolName: (ev as { toolName?: string }).toolName, input: args });
-        emit("tool.call", { callId: (ev as { toolCallId?: string }).toolCallId, toolName: (ev as { toolName?: string }).toolName, action: String(args.action || "") });
+        // detail = 入参标量摘要（章节/检索词/条目等主体），供前端工具流水行显示「调用什么、读哪里」。
+        const detail = Object.entries(args)
+          .filter(([, v]) => (typeof v === "string" && v.trim()) || typeof v === "number")
+          .slice(0, 6)
+          .map(([k, v]) => `${k}:${String(v).slice(0, 60)}`)
+          .join(" · ")
+          .slice(0, 200);
+        emit("tool.call", { callId: (ev as { toolCallId?: string }).toolCallId, toolName: (ev as { toolName?: string }).toolName, action: String(args.action || ""), detail });
         break;
       }
       case "tool_execution_end": {
