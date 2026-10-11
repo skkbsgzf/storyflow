@@ -161,6 +161,8 @@
 | 改稿工作法卡 | `knowledge/method/revise-workflow.md`：七步 runbook（导入→索引→拆书建初始 KB→项目 RAG→会话诊改循环），诊改纪律（先诊后改/新想法先立约束卡/diff 人审/刻意复沓豁免）与边界（改相=规则驱动、方向性重写=写相对话） |
 | e2e 冒烟 | 合成项目全链：--import → build → sample → --project 编译 → kb_search 命中 → diag_scan S 级 → 方法卡 kb_read 可达 |
 
+✅ **已落地 2026-10-12**：--import（9 例实测：幂等重导/不覆盖/收据/自动索引失败不吞/自导入拒绝）＋方法卡 kb/method/revise-workflow（命令逐条实跑核对表 11 项全 ✓，prose#novel-deai 挂卡消悬空）＋e2e 冒烟全链通过（导入 3 篇→索引 kind=导入→sample→项目档 5 词条→kb_search 双根命中→diag_scan 121ms 13 检查命中 5→方法卡 4617 字可达；mf_deconstruct 归 LLM 步归 8431 会话内验证）。冒烟记录 projects/_reports/3e-smoke-20261012.md。
+
 ## 五、每期通用纪律
 
 1. **契约先行** —— 无 schema 不写实现

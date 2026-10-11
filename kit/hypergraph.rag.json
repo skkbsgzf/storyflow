@@ -2,7 +2,7 @@
   "format": "storyflow-hypergraph@1",
   "note": "knowledge 语料的 HyperGraphRAG 编译产物（词条+关系边+编译期聚类簇）。源 md 是本地可插拔层，不进 git；改 md 后重跑 tools/kit-compile.py。",
   "stats": {
-    "entries": 116,
+    "entries": 117,
     "relations": 0,
     "domains": [
       "aesthetic",
@@ -212,27 +212,31 @@
         "size": 1
       },
       {
-        "name": "簇#49[一循,一轮,一遍]",
+        "name": "簇#49[一批,一适,与既]",
         "size": 1
       },
       {
-        "name": "簇#50[不用,中的,交拦]",
+        "name": "簇#50[一循,一轮,一遍]",
+        "size": 1
+      },
+      {
+        "name": "簇#51[不用,中的,交拦]",
         "size": 16
       },
       {
-        "name": "簇#51[体检,内嵌,冻结]",
+        "name": "簇#52[体检,内嵌,冻结]",
         "size": 1
       },
       {
-        "name": "簇#52[与节,场对,型三]",
+        "name": "簇#53[与节,场对,型三]",
         "size": 6
       },
       {
-        "name": "簇#53[一结,上而,二结]",
+        "name": "簇#54[一结,上而,二结]",
         "size": 1
       },
       {
-        "name": "簇#54[一串,一座,一杠]",
+        "name": "簇#55[一串,一座,一杠]",
         "size": 1
       }
     ]
@@ -855,12 +859,20 @@
       "cluster": "簇#48[一细,与拍,个场]"
     },
     {
+      "id": "kb/method/revise-workflow",
+      "title": "改稿工作法（成稿 + 新想法：导入→拆书建卡→项目 RAG→诊改循环）",
+      "domain": "method",
+      "path": "knowledge/method/revise-workflow.md",
+      "tags": [],
+      "cluster": "簇#49[一批,一适,与既]"
+    },
+    {
       "id": "kb/method/revision-loop",
       "title": "多轮精修循环协议（判分→定向修订→防劣化收敛）",
       "domain": "method",
       "path": "knowledge/method/revision-loop.md",
       "tags": [],
-      "cluster": "簇#49[一循,一轮,一遍]"
+      "cluster": "簇#50[一循,一轮,一遍]"
     },
     {
       "id": "kb/rules/ai-trace",
@@ -868,7 +880,7 @@
       "domain": "rules",
       "path": "knowledge/rules/ai-trace.md",
       "tags": [],
-      "cluster": "簇#50[不用,中的,交拦]"
+      "cluster": "簇#51[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/character",
@@ -876,7 +888,7 @@
       "domain": "rules",
       "path": "knowledge/rules/character.md",
       "tags": [],
-      "cluster": "簇#50[不用,中的,交拦]"
+      "cluster": "簇#51[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/conflict",
@@ -884,7 +896,7 @@
       "domain": "rules",
       "path": "knowledge/rules/conflict.md",
       "tags": [],
-      "cluster": "簇#50[不用,中的,交拦]"
+      "cluster": "簇#51[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/continuity",
@@ -892,7 +904,7 @@
       "domain": "rules",
       "path": "knowledge/rules/continuity.md",
       "tags": [],
-      "cluster": "簇#50[不用,中的,交拦]"
+      "cluster": "簇#51[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/curve",
@@ -900,7 +912,7 @@
       "domain": "rules",
       "path": "knowledge/rules/curve.md",
       "tags": [],
-      "cluster": "簇#50[不用,中的,交拦]"
+      "cluster": "簇#51[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/deconstruct",
@@ -908,7 +920,7 @@
       "domain": "rules",
       "path": "knowledge/rules/deconstruct.md",
       "tags": [],
-      "cluster": "簇#50[不用,中的,交拦]"
+      "cluster": "簇#51[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/dialogue",
@@ -916,7 +928,7 @@
       "domain": "rules",
       "path": "knowledge/rules/dialogue.md",
       "tags": [],
-      "cluster": "簇#50[不用,中的,交拦]"
+      "cluster": "簇#51[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/ending",
@@ -924,7 +936,7 @@
       "domain": "rules",
       "path": "knowledge/rules/ending.md",
       "tags": [],
-      "cluster": "簇#50[不用,中的,交拦]"
+      "cluster": "簇#51[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/hook",
@@ -932,7 +944,7 @@
       "domain": "rules",
       "path": "knowledge/rules/hook.md",
       "tags": [],
-      "cluster": "簇#50[不用,中的,交拦]"
+      "cluster": "簇#51[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/meme",
@@ -940,7 +952,7 @@
       "domain": "rules",
       "path": "knowledge/rules/meme.md",
       "tags": [],
-      "cluster": "簇#50[不用,中的,交拦]"
+      "cluster": "簇#51[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/pacing",
@@ -948,7 +960,7 @@
       "domain": "rules",
       "path": "knowledge/rules/pacing.md",
       "tags": [],
-      "cluster": "簇#50[不用,中的,交拦]"
+      "cluster": "簇#51[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/platform",
@@ -956,7 +968,7 @@
       "domain": "rules",
       "path": "knowledge/rules/platform.md",
       "tags": [],
-      "cluster": "簇#50[不用,中的,交拦]"
+      "cluster": "簇#51[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/reversal",
@@ -964,7 +976,7 @@
       "domain": "rules",
       "path": "knowledge/rules/reversal.md",
       "tags": [],
-      "cluster": "簇#50[不用,中的,交拦]"
+      "cluster": "簇#51[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/scene",
@@ -972,7 +984,7 @@
       "domain": "rules",
       "path": "knowledge/rules/scene.md",
       "tags": [],
-      "cluster": "簇#50[不用,中的,交拦]"
+      "cluster": "簇#51[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/setting",
@@ -980,7 +992,7 @@
       "domain": "rules",
       "path": "knowledge/rules/setting.md",
       "tags": [],
-      "cluster": "簇#50[不用,中的,交拦]"
+      "cluster": "簇#51[不用,中的,交拦]"
     },
     {
       "id": "kb/rules/visual",
@@ -988,7 +1000,7 @@
       "domain": "rules",
       "path": "knowledge/rules/visual.md",
       "tags": [],
-      "cluster": "簇#50[不用,中的,交拦]"
+      "cluster": "簇#51[不用,中的,交拦]"
     },
     {
       "id": "kb/semif-calibration/dash-abuse/report-批A-20260922",
@@ -996,7 +1008,7 @@
       "domain": "semif-calibration",
       "path": "knowledge/semif-calibration/dash-abuse/report-批A-20260922.md",
       "tags": [],
-      "cluster": "簇#51[体检,内嵌,冻结]"
+      "cluster": "簇#52[体检,内嵌,冻结]"
     },
     {
       "id": "kb/structure/ascent",
@@ -1010,7 +1022,7 @@
         "赘婿",
         "系统流"
       ],
-      "cluster": "簇#52[与节,场对,型三]"
+      "cluster": "簇#53[与节,场对,型三]"
     },
     {
       "id": "kb/structure/barbell-return",
@@ -1024,7 +1036,7 @@
         "深沉档",
         "长线IP"
       ],
-      "cluster": "簇#52[与节,场对,型三]"
+      "cluster": "簇#53[与节,场对,型三]"
     },
     {
       "id": "kb/structure/catalog",
@@ -1032,7 +1044,7 @@
       "domain": "structure",
       "path": "knowledge/structure/catalog.md",
       "tags": [],
-      "cluster": "簇#53[一结,上而,二结]"
+      "cluster": "簇#54[一结,上而,二结]"
     },
     {
       "id": "kb/structure/dual-line",
@@ -1045,7 +1057,7 @@
         "商战",
         "身份错位"
       ],
-      "cluster": "簇#52[与节,场对,型三]"
+      "cluster": "簇#53[与节,场对,型三]"
     },
     {
       "id": "kb/structure/episodic-fate",
@@ -1059,7 +1071,7 @@
         "无限流",
         "循环"
       ],
-      "cluster": "簇#52[与节,场对,型三]"
+      "cluster": "簇#53[与节,场对,型三]"
     },
     {
       "id": "kb/structure/episodic-webnovel",
@@ -1067,7 +1079,7 @@
       "domain": "structure",
       "path": "knowledge/structure/episodic-webnovel.md",
       "tags": [],
-      "cluster": "簇#54[一串,一座,一杠]"
+      "cluster": "簇#55[一串,一座,一杠]"
     },
     {
       "id": "kb/structure/revenge",
@@ -1081,7 +1093,7 @@
         "赘婿",
         "重生"
       ],
-      "cluster": "簇#52[与节,场对,型三]"
+      "cluster": "簇#53[与节,场对,型三]"
     },
     {
       "id": "kb/structure/save-the-cat",
@@ -1094,7 +1106,7 @@
         "成长",
         "家庭"
       ],
-      "cluster": "簇#52[与节,场对,型三]"
+      "cluster": "簇#53[与节,场对,型三]"
     },
     {
       "id": "kb/trope/chongsheng-fuchou",

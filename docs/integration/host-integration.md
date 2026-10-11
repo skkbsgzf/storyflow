@@ -75,3 +75,8 @@ storyharness 的 pinax 桥是把 kit 能力接进 Pinax 写作软件的**活样�
 | 阶段收口 | 卡↔消费者亲和对账 | `python tools/kb-affinity.py --project <id>` | `projects/_reports/kb-affinity-<id>.json`（非门禁） |
 
 > 记忆卡是可重建派生物，重建整卡覆盖；`kit/` 产物在索引里属 generated 角色，diff 按 hash 记账。
+>
+> 改稿套件（场景：成稿正文 + 新想法 → 改这篇文章）：上述动作的七步组合 runbook
+> （`project-init.py --import` 导入成稿 → 自动索引 → deconstruct sample 抽样 → 会话内 mf_deconstruct 归因出卡
+> → land 落 规则/ → `kit-compile --project` → 431 会话诊改循环）见方法卡
+> **`kb/method/revise-workflow`**（`knowledge/method/revise-workflow.md`）。

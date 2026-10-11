@@ -35,7 +35,8 @@ root_scope 永不指向 repoRoot；本工具对 projects/<id>/ 之外零写入�
     - 内部/**（机器区子目录除外） agent 过程稿（意见/依据/稿本）
     - 根目录散落 *.md            executor 落盘稿
   human（人写，工具只读不覆写）：
-    - 输入/**
+    - 输入/**（根上人写（点子等）kind=素材；输入/<subdir>/ 深层 = project-init --import 导入件，
+      批次3e 起 kind 标注「导入」）
     - 世界书/**（上面三类 generated 除外）
     - 文风/**、规则/**     项目文风与规则卡（批次2.5 P1，人写知识）
 
@@ -170,7 +171,9 @@ def kind_of(rel: str) -> str:
     if rel == "世界书/graph.json":
         return "世界书索引"
     if rel.startswith("输入/"):
-        return "素材"
+        rest = rel[len("输入/"):]
+        # 批次3e：输入/ 根上人写（点子等）= 素材；输入/<subdir>/ 深层 = project-init --import 导入件
+        return "素材" if "/" not in rest else "导入"
     if rel.startswith("交付/"):
         return "交付"
     if rel.startswith("内部/sessions/"):
