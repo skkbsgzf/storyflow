@@ -84,6 +84,8 @@ export function createRun(req: TurnRequest, cfg: AdapterConfig, snapshot: Resour
     if (typeof requested === "number" && Number.isFinite(requested) && requested > 0) budget[key] = Math.min(budget[key], Math.floor(requested));
   }
   const counters: RunCounters = { steps: 0, toolCalls: 0, roundsInTurn: 0, turnToolFlags: false, usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 } };
+  // 最近一次工具调用的入参（start 缓存、end 带回）：tool.result 帧借此携带「读了哪个章节/检索什么」。
+  let lastToolInput: { callId: string; args: Record<string, unknown>; detail?: string } | null = null;
 
   const models = makeModels(cfg);
   const model = models.getModel(cfg.provider, cfg.model) as Model<any>;
@@ -193,6 +195,7 @@ export function createRun(req: TurnRequest, cfg: AdapterConfig, snapshot: Resour
         counters.roundsInTurn += 1;
         counters.turnToolFlags = true;
         const args = (ev as { args?: Record<string, unknown> }).args || {};
+        lastToolInput = { callId: String((ev as { toolCallId?: string }).toolCallId || ""), args };
         emit("tool.input.delta", { callId: (ev as { toolCallId?: string }).toolCallId, toolName: (ev as { toolName?: string }).toolName, input: args });
         // detail = 入参标量摘要（章节/检索词/条目等主体），供前端工具流水行显示「调用什么、读哪里」。
         const detail = Object.entries(args)
@@ -201,12 +204,13 @@ export function createRun(req: TurnRequest, cfg: AdapterConfig, snapshot: Resour
           .map(([k, v]) => `${k}:${String(v).slice(0, 60)}`)
           .join(" · ")
           .slice(0, 200);
+        lastToolInput.detail = detail;
         emit("tool.call", { callId: (ev as { toolCallId?: string }).toolCallId, toolName: (ev as { toolName?: string }).toolName, action: String(args.action || ""), detail });
         break;
       }
       case "tool_execution_end": {
         const event = ev as { toolName?: string; result?: unknown; isError?: boolean };
-        const frame = `event: tool.result\ndata: ${JSON.stringify({ toolName: event.toolName, result: event.result, isError: Boolean(event.isError) })}\n\n`;
+        const frame = `event: tool.result\ndata: ${JSON.stringify({ toolName: event.toolName, result: event.result, isError: Boolean(event.isError), callId: lastToolInput?.callId || "", input: lastToolInput?.detail || "" })}\n\n`;
         for (const listener of listeners) listener(frame);
         // 能力任务：submit 回执落账即终态（abort 带 SUBMITTED 标记，start() 捕获后走成功终态）
         if (capability && event.toolName === submitToolName && runExtras.capabilityResult) {
@@ -300,6 +304,12 @@ export function createRun(req: TurnRequest, cfg: AdapterConfig, snapshot: Resour
         } catch { /* 规划失败静默降级：无计划照常写 */ }
       }
       if (ac.signal.aborted) throw new Error("PINAX_ADAPTER_ABORTED");
+      // 提示词透明化：本轮实际进入内核的 system/user 全文（会话内存快照用，不落盘）。
+      {
+        const composedUser = opts.resumeMessages?.length ? buildResumePrompt(req) : buildUserPrompt(req);
+        const frame = `event: prompt.composed\ndata: ${JSON.stringify({ system: (agent.state as { systemPrompt: string }).systemPrompt, user: composedUser })}\n\n`;
+        for (const listener of listeners) listener(frame);
+      }
       await Promise.race([
         opts.resumeMessages?.length ? agent.prompt(buildResumePrompt(req)) : agent.prompt(buildUserPrompt(req)),
         abortGate,
