@@ -278,7 +278,14 @@ def compile_doc(root: Path, project: str | None):
         return out, ('knowledge 语料的 HyperGraphRAG 编译产物（词条+关系边+编译期聚类簇）。源 md 是本地可插拔层，不进 git；改 md 后重跑 tools/kit-compile.py。',
                      entries, relations, {'clusters': clusters})
     # ── 项目档模式（R2.2）：只读 projects/<id>/，只写 projects/<id>/kit/ ──
-    proj = root / 'projects' / project
+    # 批次3e：--root 指向平铺项目父目录（外部项目根，project-init/index --dir 同语义）时回退 root/<id>
+    cand = root / 'projects' / project
+    if cand.is_dir():
+        proj = cand
+    elif (root / project).is_dir():
+        proj = root / project
+    else:
+        proj = cand
     if not proj.is_dir():
         print(f'[ABORT] 项目目录不存在：{proj}')
         return None

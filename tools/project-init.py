@@ -19,7 +19,8 @@
                 （validation 声明位要启用请手编，字段口径见 contracts/project-config.schema.json）。
   --import <成稿目录>  批次3e 改稿套件导入件：把既有成稿正文拷入 <项目>/输入/<subdir>/
                 （--subdir 指定 输入/ 下的子目录名，默认「正文」；保留源目录相对结构；只收 .md/.txt；
-                相对路径按仓库根解析，源目录在项目内 = 拒绝自导入）。
+                相对路径按仓库根解析，自导入精确拦截：仅当目标 输入/<subdir>/ 落在源目录子树内才拒绝
+                （源=项目根会边拷边复制自己）；源是项目内平行目录（如 正文_原版/）放行——原位项目收编自有正文的正场景）。
                 **不覆盖**：同名目标一律跳过并在清单标 skipped——重复 --import 同源 = 全部 skipped 零破坏。
                 拷贝清单收据落 registry/receipts/project-import-<时间戳>.json
                 （源/目标/字节数/action 逐条——报数必附收据）。
@@ -299,9 +300,11 @@ def import_docs(proj: Path, pid: str, src_arg: str, subdir: str, base: Path) -> 
         return fail(f"源目录不存在或不是目录：{src}")
     if not subdir or subdir in (".", "..") or "/" in subdir or "\\" in subdir:
         return fail(f"--subdir 非法（须为 输入/ 下的单层目录名，不含路径分隔符）：{subdir!r}")
-    if src.resolve().is_relative_to(proj.resolve()):
-        return fail(f"源目录在项目内，拒绝自导入（会把成稿拷进自己的拷贝）：{src}")
     target_root = proj / "输入" / subdir
+    # 自导入精确化（批次3e 实战口径）：只拦「目标落在源目录子树内」（会边拷边复制自己）；
+    # 源是项目内的平行目录（如 正文_原版/ → 输入/正文/）是「原位项目收编自有正文」的正场景，放行
+    if target_root.resolve().is_relative_to(src.resolve()):
+        return fail(f"目标 输入/{subdir}/ 落在源目录子树内，拒绝自拷贝：{src} → {target_root}")
 
     # 全量先核账再落盘：清单只收 .md/.txt，逐个对位；目标已存在 = skipped（绝不覆盖）
     files = [p for p in sorted(src.rglob("*")) if p.is_file() and p.suffix.lower() in IMPORT_SUFFIXES]
