@@ -149,7 +149,17 @@
 
 | 包 | 内容 | 状态 |
 | --- | --- | --- |
-| 3d 执行 | ①pinax 退化扫描条款组搬运（S 级直扩）：`core/src/degeneration.ts` 四组确定性检查（复读/截断/占位符/工程词泄漏，AE-DEGEN-\* 四名 additive）挂 aesthetic 引擎正文路径＋`core/test/degeneration.test.ts` 14 例＋真实项目 65 章只读实测；②写卡试水三张草稿落 `knowledge/deconstruct/`：T-立意-1 价值对撞表（track=立意 首用，README 板块表同步）＋pinax K4 审稿三法＋K5 诚实边界三片段 | 3d 执行（收口中） |
+| 3d 执行 | ①pinax 退化扫描条款组搬运（S 级直扩）：`core/src/degeneration.ts` 四组确定性检查（复读/截断/占位符/工程词泄漏，AE-DEGEN-\* 四名 additive）挂 aesthetic 引擎正文路径＋`core/test/degeneration.test.ts` 14 例＋真实项目 65 章只读实测；②写卡试水三张草稿落 `knowledge/deconstruct/`：T-立意-1 价值对撞表（track=立意 首用，README 板块表同步）＋pinax K4 审稿三法＋K5 诚实边界三片段 | ✅ 已落地 2026-10-11（commit 2b74ddac，已推送） |
+
+### 批次3e · 改稿套件（2026-10-11 追加，用户拍板开工）
+
+> 场景：手里有一批成稿正文 + 一批新想法 → 用 kit 搭项目目录、从正文提初始知识库、在 agent 对话里完成改写。件级路径已通（拆相/诊改三相/项目文件体系/项目 RAG），本批做组合件消掉手动断点；revise 生产线（flow@3）待轻组合跑通一轮后再议。
+
+| 件 | 内容 |
+| --- | --- |
+| 导入件 | `project-init.py --import <正文目录>`：成稿拷入 `输入/`（不覆盖存量）＋落导入收据＋自动索引 build（角色 human、kind 标注导入） |
+| 改稿工作法卡 | `knowledge/method/revise-workflow.md`：七步 runbook（导入→索引→拆书建初始 KB→项目 RAG→会话诊改循环），诊改纪律（先诊后改/新想法先立约束卡/diff 人审/刻意复沓豁免）与边界（改相=规则驱动、方向性重写=写相对话） |
+| e2e 冒烟 | 合成项目全链：--import → build → sample → --project 编译 → kb_search 命中 → diag_scan S 级 → 方法卡 kb_read 可达 |
 
 ## 五、每期通用纪律
 
