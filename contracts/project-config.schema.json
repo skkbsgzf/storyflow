@@ -69,6 +69,44 @@
           "description": "评审优先级下限（v5.0 去闸化语义：这是评审优先级，**不是提交闸**）。minor=全量都报（缺省）/ major=minor 不报 / block=只看最高优先"
         }
       }
+    },
+    "sessionBrief": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "批次3e 改稿套件改造（2026-10-12）：项目自述会话上下文声明位——无 flow 的改稿/协作会话靠它携带项目专属上下文，逐条以「- 」行追加进会话简报（storyharness buildProjectBrief 注入，每回合新鲜，与盘面事实同采信级）。写什么由项目主人定（典型：文风/规则卡路径与转正状态、外部资产库位置、协作纪律指针）；写不了行为只写事实与路径——纪律性指令放方法卡不放这里。整块缺省 = 无自述段，简报行为与历史完全一致。"
+    },
+    "openQuestions": {
+      "type": "array",
+      "description": "批次4 4.2（2026-10-12）：冷启动询问声明位——用户未指名时 agent 反问必要信息。来源：init 按领域预设（presets/skeletons/<domain>.json）预填必问清单（缺省 writing 不注入，--domain 显式给出才注入）；消费：随会话简报（storyharness buildProjectBrief「【待询问（冷启动）】」段，逐条带 question+options）下发给会话 agent。纪律：**询问归会话 agent，kit 不弹 UI**——会话 agent 见未答项必须逐条向用户询问，答案回填本条目的 answer 字段（写回 项目配置.json；全部答完注入段自动消失）。项目配置.json 是唯一事实源，手编亦可。",
+      "items": {
+        "type": "object",
+        "required": ["key", "question"],
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "问题锚（项目内唯一）：注入对位与答案回填的键（如 产物类型/频道/题材/单章字数/mediaEndpoints）"
+          },
+          "question": {
+            "type": "string",
+            "description": "向用户询问的完整问题文案（图/视频相关问题的文案必须点明「拿不到生图接口不开工」）"
+          },
+          "options": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "可选：供用户选择的选项清单（自由作答的问题可省）"
+          },
+          "answer": {
+            "type": "string",
+            "description": "用户答案回填处（会话 agent 或用户本人写入；非空即视为已答，简报不再注入该条）"
+          }
+        }
+      }
+    },
+    "mediaEndpoints": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "批次4 4.2（2026-10-12）：生图/视频接口配置声明位——comfyui.endpoint 等生图/视频接口地址与参数（结构开放，键面随消费方定型）。图/视频领域 init 时经 openQuestions 强制询问，答案落这里（消费随图文视频解冻：批次3 裁决「停留在提示词层」，本声明位先行不接消费方）。"
     }
   }
 }
