@@ -26,11 +26,21 @@ export class StoryFlowClient {
     return this.#req(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body ?? {}) })
   }
 
-  /** 口令登录（runtime 设了 SH_PASSWORD 才需要） */
+  /** 口令登录（runtime 设了 SH_PASSWORD 才需要）
+   *  服务端把 token 只放在 HttpOnly cookie 里（响应体是 {ok,ttlHours}），所以：
+   *  · 浏览器——cookie 自动随请求走，this.token 留空也没事（跨源宿主需自行带 credentials:'include'）；
+   *  · Node/Electron 主进程——fetch 没有 cookie 罐，这里从 Set-Cookie 里把 token 抠出来改走 Bearer。
+   *  没有这一步，非浏览器宿主登录后依旧 401（W4.2 fileWrite 实测撞出来的既存缺口）。 */
   async login(password) {
-    const r = await this.#req('/api/login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ password }) })
-    this.token = r.token || this.token
-    return r
+    const headers = { 'content-type': 'application/json' }
+    const r = await fetch(this.base + '/api/login', { method: 'POST', headers, body: JSON.stringify({ password }) })
+    if (r.status === 401) throw new Error('未授权：需要口令（先调 login）')
+    if (!r.ok) throw new Error(`${r.status} ${r.statusText}: ${await r.text().catch(() => '')}`)
+    const j = await r.json().catch(() => ({}))
+    const fromCookie = (typeof r.headers.getSetCookie === 'function' ? r.headers.getSetCookie() : [])
+      .map((c) => /(?:^|;\s*)sh_token=([^;]+)/.exec(c)).filter(Boolean).map((m) => m[1])[0]
+    this.token = j.token || fromCookie || this.token
+    return { ...j, tokenVia: j.token ? 'body' : fromCookie ? 'set-cookie' : 'none（浏览器靠 cookie 自动随请求）' }
   }
 
   /** 工作区/项目/流程清单 */
@@ -113,6 +123,19 @@ export class StoryFlowClient {
   fileRawUrl(project, file) { return `${this.base}/api/panel/raw?project=${encodeURIComponent(project)}&file=${encodeURIComponent(file)}` }
   /** 本地文件·预览判定元数据（kind: inline|text|none|missing ＋ url ＋ note） */
   filePreview(project, file) { return this.#req(`/api/panel/preview?project=${encodeURIComponent(project)}&file=${encodeURIComponent(file)}`) }
+  /** 本地文件·写文本（W4.2 通道 B）：只收 .md/.txt（.json 是派生件，工具独占写），服务端走临时件 → 回读校验 → 原子替换，绝不半截写。
+   *  expectHash 用 fileRead() 回的 hash：目标已存在而不带 → 409 EXPECT_HASH_REQUIRED；带了但对不上 → 409 CONFLICT（零写入，payload.hash 是盘上当前指纹）。
+   *  与其他方法不同：4xx **不抛**，原样交回 {status, ...payload}——冲突是预期状态，调用方要拿指纹重读合流；5xx 才抛。 */
+  async fileWrite(project, file, content, expectHash) {
+    const headers = { 'content-type': 'application/json' }
+    if (this.token) headers['authorization'] = `Bearer ${this.token}`
+    const r = await fetch(`${this.base}/api/panel/files?project=${encodeURIComponent(project)}&file=${encodeURIComponent(file)}`, {
+      method: 'PUT', headers, body: JSON.stringify(expectHash ? { content, expectHash } : { content }),
+    })
+    const j = await r.json().catch(() => ({}))
+    if (r.status >= 500) throw new Error(`${r.status} ${r.statusText}: ${j.error || ''}`)
+    return { status: r.status, ...j }
+  }
 
   /** 世界书检索（GraphHyperRAG：标题/tag/摘要打分 + 一跳关系扩展） */
   worldbookSearch(project, q, k) { return this.kernelVerb('worldbook_search', { project, q, ...(k ? { k } : {}) }) }

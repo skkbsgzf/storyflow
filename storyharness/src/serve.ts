@@ -18,7 +18,8 @@
 //   POST /api/projects/:id/agent/sessions/:sid/rename 重命名
 //   DELETE /api/projects/:id/agent/sessions/:sid      删除
 //   POST /api/projects/:id/agent/sessions/:sid/turn   回合（SSE：delta/tool_call/tool_result/round/done/error）
-//   GET  /api/panel/files?project=<id>[&file=<rel>]   官方能力·本地文件：两层树 / 单文件读取（.md/.json/.txt ≤200KB）
+//   GET  /api/panel/files?project=<id>[&file=<rel>]   官方能力·本地文件：两层树 / 单文件读取（.md/.json/.txt ≤200KB，回 sha256 供写端回声）
+//   PUT  /api/panel/files?project=<id>&file=<rel>     W4.2 通道 B 写端点：{content, expectHash} → 临时件校验＋原子替换（越界 403/后缀 415/冲突 409）
 //   GET  /api/panel/raw?project=<id>&file=<rel>       官方能力·字节流（图/PDF/音频白名单＋25MB 上限＋Range；files&raw=1 同源）
 //   GET  /api/panel/preview?project=<id>&file=<rel>   官方能力·预览判定元数据（kind:inline|text|none|missing ＋ url ＋ note）
 //                                                     其余面板端点（worldbook/telemetry/changes/canvas）= 410 退役
@@ -39,7 +40,7 @@ import { loadPacks, packsBootLog, PackRuntime } from "./packs.js";
 import { packGateReport, setPackGate, packAllowed, projectFromRequest, cloneTemplateProject } from "./packgate.js";
 import { runWithPack, currentPackCtx } from "./packctx.js";
 import { safeProject } from "./safe-project.js";
-import { panelFiles, panelRaw, panelPreview } from "./panel-files.js";
+import { panelFiles, panelRaw, panelPreview, panelWrite } from "./panel-files.js";
 import {
   COOKIE_NAME, bearerToken, checkLimit, checkToken, clientKey, clearFails, cookieClear, cookieToken,
   isLoopbackHost, loginPageHtml, makeLimiter, makeToken, passwordMatches, readCookie, recordFail,
@@ -140,8 +141,11 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
     if (allow) {
       res.setHeader("Access-Control-Allow-Origin", allow);
       res.setHeader("Vary", "Origin");
-      res.setHeader("Access-Control-Allow-Methods", "GET,POST,DELETE,OPTIONS");
+      // W4.2：写通道用 PUT（看板跨端口调 8431），预检不放 PUT 就等于浏览器侧写不了；
+      // allow-credentials 只在「已回显具体源」时给——名单外的源连 ACAO 都没有，谈不上带凭据。
+      res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
       res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+      res.setHeader("Access-Control-Allow-Credentials", "true");
     }
     if (req.method === "OPTIONS") {
       res.writeHead(allow ? 204 : 403);
@@ -618,6 +622,28 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
           const q = new URLSearchParams(req.url?.split("?")[1] ?? "");
           const project = q.get("project") ?? "";
           const name = url.slice("/api/panel/".length);
+          // W4.2 通道 B · 写端点：PUT /api/panel/files?project=…&file=…  body={content, expectHash}
+          //   鉴权继承 B1 口令闸（这段在闸门之后，未过闸根本到不了）；写路径一律 no-store（缓存投毒红线）。
+          //   落盘纪律在 panelWrite 里：临时件 → 读回校验 → 原子替换；越界 403、非白名单后缀 415、指纹过期 409。
+          if (name === "files" && req.method === "PUT") {
+            let parsed: { content?: unknown; expectHash?: unknown };
+            try {
+              parsed = body ? (JSON.parse(body) as { content?: unknown; expectHash?: unknown }) : {};
+            } catch {
+              res.writeHead(400, { "content-type": "application/json", "cache-control": "no-store" });
+              res.end(JSON.stringify({ error: "body 不是合法 JSON（写通道收 {content, expectHash}）", code: "BAD_JSON" }));
+              return;
+            }
+            const reply = panelWrite(kernel, project, q.get("file") ?? "", parsed);
+            res.writeHead(reply.status, { "content-type": "application/json", "cache-control": "no-store" });
+            res.end(JSON.stringify(reply.payload));
+            return;
+          }
+          if (name === "files" && req.method !== "GET" && req.method !== "HEAD") {
+            res.writeHead(405, { "content-type": "application/json", "cache-control": "no-store" });
+            res.end(JSON.stringify({ error: "文件端点只认 GET（树/读取）与 PUT（写入）", code: "METHOD_NOT_ALLOWED" }));
+            return;
+          }
           // B13 · raw 二进制预览：白名单内才给字节流，其余状态一律 JSON 说明（前端不许靠空 body 猜）
           //     两种拼法走同一个 panelRaw：/api/panel/raw?file=… 与 /api/panel/files?file=…&raw=1
           //     （一份实现、两个入口，判定不许有两套）
@@ -635,17 +661,18 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
           }
           if (name === "preview") {
             const reply = panelPreview(kernel, project, q.get("file") ?? "");
-            res.writeHead(reply.status, { "content-type": "application/json" });
+            res.writeHead(reply.status, { "content-type": "application/json", "cache-control": "no-store" });
             res.end(JSON.stringify(reply.payload));
             return;
           }
           if (name === "files") {
             const reply = panelFiles(kernel, project, q.get("file") ?? "");
-            res.writeHead(reply.status, { "content-type": "application/json" });
+            res.writeHead(reply.status, { "content-type": "application/json", "cache-control": "no-store" });
             res.end(JSON.stringify(reply.payload));
             return;
           }
-          // 官方面板桥（工单-20261002 批4）：journal 台账尾部——大事记时间轴数据源。
+          // 官方面板桥（工单-20261002 批4）：journal 台账尾部——执行流水时间轴数据源
+          // （叙事「大事记」是另一套账：世界书/时间线.md → tools/chronicle.py，见 W4.6）。
           // project=_scan_：扫全工作区列出有台账的项目（台账只由 flow_run 产生，
           // 立项未跑的项目永远空态——不扫就永远盯错项目，时间轴看起来像没实现）。
           if (name === "journal") {
@@ -979,7 +1006,7 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
             res.end(JSON.stringify({ domains, cards, total: cards.length }));
             return;
           }
-          // 大事记台账页（工单-20261006 HTML 嵌入面板）：自包含模板 + journal 尾部注入，整页 text/html。
+          // 执行流水台账页（工单-20261006 HTML 嵌入面板）：自包含模板 + journal 尾部注入，整页 text/html。
           // 用法：/api/panel/journal-page?project=<id>&limit=400（工作台 iframe 面板 / 新标签页皆可）。
           if (name === "journal-page") {
             if (!safeProject(project)) {

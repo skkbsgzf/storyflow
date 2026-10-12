@@ -38,7 +38,8 @@
 | `artifact-header.schema.json` | 产物头：来源 / 轮次 / 上游可溯源 |
 | `module-report.schema.json` | 模块报告 |
 | `metrics.schema.json` | 运行指标（`RunMetric.checks`） |
-| `journal-event.schema.json` | 事件记账 |
+| `journal-event.schema.json` | 执行流水记账（agent 内核执行环台账，非叙事大事记） |
+| `chronicle-event.schema.json` | 大事记（叙事 5W1H 多轨时间线）派生件 `世界书/chronicle.json`，见 W4.6 |
 | `diagnostics.schema.json` | 诊断 |
 | `assertion-preset.schema.json` | 断言预设（v5.0.0 已退役，仅存历史契约） |
 

@@ -71,8 +71,12 @@ const colorOf = n => byCluster
 // ── 数据准备：度数定半径；枢纽（度数前 12）名常显 ──
 const nodes = (G.nodes || []).map((n, i) => ({ ...n, i, deg: n.degree || 0 }));
 const idxOf = new Map(nodes.map((n, i) => [n.id, i]));
+// 修（批次4 W4.1 取证发现的既存渲染 bug）：payload 的 links[].s/t 是**节点下标**（build_payload 里
+// by_id 出的整数），此前拿它查 id→下标表恒为 undefined → 所有边被 filter 丢弃（图谱页 23 边渲染成 0 边）。
+// 两种形态都认：整数且落在 nodes 内按下标，否则按 id 查表。
+const resolve = v => (typeof v === "number" && nodes[v] !== undefined) ? v : idxOf.get(v);
 const links = (G.links || [])
-  .map(l => ({ a: idxOf.get(l.s), b: idxOf.get(l.t), k: l.k }))
+  .map(l => ({ a: resolve(l.s), b: resolve(l.t), k: l.k }))
   .filter(l => l.a !== undefined && l.b !== undefined && l.a !== l.b);
 const byDeg = [...nodes].sort((x, y) => y.deg - x.deg || String(x.id).localeCompare(String(y.id)));
 const HUB_N = 12;

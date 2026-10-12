@@ -57,7 +57,7 @@
 | 交付物 | 说明 |
 | --- | --- |
 | 立场入规格 | kit 三输出（文档/自包含 HTML/数据包）；HTML 只读、零依赖、不回 call kit —— `docs/ARCHITECTURE.md` §0 ＋ §9 不变量 6 |
-| 页面件补齐 | `tools/journal-page.py`（journal.jsonl → 大事记整页，`journal-template.html` 渲染）＋ `tools/diagnosis-page.py`（diagnosis-report@1 → 诊断报告页，evidence/opinion 分区，fixture＋`--selfcheck`） |
+| 页面件补齐 | `tools/journal-page.py`（journal.jsonl → 执行流水整页，`journal-template.html` 渲染）＋ `tools/diagnosis-page.py`（diagnosis-report@1 → 诊断报告页，evidence/opinion 分区，fixture＋`--selfcheck`）。※ 2026-10-12 口径纠偏：该页原名「大事记」，现名「执行流水」——大事记归叙事时间线（`tools/chronicle.py`） |
 | panel/kitapp 冻结执行 | 存量保留、零新投入 —— `panel/FROZEN.md` |
 | 宿主接入文档 | pinax-bridge 四范式（任务化接口/契约镜像/预算归属/工具环桥）提炼进 `docs/integration/host-integration.md` |
 
@@ -175,17 +175,19 @@
 | `panel/build.mjs` + `make-extension.mjs`（fork 双形态构建编排） | 删除 | ✅ 本 commit |
 | ops `kit-app.vbs`（30142 dev）+ 三 bat 端口表 | 删除/收窄至 8421+8431 | ✅ 本 commit |
 | `assertion-presets/`（v5.0 退役目录） | 删除；`assertion-preset.schema.json` 落 tombstone（deprecated:true + 说明） | ✅ 本 commit |
-| `panel/` 零构建范本 + serve `/panel/*` 托管块 | **retired-pending**——看板 v1 落地即退役（`/api/panel/files\|raw\|preview` 是看板文件读写原语，保留并更名候选） | 待看板 v1 |
+| `panel/` 零构建范本 + serve `/panel/*` 托管块 | **retired-pending**——看板 v1 落地即退役；`/api/panel/files\|raw\|preview` 三读原语**已被看板 W4.2 通道 B 消费**（2026-10-12 增 `PUT /api/panel/files` 写端点：临时件＋回读校验＋原子替换＋乐观锁），API 面保留、`panel/` 前端范本仍待裁 | 待看板 v1 |
 | `storyharness/desktop`、`cali/` | 候选（panel/laya 冻结连带），看板 v1 后一并裁 | 待议 |
 
 ### 4.1 · 项目看板（静态 HTML 固定模板）
 
 | 件 | 说明 |
 | --- | --- |
-| 看板模板 | `tools/dashboard-template.html`（固定模板）：知识体系总览（KB 板块/簇）+ 世界书 + 大事记 + RAG 图谱 + 知识多维表格 + 产物文件区，六区组合一页；零外部资源红线沿用 |
-| 数据包 | 每区数据源 = 既有生成器（worldbook/journal/kb-graph/diagnosis-page）+ 新增看板聚合器 `tools/dashboard.py`（一命令出全量自包含 HTML）；契约沿 page-payload 演进 |
-| 产物读写 | 三通道：本地打开走 File System Access API（浏览器原生直写盘）/ 在线走 8431 files 端点（现有 /api/panel/files 原语改名）/ 编辑提交生成 patch 走 batch-edit 确定性脚本；doc 类只读预览（docx 二进制编辑不做，转 md 走改稿套件） |
-| 分发 | Cloudflare Pages + Access token（部署文档一页；kit 不托管） |
+| 看板模板 | ✅ 2026-10-12 `tools/dashboard-template.html`（固定模板）：知识体系总览（KB 板块/簇）+ 世界书 + 大事记（叙事时间线）+ 执行流水（journal）+ RAG 图谱 + 知识多维表格 + 产物文件区，**七区组合一页**（W4.6 交付后由六区升七区）；零外部资源红线沿用。**「大事记」区名于 2026-10-12 用户重定义后腾出**——journal 是 agent 执行台账，改名「执行流水」；叙事大事记见下行 |
+| 大事记（叙事 5W1H 多轨时间线） | ✅ 2026-10-12 W4.6 交付：契约 `contracts/chronicle-event.schema.json`（chronicle@1，`jsonschema_lite` 用同一份 schema 校验产出，不另立第二套真相）+ 归纳器 `tools/chronicle.py`（纯 stdlib、含 `--selfcheck`）+ 派生件 `世界书/chronicle.json`（**工具独占写、重建即覆盖、源 md 永不被改写**，零新增记录负担，立场同 worldbook-history@1）。真相源 = `世界书/时间线.md` 与/或 `编年/大事记.md`；事件 = 5W1H + 章 refs + Δ 矛盾标记，`why/how/何地` 只从显式 `〔因：〕〔如何：〕〔何地：〕` 标记取，缺省留空显示「未登记」——**kit 只给形，不猜内容**；轨道（lane）从人物卡/势力卡命中派生（含括号化名收编），地点不进 lane；未上轨人物进 `stats.uncoveredPeople` 记账不裁决。看板形态=视频编辑式多轨泳道（段带头行 + 编年全览行 + 每 lane 一行 + 双时序切换 + 段带/轨道/搜索筛选 + 聚焦淡出）+ 钻取（全貌 ↔ 5W1H 十一栏抽屉，原文逐段内嵌）。实测 p-menghe-01：52 事件（零丢弃，source bullets 52==events 52）/ 5 段带 / 26 轨（人物 23·势力 3），Playwright 26 项断言全绿，两次构建 sha256 逐字节一致，收据 `projects/_reports/chronicle-w46-verify-20261012.json`。**待裁**：是否给时间线补 `〔因：〕/〔如何：〕` 标记（现 52/52 未登记）、是否建势力卡（3 势力轨 vs 23 人物轨）。※ 2026-10-12 **W4.7 叙述层已交付**（用户定盘「人读的，满足 STAR、娓娓道来、有故事感」）：chronicle@1 增 `narrative{lead,hint,gaps,beats}` + `bands[].intro` + `lanes[].arc` + `events[].narr/gap`，工具只把已登记字段拼成中文句子（作者原文逐字进句、缺项明说缺、邻拍只讲先后不讲因果），`STYLE_BAD` 文风闸只扫工具合成句；看板改「先讲后查」——区顶开场白卡＋缺项账＋段带导语，抽屉四拍（情境/起因/经过/落点，缺字段灰显）→ 折叠 5W1H 明细 → 原文，轨名「讲」钮开轨道串讲（arc＋逐拍，点拍跳钻取）。Playwright 27 项叙述断言全绿（含与盘上 chronicle.json 逐字比对、文风闸摘作者原文后 0 命中），W4.6 26 项回归全绿，收据 `projects/_reports/chronicle-w47-narrative-verify-20261012.json` |
+| 数据包 | ✅ 2026-10-12 聚合器 `tools/dashboard.py`（一命令出全量自包含 HTML，含 `--selfcheck` 合成 fixture 与 `--print-payload` 对账面）：复用 worldbook_index / journal-page / kb-graph-page 三生成器取数 + project-index@1 清单 + 卡 frontmatter 双形态（JSON-in-fence 与 YAML 子集）；`--root`（数据根，平铺回退）与 `--kit-root`（全局语料根）分开，守双根不合一红线。产物读写（三通道）见 W4.2、分发见 W4.3 |
+| 产物读写 | ✅ 2026-10-12 W4.2 交付：三通道全部落地——**通道 A**（本地主力）看板经 File System Access API `showDirectoryPicker({mode:"readwrite"})` 授权项目目录直读直写，handle 逐段遍历对 `..`/反斜杠/盘符段直接抛错，非 Chromium 系明说降级（只读＋下载）；**通道 B**（在线）`/api/panel/files` 读端点回服务端 sha256，新增 `PUT` 写端点（临时件 → 回读校验 → `renameSync` 原子替换；乐观锁 `expectHash`，缺失 409 `EXPECT_HASH_REQUIRED`、过期 409 `CONFLICT` 交回当前指纹且零写入；鉴权沿用既有口令门，未登录 401；写端错误路径一律 `no-store`）；**通道 C**（补丁流）编辑器产 unified diff + 同源 ops.json → `batch-edit.py --dry-run`/真应用 + `--receipt`。写白名单只 `.md/.txt`，**`.json` 排除**（派生件工具独占写红线）；doc/docx 只读并点名 `tools/export-doc.py`；任何写路径不得越出项目根（handle 层 + 服务端 `withinProject` 双闸）；保存后只**提示**重跑 `project-index diff` / `kit-compile --check`，不自动执行。验收：通道 A/B 真浏览器 32/32（`p-menghe-01` 临时副本 `p-w42a`，真项目零改动，保存后整项目快照比对只有目标件变）+ 通道 C 全链 18/18（`git apply` 与 `batch-edit` 双路逐字节一致）+ storyharness 161/161 + tsc 0 错 + 三 lint 0 error + 看板两次构建 sha256 一致（当时 `10c8ae63…`，后因 W4.3 分发安全改造变为 `5bd17ff2…`，七区数据未变）；收据 `projects/_reports/w42-verify-summary-20261012.json`（含分层质量声明）。**待人工**：Chrome 原生 picker/`createWritable` 无法自动化（本机只有 headless shell，CDP `Page.handleFileChooser` 不存在），机器验证用规范形状的替身 handle 驱动真前端代码，需人工点一次（步骤在收据 `manual_step`）。**待裁**：是否把「多条 op 的 `old` 重复」拒进 `batch-edit.py` 的 validate（现第二条静默落空、退出码仍 0） |
+| 分发 | ✅ 2026-10-12 W4.3 交付：一页文档 `docs/integration/dashboard-deploy.md`（出板 → 上传前安全三条 → Pages 直传/wrangler 两路 → Access 邮箱验证码 → 更新与回滚 → **两种形态取舍表**：纯静态＝只读＋diff/ops＋通道 A 本机授权可用；在线写＝自备隧道 + `SH_ALLOWED_ORIGINS` 放行 Pages 源 → 首次上真账号验收清单 → 局限声明）。**kit 不托管、不代部署、不存凭据**。本地可复现部分实测 **29/29**（`projects/_reports/w43-static-dist-verify-20261012.json`）：dist 自包含单件、零外部资源独立正则 0 命中、`--out dist/index.html` 与默认出板逐字节一致（`5bd17ff2…`）、连跑两次幂等、手机 390×844 七区逐区可见且横向溢出 0px、file:// 直开全区渲染零控制台报错（零 kit 侧代码依赖实证）。**CF 侧未实走**（本机无 wrangler/cloudflared 与账号凭据），文档 §4/§7 明确标注为待人工。**顺带修的分发安全缺陷**：看板 payload 的 `meta.project_dir`/`root`/`kit_root` 与数据源健康表 `detail` 早先写的是**本机绝对路径**——挂上公网等于白送目录结构；现全部相对/名称化，并给 `cmd_build` 加「分发前自检」提示（残留命中来自作者原文，工具不改写、只点名，不当闸）。p-menghe-01 剩 3 处（模型缓存路径 ×2、影子副本自述路径 ×1）。 |
+| 遗留裁定账 | ✅ 2026-10-12 集中落 `docs/待裁账-批次4-20261012.md`（用户口径「遗留项落文档即可」）：A1–D4 十四条一览表 + 分组详述，每条给现状、`path:line`/收据证据、可选项与推荐、裁定后要动的文件。四组：A 机器测不了需人点一次（**原生目录句柄**——缺口已由 PFS 补跑收窄到只剩浏览器 UI（PFS 真句柄 14/14 + 工装页端到端 15/15，后者把「用户要填地址/找工具条」两步做成自动，入口 `http://127.0.0.1:8434/` 指向临时副本 `p-w4a1`，真项目零改动），见 CHANGELOG W4.2 段第 12–13 条；CF 账号走查）；B 越界一记请裁是否保留（`kb-graph-template.html` 图谱边修复、`adapter login()` Set-Cookie 抠 token）；C 数据口径（`时间线.md` 补 `〔因：〕/〔如何：〕`、势力卡、`uncoveredPeople` 温韫、`batch-edit` 重复 `old`、编辑器「有未保存改动」状态位不实时点亮、**抽屉盖住产物区工具条导致未连通时没有可达补救入口**——此条已按推荐案①修掉并 13/13 验证：拒绝抽屉里就地给①授权目录/②地址预填同源＋连通钮，通了自动重开编辑器，见 CHANGELOG W4.2 段第 14 条）；D 需点头才执行（W4.4 删除清单含**复点后的漂移数字**：`p-sh-*` 实为 57 目录仅 1 个有内容、serve.ts `/panel` 引用 27 处、desktop 5 tracked；W4.5 blocked；core 8 项失败已认领；批次4 改动 commit 切分）。批次3b/3c 的 T1–T7/N1–N6 表仍在 ROADMAP 原位，不重复抄。 |
 
 ### 4.2 · 冷启动询问 + 领域预设 ✅ 已落地 2026-10-12
 

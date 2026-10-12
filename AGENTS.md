@@ -13,7 +13,7 @@
 - **adapter/**（对外七端点协议 + 零依赖客户端）与 **adapters/**（fs/path/proc 适配实现）是两个不同目录，勿混。
 - `projects/` 是运行数据，整个目录不入 git。
 - **发布口径**：本仓库与 GitHub 提交仓库直接对应，入库即公开。代码与提交里不含项目数据——`projects/` 运行数据、`.external/` 的 apiKey、真实语料 md 一律不入库，测试用合成 fixture，别把真实项目数据写进代码或提交。
-- **前端已切离本仓（2026-10-02）**：门面（home.ts）、页面生成器（serve.py/project-pages.py/模板页/package.py/author-home.py/page-lint.mjs）、根 index.html 全部退役；deduce 扩展包整体挪出（`D:\storyflow-deduce\`）。**勿在本仓重建 v4 形态 UI（工作台/画布/生成页）**。pi-web fork（panel/kitapp，Next.js）已**湮灭**（2026-10-12：1188 文件出仓，git 历史可溯；`panel/build.mjs`/`make-extension.mjs`/ops `kit-app.vbs`/30142 dev 服务同批退役）——kit 前端唯一形态 = **静态项目看板**（固定模板自包含 HTML，批次4；知识体系/世界书/大事记/RAG/产物读写，Cloudflare+token 分发），其余交给宿主与插件/皮肤生态。`panel/` 零构建范本为 retired-pending（看板 v1 落地即退役）；`/api/panel/files|raw|preview` 是看板文件读写的原语**保留**。被切代码存档见 `docs/_archive/交接回执-前端切割与v4收拢-20261002.md` 与 `D:\storyflow-extracts\`。
+- **前端已切离本仓（2026-10-02）**：门面（home.ts）、页面生成器（serve.py/project-pages.py/模板页/package.py/author-home.py/page-lint.mjs）、根 index.html 全部退役；deduce 扩展包整体挪出（`D:\storyflow-deduce\`）。**勿在本仓重建 v4 形态 UI（工作台/画布/生成页）**。pi-web fork（panel/kitapp，Next.js）已**湮灭**（2026-10-12：1188 文件出仓，git 历史可溯；`panel/build.mjs`/`make-extension.mjs`/ops `kit-app.vbs`/30142 dev 服务同批退役）——kit 前端唯一形态 = **静态项目看板**（固定模板自包含 HTML，批次4；知识体系/世界书/大事记/RAG/产物读写，Cloudflare+token 分发），其余交给宿主与插件/皮肤生态。`panel/` 零构建范本为 retired-pending（看板 v1 落地即退役）；`/api/panel/files|raw|preview` 是看板文件读写的原语**保留**（2026-10-12 W4.2 已被看板通道 B 消费，并新增 `PUT /api/panel/files` 写端点：临时件＋回读校验＋原子替换＋乐观锁 `expectHash`，写只收 `.md/.txt`，错误路径一律 `no-store`；纪律与错误码见 `adapter/README.md`）。被切代码存档见 `docs/_archive/交接回执-前端切割与v4收拢-20261002.md` 与 `D:\storyflow-extracts\`。
 
 ## 常用命令
 

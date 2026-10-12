@@ -1,0 +1,205 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "miniflow/chronicle-event",
+ "title": "chronicle@1 · 大事记（叙事 5W1H 多轨时间线）派生件（W4.6 契约）",
+ "description": "tools/chronicle.py 由人写真相源（世界书/时间线.md、世界书/编年/大事记.md）编译出的派生件 世界书/chronicle.json 的形状。消费方：tools/dashboard.py 大事记区（多轨泳道 + 钻取）。立场同 worldbook-history@1：**工具独占写、重建即覆盖、源 md 永不被工具改写**；不另立第二套人写账。字段口径（2026-10-12 用户定盘：大事记基于 5W1H，形态酷似视频编辑软件的多轨，可钻取单事件也可退出看全貌）：when/where/who 只认字形与卡面命中，why/how 只认行内声明位〔因：…〕〔如何：…〕〔何地：…〕，解析不出一律留空——**kit 只给形，不猜内容**。叙述层（W4.7，2026-10-12 用户定盘「人读的，要满足 STAR、娓娓道来、有故事感」）：events[].narr 四拍（情境/起因/经过/落点）、bands[].intro 段带导语、lanes[].arc 轨道串讲、narrative.lead 全篇开场白，全部由已登记字段确定性合成——作者原文（what/why/how/drift/note）逐字进句只补句末标点，缺项直说「源里没写」，绝不代填、绝不由邻拍推因果；文风闸 STYLE_BAD（禁破折号、「不是…而是」翻案句、模型腔套话）在 --selfcheck 逐条扫。",
+ "type": "object",
+ "required": ["format", "project", "sources", "bands", "lanes", "events", "stats", "narrative"],
+ "additionalProperties": false,
+ "properties": {
+  "format": { "const": "chronicle@1" },
+  "project": { "type": "string", "description": "项目 id" },
+  "narrative": {
+   "type": "object",
+   "description": "叙述层总账（W4.7）：全篇开场白 + 缺项账 + 补记号提示 + 四拍标签。人读的页面不许留白，lead 恒非空",
+   "required": ["lead", "hint", "gaps", "beats"],
+   "properties": {
+    "lead": { "type": "string", "minLength": 1, "description": "开场白：覆盖面与空档一次讲清（报数附收据的口语版）" },
+    "hint": { "type": "string", "description": "缺项怎么补（作者侧动作，工具不代填）" },
+    "gaps": {
+     "type": "array",
+     "description": "缺项账（按事件数降序）：记账不是闸，打回只来自确定性完整性或用户点名",
+     "items": {
+      "type": "object",
+      "required": ["k", "n"],
+      "properties": { "k": { "type": "string" }, "n": { "type": "integer" } },
+      "additionalProperties": false
+     }
+    },
+    "beats": {
+     "type": "array",
+     "description": "STAR 四拍标签（顺序固定）",
+     "items": {
+      "type": "object",
+      "required": ["k", "label"],
+      "properties": {
+       "k": { "enum": ["s", "t", "a", "r"] },
+       "label": { "type": "string" }
+      },
+      "additionalProperties": false
+     }
+    }
+   },
+   "additionalProperties": false
+  },
+  "sources": {
+   "type": "array",
+   "description": "真相源清单（存在即收，按 时间线.md → 编年/大事记.md 序）",
+   "items": {
+    "type": "object",
+    "required": ["file", "title", "events", "bands"],
+    "properties": {
+     "file": { "type": "string", "description": "项目根相对 posix 路径" },
+     "title": { "type": "string", "description": "卡 frontmatter title（缺省文件名）" },
+     "id": { "type": "string", "description": "卡 frontmatter id（进 RAG 的词条 id）" },
+     "note": { "type": "string", "description": "源文件首条 > 引语（作者的编年口径说明）" },
+     "events": { "type": "integer" },
+     "bands": { "type": "integer" }
+    },
+    "additionalProperties": false
+   }
+  },
+  "bands": {
+   "type": "array",
+   "description": "段带（## 标题）：故事前史/第一日/第一夜/…，多轨视图的分列依据",
+   "items": {
+    "type": "object",
+    "required": ["id", "name", "layer", "file", "line", "intro"],
+    "properties": {
+     "id": { "type": "string", "pattern": "^b[0-9]+$" },
+     "name": { "type": "string", "description": "段名（· 前主体，如 第一日）" },
+     "sub": { "type": "string", "description": "· 后说明（日期/地点 + 章区间），※ 之后另入 note" },
+     "layer": { "enum": ["story", "prehistory"], "description": "正叙段 / 倒叙前史层" },
+     "date": { "type": "string", "description": "可解析日期（如 6月24日），解析不出为空串" },
+     "chapters": { "type": ["object", "null"], "description": "段内章区间 {from,to}",
+                   "properties": { "from": { "type": "integer" }, "to": { "type": "integer" } },
+                   "required": ["from", "to"], "additionalProperties": false },
+     "note": { "type": "string", "description": "※ 起说明（作者标注的推断/口径）" },
+     "drift": { "type": "string", "description": "段标题里的 Δ 矛盾标记原文" },
+     "file": { "type": "string" },
+     "line": { "type": "integer", "description": "源文件行号（1 起，钻取回原文用）" },
+     "storySort": { "type": "array", "description": "「按故事内时序」分带键 [日序, 时刻]" },
+     "intro": { "type": "string", "minLength": 1,
+                "description": "段带导语（W4.7 叙述层）：段名/日期/章区间/件数/轨道数 + 作者 ※ 说明与 Δ 逐字带上" }
+    },
+    "additionalProperties": false
+   }
+  },
+  "lanes": {
+   "type": "array",
+   "description": "轨道（视频编辑软件式多轨）：人物 lane ∪ 势力 lane；地点不入轨（只进事件 where）。只保留有命中的轨道，命中数为 0 的卡进 stats.uncoveredPeople",
+   "items": {
+    "type": "object",
+    "required": ["id", "name", "kind", "source", "events", "arc"],
+    "properties": {
+     "id": { "type": "string", "pattern": "^[pf]-.+", "description": "p-<人物名> / f-<势力名>" },
+     "name": { "type": "string" },
+     "kind": { "enum": ["person", "faction"] },
+     "aliases": { "type": "array", "items": { "type": "string" },
+                  "description": "化名/代号/并列名（人物卡括号内「化名“X”」与 ／ 并列、势力卡早期名）" },
+     "source": { "type": "string", "description": "卡来源：世界书/人物.md、世界书/人物/<名>.md、世界书/设定.md#组织、世界书/势力/<名>.md" },
+     "events": { "type": "integer", "description": "该轨上的事件数" },
+     "arc": { "type": "string", "minLength": 1,
+              "description": "轨道串讲（W4.7 叙述层）：件数/跨段数/最早最晚章 + 化名照源里写法带上" }
+    },
+    "additionalProperties": false
+   }
+  },
+  "events": {
+   "type": "array",
+   "description": "事件（真相源里一条 bullet = 一个事件，续行与子条并入正文；**零丢弃**：bullet 数必等于事件数）",
+   "items": {
+    "type": "object",
+    "required": ["id", "seq", "band", "layer", "file", "line", "when", "where", "whereCards",
+                 "who", "faction", "what", "why", "how", "refs", "drift", "tracks", "body",
+                 "storyKey", "narr", "gap"],
+    "properties": {
+     "id": { "type": "string", "pattern": "^e[0-9]+$" },
+     "seq": { "type": "integer", "description": "文件序（=「按揭示/写作顺序」档位的位置）" },
+     "band": { "type": "string", "description": "所属段带 id" },
+     "layer": { "enum": ["story", "prehistory"] },
+     "file": { "type": "string" },
+     "line": { "type": "integer", "description": "源文件行号，钻取回原文" },
+     "when": {
+      "type": "object",
+      "description": "时间：**只认字形不推断**——加粗时间（bold-head/bold-inline）或裸钟表（bare-clock）；无标记留空",
+      "required": ["raw", "via"],
+      "properties": {
+       "raw": { "type": "string", "description": "原文时间短语（约十二年前 / 16:50 / 深夜11点），空串=源文件未标" },
+       "clock": { "type": ["integer", "null"], "description": "当日分钟数（HH:MM；12 小时制按时段词平移）" },
+       "days": { "type": ["number", "null"], "description": "相对量折算天（约两年前往 -730），绝对日期与解析不出为 null" },
+       "abs": { "type": "array", "description": "绝对日期 [月,日]（与时序键同尺），无则空数组",
+                "items": { "type": "integer" }, "maxItems": 2 },
+       "via": { "enum": ["", "bold-head", "bold-inline", "bare-clock"] },
+       "approx": { "type": "boolean", "description": "true=近似定位（相对量、约数、12 小时平移），只记账不冒充作者断言" }
+      },
+      "additionalProperties": false
+     },
+     "where": { "type": "array", "items": { "type": "string" },
+                "description": "处所：〔何地：…〕声明 ∪ 卡名命中 ∪ 行法短语（截到最短地点后缀，≤6 字）；去重去包含" },
+     "whereCards": { "type": "array", "items": { "type": "string" },
+                     "description": "其中命中地点卡的名字（看板跳卡用）" },
+     "who": { "type": "array", "items": { "type": "string" },
+              "description": "人物 lane 命中（含化名归并）" },
+     "faction": { "type": "array", "items": { "type": "string" }, "description": "势力 lane 命中" },
+     "what": { "type": "string", "description": "去时间标记与声明位后的正文骨架（去粗体）" },
+     "why": { "type": "string", "description": "〔因：…〕声明，缺省空串=未登记" },
+     "how": { "type": "string", "description": "〔如何：…〕声明，缺省空串=未登记" },
+     "refs": { "type": "array", "description": "章节引用（第N章 / 第N-M章）",
+               "items": { "type": "object", "required": ["from", "to"],
+                          "properties": { "from": { "type": "integer" }, "to": { "type": "integer" } },
+                          "additionalProperties": false } },
+     "drift": { "type": "string", "description": "Δ 时间漂移/矛盾标记原文（指向《改稿台账》一类）" },
+     "tracks": { "type": "array", "items": { "type": "string" }, "description": "归属轨道名 = who ∪ faction" },
+     "body": { "type": "string", "description": "原文整行（含标记，钻取详情逐字显示）" },
+     "storyKey": { "type": "array", "description": "「按故事内时序」排序键 [日序, 当日分钟, 文件序]",
+                   "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+     "narr": {
+      "type": "array",
+      "description": "STAR 四拍叙述（W4.7，人读层）：s 情境 / t 起因 / a 经过 / r 落点，顺序固定、恒四拍、text 恒非空。合成只用已登记字段：作者原文逐字进句（只补句末标点），缺项直说源里没写，邻拍只讲先后不讲因果",
+      "minItems": 4, "maxItems": 4,
+      "items": {
+       "type": "object",
+       "required": ["k", "label", "text"],
+       "properties": {
+        "k": { "enum": ["s", "t", "a", "r"] },
+        "label": { "type": "string", "description": "情境 / 起因 / 经过 / 落点" },
+        "text": { "type": "string", "minLength": 1 }
+       },
+       "additionalProperties": false
+      }
+     },
+     "gap": { "type": "array", "items": { "type": "string" },
+              "description": "缺项清单（时刻未标/处所未标/未命中人物卡/未命中势力卡/起因未登记/手法未登记/章未标）：记账不是闸，作者照着补记号即入账" }
+    },
+    "additionalProperties": false
+   }
+  },
+  "stats": {
+   "type": "object",
+   "description": "零丢弃账与覆盖面（看板顶部 chips 与数据源健康的来源；报数附收据纪律同 AGENTS）",
+   "required": ["events", "bands", "lanes", "laneKinds", "withTime", "withPlace", "withWho",
+                "withFaction", "withRefs", "withDrift", "withWhy", "withHow", "approxTime",
+                "uncoveredPeople"],
+   "properties": {
+    "events": { "type": "integer" },
+    "bands": { "type": "integer" },
+    "lanes": { "type": "integer" },
+    "laneKinds": { "type": "object", "description": "{person, faction}" },
+    "withTime": { "type": "integer" },
+    "withPlace": { "type": "integer" },
+    "withWho": { "type": "integer" },
+    "withFaction": { "type": "integer" },
+    "withRefs": { "type": "integer" },
+    "withDrift": { "type": "integer", "description": "带 Δ 矛盾的事件数（改稿台账入口）" },
+    "withWhy": { "type": "integer" },
+    "withHow": { "type": "integer" },
+    "approxTime": { "type": "integer", "description": "近似定位的事件数" },
+    "uncoveredPeople": { "type": "array", "items": { "type": "string" },
+                         "description": "有卡但时间线 0 命中的人物（作者自查用，不是闸）" },
+    "chapterSpan": { "type": ["object", "null"], "description": "全时间线章跨度 {from,to}" }
+   },
+   "additionalProperties": false
+  }
+ }
+}

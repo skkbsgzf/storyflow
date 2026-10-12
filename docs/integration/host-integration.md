@@ -24,7 +24,7 @@
 | 形态 | 适用 | 宿主要做什么 | 契约 / 产物 |
 | --- | --- | --- | --- |
 | ① 纯数据 | 有自己的 UI | REST/SSE 取数，自绘 UI | `contracts/*.schema.json` ＋ `contracts/http-openapi-v1.json`（生成物） |
-| ② 半成品 HTML | 要可视化但不想画页 | 嵌链接 / iframe kit 生成的自包含页 | `tools/worldbook*.py`（世界书）、`tools/render-flow.py`（流程图）、`tools/journal-page.py`（大事记时间轴）、`tools/diagnosis-page.py`（诊断报告） |
+| ② 半成品 HTML | 要可视化但不想画页 | 嵌链接 / iframe kit 生成的自包含页 | `tools/worldbook*.py`（世界书）、`tools/render-flow.py`（流程图）、`tools/journal-page.py`（执行流水时间轴＝agent 台账）、`tools/chronicle.py`＋`tools/dashboard.py` 大事记区（叙事 5W1H 多轨时间线）、`tools/diagnosis-page.py`（诊断报告） |
 | ③ 契约数据包 | 想复用 kit 页面数据形状自渲染 | 按 page-payload@2 冻结五键消费，自绘渲染 | [`contracts/page-payload.schema.json`](../../contracts/page-payload.schema.json)（`DATA/EFF/OVERLAY/OPTIMIZE/METRICS`） |
 
 **形态②的铁律**（`docs/ARCHITECTURE.md` §9 不变量 6）：HTML 只读数据、零运行时依赖、

@@ -1,4 +1,8 @@
-"""journal-page · 大事记时间轴页生成器（journal JSONL → 自包含 HTML，零依赖）
+"""journal-page · 执行流水时间轴页生成器（journal JSONL → 自包含 HTML，零依赖）
+
+区名口径（2026-10-12 用户重定义，W4.6）：journal 是 **agent 执行环台账**（run/advance/submit/verdict…），
+叫「执行流水」；「大事记」这个名字归叙事时间线（`世界书/时间线.md` → `tools/chronicle.py` → chronicle@1）。
+本件行为红线不动：只改文案，装载/渲染/幂等口径与改名前逐字节一致（`--selfcheck` 与 fixture 前后 diff 为证）。
 
 输入 journal 台账（契约：contracts/journal-event.schema.json，一行一事件），
 用 tools/journal-template.html 渲染成单文件时间轴页：数据生成时内联，
@@ -100,7 +104,7 @@ def render(events, title):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="journal 台账 → 自包含 HTML 大事记时间轴页")
+    ap = argparse.ArgumentParser(description="journal 台账 → 自包含 HTML 执行流水时间轴页（叙事大事记见 tools/chronicle.py）")
     ap.add_argument("project", nargs="?", help="项目 id（projects/<id>/journal.jsonl）")
     ap.add_argument("--input", help="journal 数据路径（jsonl / JSON 数组 / {entries:[…]}）")
     ap.add_argument("--out", help="输出 HTML 路径（缺省与输入同目录 journal.html）")

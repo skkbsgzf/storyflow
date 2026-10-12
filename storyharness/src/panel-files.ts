@@ -1,9 +1,11 @@
-// 官方面板数据接口 · 本地文件能力（工单-20261002 批A）：files/raw/preview 三端点的实现件。
+// 官方面板数据接口 · 本地文件能力（工单-20261002 批A；写通道见工单-20261012 W4.2）：
+//   files/raw/preview 读三端点 + files(PUT) 写端点的实现件。
 // 自 2026-10-02 前端切割时的 panels.ts 对齐复刻（B2 文件树/读取 + B13 二进制预览）；
 // safeProject 走 safe-project.ts（同一把越界钥匙，禁止两处各写一份）。
 // 退役面（worldbook/telemetry/changes/canvas）不在此模块——它们维持 410，世界书走内核动词 worldbook_search。
 import * as fs from "node:fs";
 import path from "node:path";
+import { createHash, randomBytes } from "node:crypto";
 import { safeProject } from "./safe-project.js";
 import type { KernelClient } from "./kernel.js";
 
@@ -33,6 +35,11 @@ const RAW_MIME: Record<string, string> = {
 };
 const RAW_CAP = 25_000_000; // 单文件上限（字节）：超限 413 显式报数，不静默截断、不给空 body
 
+// 写通道（W4.2 通道 B）：只收纯文本产物，比读白名单更窄——.json 是可写的派生件，
+// 但派生件由工具独占写（红线），面板代写会造出「工具与面板两套真相」，故排除。
+const WRITE_SUFFIX = new Set([".md", ".txt"]);
+const WRITE_CAP = 2_000_000; // 单次写入上限（字符）：超限 413 显式报数，不半截写
+
 export interface PanelReply {
   status: number;
   payload: unknown;
@@ -44,6 +51,11 @@ function withinProject(kernel: KernelClient, project: string, rel: string): stri
   const abs = path.resolve(root, rel);
   if (!abs.startsWith(root + path.sep) && abs !== root) throw new Error(`路径越出项目：${rel}`);
   return abs;
+}
+
+/** 内容指纹（写通道的乐观锁钥匙）：读取端回它，写入端拿它回声，对不上就是有人先动过盘。 */
+function sha256(data: Buffer | string): string {
+  return createHash("sha256").update(data).digest("hex");
 }
 
 /** files：无 file → 两层文件树（fs_tree 语义）每项 {path,sizeKB,mtime}；
@@ -63,13 +75,21 @@ export function panelFiles(kernel: KernelClient, project: string, file: string):
       return { status: 403, payload: { error: (e as Error).message } };
     }
     let content: string;
+    let bytes: number;
+    let buf: Buffer;
     try {
-      content = fs.readFileSync(abs, "utf-8");
+      buf = fs.readFileSync(abs);
+      content = buf.toString("utf-8");
+      bytes = buf.byteLength;
     } catch {
       return { status: 404, payload: { error: `文件不存在：${file}` } };
     }
-    if (content.length > READ_CAP) content = content.slice(0, READ_CAP) + `\n…(截断，全长 ${content.length} 字符)`;
-    return { status: 200, payload: { path: file, content } };
+    // hash = 盘上全文字节的 sha256（截断前算），供写通道 expectHash 回声用——
+    // 不依赖浏览器 crypto.subtle（file:// 与老引擎上未必有），服务端给才是唯一真相。
+    const hash = sha256(buf);
+    const truncated = content.length > READ_CAP;
+    if (truncated) content = content.slice(0, READ_CAP) + `\n…(截断，全长 ${content.length} 字符)`;
+    return { status: 200, payload: { path: file, content, bytes, hash, truncated } };
   }
   const files: { path: string; sizeKB: number; mtime: string }[] = [];
   if (fs.existsSync(dir)) {
@@ -226,4 +246,108 @@ export function panelPreview(kernel: KernelClient, project: string, file: string
     return { status: 200, payload: { ...base, kind: 'text', mime: 'text/plain', url: `/api/panel/files?project=${encodeURIComponent(id)}&file=${encodeURIComponent(file)}`, note: '文本走 files 读取（≤200KB 截断）' } };
   }
   return { status: 200, payload: { ...base, kind: 'none', mime: null, url: null, note: `${ext ? '.' + ext.slice(1) : '（无后缀）'} 这类文件不能直接看；docx 请看 tools/export-doc.py 的 md/docx 导出件` } };
+}
+
+// ── 写通道（W4.2 通道 B）：PUT /api/panel/files ────────────────────────
+//  纪律：写走临时区 + 确定性校验，不直写正文——先落同目录 .wtmp-*，读回来对指纹与长度，
+//  对得上才 rename（同卷原子替换）；任何一步失手，盘上原文件一个字节都没动。
+//  乐观锁：写已存在的文件必须带 expectHash（读取端回的 sha256），对不上 409 并回当前指纹，
+//  让调用者先重新读——避免看板与盘上/工具各自一份真相互相盖。
+
+export interface WriteInput {
+  content?: unknown;
+  expectHash?: unknown;
+}
+
+const AFTER_WRITE = '写入完成。看板只提示不自动执行：请重跑 project-index diff 与 kit-compile --check，确认索引与 kit 自检仍然干净。';
+
+export function panelWrite(kernel: KernelClient, project: string, file: string, input: WriteInput): PanelReply {
+  const id = safeProject(project);
+  if (!id) return { status: 400, payload: { error: `project 非法：${project}`, code: 'BAD_PROJECT' } };
+  if (!file) return { status: 400, payload: { error: 'file 必填', code: 'MISSING_FILE' } };
+  const base = path.basename(file);
+  if (base.startsWith('.') || base !== file.split('/').pop()) {
+    return { status: 400, payload: { error: `文件名非法（隐藏件或带路径分隔符）：${file}`, code: 'BAD_NAME' } };
+  }
+  const ext = path.extname(file).toLowerCase();
+  if (!WRITE_SUFFIX.has(ext)) {
+    return {
+      status: 415,
+      payload: {
+        error: `后缀不在写入白名单：${ext || file}`,
+        code: 'UNSUPPORTED_TYPE',
+        allowed: [...WRITE_SUFFIX],
+        note: '只写用户产物（md/txt）。docx 转 md 走 tools/export-doc.py；json 是工具独占的派生件，面板不代写。',
+      },
+    };
+  }
+  let abs: string;
+  try {
+    abs = withinProject(kernel, id, file);
+  } catch (e) {
+    return { status: 403, payload: { error: (e as Error).message, code: 'OUT_OF_PROJECT' } };
+  }
+  if (typeof input.content !== 'string') {
+    return { status: 400, payload: { error: 'content 必须是字符串（写通道的 body 是 JSON：{content, expectHash}）', code: 'BAD_CONTENT' } };
+  }
+  const content = input.content;
+  if (content.length > WRITE_CAP) {
+    return {
+      status: 413,
+      payload: { error: `内容超出写入上限：${content.length} > ${WRITE_CAP} 字符`, code: 'TOO_LARGE', size: content.length, limit: WRITE_CAP },
+    };
+  }
+  let exists = false;
+  try {
+    const st = fs.statSync(abs);
+    if (!st.isFile()) return { status: 409, payload: { error: `目标不是普通文件：${file}`, code: 'NOT_A_FILE' } };
+    exists = true;
+  } catch { exists = false; }
+  const curHash = exists ? sha256(fs.readFileSync(abs)) : null;
+  const want = typeof input.expectHash === 'string' ? input.expectHash.trim().toLowerCase() : '';
+  if (exists) {
+    if (!want) {
+      return {
+        status: 409,
+        payload: { error: `写已存在的文件必须带 expectHash（读取端回的 sha256）：${file}`, code: 'EXPECT_HASH_REQUIRED', hash: curHash },
+      };
+    }
+    if (want !== curHash) {
+      return {
+        status: 409,
+        payload: {
+          error: '盘上文件已被改过，你手里的副本过期了；先重新读再写',
+          code: 'CONFLICT', hash: curHash, expectHash: want,
+        },
+      };
+    }
+  } else if (want) {
+    return { status: 409, payload: { error: `盘上查无此文件，客户端却带着旧指纹来写：${file}`, code: 'CONFLICT', hash: null, expectHash: want } };
+  }
+  const dir = path.dirname(abs);
+  const tmp = path.join(dir, `.${base}.wtmp-${randomBytes(6).toString('hex')}`);
+  let wroteTmp = false;
+  try {
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(tmp, content, 'utf-8');
+    wroteTmp = true;
+    const back = fs.readFileSync(tmp); // 确定性校验：读回来对指纹与长度，对不上不替换原文件
+    const newHash = sha256(back);
+    if (newHash !== sha256(Buffer.from(content, 'utf-8')) || back.byteLength !== Buffer.byteLength(content, 'utf-8')) {
+      throw new Error('临时件读回校验不通过（指纹或长度对不上）');
+    }
+    fs.renameSync(tmp, abs);
+    wroteTmp = false;
+    const st = fs.statSync(abs);
+    return {
+      status: 200,
+      payload: {
+        ok: true, path: file, bytes: st.size, hash: newHash, mtime: st.mtime.toISOString(),
+        created: !exists, replaced: exists, note: AFTER_WRITE,
+      },
+    };
+  } catch (e) {
+    if (wroteTmp) { try { fs.unlinkSync(tmp); } catch { /* 清不掉就留着，不掩盖真错 */ } }
+    return { status: 500, payload: { error: `写入失败：${(e as Error).message}`, code: 'WRITE_FAILED', path: file } };
+  }
 }
