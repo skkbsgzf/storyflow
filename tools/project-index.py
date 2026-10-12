@@ -385,7 +385,7 @@ def cmd_diff(pid: str, flags: dict) -> int:
             "tool": GENERATOR + " diff",
             "project_id": pid,
             "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
-            "index": to_posix(proj.relative_to(ROOT)) + "/" + INDEX_NAME,
+            "index": to_posix(proj.relative_to(ROOT if proj.is_relative_to(ROOT) else base)) + "/" + INDEX_NAME,
             "added": [e["path"] for e in added],
             "changed": [e["path"] for e in changed],
             "missing": missing,
