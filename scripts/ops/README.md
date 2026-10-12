@@ -8,7 +8,8 @@
 |---|---|---|---|---|
 | 内核（core，编排） | 8421 | `kit-core.vbs` | `/api/v1/openapi.json` | `kit-core.log` |
 | 协议面（storyharness web） | 8431 | `kit-web.vbs` | `/api/hub` | `kit-web.log` |
-| 面板 dev 热更（kitapp） | 30142 | `kit-app.vbs` | `/` | `kitapp-dev.log` |
+
+> 2026-10-12 湮灭：30142 面板 dev 热更（kitapp）随 pi-web fork 线退役移除（`kit-app.vbs` 删除；三 bat 端口表同步收窄）。项目看板走静态 HTML 固定模板（批次4），无 dev 服务。
 
 ## 日常操作
 

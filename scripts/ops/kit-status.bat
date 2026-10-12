@@ -4,7 +4,6 @@ setlocal enabledelayedexpansion
 set BAD=0
 call :check 8421 core /api/v1/openapi.json
 call :check 8431 web /api/hub
-call :check 30142 panel-dev /
 if !BAD! GTR 0 (
   echo !BAD! services down - run: wscript D:\storyflow-kit\scripts\ops\kit-guard.vbs
   exit /b 1

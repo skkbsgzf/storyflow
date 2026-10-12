@@ -166,7 +166,7 @@ headless "题材" 或 POST /start
 ### 2.6 明确边界（不是缺口，是立场）
 
 - **无审核/打回/红队/合规**：宿主自己写，三条接入通道见 [`docs/PROTOCOL-REVIEW.md`](docs/PROTOCOL-REVIEW.md)。
-- **前端已切离本仓库（2026-10-02；2026-10-10 起 panel fork 线亦冻结）**：仓内无任何 UI/页面代码——门面、生成页、页面服务器整体退役，`/api/panel/*` 以 410 显式回退役；接入一律走 [`adapter/README.md`](adapter/README.md) 协议。kit 只出文档、自包含可视化 HTML 与契约数据包，页面适配由宿主完成（活样板：pinax-bridge）。被切代码的存档指针见 `docs/_archive/交接回执-前端切割与v4收拢-20261002.md`。
+- **前端已切离本仓库（2026-10-02；panel fork 线 2026-10-12 已湮灭）**：仓内无 UI 应用——pi-web fork（panel/kitapp，Next.js）已整体出仓；kit 前端唯一形态 = **静态项目看板**（固定模板自包含 HTML：知识体系/世界书/大事记/RAG/产物读写，Cloudflare+token 任意设备查看，批次4 落地中）。接入走 [`adapter/README.md`](adapter/README.md) 协议；`/api/panel/files|raw|preview` 为看板文件读写原语保留。页面适配由宿主完成（活样板：pinax-bridge）；插件/皮肤生态作者自由发挥。存档指针见 `docs/_archive/交接回执-前端切割与v4收拢-20261002.md`。
 - **语料 md 不随仓库分发**：GitHub 上只有编译产物；md 是你的本地资产（放回即生效）。
 - **不做多租户/云服务**：单机本地运行时，loopback 默认，口令可选。
 

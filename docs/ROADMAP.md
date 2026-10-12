@@ -163,6 +163,47 @@
 
 ✅ **已落地 2026-10-12**：--import（9 例实测：幂等重导/不覆盖/收据/自动索引失败不吞/自导入拒绝）＋方法卡 kb/method/revise-workflow（命令逐条实跑核对表 11 项全 ✓，prose#novel-deai 挂卡消悬空）＋e2e 冒烟全链通过（导入 3 篇→索引 kind=导入→sample→项目档 5 词条→kb_search 双根命中→diag_scan 121ms 13 检查命中 5→方法卡 4617 字可达；mf_deconstruct 归 LLM 步归 8431 会话内验证）。冒烟记录 projects/_reports/3e-smoke-20261012.md。
 
+## 四·五、批次4 · 项目看板 + 综合能力套件 + 生态兼容（2026-10-12 用户定盘）
+
+> 用户三裁决：①kit 前端收敛为**一个固定模板的静态 HTML 项目看板**（知识体系/KB/RAG/产物展示 + 产物目录 md/txt/doc 读写编辑 + Cloudflare+访问 token 任意设备查看），其余前端形态全部让位宿主与插件/皮肤生态作者——不走 SPA/React 路线（与三输出立场同构）；②架构向**综合能力套件**演进：冷启动询问（用户未指名时 agent 反问必要信息：网文/通俗、小说/剧本、章字数、男频/女频、题材；图/视频场景必须拿到 ComfyUI 或等价生图接口）+ 领域预设模组（不同题材/领域的产物管理预设做好区分）；③已确定废弃的方案**湮灭**；④下一阶段出商业标准 kit 套件，鼓励用户在 codex/workbuddy 中使用、吸引软件开发者接入（兼容性事务先行，商业标准文档待用户整理）。
+
+### 4.0 · 废弃湮灭
+
+| 标的 | 处置 | 状态 |
+| --- | --- | --- |
+| `panel/kitapp`（pi-web fork，Next.js，1188 文件/1.7GB） | 整体出仓（git 历史可溯；`D:\storyflow-extracts` 有存档） | ✅ 本 commit |
+| `panel/build.mjs` + `make-extension.mjs`（fork 双形态构建编排） | 删除 | ✅ 本 commit |
+| ops `kit-app.vbs`（30142 dev）+ 三 bat 端口表 | 删除/收窄至 8421+8431 | ✅ 本 commit |
+| `assertion-presets/`（v5.0 退役目录） | 删除；`assertion-preset.schema.json` 落 tombstone（deprecated:true + 说明） | ✅ 本 commit |
+| `panel/` 零构建范本 + serve `/panel/*` 托管块 | **retired-pending**——看板 v1 落地即退役（`/api/panel/files\|raw\|preview` 是看板文件读写原语，保留并更名候选） | 待看板 v1 |
+| `storyharness/desktop`、`cali/` | 候选（panel/laya 冻结连带），看板 v1 后一并裁 | 待议 |
+
+### 4.1 · 项目看板（静态 HTML 固定模板）
+
+| 件 | 说明 |
+| --- | --- |
+| 看板模板 | `tools/dashboard-template.html`（固定模板）：知识体系总览（KB 板块/簇）+ 世界书 + 大事记 + RAG 图谱 + 知识多维表格 + 产物文件区，六区组合一页；零外部资源红线沿用 |
+| 数据包 | 每区数据源 = 既有生成器（worldbook/journal/kb-graph/diagnosis-page）+ 新增看板聚合器 `tools/dashboard.py`（一命令出全量自包含 HTML）；契约沿 page-payload 演进 |
+| 产物读写 | 三通道：本地打开走 File System Access API（浏览器原生直写盘）/ 在线走 8431 files 端点（现有 /api/panel/files 原语改名）/ 编辑提交生成 patch 走 batch-edit 确定性脚本；doc 类只读预览（docx 二进制编辑不做，转 md 走改稿套件） |
+| 分发 | Cloudflare Pages + Access token（部署文档一页；kit 不托管） |
+
+### 4.2 · 冷启动询问 + 领域预设
+
+| 件 | 说明 |
+| --- | --- |
+| 骨架解耦 | `project-init.py --domain <writing\|custom:<path>>`：骨架模板出 `presets/skeletons/<domain>.json`（目录+文件模板），writing 为缺省并分题材变体（网文男频/女频/剧本短剧…） |
+| 冷启动询问 | 项目配置增 `openQuestions` 声明位（[{key,question,options}]）：init 按领域预填必问清单 → sessionBrief 注入 → 会话 agent 反问用户 → 答案回填配置。缺字段必问纪律进方法卡 |
+| 生图/视频接口位 | 领域预设含 `mediaEndpoints` 配置位（comfyui.endpoint 等）——图/视频场景 init 时强制询问并落配置（消费随图文视频解冻） |
+| 知识编译通用化 | `kit-compile.py --src <语料目录> --out <路径>`：任意 md/txt 目录 → HyperGraph（通用 RAG 基建；--domain 非写作领域靠它） |
+
+### 4.3 · 生态兼容（商业套件前置）
+
+| 件 | 说明 |
+| --- | --- |
+| 第三方 tool 注册 | module@1 增 `type: external` + sandbox 策略声明（full/read-only/sandboxed）+ env vault 引用；kit.py install 待商业标准文档后细化 |
+| 分层配置 | 项目配置 `config.layers`（base 预设/project 覆盖/会话临时）——schema additive，随商业标准一起冻结 |
+| 对外能力面 | 28 动词三脸 + revise-workflow 方法卡即外部 agent 的遵循入口（codex/workbuddy 经 MCP/会话两形态）——已就绪，补接入样例文档 |
+
 ## 五、每期通用纪律
 
 1. **契约先行** —— 无 schema 不写实现
