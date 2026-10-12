@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
 """kit-compile · 把语料 md 编译为 HyperGraphRAG 图文件（storyflow-hypergraph@1）。
 
-两种模式（产物同构，严格分根——双根铁律）：
+三种模式（产物同构，严格分根——双根铁律）：
   全局（缺省）：knowledge/**/*.md → kit/hypergraph.rag.json
     GitHub 上 knowledge 层只发布**一个向量图文件**（词条 + 关系边 + 统计），
     松散 md 是**本地可插拔层**（引擎现读盘；不进 git）。用户改/增 md 后重跑本脚本重建图。
   项目档（--project <id>）：projects/<id>/ 的 世界书/**/*.md（含记忆卡）+ 规则/**/*.md（若有）
     + 文风/**/*.md（若有，批次2.5 P1）→ projects/<id>/kit/hypergraph.rag.json（stats.scope=project）。
     **项目档绝不写全局 kit/；全局模式行为一字不变。**
+  通用（--src <语料目录> --out <产物路径>，批次4 4.2）：任意 md/txt 目录 → HyperGraph 产物
+    （stats.scope=src）。通用 RAG 基建——非写作领域（--domain custom 领域）的语料靠它编译。
+    复用同一 build_graph（frontmatter id 优先，缺省回落 kb/<相对路径去后缀>；README 与
+    -draft/status=draft 草稿不进图；编译期聚类照跑）；entries[].path = <src 目录名>/<相对路径>；
+    stats.source 落语料目录绝对 posix 路径（消费方按它解析 path）。与 --project 互斥；
+    --check 支持（--check --src <目录> --out <路径>：与盘上产物逐键比对 entries/relations）。
 
 图形态与内核 worldbook/graph.json 同族（worldbook-graph@1）：
   entries  {id, title, domain, path, tags}
@@ -18,7 +24,8 @@
 用法：
   python tools/kit-compile.py [--root .]                    # 全局
   python tools/kit-compile.py --project <id> [--root .]     # 项目档
-  python tools/kit-compile.py [--project <id>] --check      # 干跑（批次2.5 P4）
+  python tools/kit-compile.py --src <语料目录> --out <产物路径> [--root .]   # 通用（批次4 4.2）
+  python tools/kit-compile.py [--project <id> | --src <目录> --out <路径>] --check   # 干跑
   python tools/kit-compile.py --selfcheck                   # 聚类确定性自测（R2，合成语料）
 退出码：成功 0；失败 1；--check 下不一致/盘上无产物也为 1（一致 0）。
 
@@ -31,7 +38,9 @@ len）。检索面消费见 core/src/kb.ts kbSearch（两段式聚簇检索 + cl
   一致            exit 0，打印「一致」；
   不一致          exit 1，打印差异摘要（条目/边数变化 + 首个不一致 key）；
   盘上无产物      exit 1，提示先编译。
-全局与 --project 两模式均支持；幂等，任何情况下不写盘。
+全局 / --project / --src 三模式均支持；幂等，任何情况下不写盘。
+自证口径（批次4 4.2）：产物等价 = entries/relations 逐键一致（与 --check 同一判据）——
+拿 knowledge/ 自身走 --src 编译，图本体与全局产物逐键一致（note/stats 是模式说明不是图数据）。
 """
 import json, math, re, sys
 from pathlib import Path
@@ -41,16 +50,21 @@ FM_RE = re.compile(r'\A---\s*\n(.*?)\n---\s*\n?', re.S)
 
 
 def parse_args(argv: list[str]):
+    def _val(flag: str, missing_msg: str):
+        if flag not in argv:
+            return None
+        i = argv.index(flag)
+        if i + 1 >= len(argv) or argv[i + 1].startswith('--'):
+            raise SystemExit(missing_msg)
+        return argv[i + 1]
+
     root = Path(argv[argv.index('--root') + 1] if '--root' in argv else '.')
-    project = None
-    for i, a in enumerate(argv):
-        if a == '--project':
-            if i + 1 >= len(argv):
-                raise SystemExit('[ABORT] --project 缺项目 id')
-            project = argv[i + 1]
+    project = _val('--project', '[ABORT] --project 缺项目 id')
+    src = _val('--src', '[ABORT] --src 缺语料目录')
+    out = _val('--out', '[ABORT] --out 缺产物路径')
     check = '--check' in argv
     selfcheck = '--selfcheck' in argv
-    return root, project, check, selfcheck
+    return root, project, src, out, check, selfcheck
 
 
 def front(text: str) -> dict:
@@ -308,6 +322,37 @@ def compile_doc(root: Path, project: str | None):
                  entries, relations, {'scope': 'project', 'clusters': clusters})
 
 
+def compile_src(root: Path, src_arg: str, out_arg: str, check: bool) -> int:
+    """通用模式（批次4 4.2）：任意 md/txt 语料目录 → HyperGraph 产物。相对路径锚 --root（缺省当前目录）。
+    复用 build_graph（id：frontmatter 声明优先，缺省回落 kb/<相对路径去后缀>；README 与草稿不进图；
+    聚类照跑）；entries[].path = <src 目录名>/<相对路径>，stats.source 落语料目录绝对 posix 路径
+    （消费方按它解析 path）。--check 与 check_doc 同一判据（entries/relations 逐键比对）。"""
+    src = Path(src_arg)
+    if not src.is_absolute():
+        src = root / src
+    if not src.is_dir():
+        print(f'[ABORT] 语料目录不存在或不是目录：{src}')
+        return 1
+    out = Path(out_arg)
+    if not out.is_absolute():
+        out = root / out
+    files = [(p.relative_to(src).as_posix(), p)
+             for suffix in ('*.md', '*.txt') for p in src.rglob(suffix)]
+    files = [(r, p) for r, p in files if not _is_draft(r, p)]
+    if not files:
+        print(f'[ABORT] 语料目录无可编译文件（只收 .md/.txt）：{src}')
+        return 1
+    entries, relations, clusters = build_graph(files, 'kb', src.name + '/')
+    if check:
+        return check_doc(out, entries, relations)
+    write_doc(out, f'{src.name} 语料的 HyperGraphRAG 编译产物（通用 --src 模式：任意 md/txt 目录 → 图文件，'
+                   '改语料后重跑 tools/kit-compile.py --src 重建）。',
+              entries, relations, {'scope': 'src', 'source': src.resolve().as_posix(), 'clusters': clusters})
+    print(f'{out.as_posix()} ← {len(entries)} 词条 / {len(relations)} 边 / {len(clusters)} 簇（scope=src；'
+          f'源={src.resolve().as_posix()}）')
+    return 0
+
+
 def check_doc(out: Path, entries: list, relations: list) -> int:
     """干跑比对（批次2.5 P4）：内存重编译结果 vs 盘上现存产物。零写盘、幂等。
 
@@ -398,9 +443,21 @@ def selfcheck() -> int:
 
 
 def main() -> int:
-    root, project, check, selfcheck_only = parse_args(sys.argv[1:])
+    root, project, src_arg, out_arg, check, selfcheck_only = parse_args(sys.argv[1:])
     if selfcheck_only:
         return selfcheck()
+    if src_arg is not None:
+        # ── 通用模式（批次4 4.2）：任意 md/txt 目录 → 图文件；与 --project 互斥，--out 必填 ──
+        if project is not None:
+            print('[ABORT] --src 与 --project 互斥：通用模式与项目档模式二选一')
+            return 1
+        if out_arg is None:
+            print('[ABORT] --src 需要 --out：--src <语料目录> --out <产物路径>')
+            return 1
+        return compile_src(root, src_arg, out_arg, check)
+    if out_arg is not None:
+        print('[ABORT] --out 只与 --src 搭配：--src <语料目录> --out <产物路径>')
+        return 1
     built = compile_doc(root, project)
     if built is None:
         return 1

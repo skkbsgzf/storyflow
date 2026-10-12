@@ -1,0 +1,60 @@
+{
+  "domain": "writing",
+  "description": "写作缺省骨架（与历史 project-init writing 骨架逐字节同构；批次4 4.2 骨架解耦）。占位符：{project}=项目id、{today}=%Y-%m-%d、{createdAt}=%Y-%m-%dT%H:%M:%S，装配期回填。",
+  "openQuestions": [
+    {
+      "key": "产物类型",
+      "question": "本项目的产物形态是哪种？",
+      "options": [
+        "网文",
+        "通俗小说",
+        "剧本"
+      ]
+    },
+    {
+      "key": "频道",
+      "question": "目标频道是哪侧？",
+      "options": [
+        "男频",
+        "女频"
+      ]
+    },
+    {
+      "key": "题材",
+      "question": "题材/赛道是什么？（如都市异闻、规则怪谈、种田流——答案可同步落 项目配置.题材）"
+    },
+    {
+      "key": "单章字数",
+      "question": "单章目标字数是多少？",
+      "options": [
+        "2000 字左右",
+        "3000 字左右",
+        "4000 字以上"
+      ]
+    },
+    {
+      "key": "mediaEndpoints",
+      "question": "涉及配图或视频吗？涉及则必须在回答里给出生图/视频接口（如 ComfyUI endpoint），接口配置落 项目配置.json 的 mediaEndpoints 字段——图/视频场景拿不到接口不开工；纯文字可答「无」",
+      "options": [
+        "无（纯文字）"
+      ]
+    }
+  ],
+  "files": {
+    "项目配置.json": "{\n  \"项目\": \"{project}\",\n  \"id\": \"{project}\",\n  \"title\": \"{project}\",\n  \"flowId\": null,\n  \"flowVersion\": null,\n  \"createdAt\": \"{createdAt}\",\n  \"layout\": \"r6\",\n  \"validation\": {\n    \"tierThreshold\": [\n      \"S\",\n      \"A\"\n    ],\n    \"cardScope\": \"both\",\n    \"severityFloor\": \"minor\"\n  },\n  \"_注释\": \"validation=校验标准声明位（批次2.5 P1，契约 contracts/project-config.schema.json）：tierThreshold=本项目评审跑哪些分级（S/A/B 子集，缺省 S+A；B 级主观审美归 agent 评审通道）；cardScope=规则卡装载范围（global=全局 knowledge/rules 卡 / project=本项目 文风+规则 卡 / both=双家，缺省 both）；severityFloor=评审优先级下限（block|major|minor，缺省 minor=全量；是评审优先级不是提交闸）。声明位已变现（批次3a P6）：diag_scan 快诊断消费三旋钮（tierThreshold 定分级通道 / cardScope 定装卡 / severityFloor 定产出下限），口径见 core/src/diagnosis.ts。\"\n}\n",
+    "输入/点子.md": "# 点子\n\n> 一句话卖点：〔在这里写一句话卖点，≤40 字〕\n\n## 素材\n\n- 〔素材 / 参考链接 / 热点，逐条列〕\n\n## 需求\n\n- 〔题材 / 篇幅 / 平台 / 受众等硬性要求〕\n",
+    "世界书/设定.md": "# 设定\n\n> 世界规则的最高约束，跨模块共享；改这里必须过 世界书/纪律 的口径。\n\n- 〔力量体系 / 世界规则，逐条列〕\n",
+    "世界书/人物.md": "# 人物\n\n> 主要人物卡。命名纪律：本项目的专名绝不进入其他项目（AGENTS 铁律 5）。\n\n## 〔人物名〕\n\n- 一句话：〔身份 × 欲望 × 缺口〕\n",
+    "世界书/时间线.md": "# 时间线\n\n> 编年骨架：大事按序排，章账细节进 世界书/编年/。\n\n- 〔第 1 日〕〔事件〕\n",
+    "世界书/词表.json": "{\n  \"entries\": []\n}\n",
+    "文风/README.md": "# 文风目录说明\n\n- 本目录是**本项目独有文风**的家（需求1：每个项目允许独立的文风）：文风样本 md + 文风规则卡。\n- `文风规则-模板.md` 是范式不是概括——**kit 只给形，不猜你的内容**：复制改名为正式卡\n  （如 `文风规则-主线.md`），把样本与条款填实后才算生效；模板本身空着就是占位。\n- 文风卡走 rule-card@1 信封（契约 contracts/rule.schema.json；kit-lint E12 同款信封校验）；\n  dimension 固定 style，id 用 `pj-style/<项目id>/<名>` 命名空间（与全局 kb/rules/ 不撞号）。\n- 编译：`python tools/kit-compile.py --project <id>` 后进项目档 RAG；core `kb_search` 带\n  project 参数可命中（domain=文风）。本目录人写，索引工具标注 role=human（只读不覆写）。\n",
+    "文风/文风规则-模板.md": "---\n{\n  \"id\": \"pj-style/{project}/voice\",\n  \"type\": \"rule-corpus\",\n  \"title\": \"文风规则卡（模板——填实后复制改名生效）\",\n  \"dimension\": \"style\",\n  \"version\": \"0.1.0\",\n  \"status\": \"active\",\n  \"activation_hint\": [\"m3.成文\", \"polish\"],\n  \"provenance\": {\n    \"source\": \"project-init 骨架模板（批次2.5 P1）——样本与条款由本项目人写填实\",\n    \"refs\": []\n  },\n  \"updated\": \"{today}\",\n  \"format\": \"rule-card@1\"\n}\n---\n\n# 文风规则 · 本项目独有文风\n\n> **kit 只给形，不猜你的内容**：本卡是范式（rule-card@1 信封已合法），条款与样本必须由你填；\n> 空着就是占位，不构成任何约束。\n\n## 文风样本（人写——文风对齐的事实源）\n\n- 〔贴 2-3 段最认可的成稿样本：句式、节奏、用词的实样〕\n\n## 条款（示例注释态，未生效——填实后升格进 frontmatter 的 clauses[]）\n\n<!-- 示例一（tier=A，句式指纹）：短句为主，单句 ≤ 25 字，从句嵌套 ≤ 两层 → repair：拆句重排。 -->\n<!-- 示例二（tier=S，禁词）：全稿禁用〔本项目禁词表〕 → repair：按词表替换并复查语境。 -->\n<!-- 示例三（tier=B，语感）：叙述贴主角体感，不出现上帝视角总结句 → repair：改为人物在场感知。 -->\n<!-- 口径：tier S/A/B 与 severity block/major/minor 的定义见 contracts/rule.schema.json；\n     severity 是评审优先级不是提交闸（v5.0 去闸化）；B 级产物只能「证据 + 建议」，绝不自动改稿。 -->\n",
+    "规则/README.md": "# 规则目录说明\n\n- 本目录是**项目专属规则**的家：项目禁则/偏好（专名保护、题材红线、平台特殊要求、叙事规约…）。\n- `项目规则-模板.md` 是范式不是概括——**kit 只给形，不猜你的内容**：dimension 留空待你填\n  （小写 slug，如 naming / platform-redline，契约 pattern `^[a-z][a-z0-9-]*$`），条款填实后才算生效。\n- 立场铁律：本目录的卡是**语料不是闸**（v5.0 去闸化）——供 orchestrator 激活、agent 评审引用，\n  severity 是评审优先级，**绝不构成提交拦截**。\n- 升格纪律：项目规则要升格为全局规则（knowledge/rules/）时，必须先过**专名清洗**\n  （本项目专名绝不进入其他项目，AGENTS 铁律 5）。\n",
+    "规则/项目规则-模板.md": "---\n{\n  \"id\": \"pj-rules/{project}/project\",\n  \"type\": \"rule-corpus\",\n  \"title\": \"项目规则卡（模板——填实后复制改名生效）\",\n  \"dimension\": \"\",\n  \"version\": \"0.1.0\",\n  \"status\": \"active\",\n  \"activation_hint\": [\"m2.编剧\", \"m3.成文\"],\n  \"provenance\": {\n    \"source\": \"project-init 骨架模板（批次2.5 P1）——禁则与条款由本项目人写填实\",\n    \"refs\": []\n  },\n  \"updated\": \"{today}\",\n  \"format\": \"rule-card@1\"\n}\n---\n\n# 项目规则 · 本项目专属禁则与偏好\n\n> **kit 只给形，不猜你的内容**：dimension 留空待填（小写 slug，如 naming / platform-redline，\n> 契约 pattern `^[a-z][a-z0-9-]*$`）；禁则与条款必须由你填，空着就是占位。\n\n## 项目禁则（人写）\n\n- 〔项目专属禁则：专名保护（本项目专名绝不外流）、题材红线、平台特殊要求…〕\n\n## 偏好（人写）\n\n- 〔项目偏好：叙事习惯、章节体量、命名规约…〕\n\n## 条款（示例注释态，未生效——填实后升格进 frontmatter 的 clauses[]）\n\n<!-- 示例（tier=S，专名保护）：〔主角名〕〔势力名〕等项目专名不得出现在其他项目交付物 → repair：定位并替换。 -->\n<!-- 升格纪律：本卡条款要升格为全局规则（knowledge/rules/）时，必须先过专名清洗（AGENTS 铁律 5）。 -->\n",
+    "交付/README.md": "# 交付目录说明\n\n- 本目录是**定序交付出口**：文件名 `NN-名称.md`（NN=两位序号，按交付顺序）。\n- 只放对外终稿；过程产物留在各模块目录（`01-选题/` `02-方案/` `03-编剧/` `04-写作/` …）。\n- 序号缺口是历史事实，禁止为好看而重排（禁止补拍洗白）。\n"
+  },
+  "directories": [
+    "registry/receipts/",
+    "snapshots/"
+  ]
+}

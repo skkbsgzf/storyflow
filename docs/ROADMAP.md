@@ -187,14 +187,14 @@
 | 产物读写 | 三通道：本地打开走 File System Access API（浏览器原生直写盘）/ 在线走 8431 files 端点（现有 /api/panel/files 原语改名）/ 编辑提交生成 patch 走 batch-edit 确定性脚本；doc 类只读预览（docx 二进制编辑不做，转 md 走改稿套件） |
 | 分发 | Cloudflare Pages + Access token（部署文档一页；kit 不托管） |
 
-### 4.2 · 冷启动询问 + 领域预设
+### 4.2 · 冷启动询问 + 领域预设 ✅ 已落地 2026-10-12
 
 | 件 | 说明 |
 | --- | --- |
-| 骨架解耦 | `project-init.py --domain <writing\|custom:<path>>`：骨架模板出 `presets/skeletons/<domain>.json`（目录+文件模板），writing 为缺省并分题材变体（网文男频/女频/剧本短剧…） |
-| 冷启动询问 | 项目配置增 `openQuestions` 声明位（[{key,question,options}]）：init 按领域预填必问清单 → sessionBrief 注入 → 会话 agent 反问用户 → 答案回填配置。缺字段必问纪律进方法卡 |
-| 生图/视频接口位 | 领域预设含 `mediaEndpoints` 配置位（comfyui.endpoint 等）——图/视频场景 init 时强制询问并落配置（消费随图文视频解冻） |
-| 知识编译通用化 | `kit-compile.py --src <语料目录> --out <路径>`：任意 md/txt 目录 → HyperGraph（通用 RAG 基建；--domain 非写作领域靠它） |
+| 骨架解耦 | ✅ `project-init.py --domain <writing\|writing-剧本短剧\|custom:<path>>`：骨架模板出 `presets/skeletons/<domain>.json`（声明式 `{domain, description, openQuestions?, files:{路径:模板文本}, directories:[]}`，占位符 {project}/{today}/{createdAt} 装配期回填——模板从现役代码原样抽出，**writing 缺省装配与历史产物逐字节一致**（归一 createdAt 后 diff 全绿；createdAt 是历史固有非确定源，old-vs-old 对照在案））；变体样例 `writing-剧本短剧.json`（输入面 点子→分集梗概、交付说明对齐 screenplay 生产线 选题报告→剧本 IR→分镜剧本）；custom 读外部 JSON 同构装配（相对路径锚仓库根，与 --import 同口径）；未知 domain 报错列出可用清单。--upgrade 共用同一清单装配（已存在一律跳过不变） |
+| 冷启动询问 | ✅ 项目配置增 `openQuestions` 声明位（[{key★,question★,options?,answer?}]，contracts/project-config.schema.json additive）：init 按领域预填必问清单（**缺省 writing 不注入——历史行为逐字节不变；--domain 显式给出才注入**）→ storyharness `buildProjectBrief` 简报尾部「【待询问（冷启动）】」段注入（逐条 question+options，answer 非空即已答不注入；冷启动项目无 flow 无 direction 也出简报——问题必须能送达会话 agent）→ 会话 agent 反问用户（**询问归会话 agent，kit 不弹 UI**）→ 答案回填 项目配置.json 的 answer 字段。writing 预填必问五项：产物类型（网文/通俗小说/剧本）/频道（男频/女频）/题材/单章字数/mediaEndpoints；brief-session.test.ts 6 例（4 存量 + 2 新增）钉住 |
+| 生图/视频接口位 | ✅ 项目配置增 `mediaEndpoints` 声明位（optional object，additionalProperties:true——comfyui.endpoint 等生图/视频接口地址与参数，结构开放键面随消费方定型）；writing/writing-剧本短剧 预设的 mediaEndpoints 问题文案明写「**拿不到生图接口不开工**，接口配置落 mediaEndpoints 字段」（图/视频场景 init 时强制询问）；消费随图文视频解冻（批次3 裁决「停留在提示词层」，声明位先行不接消费方） |
+| 知识编译通用化 | ✅ `kit-compile.py --src <语料目录> --out <产物路径>`：任意 md/txt 目录 → HyperGraph 产物（stats.scope=src，stats.source 落语料根绝对路径供消费方解析 entries[].path）——复用同一 build_graph（frontmatter id 优先、缺省回落 kb/<相对路径去后缀>；README 与 draft 不进图；编译期聚类照跑）；与 --project 互斥、--out 必填、五条错误路径全部点名；`--check --src --out` 同构干跑（entries/relations 逐键比对，与既有 --check 同一判据）。**自证**：拿 knowledge/ 自身 --src 编译，117 词条/0 边与全局产物 entries/relations/stats 图键逐键一致（note/stats.scope/source 是模式说明不是图数据）；合成 md+txt 语料冒烟（frontmatter id/路径回落 id/mention 边/草稿剔除/幂等逐字节）全过；全局与 --project 模式零回归（--check 一致、--selfcheck OK） |
 
 ### 4.3 · 生态兼容（商业套件前置）
 
