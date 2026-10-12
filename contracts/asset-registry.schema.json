@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "miniflow/asset-registry",
+  "title": "asset-registry@1 · 美术资产与出图产物台账（产物管理的事实账）",
+  "description": "作者 2026-10-11 点名要的「产物管理」承载体：人设/背景/物品/细节图案四类设计资产 + 锚图 + 页面/逐格出图，四方对账（设计件 ↔ 任务 ↔ 产物文件 ↔ 收据）后的状态台账。生成方 `tools/img-assets.py`（纯 stdlib、零网络、确定性重跑：同一 job + 同一收据目录必得同一台账）。四条纪律：① **台账只记账不裁决**——状态是「有没有出、出的是不是这一版指纹」的事实，不是「好不好」；好坏归人眼与 vision 复核（红线 4/5）。② **无收据 = 无产物**——current.receipt 缺失即降级为 ungenerated 并点名，不许凭文件存在就宣布已出图。③ **stale_design 必须点名**——设计件指纹变了而产物仍是旧指纹（改了设定没重出图），这类「半接状态」是本仓反复被咬的坑。④ **废稿归档不硬删**——history 里保留每一版（文件移动归档，路径与收据都在），可追溯「这一格一共掷了几次、每次为什么废」。落盘 `projects/<id>/漫画/资产台账.json`。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "built_at", "entries", "summary"],
+  "properties": {
+    "format": { "const": "asset-registry@1" },
+    "built_at": { "type": "string", "description": "本次 build 时刻" },
+    "job": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "job_id", "job_fingerprint"],
+      "properties": {
+        "path": { "type": "string", "description": "对账依据的 image-job@1 相对路径" },
+        "job_id": { "type": "string" },
+        "job_fingerprint": { "type": "string", "description": "整包指纹（台账与包版本绑定；换包必须重建台账）" }
+      }
+    },
+    "profile": { "type": ["string", "null"], "description": "画像 id 透传" },
+    "storyboard": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["path"],
+      "properties": {
+        "path": { "type": "string" },
+        "digest": { "type": ["string", "null"], "description": "分镜表块摘要（与 job 里的不一致即 stale，说明表改过没重算包）" }
+      }
+    },
+    "assets": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["path"],
+      "description": "美术资产表（asset-design@1 承载体）",
+      "properties": {
+        "path": { "type": "string" },
+        "digest": { "type": ["string", "null"] }
+      }
+    },
+    "entries": {
+      "type": "array",
+      "description": "每个任务一条（资产件/锚图/页/格都在内）。**必须覆盖 job.tasks 全集**——img-assets 自检这点，漏一条就进 unresolved",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["task_id", "kind", "fingerprint", "status"],
+        "properties": {
+          "task_id": { "type": "string" },
+          "kind": { "type": "string", "enum": ["asset", "anchor", "page", "panel"] },
+          "class": { "type": ["string", "null"], "enum": ["character", "background", "prop", "detail", null], "description": "四类设计资产（作者点名口径，不扩）；页面/格类为 null" },
+          "asset_id": { "type": ["string", "null"] },
+          "asset_name": { "type": ["string", "null"], "description": "人读名（台账要能单独看懂，不必回查设计表）" },
+          "variant": { "type": ["string", "null"] },
+          "page_no": { "type": ["integer", "null"], "minimum": 1 },
+          "panel_no": { "type": ["integer", "null"], "minimum": 1 },
+          "design_fingerprint": { "type": ["string", "null"], "description": "设计件字段指纹（class+name+intent+design+prompt 覆写位的稳定散列）" },
+          "fingerprint": { "type": "string", "description": "任务指纹（透传 job.tasks[].fingerprint，幂等与重跑判定用）" },
+          "status": {
+            "type": "string",
+            "enum": ["ungenerated", "generated", "failed", "needs_rerun", "stale_design"],
+            "description": "generated = 有同指纹成功收据且文件在盘上；stale_design = 有产物但指纹落后于设计件/任务；needs_rerun = 由重跑清单落进来的待重出标记"
+          },
+          "current": {
+            "type": ["object", "null"],
+            "description": "当前有效产物（status=generated 时必须非空——无收据即不算出过图）",
+            "additionalProperties": false,
+            "required": ["file", "receipt"],
+            "properties": {
+              "file": { "type": "string", "description": "产物相对路径（项目内）" },
+              "receipt": { "type": "string", "description": "收据文件相对路径" },
+              "at": { "type": ["string", "null"] },
+              "engine": { "type": ["string", "null"] },
+              "accelerator": { "type": ["string", "null"] },
+              "seed": { "type": ["integer", "null"] },
+              "size": {
+                "type": ["object", "null"],
+                "additionalProperties": false,
+                "required": ["w", "h"],
+                "properties": { "w": { "type": "integer", "minimum": 1 }, "h": { "type": "integer", "minimum": 1 } }
+              },
+              "seconds": { "type": ["number", "null"] }
+            }
+          },
+          "history": {
+            "type": "array",
+            "description": "历次尝试（含废稿与失败），按 at 正序。移动归档不硬删，所以路径可能指向归档子树",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["receipt"],
+              "properties": {
+                "file": { "type": ["string", "null"] },
+                "receipt": { "type": "string" },
+                "fingerprint": { "type": ["string", "null"] },
+                "status": { "type": ["string", "null"], "enum": ["ok", "failed", "skipped_idempotent", "blocked_guardrail", null] },
+                "at": { "type": ["string", "null"] },
+                "note": { "type": ["string", "null"], "description": "为什么废（人裁或质检转述）" }
+              }
+            }
+          },
+          "maturity": { "type": ["string", "null"], "enum": ["draft", "reviewed", "locked", null], "description": "设计件成熟度透传（locked 才算定稿，人裁动作）" },
+          "issues": { "type": "array", "items": { "type": "string" }, "description": "本条的问题点名（缺收据/文件不在盘/指纹落后/依赖未就绪/警告转述）" }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "by_status"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 0 },
+        "by_status": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 }, "description": "各状态计数（账要能一眼看全）" },
+        "by_class": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 }, "description": "四类资产各多少（character/background/prop/detail）" }
+      }
+    },
+    "unresolved": {
+      "type": "array",
+      "description": "四方对不上账的清单（缺件、悬空、孤儿收据、任务未覆盖）。非空即不许声明「资产齐了」",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message"],
+        "properties": {
+          "code": { "type": "string", "description": "TASK_NOT_COVERED / RECEIPT_MISSING / FILE_MISSING / FINGERPRINT_STALE / ORPHAN_RECEIPT / ASSET_REF_DANGLING / PARSE_FAIL" },
+          "where": { "type": ["string", "null"] },
+          "message": { "type": "string" }
+        }
+      }
+    },
+    "scanned": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "扫了哪些目录、多少个收据文件（可复核的覆盖面声明——说「已扫描」必须说清扫了哪）",
+      "properties": {
+        "job": { "type": ["string", "null"] },
+        "receipts_dir": { "type": ["string", "null"] },
+        "receipt_files": { "type": "integer", "minimum": 0 },
+        "product_roots": { "type": "array", "items": { "type": "string" } },
+        "project_root": { "type": ["string", "null"] }
+      }
+    },
+    "warnings": { "type": "array", "items": { "type": "string" }, "description": "job.warnings 透传（只记账，不拦截）" },
+    "note": { "type": "string", "description": "固定声明：本台账只记账事实（有无产物、指纹是否落后），不裁决画面质量；好坏归人眼与 vision 复核" }
+  }
+}

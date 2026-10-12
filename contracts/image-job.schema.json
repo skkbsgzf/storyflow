@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "miniflow/image-job",
+  "title": "image-job@1 · 出图任务包（对接引擎的事实源）",
+  "description": "一批出图任务的**可交换事实源**（作者 2026-10-11 裁定：任务包为事实源 + kit 出可替换参考驱动器 + 驱动器默认可替宿主提交）。谁执行都一样：kit 的 `tools/img-drive.py` 只是参考件（文件头标可替换），宿主可拿本包喂自己的执行器——所以凡提交需要知道的东西都必须写进包里，不许留在某个脚本的内存里。生成方 `tools/img-plan.py`（分镜表 + 美术资产表 + 画像 → 本包；纯本地、零网络、`--check` 不落盘）。四条纪律：① `prompt` 是**组装完成的成品**（风格前缀 + 设计意图 + 画面描述 + 强度词），驱动器不再拼提示词——提示词的知识归 plan 与画像，事后加工会让指纹与实图对不上；② 每任务带 `fingerprint`，幂等续跑、重跑判定、stale 对账全靠它，不许用文件名或时间猜；③ `depends_on` 表达「锚图/资产先行」的顺序，执行侧串行（并发抢占显存余量会进分页地狱，实测）；④ **不含凭据**（api key 由执行侧从 env/.external 取），也不含画面对错的判断（质量归 img-check 与人）。落盘 `projects/<id>/漫画/任务包/<job_id>.json`。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "job_id", "profile", "policy", "tasks", "fingerprint"],
+  "properties": {
+    "format": { "const": "image-job@1" },
+    "job_id": { "type": "string", "description": "稳定可复算 id：由 画像 id + 分镜表块摘要 + 页范围 派生（同输入同 id，便于断点续跑寻包）" },
+    "created_at": { "type": ["string", "null"], "description": "生成时刻（人读；对账靠 fingerprint 不靠它）" },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "path"],
+      "properties": {
+        "id": { "type": "string" },
+        "path": { "type": "string", "description": "画像相对路径（执行侧按它重载同一画像；画像换了=全批指纹失效）" },
+        "digest": { "type": ["string", "null"], "description": "画像内容摘要（sha256 前 12 位），进任务指纹" },
+        "backend": { "type": "string", "enum": ["comfyui", "openai-images", "dashscope", "off"] },
+        "base_url": { "type": ["string", "null"], "description": "从画像透传（可空）。凭据不在此处" },
+        "capabilities": { "type": "object", "additionalProperties": { "type": "boolean" }, "description": "画像能力位透传副本——执行侧不重读画像也知道边界在哪" },
+        "acceleration_source": { "type": ["string", "null"], "description": "加速件签名表路径（命中项的出处要能顺藤查到）" }
+      }
+    },
+    "storyboard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path"],
+      "properties": {
+        "path": { "type": "string", "description": "分镜表 .md 相对路径" },
+        "digest": { "type": ["string", "null"], "description": "取到的 storyboard@1 块内容摘要（台账判 stale 用）" },
+        "scope": { "type": ["string", "null"], "description": "本次覆盖的页范围声明（如「1-4 页」；部分重算必须写清，否则台账覆盖面造假）" }
+      }
+    },
+    "assets": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["path"],
+      "description": "美术资产表（人设/背景/物品/细节图案）。缺位 = 本包只出页面，资产任务不生成（此时页面任务引用资产 id 会进 unresolved）",
+      "properties": {
+        "path": { "type": "string" },
+        "digest": { "type": ["string", "null"] }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["concurrency", "timeout_s", "resume", "on_guardrail", "on_task_fail"],
+      "description": "执行策略。默认值全部来自实测教训，不是审美偏好——每条都在工单 §二 有出处",
+      "properties": {
+        "concurrency": { "type": "integer", "minimum": 1, "maximum": 4, "description": "缺省 1。即使画像 capabilities.batch=true 也按 1 出图（两个任务抢 2.3GB 余量 = 分页地狱），放宽要人显式改" },
+        "timeout_s": { "type": "integer", "minimum": 30, "description": "单任务超时，取画像 budget.cold_timeout_s（冷加载税实测 460–1500s，warm 30–198s 差一个数量级——禁 warm 假设）" },
+        "resume": { "type": "boolean", "description": "true = 同指纹已有成功收据的任务跳过（幂等续跑，长批次断点不重跑）" },
+        "on_guardrail": { "const": "fail_explicit", "description": "越预算只许显式失败并点名旋钮。静默降参/缩图/换模型是禁止项（作者口径：自设阈值禁当隐形闸）" },
+        "on_task_fail": { "type": "string", "enum": ["record_and_stop", "record_and_continue"], "description": "缺省 record_and_stop：失败即记账并停，等人裁——不做自动重试循环" }
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["task_id", "kind", "template", "engine", "prompt", "size", "output_rel", "fingerprint"],
+        "properties": {
+          "task_id": { "type": "string", "description": "稳定寻址：资产 `a-<asset_id>[-<variant>]`、锚图 `k-<角色id>`、整页 `P<页>`、逐格 `p<页>-<格>`。重跑与台账按它寻址，改名=历史断裂" },
+          "kind": {
+            "type": "string",
+            "enum": ["asset", "anchor", "page", "panel"],
+            "description": "asset=人设/背景/物品/细节图案的设计件出图；anchor=角色锚（三视图，跨格一致性的母版）；page=整页多宫格一次出；panel=逐格出图（细节保真首选）"
+          },
+          "asset_ref": { "type": ["string", "null"], "description": "资产 id（kind=asset/anchor 必填；img-plan 校验悬空即进 unresolved，不静默跳）" },
+          "asset_class": { "type": ["string", "null"], "enum": ["character", "background", "prop", "detail", null], "description": "类别透传（台账按类汇总缺件）" },
+          "variant": { "type": ["string", "null"], "description": "资产变体名（人设三视图 front/side/back）" },
+          "page_no": { "type": ["integer", "null"], "minimum": 1 },
+          "panel_no": { "type": ["integer", "null"], "minimum": 1 },
+          "grid": { "type": ["string", "null"], "pattern": "^[1-9]x[1-9]$", "description": "多宫格（kind=page 时用）。异形格由图模板与逐格出图解决，不在这里造第二套排版语言" },
+          "template": { "type": "string", "description": "所用图模板相对路径（presets/image/graphs/*.json）" },
+          "engine": { "type": "string", "description": "画像 engines 表里的档位键。未知档位 = img-plan 显式失败点名，不回落缺省档" },
+          "accelerator": { "type": ["string", "null"], "description": "本档引用的加速件名（收据里要带命中证明与出处）" },
+          "prompt": { "type": "string", "description": "组装完成的正向提示词全文。驱动器不得再加工" },
+          "negative": { "type": ["string", "null"] },
+          "seed": { "type": "integer", "minimum": 0, "description": "本任务 seed（同表重算必得同 seed = 可复现的硬要求）" },
+          "seed_basis": { "type": ["string", "null"], "enum": ["explicit", "derived", null], "description": "explicit=分镜表指定；derived=img-plan 稳定派生（算法写死在 plan 并在 presets/image/README.md 说明）" },
+          "size": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["w", "h"],
+            "properties": { "w": { "type": "integer", "minimum": 64 }, "h": { "type": "integer", "minimum": 64 } }
+          },
+          "pixels": { "type": ["integer", "null"], "minimum": 0, "description": "w*h（护栏预检与「每格像素预算」口径的直接输入：2×2 页 ~1MP 时单格手部仅百余像素，细节必崩）" },
+          "refs": {
+            "type": "array",
+            "description": "参考图输入清单（已解析定位）。模板里的 image_1..image_N 按数组序映射——qwen 的 images 槽必须是**嵌套字典**，扁平键能过校验但执行期 TypeError（实测，comic-run.py:78-89，坑写在 presets/image/README.md）",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["source"],
+              "properties": {
+                "source": { "type": "string", "enum": ["anchor", "asset", "panel", "file"] },
+                "ref": { "type": ["string", "null"], "description": "资产 id / task_id / `页-格` 坐标 / 相对路径" },
+                "file": { "type": ["string", "null"], "description": "解析后的产物相对路径。解析不出=缺件，进 unresolved 而非静默省略" },
+                "staged_as": { "type": ["string", "null"], "description": "staging 进引擎输入目录后的文件名（plan 定名，drive 拷贝——名字要进指纹，否则同包两次执行喂的图不同却看不出来）" },
+                "role": { "type": ["string", "null"], "enum": ["identity", "composition", "pattern", "palette", null] }
+              }
+            }
+          },
+          "depends_on": { "type": "array", "items": { "type": "string" }, "description": "前置 task_id（如逐格依赖角色锚）。执行侧按序串行；前置缺产物 = 显式失败不猜" },
+          "bubble_track": { "type": ["string", "null"], "enum": ["in_model", "blank_layout", "none", null], "description": "气泡轨（plan 按画像能力位与字数择路的结果）。声明 in_model 而能力位不成立 → plan 直接拒绝，不静默改轨" },
+          "bubble_over_limit": { "type": ["integer", "null"], "minimum": 0, "description": "超画像 limits.bubble_chars_max 的气泡条数（证据位，进复核清单，不构成拦截）" },
+          "consistency": { "type": ["string", "null"], "enum": ["reference_edit", "lora", "seed_lock", null], "description": "本任务一致性策略 = 分镜表声明 ∩ 画像能力位；不合 → plan 点名失败（半接状态禁止）" },
+          "output_rel": { "type": "string", "description": "期望产物在项目内的相对路径（漫画/assets|anchors|pages|panels/...）。命名规则稳定，收据与台账按它寻址" },
+          "engine_patch": { "type": ["object", "null"], "additionalProperties": { "type": "object", "additionalProperties": true }, "description": "从画像档位透传的节点补丁（如把缓存类节点 device 钉 off）。执行侧照此提交，不再自行决定" },
+          "fingerprint": { "type": "string", "description": "sha256(画像摘要|模板|引擎档|prompt|negative|seed|尺寸|refs 有序清单[staged_as+file]) 前 16 位" },
+          "notes": { "type": "array", "items": { "type": "string" }, "description": "给人看的说明（择路理由、警告转述、像素账）" }
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "description": "plan 期显式警告（只记账不拦截——拦截与否归人与复核，红线 5）",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message"],
+        "properties": {
+          "code": { "type": "string", "description": "ASSET_NOT_LOCKED / BUBBLE_OVER_LIMIT / LOW_PIXEL_BUDGET / CAPABILITY_MISMATCH / DANGLING_ASSET_REF / STYLE_CONFLICT" },
+          "where": { "type": ["string", "null"], "description": "定位（task_id / 页-格 / 资产 id）" },
+          "message": { "type": "string" }
+        }
+      }
+    },
+    "unresolved": {
+      "type": "array",
+      "description": "plan 期对不上账的硬缺陷（引用悬空、锚图缺产物、依赖不成序、越像素预算）。**非空时执行侧必须整包拒绝**——这是「半接状态」教训的静态门版本：宁可不出，不许出一批错图",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message"],
+        "properties": {
+          "code": { "type": "string", "description": "DANGLING_ASSET_REF / ANCHOR_MISSING / DEP_CYCLE / DEP_UNORDERED / OVER_PIXEL_BUDGET / TEMPLATE_SLOT_UNFILLED / ENGINE_UNKNOWN" },
+          "where": { "type": ["string", "null"] },
+          "message": { "type": "string" },
+          "knob": { "type": ["string", "null"], "description": "要求人覆写的旋钮名（点名到可操作位置，如 budget.max_pixels 或 分镜表 layout_default.per_panel）" }
+        }
+      }
+    },
+    "fingerprint": { "type": "string", "description": "整包指纹（tasks 指纹的有序聚合 + policy 摘要）。同指纹重跑无意义，除非分镜表/资产表/画像变了" },
+    "notes": { "type": ["string", "array"], "items": { "type": "string" }, "description": "包级说明（页范围、未覆盖项、待裁问题）" }
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "$comment": "ComfyUI API 格式图模板 · Qwen-Image 2.1 文生图（形状取自 2026-10-11 实测跑通的 t2i 图，模型名一律槽位化——发布口径：不把任何人的本机文件名提交进仓库）。整值槽位（值恰好是 __X__ 字符串）由 tools/img-plan.py 按类型替换：数字/布尔/列表/字典保真，字符串直填。非整值的部分替换（如前缀拼接）不支持——要拼接请在 plan 里算好再填。",
+  "1": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "__UNET__",
+      "weight_dtype": "default"
+    }
+  },
+  "2": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "__CLIP__",
+      "type": "qwen_image",
+      "device": "default"
+    }
+  },
+  "3": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "__VAE__"
+    }
+  },
+  "4": {
+    "class_type": "TextEncodeQwenImage21",
+    "inputs": {
+      "clip": ["2", 0],
+      "vae": ["3", 0],
+      "prompt": "__PROMPT__",
+      "negative_prompt": "__NEGATIVE__",
+      "resolution": "__RESOLUTION__"
+    }
+  },
+  "6": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "width": "__W__",
+      "height": "__H__",
+      "batch_size": 1
+    }
+  },
+  "7": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": ["1", 0],
+      "positive": ["4", 0],
+      "negative": ["4", 1],
+      "latent_image": ["6", 0],
+      "seed": "__SEED__",
+      "steps": "__STEPS__",
+      "cfg": "__CFG__",
+      "sampler_name": "__SAMPLER__",
+      "scheduler": "__SCHEDULER__",
+      "denoise": "__DENOISE__"
+    }
+  },
+  "8": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["7", 0],
+      "vae": ["3", 0]
+    }
+  },
+  "9": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": ["8", 0],
+      "filename_prefix": "__OUT_PREFIX__"
+    }
+  }
+}

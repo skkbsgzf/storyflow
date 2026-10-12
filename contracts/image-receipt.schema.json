@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "miniflow/image-receipt",
+  "title": "image-receipt@1 · 单图出图收据（「已出图」的唯一凭据）",
+  "description": "一次出图尝试的**收据**：由执行侧写（kit 的参考驱动器 `tools/img-drive.py`，或宿主自己的执行器——事实源是任务包，写收据的件可替换）。落 `projects/<id>/漫画/收据/<task_id>-<指纹前8位>.json`。它是「这张图存在吗、是怎么来的」的唯一凭据：任何「已出 N 张 / 这一格废了 M 次」的声明不带收据路径即违规（红线 5：证据与裁决分离；`tools/quality-scan.py:94-122` 同纪律）。三个设计点：① `job_fingerprint` + `task_fingerprint` 让「这张图属于哪一版任务包」可判——指纹落后的产物在台账里是 stale_design 而不是 current；② `status` 四值把「没出」与「出了但废」分开：`skipped_idempotent`（幂等跳过，无新产物）与 `blocked_guardrail`（护栏显式失败，压根没提交）都是**诚实的没出**，不许混写成 failed 一锅炖；③ `seconds` / `vram_*` / `cold_start` 是冷热水账的原始数据（「冷加载税 460–1500s」这类结论必须能由收据重算，不能靠回忆；读不到就留 null 并在 error 里说明，**禁止填 0 冒充**）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "status", "task_id", "at"],
+  "properties": {
+    "format": { "const": "image-receipt@1" },
+    "status": { "type": "string", "enum": ["ok", "failed", "skipped_idempotent", "blocked_guardrail"] },
+    "task_id": { "type": "string" },
+    "job_id": { "type": ["string", "null"] },
+    "job_fingerprint": { "type": ["string", "null"] },
+    "task_fingerprint": { "type": ["string", "null"], "description": "本图对应的 task 指纹（幂等续跑与台账 stale 判定的键）" },
+    "kind": { "type": ["string", "null"], "enum": ["asset", "anchor", "page", "panel", null] },
+    "asset_ref": { "type": ["string", "null"] },
+    "asset_class": { "type": ["string", "null"], "enum": ["character", "background", "prop", "detail", null] },
+    "variant": { "type": ["string", "null"] },
+    "page_no": { "type": ["integer", "null"], "minimum": 1 },
+    "panel_no": { "type": ["integer", "null"], "minimum": 1 },
+    "profile": { "type": ["string", "null"], "description": "画像 id" },
+    "backend": { "type": ["string", "null"], "enum": ["comfyui", "openai-images", "dashscope", "off", null] },
+    "engine": { "type": ["string", "null"], "description": "档位键" },
+    "accelerator": { "type": ["string", "null"], "description": "命中的加速件名（无则 null）。声明加速效果必须同时指回 acceleration.json 条目与它的出处收据——8.6× 是某硬件某组合的实测，不是普适常数" },
+    "model": { "type": ["string", "null"], "description": "实际用的主模型文件名/model id（从引擎回执取，不采信画像声明）" },
+    "template": { "type": ["string", "null"], "description": "实际提交的图模板相对路径" },
+    "prompt": { "type": ["string", "null"], "description": "实际提交的提示词全文（复盘「这句话出了这个画面」全靠它，不许截断）" },
+    "negative": { "type": ["string", "null"] },
+    "seed": { "type": ["integer", "null"], "minimum": 0 },
+    "steps": { "type": ["integer", "null"], "minimum": 1 },
+    "cfg": { "type": ["number", "null"], "minimum": 0 },
+    "size": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["w", "h"],
+      "properties": { "w": { "type": "integer", "minimum": 1 }, "h": { "type": "integer", "minimum": 1 } }
+    },
+    "refs": { "type": "array", "items": { "type": "string" }, "description": "实际喂进去的参考图（staged 后的文件名），有序" },
+    "files": { "type": "array", "items": { "type": "string" }, "description": "产物相对路径。status=ok 时必须非空——说「已出图」就得给出文件" },
+    "engine_output": { "type": ["string", "null"], "description": "引擎侧原始输出位置（ComfyUI 的 subfolder/filename），供回查" },
+    "prompt_id": { "type": ["string", "null"], "description": "引擎任务号（ComfyUI prompt_id / API 任务 id）" },
+    "seconds": { "type": ["number", "null"], "minimum": 0, "description": "端到端耗时（含加载）——冷/热账的原始数据" },
+    "cold_start": { "type": ["boolean", "null"], "description": "是否命中冷加载。判不准就留 null，不许编（要编也得在 error 里写明依据）" },
+    "vram_before": { "type": ["number", "null"], "description": "提交前显存占用 GB（读不到留 null，禁止填 0 冒充「余量充足」）" },
+    "vram_after": { "type": ["number", "null"] },
+    "guardrail": {
+      "type": ["object", "null"],
+      "description": "status=blocked_guardrail 时的现场：越了哪条预算、实读数、限额、要人覆写的旋钮名",
+      "additionalProperties": false,
+      "required": ["tripped", "knob"],
+      "properties": {
+        "tripped": { "type": "string", "enum": ["max_pixels", "vram_reserve", "timeout_projected", "capability_missing", "dependency_missing"] },
+        "observed": { "type": ["number", "string", "null"] },
+        "limit": { "type": ["number", "string", "null"] },
+        "knob": { "type": "string", "description": "点名到可操作位置（如 画像 budget.max_pixels / 分镜表 layout_default.per_panel / 画像 engines.<档>.steps）" }
+      }
+    },
+    "error": { "type": ["string", "null"], "description": "失败/跳过原因原文。引擎不可达要带起法提示（继承 deduce-images.ts:57 的文案范式）" },
+    "driver": { "type": ["string", "null"], "description": "执行者标识（\"kit/img-drive\" 或宿主自定义）——可替换驱动器得留下谁干的痕迹" },
+    "at": { "type": "string", "description": "时刻（人读）。排序请另用文件名里的单调序，不靠这个字段" }
+  }
+}

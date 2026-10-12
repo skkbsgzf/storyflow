@@ -1,0 +1,90 @@
+{
+  "format": "image-profile@1",
+  "id": "qwen-image-2-1-comfyui",
+  "label": "Qwen-Image 2.1 线（ComfyUI 后端 · 文生图 + 参考图编辑链）",
+  "backend": "comfyui",
+  "base_url": "<必填:引擎地址，本地 ComfyUI 如 http://127.0.0.1:8188；值写进 .external 不入库>",
+  "models": {
+    "unet": "<必填:UNET 文件名（本形状按 int8 量化的 qwen-image 2.1 主模型设计）>",
+    "clip": "<必填:文本编码器文件名（务必 w4a8 一类低显存档，见 quantization.te 注释）>",
+    "vae": "<必填:VAE 文件名>",
+    "api_model": null
+  },
+  "quantization": {
+    "unet": "int8",
+    "te": "w4a8"
+  },
+  "graph": {
+    "t2i": "presets/image/graphs/comfyui-qwen-t2i.json",
+    "ref_edit": "presets/image/graphs/comfyui-qwen-ref-edit.json",
+    "slots": {
+      "unet": "__UNET__",
+      "clip": "__CLIP__",
+      "vae": "__VAE__",
+      "prompt": "__PROMPT__",
+      "negative": "__NEGATIVE__",
+      "resolution": "__RESOLUTION__",
+      "width": "__W__",
+      "height": "__H__",
+      "seed": "__SEED__",
+      "steps": "__STEPS__",
+      "cfg": "__CFG__",
+      "sampler": "__SAMPLER__",
+      "scheduler": "__SCHEDULER__",
+      "denoise": "__DENOISE__",
+      "out_prefix": "__OUT_PREFIX__",
+      "ref_1": "__REF_1__",
+      "lora": "__LORA__",
+      "lora_strength": "__LORA_STRENGTH__"
+    }
+  },
+  "engines": {
+    "base": {
+      "label": "标准档（无加速件）",
+      "steps": 25,
+      "cfg": 1.0,
+      "sampler": "euler",
+      "scheduler": "simple",
+      "denoise": 1.0,
+      "accelerator": null,
+      "lora": null
+    }
+  },
+  "default_engine": "base",
+  "capabilities": {
+    "reference_edit": true,
+    "in_model_text": true,
+    "negative_prompt": true,
+    "batch": false,
+    "transparent_bg": false,
+    "system_stats": true
+  },
+  "budget": {
+    "max_pixels": 1048576,
+    "vram_reserve_gb": 2.0,
+    "cold_timeout_s": 1800,
+    "warm_timeout_s": 240
+  },
+  "limits": {
+    "bubble_chars_max": 8,
+    "max_panels_per_page": 9
+  },
+  "size_default": { "w": 1024, "h": 1024 },
+  "comfyui": {
+    "input_dir": "input",
+    "output_prefix": "comic/",
+    "client_id": null
+  },
+  "style_prefix": "漫画分镜页，硬朗描边，网点阴影，人物造型夸张有辨识度，构图饱满",
+  "negative_default": "低画质，模糊，畸形手，多余肢体，错字，水印，签名",
+  "secrets": {
+    "api_key_env": null,
+    "external_key": "extensions.image.profiles.qwen-image-2-1-comfyui"
+  },
+  "provenance": {
+    "tested_on": "16GB 单卡（常驻 12.66GB used / 2.34GB free 量级），w4a8 文本编码器 + int8 主模型",
+    "tested_at": "2026-10-11",
+    "receipts": []
+  },
+  "notes": "出厂形状件：模型名与地址一律留 <必填> 占位（发布口径：不把任何人的本机模型名/盘符写进仓库）。img-plan 见到未填的占位会整包拒绝并点名旋钮，不会拼出一张注定失败的图。加速档请按 presets/image/acceleration.json 的签名在 engines 里加档引用，勿在本文件写「实测更快」的数字而不带出处。"
+}

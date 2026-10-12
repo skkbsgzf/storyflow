@@ -1,0 +1,67 @@
+{
+  "format": "engine-capability@1",
+  "status": "partial",
+  "backend": "comfyui",
+  "profile": "synthetic-profile-id",
+  "base_url": "http://127.0.0.1:18188",
+  "probed_at": "2026-10-11 12:00:00",
+  "engine_version": "synthetic-comfyui-0.0.0",
+  "endpoints": {
+    "/prompt": { "ok": true, "reason": null, "seconds": 0.4 },
+    "/history": { "ok": true, "reason": null, "seconds": 0.2 },
+    "/view": { "ok": true, "reason": null, "seconds": 0.1 },
+    "/object_info": { "ok": false, "reason": "HTTP 404（该引擎版本无此端点，节点核对改用 /object_info/<class_type> 单查）", "seconds": 0.3 },
+    "/system_stats": { "ok": true, "reason": null, "seconds": 0.5 }
+  },
+  "nodes_present": ["UNETLoader", "CLIPLoader", "VAELoader", "KSampler", "SaveImage"],
+  "nodes_missing": ["TextEncodeQwenImage21", "QwenImage21Cache"],
+  "models_seen": {
+    "unet": ["synthetic-unet-int8.safetensors"],
+    "clip": ["synthetic-clip-w4a8.safetensors"],
+    "vae": ["synthetic-vae.safetensors"],
+    "lora": []
+  },
+  "declared_models_check": [
+    { "slot": "unet", "name": "synthetic-unet-int8.safetensors", "present": true, "where": "models/unet" },
+    { "slot": "clip", "name": "synthetic-clip-w4a8.safetensors", "present": true, "where": "models/clip" },
+    { "slot": "lora:synthetic-accel", "name": "synthetic-lora.safetensors", "present": false, "where": null }
+  ],
+  "accelerators_detected": [
+    {
+      "name": "synthetic-accumulator",
+      "matched_by": "required_nodes",
+      "files": [],
+      "ready": false,
+      "missing": ["节点 SyntheticAccumulator 查无", "LoRA 文件缺失"],
+      "measured": "≈2.0×（合成值，出处：本 fixture 不指真收据）",
+      "enabled_now": false,
+      "memory_note": "缓存类节点须 off"
+    }
+  ],
+  "capability_matrix": {
+    "reference_edit": { "declared": true, "observed": false, "evidence": "编辑链所需 TextEncodeQwenImage21 查无", "effective": false },
+    "in_model_text": { "declared": true, "observed": null, "evidence": null, "effective": true },
+    "batch": { "declared": false, "observed": false, "evidence": "图模板单 SaveImage 输出", "effective": false }
+  },
+  "divergences": [
+    {
+      "key": "capabilities.reference_edit",
+      "declared": true,
+      "observed": false,
+      "note": "画像说支持但引擎没这个节点 → ref_edit 模板不可用，一致性策略须降 seed_lock；probe 不改画像，交人裁"
+    }
+  ],
+  "guardrail_read": {
+    "source": "/system_stats",
+    "vram_total_gb": 16.0,
+    "vram_free_gb": 3.1,
+    "ram_total_gb": 32.0,
+    "ram_free_gb": 12.5,
+    "at": "2026-10-11 12:00:01"
+  },
+  "unreachable_reason": null,
+  "not_probed": ["in_model_text 的字形正确性（要真出图才能验）", "transparent_bg（无对应节点可验）"],
+  "probe_files": ["presets/image/graphs/comfyui-qwen-t2i.json", "presets/image/graphs/comfyui-qwen-ref-edit.json"],
+  "driver": "kit/img-probe（B 批，本 fixture 为其产出形状的对齐基准）",
+  "note": "合成 fixture（A 批契约逐键对齐用例，非真机产物）：B 批 img-probe 的产出必须过同一份 engine-capability@1，模型名与地址一律 synthetic，不写任何人的本机值。本件只记录「这台机器这套引擎实测能做什么」，识别不等于启用；能力生效与否由画像 engines 档位与分镜表策略共同决定，最终画面归人眼。"
+}

@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "miniflow/image-profile",
+  "title": "image-profile@1 · 生图后端画像（普适性的落点）",
+  "description": "「这台机器上这套模型怎么出图」的声明件——作者口径「用户可以是任意 ComfyUI 版本 + 任意生图模型」的接口面：新增一种后端/模型 = 新增一份画像文件，不改代码。出厂画像在 `presets/image/profiles/`（入 git，零密钥零本机盘符），用户侧画像与值在 `.external/`（不入库）。三条纪律：① **能力位是声明不是假设**——capabilities 声明的能力必须能被 `tools/img-probe.py` 用 /object_info 实测核对，探测与声明分歧要回显（画像说支持 reference_edit 而节点查无 = 探针点名，不许静默当成支持）；② **档位不是分支代码**——引擎组合（base/turbo/lora）写在 engines 表里，图模板用槽位引用，代码里不许出现「如果是 turbo 就……」；③ **数值是预算不是闸**——budget 用来做显式失败前的预检（越界即点名旋钮要求人覆写），不用来自作主张降参、缩图、换模型（作者口径：自设阈值禁当隐形闸）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "id", "backend", "engines"],
+  "properties": {
+    "format": { "const": "image-profile@1" },
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$", "description": "画像 id（文件名与它一致，如 qwen-image-2-1-comfyui）" },
+    "label": { "type": "string", "description": "人读名" },
+    "backend": { "type": "string", "enum": ["comfyui", "openai-images", "dashscope", "off"], "description": "off = 显式关闭出图（一切出图动词回「未配置画像」点名，不静默跳过）" },
+    "base_url": { "type": "string", "description": "引擎地址（本地 ComfyUI 如 http://127.0.0.1:8188）。发布口径：真实地址属用户侧值，出厂画像只留示例位，用户覆写进 .external" },
+    "models": {
+      "type": "object",
+      "description": "模型标识（ComfyUI 用文件名，API 用 model id）。**这些是用户环境里的值**，出厂画像留 null 或占位；`img-probe` 负责核对文件是否真存在",
+      "additionalProperties": false,
+      "properties": {
+        "unet": { "type": ["string", "null"], "description": "扩散主模型文件名" },
+        "clip": { "type": ["string", "null"], "description": "文本编码器文件名（qwen 线：量化档位直接决定显存生死，见 quantization.te）" },
+        "vae": { "type": ["string", "null"] },
+        "api_model": { "type": ["string", "null"], "description": "API 后端的 model 参数" }
+      }
+    },
+    "quantization": {
+      "type": "object",
+      "description": "量化档位声明。实测硬教训：文本编码器量化才是显存生死线——w4a8 的 TE 可用，int8 的 TE 顶到 ~26GB 直接爆 16GB 卡（工单 §二.3）。档位不是性能偏好，是能不能跑完",
+      "additionalProperties": false,
+      "properties": {
+        "unet": { "type": ["string", "null"], "description": "如 int8_convrot / fp8 / default" },
+        "te": { "type": ["string", "null"], "description": "文本编码器档位，如 w4a8" }
+      }
+    },
+    "graph": {
+      "type": "object",
+      "description": "图模板选择（声明件而非代码）：不同模型的图**不同形**（qwen 的 TextEncodeQwenImage21 三输出含 latent，SDXL 走 CLIPTextEncode+EmptyLatentImage），在 TS 里硬拼必漂移——现状 storyharness/packs/deduce/engine/deduce-images.ts:35-46 就是一份与实测版已经长得不一样的硬拼副本",
+      "additionalProperties": false,
+      "required": ["t2i"],
+      "properties": {
+        "t2i": { "type": "string", "description": "文生图模板相对路径（相对仓库根，presets/image/graphs/*.json）" },
+        "ref_edit": { "type": ["string", "null"], "description": "带参考图的编辑链模板（capabilities.reference_edit=true 时必需，否则 img-plan 拒绝并要求换一致性策略）" },
+        "slots": {
+          "type": "object",
+          "description": "本后端模板用到的槽位名清单（img-plan 逐个核对模板里的 __X__ 是否都在此声明——槽位名打错 = 静默出废图，必须静态门拦住）",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "engines": {
+      "type": "object",
+      "description": "引擎档位表（至少一档）。每档是采样参数与图节点补丁的**组合声明**，turbo 之类加速档在此引用 acceleration.json 的签名条目",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["steps", "cfg", "sampler"],
+        "properties": {
+          "label": { "type": "string" },
+          "steps": { "type": "integer", "minimum": 1, "maximum": 200 },
+          "cfg": { "type": "number", "minimum": 0, "maximum": 30 },
+          "sampler": { "type": "string", "description": "采样器名（如 euler / dpmpp_2m）" },
+          "scheduler": { "type": "string" },
+          "denoise": { "type": "number", "minimum": 0, "maximum": 1 },
+          "sigmas": { "type": ["string", "null"], "description": "自定义 sigma 表名（turbo 类加速件常用）" },
+          "accelerator": { "type": ["string", "null"], "description": "引用 presets/image/acceleration.json 的条目 name（出图收据里要带命中证明）" },
+          "lora": {
+            "type": ["string", "null"],
+            "description": "LoRA 文件名（须为 unmerged 形态；merged 形态与免驱动 hook 不兼容，见 acceleration.json 条目注释）"
+          },
+          "node_patch": {
+            "type": "object",
+            "description": "按节点号覆写图输入（如把缓存节点 device 钉成 off——显存纪律：缓存类节点默认 off，别让人不知情的常驻占用顶爆内存）",
+            "additionalProperties": { "type": "object", "additionalProperties": true }
+          }
+        }
+      }
+    },
+    "default_engine": { "type": "string", "description": "缺省档位键；缺省=engines 里第一个键。img-plan 回显实际选中的档位" },
+    "capabilities": {
+      "type": "object",
+      "description": "能力位（一致性策略、气泡轨、参考图链的择路依据）。每一条都要能被 img-probe 实测核对或人工声明；缺位=按不支持处理（显式失败，不猜）",
+      "additionalProperties": false,
+      "properties": {
+        "reference_edit": { "type": "boolean", "description": "支持带参考图的编辑链（跨格保身份靠它）" },
+        "in_model_text": { "type": "boolean", "description": "模型内直出可读中文文字（实测条件：每句 ≤8 字、字号大；长文未验，见知识卡 status: draft）" },
+        "negative_prompt": { "type": "boolean" },
+        "batch": { "type": "boolean", "description": "支持一次多张（true 也仍默认串行——并发抢占余量会进分页地狱）" },
+        "transparent_bg": { "type": "boolean" },
+        "system_stats": { "type": "boolean", "description": "后端暴露 /system_stats（护栏预检靠它；false 时预检显式跳过并在收据里记 skipped_reason）" }
+      }
+    },
+    "budget": {
+      "type": "object",
+      "description": "护栏预算（预检输入，非隐形闸）",
+      "additionalProperties": false,
+      "properties": {
+        "max_pixels": { "type": ["integer", "null"], "minimum": 65536, "description": "单图最大像素面积（实测安全口径 ~1MP；逐格全分辨率出再拼页时按格计）" },
+        "vram_reserve_gb": { "type": ["number", "null"], "minimum": 0, "description": "提交前要留出的显存余量；不足 = 显式失败点名旋钮" },
+        "cold_timeout_s": { "type": ["integer", "null"], "minimum": 60, "description": "冷加载超时（实测冷税 460–1500s，warm 30–198s，差一个数量级——默认必须按冷值定，禁止 warm 假设）" },
+        "warm_timeout_s": { "type": ["integer", "null"], "minimum": 30, "description": "已有缓存时的参考超时（仅记账，不作为默认）" }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "bubble_chars_max": { "type": ["integer", "null"], "minimum": 1, "description": "模型内直出气泡的每句字数口径（实测 8 字内稳）。超出口径只进复核清单，不改稿不拦截" },
+        "max_panels_per_page": { "type": ["integer", "null"], "minimum": 1 }
+      }
+    },
+    "size_default": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["w", "h"],
+      "properties": { "w": { "type": "integer", "minimum": 64 }, "h": { "type": "integer", "minimum": 64 } }
+    },
+    "comfyui": {
+      "type": "object",
+      "description": "ComfyUI 后端专有约定（不写死盘符，路径一律相对或来自环境变量）",
+      "additionalProperties": false,
+      "properties": {
+        "input_dir": { "type": ["string", "null"], "description": "参考图 staging 目录名（相对 ComfyUI 根），如 input" },
+        "output_prefix": { "type": ["string", "null"], "description": "SaveImage 的 filename_prefix 前缀段（如 comic/），决定产物落在输出目录的哪个子树" },
+        "client_id": { "type": ["string", "null"], "description": "提交时的客户端标识（可空）" }
+      }
+    },
+    "style_prefix": { "type": ["string", "null"], "description": "缺省风格前缀（从实测脚本 comic-run.py:27-31 外提；分镜表可覆写）" },
+    "negative_default": { "type": ["string", "null"], "description": "缺省负向词" },
+    "secrets": {
+      "type": "object",
+      "description": "密钥**键名**声明位（红线：值一律在 .external，画像文件不许出现 apiKey/base_url 实值以外的凭据）。本处只许写环境变量名或 .external 的键路径",
+      "additionalProperties": false,
+      "properties": {
+        "api_key_env": { "type": ["string", "null"], "description": "取值用的环境变量名，如 COMFY_API_KEY / DASHSCOPE_API_KEY" },
+        "external_key": { "type": ["string", "null"], "description": ".external/storyharness.json 里的键路径，如 extensions.image.apiKey" }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "description": "本画像的实测出处（哪些数字是在什么硬件/模型上测出来的——8.6× 加速比是 qwen-2.1-int8 + A4500 的结果，不是普适常数，必须带来源）",
+      "additionalProperties": false,
+      "properties": {
+        "tested_on": { "type": ["string", "null"], "description": "硬件/显存口径描述（如「16GB 单卡，常驻 12.66GB」）" },
+        "tested_at": { "type": ["string", "null"] },
+        "receipts": { "type": "array", "items": { "type": "string" }, "description": "支撑本画像数值的收据路径（无收据的数值视为未证，写进知识卡要标 status: draft）" }
+      }
+    },
+    "notes": { "type": "string" }
+  }
+}

@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "miniflow/asset-design",
+  "title": "asset-design@1 · 美术资产设计表（人设 / 背景 / 物品 / 细节图案）",
+  "description": "四类美术资产的设计意图件，作者 2026-10-11 点名要的产物面：character（人设）/ background（背景设计）/ prop（物品设计）/ detail（细节图案设计）。承载体与分镜表同形态：项目内 `美术资产表.md` 正文给人读 + 一个 ```json 围栏块给机读（内核 script 壳只认最近 .md 上游产物，core/src/minitools.ts:88-95）；取块规则与 storyboard@1 一致（命中 0 块或 >1 块 = 显式点名失败，不静默取第一块）。**意图与产物分离**：本件只写「设计成什么样」，不写「出过什么图、哪张是废稿」——产物状态归 asset-registry@1（由 tools/img-assets.py 从 job+收据确定性重建）。分镜表（storyboard@1）用 id 引用本件，两处不许各写一套外观描述（本仓「两套真相」反复被咬）。设计件的定稿推进（draft→reviewed→locked）是人的动作：`img-plan` 遇到未 locked 的资产照常编排任务但把警告写进 job.notes，绝不替人签字。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "assets"],
+  "properties": {
+    "format": { "const": "asset-design@1" },
+    "bind": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "project": { "type": "string" },
+        "flow": { "type": "string" },
+        "node": { "type": "string" },
+        "episode": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "style": {
+      "type": "object",
+      "description": "全套资产的共用画风（与 storyboard@1.style 同义；两处都填时以分镜表为准，img-plan 回显分歧不静默择一）",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "prompt_prefix": { "type": "string" },
+        "negative": { "type": "string" },
+        "line_weight": { "type": "string", "enum": ["thin", "medium", "heavy", "brush"], "description": "线条性格（细节图案与线稿强度共用口径）" }
+      }
+    },
+    "assets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "class", "name", "intent"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._-]*$",
+            "description": "资产 id，小写连字符，带类别前缀更好读（char-linwan / bg-snowmountain / prop-brass-lantern / detail-rosette）。分镜表与台账都靠它对账，改名=旧产物在台账里进 stale_design"
+          },
+          "class": { "type": "string", "enum": ["character", "background", "prop", "detail"], "description": "类别：人设 / 背景设计 / 物品设计 / 细节图案设计（作者点名的四类，不扩）" },
+          "name": { "type": "string", "description": "人读名" },
+          "intent": { "type": "string", "description": "一句设计意图（这件在故事里承担什么、要让读者感到什么）。提示词组装时它排在具体描述之前，防止出图「好看但不达意」" },
+          "maturity": { "type": "string", "enum": ["draft", "reviewed", "locked"], "description": "设计件成熟度。推进是人的裁断（红线：裁断归人）；locked 才可作定稿锚图复用到跨页" },
+          "design": { "type": "object", "description": "按类别分形的结构化设计字段（类别决定必填项，见 allOf 条件；本处不写 additionalProperties，否则会把各分支新增的字段全判成多余键）" },
+          "prompt_prefix": { "type": "string", "description": "本资产专属前缀覆写（如某背景要「广角空气感」）" },
+          "negative": { "type": "string", "description": "本资产专属负向覆写" },
+          "size": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["w", "h"],
+            "description": "期望出图尺寸（覆写画像默认）。越画像 budget.max_pixels = img-plan 显式失败点名旋钮，不静默缩图",
+            "properties": { "w": { "type": "integer", "minimum": 64 }, "h": { "type": "integer", "minimum": 64 } }
+          },
+          "variants": {
+            "type": "array",
+            "description": "同一资产的多视角/多变体（人设三视图=front/side/back；细节图案=不同密度版）。每个变体在 job 里是独立 task，台账按 asset_id+variant 记账",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name"],
+              "properties": {
+                "name": { "type": "string", "description": "变体名（front / side / back / full / dense 等）" },
+                "note": { "type": "string", "description": "该变体要额外交代什么（如「背面要露出肩甲接缝纹样」）" }
+              }
+            }
+          },
+          "refs": {
+            "type": "array",
+            "description": "资产间的组成引用（如人设的服装纹样引用某 detail 资产、某页背景引用某 prop）。只写 id，不复制描述——描述唯一来源是被引用的那个资产",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["asset"],
+              "properties": {
+                "asset": { "type": "string", "description": "被引用资产的 id（必须存在于本表，否则 img-plan 点名悬空）" },
+                "role": { "type": "string", "description": "引用作用（pattern / palette / material / composition）" }
+              }
+            }
+          },
+          "notes": { "type": "string" }
+        },
+        "allOf": [
+          {
+            "if": { "properties": { "class": { "const": "character" } }, "required": ["class"] },
+            "then": {
+              "properties": {
+                "design": {
+                  "required": ["face", "hair", "outfit"],
+                  "properties": {
+                    "face": { "type": "string", "description": "脸型/五官特征（跨格一致性的第一锚）" },
+                    "hair": { "type": "string", "description": "发型/发色/长度" },
+                    "outfit": { "type": "string", "description": "服装（含可辨识标志物；纹样走 refs 引用 detail 资产）" },
+                    "palette": { "type": "string", "description": "配色（角色识别色）" },
+                    "build": { "type": "string", "description": "体格/身高感" },
+                    "marks": { "type": "string", "description": "伤疤/痣/饰品等硬标志" },
+                    "age_range": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": { "properties": { "class": { "const": "background" } }, "required": ["class"] },
+            "then": {
+              "properties": {
+                "design": {
+                  "required": ["space", "light"],
+                  "properties": {
+                    "space": { "type": "string", "description": "空间/场景（雪山隘口/堂屋/车厢）" },
+                    "light": { "type": "string", "description": "光（方向/强度/色温）" },
+                    "weather": { "type": "string" },
+                    "era": { "type": "string", "description": "年代/地域气质" },
+                    "mood": { "type": "string" },
+                    "depth": { "type": "string", "enum": ["foreground", "mid", "far", "panorama"], "description": "景深层次（跨页复用同一背景时要一致，否则台账里是不同指纹）" }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": { "properties": { "class": { "const": "prop" } }, "required": ["class"] },
+            "then": {
+              "properties": {
+                "design": {
+                  "required": ["form", "material"],
+                  "properties": {
+                    "form": { "type": "string", "description": "形制（尺寸比例、结构）" },
+                    "material": { "type": "string", "description": "材质（黄铜/粗陶/漆木）" },
+                    "wear": { "type": "string", "description": "新旧与使用痕（剧情里的关键道具要一致）" },
+                    "scale": { "type": "string", "description": "相对人体的尺度感（掌中/半身高）" },
+                    "function": { "type": "string", "description": "在剧情里做什么用（防止出图把它画成装饰）" }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": { "properties": { "class": { "const": "detail" } }, "required": ["class"] },
+            "then": {
+              "properties": {
+                "design": {
+                  "required": ["motif"],
+                  "properties": {
+                    "motif": { "type": "string", "description": "纹样/图案母题（卷草/云雷/家徽/拟声字形）" },
+                    "style": { "type": "string", "description": "图案风格（几何/写实/浮世绘线）" },
+                    "density": { "type": "string", "enum": ["sparse", "medium", "dense"], "description": "密度（低像素下 dense 纹样必糊——像素预算口径的输入）" },
+                    "line_weight": { "type": "string", "enum": ["thin", "medium", "heavy", "brush"] },
+                    "palette": { "type": "string" },
+                    "use_on": { "type": "string", "description": "应用对象（outfit/武器/背景墙面/页眉），决定它进哪个 task 的提示词" }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "notes": { "type": "string" }
+  }
+}

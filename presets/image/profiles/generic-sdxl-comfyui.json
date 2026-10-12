@@ -1,0 +1,86 @@
+{
+  "format": "image-profile@1",
+  "id": "generic-sdxl-comfyui",
+  "label": "SDXL 通形（ComfyUI 后端 · CheckpointLoaderSimple 单件形状）",
+  "backend": "comfyui",
+  "base_url": "<必填:引擎地址，本地 ComfyUI 如 http://127.0.0.1:8188；值写进 .external 不入库>",
+  "models": {
+    "unet": "<必填:SDXL 检查点文件名（CheckpointLoaderSimple 的 ckpt_name）>",
+    "clip": null,
+    "vae": null,
+    "api_model": null
+  },
+  "quantization": {
+    "unet": "default",
+    "te": null
+  },
+  "graph": {
+    "t2i": "presets/image/graphs/comfyui-sdxl-t2i.json",
+    "ref_edit": null,
+    "slots": {
+      "checkpoint": "__CHECKPOINT__",
+      "prompt": "__PROMPT__",
+      "negative": "__NEGATIVE__",
+      "width": "__W__",
+      "height": "__H__",
+      "seed": "__SEED__",
+      "steps": "__STEPS__",
+      "cfg": "__CFG__",
+      "sampler": "__SAMPLER__",
+      "scheduler": "__SCHEDULER__",
+      "denoise": "__DENOISE__",
+      "out_prefix": "__OUT_PREFIX__",
+      "lora": "__LORA__",
+      "lora_strength": "__LORA_STRENGTH__"
+    }
+  },
+  "engines": {
+    "base": {
+      "label": "标准档",
+      "steps": 28,
+      "cfg": 6.5,
+      "sampler": "dpmpp_2m",
+      "scheduler": "karras",
+      "denoise": 1.0,
+      "accelerator": null,
+      "lora": null
+    }
+  },
+  "default_engine": "base",
+  "capabilities": {
+    "reference_edit": false,
+    "in_model_text": false,
+    "negative_prompt": true,
+    "batch": true,
+    "transparent_bg": false,
+    "system_stats": true
+  },
+  "budget": {
+    "max_pixels": 1048576,
+    "vram_reserve_gb": 1.5,
+    "cold_timeout_s": 900,
+    "warm_timeout_s": 180
+  },
+  "limits": {
+    "bubble_chars_max": null,
+    "max_panels_per_page": 6
+  },
+  "size_default": { "w": 1024, "h": 1024 },
+  "comfyui": {
+    "input_dir": "input",
+    "output_prefix": "comic/",
+    "client_id": null
+  },
+  "style_prefix": "漫画分镜页，清晰线稿，强烈明暗，人物造型有辨识度",
+  "negative_default": "lowres, blurry, extra fingers, malformed hands, watermark, text artifacts",
+  "secrets": {
+    "api_key_env": null,
+    "external_key": "extensions.image.profiles.generic-sdxl-comfyui"
+  },
+  "provenance": {
+    "tested_on": null,
+    "tested_at": null,
+    "receipts": []
+  },
+  "notes": "通形画像：只保证「形状」正确（一个 checkpoint 出图），不带本机实测数。两个能力位刻意关着——reference_edit=false 表示没验过参考图编辑链（SDXL 上通常要 IPAdapter/AttentionController 一类额外件，装了再开），in_model_text=false 表示中文气泡字形不可靠，分镜表若声明 in_model 轨，img-plan 会直接拒绝并把旋钮点名。budget/limits 里没实测依据的值一律留 null 或保守默认，不当已证口径。"
+}

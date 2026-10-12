@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "miniflow/storyboard",
+  "title": "storyboard@1 · 分镜表（漫画视觉链路的中间表示）",
+  "description": "漫画/分镜的机读中间表示：由 agent 认知步产出（skill: comic-storyboard），是 `img-plan` 生成 image-job@1 的唯一输入、是人审的对象、也是 `img-check`/`img-rerun` 对账的坐标系。承载体：项目内 `分镜表.md` 的正文给人读，机读部分取正文里的 ```json 围栏块（内核 script 壳沿上游 BFS 只认最近 .md 产物，core/src/minitools.ts:88-95——故取「md 内嵌 json 块」形态而非独立 json 件）。取块规则（img-plan 实现，逐条点名不静默）：① 只认顶层 `\"format\": \"storyboard@1\"` 的 json 围栏块；② 命中 0 块或 >1 块 = 失败并点名文件与块数；③ 块内 JSON 必须过本契约，不过 = 失败点名首个违规字段位。立场边界（工单 §〇 作者裁定）：本件是**意图与编排**，不含像素、不含引擎参数硬值——引擎档位与尺寸上限一律引用 image-profile@1 的键，由 img-plan 落地；kit 不做真实绘制。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "pages"],
+  "properties": {
+    "format": { "const": "storyboard@1" },
+    "bind": {
+      "type": "object",
+      "description": "归属绑定（人读溯源用；img-plan 透传进 job，不参与计算）",
+      "additionalProperties": false,
+      "properties": {
+        "project": { "type": "string", "description": "项目 id，如 p-xxx" },
+        "flow": { "type": "string", "description": "生产线 id" },
+        "node": { "type": "string", "description": "产出本表的 flow 节点 id" },
+        "episode": { "type": "integer", "minimum": 1, "description": "集号（漫剧口径按集切分；整篇漫画可不填）" },
+        "source_script": { "type": "string", "description": "上游分镜剧本的相对路径（modules/drama 的 分镜剧本.md）" }
+      }
+    },
+    "style": {
+      "type": "object",
+      "description": "全局画风声明。prompt_prefix 是「风格前缀件」的覆写位——缺省由 image-profile@1 提供，本表只在需要偏离该画像默认时才填（实测：风格辨识靠 prompt 前缀词，上色强弱靠色彩词，见工单 §二.8/§二.9）",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "description": "画风名（人读，如「JOJO 风彩页」「黑白少年漫」）" },
+        "prompt_prefix": { "type": "string", "description": "覆写画像的风格前缀" },
+        "negative": { "type": "string", "description": "覆写画像的负向词" },
+        "color_intensity": {
+          "type": "string",
+          "enum": ["line_only", "flat", "standard", "vivid"],
+          "description": "上色强度档位：线稿/平涂/标准/浓烈（实测：色彩词强弱决定上色与否，故做成离散档而非自由描述）"
+        },
+        "reference_assets": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "支撑本画风的资产 id（通常指向 asset-design@1 里的 detail/class 件）"
+        }
+      }
+    },
+    "layout_default": {
+      "type": "object",
+      "description": "整页排布的缺省（每页可覆写）。per_panel=true 表示「逐格全分辨率出图再交宿主拼页」——这是手部/细节缺陷的第一优先解法（实测根因是每格像素不足，2×2 页 ~1MP 时单格手部仅百余像素；加步数不解决）",
+      "additionalProperties": false,
+      "properties": {
+        "grid": { "type": "string", "pattern": "^[1-9]x[1-9]$", "description": "宫格，如 2x2 / 1x1 / 2x3" },
+        "per_panel": { "type": "boolean", "description": "逐格出图（true）还是整页一次出（false）" },
+        "engine": { "type": "string", "description": "缺省引擎档键，必须在 image-profile@1.engines 里存在；缺省=画像的 default_engine" }
+      }
+    },
+    "characters": {
+      "type": "array",
+      "description": "出场角色的**一致性策略**登记（外观设定本体在 asset-design@1 的 class:\"character\" 资产里，本处只绑策略——同一设定不许两处各写一套）",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name"],
+        "properties": {
+          "id": { "type": "string", "description": "角色 id（与 asset-design@1 的 character 资产 id 对齐）" },
+          "name": { "type": "string" },
+          "asset_ref": { "type": "string", "description": "人设资产 id（asset-design@1.assets[].id）；出锚图时 img-plan 用它取设计件描述" },
+          "anchor_asset": { "type": "string", "description": "已定稿的锚图产物相对路径（角色锚三视图）。跨格一致性靠它作参考图输入" },
+          "consistency": {
+            "type": "string",
+            "enum": ["reference_edit", "lora", "seed_lock"],
+            "description": "一致性策略：锚图走参考图编辑链（需画像能力位 reference_edit）/ 角色 LoRA / 固定 seed+结构化锚描述兜底。img-plan 按画像能力位校验，能力位不成立时**显式失败点名**，不静默换策略（工单 §八「半接状态」教训）"
+          }
+        }
+      }
+    },
+    "pages": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["page_no", "panels"],
+        "properties": {
+          "page_no": { "type": "integer", "minimum": 1 },
+          "title": { "type": "string", "description": "页标题（人读）" },
+          "grid": { "type": "string", "pattern": "^[1-9]x[1-9]$", "description": "本页宫格，覆写 layout_default.grid" },
+          "per_panel": { "type": "boolean", "description": "本页是否逐格出图，覆写 layout_default.per_panel" },
+          "engine": { "type": "string", "description": "本页引擎档键，覆写 layout_default.engine" },
+          "panels": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["panel_no", "description"],
+              "properties": {
+                "panel_no": { "type": "integer", "minimum": 1, "description": "页内格号（阅读序）。img-plan 按它排序并生成 task_id" },
+                "description": { "type": "string", "description": "画面描述（分镜提示词的正文原料：谁在哪做什么、表情与动作走向）。实测口径：动作里带「手怎么放」的具象姿势最容易崩，描述越具体越要质检（工单 §二.6）" },
+                "shot": { "type": "string", "description": "机位/景别（特写/中景/俯角…）" },
+                "characters": { "type": "array", "items": { "type": "string" }, "description": "本格出场角色 id" },
+                "background": { "type": "string", "description": "背景资产 id（asset-design@1 的 class:\"background\"）" },
+                "props": { "type": "array", "items": { "type": "string" }, "description": "物品资产 id（class:\"prop\"）" },
+                "details": { "type": "array", "items": { "type": "string" }, "description": "细节图案资产 id（class:\"detail\"，如纹样/徽记/拟声词字形）" },
+                "bubbles": {
+                  "type": "array",
+                  "description": "对白与气泡。立场边界：本处只承载**台词文本**，不做坐标/字号排版（bubble-layout 规格件已按作者 2026-10-11 口径出账暂缓；kit 永不贴字合成像素）",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["text"],
+                    "properties": {
+                      "speaker": { "type": "string", "description": "说话人 id 或人名" },
+                      "text": { "type": "string", "description": "气泡内文本" },
+                      "char_count": { "type": "integer", "minimum": 0, "description": "字数。缺省时 img-plan 按 len(text) 记账；超过画像 limits.bubble_chars_max 只**出证据**（img-check 复核清单），不改稿不拦截" },
+                      "kind": { "type": "string", "enum": ["speech", "thought", "sfx", "caption"], "description": "气泡类型：对白/心想/拟声/旁白框" }
+                    }
+                  }
+                },
+                "narration": { "type": "array", "items": { "type": "string" }, "description": "旁白/解说句（与气泡分开记账，排版口径不同）" },
+                "bubble_mode": {
+                  "type": "string",
+                  "enum": ["in_model", "blank_layout", "none"],
+                  "description": "本口气泡轨：in_model=模型内直出中文气泡（需能力位 in_model_text，实测每句 ≤8 字才稳）；blank_layout=出留白构图把文字后压给宿主；none=无字。缺省由 img-plan 按画像能力位与字数择路，择路结果写进 job 的 task.notes"
+                },
+                "refs": {
+                  "type": "array",
+                  "description": "参考图输入（保身份/接前格）。img-plan 把它实例化进图模板的参考图槽（如 TextEncodeQwenImage21 的 images.image_N 嵌套字典——扁平键能过校验但执行期 TypeError，见 presets/image/README.md）",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["source", "ref"],
+                    "properties": {
+                      "source": { "type": "string", "enum": ["anchor", "asset", "panel", "file"], "description": "来源类别：角色锚 / 设计资产产物 / 前一格产物 / 项目外文件" },
+                      "ref": { "type": "string", "description": "指向 id（角色 id、资产 id、`页-格` 坐标如 3-2）或相对路径（source=file 时）" },
+                      "role": { "type": "string", "description": "该参考的作用声明（如 identity/composition/pattern），供提示词组装与人审理解" }
+                    }
+                  }
+                },
+                "engine": { "type": "string", "description": "本格引擎档键，覆写页与全局" },
+                "seed": { "type": "integer", "description": "固定 seed（可复现）。不填 = img-plan 按稳定派生规则给（同表重算同 seed），派生算法写死在 img-plan 并记入 task.seed_basis" },
+                "size": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["w", "h"],
+                  "description": "本格/本页出图尺寸（覆写画像默认）。越画像 budget.max_pixels = img-plan 显式失败点名旋钮，不静默缩图",
+                  "properties": { "w": { "type": "integer", "minimum": 64 }, "h": { "type": "integer", "minimum": 64 } }
+                },
+                "notes": { "type": "string", "description": "给人看的批注位（不参与提示词组装）" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "notes": { "type": "string", "description": "全表级说明（改编口径、留给裁断的疑点等）" }
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "miniflow/engine-capability",
+  "title": "engine-capability@1 · 引擎能力探测收据（识别加速模型的落点）",
+  "description": "`tools/img-probe.py --profile` 的产出：这台机器 + 这个引擎 + 这套模型**实际**能做什么，与画像**声明**能做什么，两份账并排记。作者裁定的「具备识别加速模型的能力」就落在这里：拿 `/object_info`、模型与 LoRA 目录清单去比对 `presets/image/acceleration.json` 的签名表，命中即列出并指回其出处收据。三条纪律：① **只报实测，不推断**——节点查无就是查无，绝不因为「画像说支持」而写 supported；② **识别 ≠ 启用**——探测只列命中项，启用要人在画像 engines 档位里点名（本件里出现的 accelerator 名字含义是「检测到」，`enabled_now` 才说是否已生效）；③ **分歧必须回显**——声明与实测不一致逐条进 divergences 交人裁，工具不自动改画像、不自动降级策略（半接状态是最贵的坑：宁可不跑，不许静默跑出一批错图）。落 `projects/<id>/漫画/收据/engine-capability-<画像id>.json`（或 `--out`）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "status", "backend", "profile", "probed_at"],
+  "properties": {
+    "format": { "const": "engine-capability@1" },
+    "status": { "type": "string", "enum": ["ok", "partial", "unreachable"], "description": "partial = 连上了但部分端点不可用（如无 /object_info）；unreachable = 引擎没起或地址错，此时 unreachable_reason 必填且要带起法提示" },
+    "backend": { "type": "string", "enum": ["comfyui", "openai-images", "dashscope", "off"] },
+    "profile": { "type": "string", "description": "被探测的画像 id" },
+    "base_url": { "type": ["string", "null"], "description": "探测地址（只回显，不含凭据）" },
+    "probed_at": { "type": "string" },
+    "engine_version": { "type": ["string", "null"], "description": "引擎版本（ComfyUI 版本决定节点名集合，是深度适配的第一判据）" },
+    "endpoints": {
+      "type": "object",
+      "description": "逐端点可达性（/prompt /history /view /object_info /system_stats）。读不到的显式标 false + reason，不猜",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ok"],
+        "properties": {
+          "ok": { "type": "boolean" },
+          "reason": { "type": ["string", "null"] },
+          "seconds": { "type": ["number", "null"] }
+        }
+      }
+    },
+    "nodes_present": { "type": "array", "items": { "type": "string" }, "description": "图模板所需节点里引擎确实有的（按模板逐节点核对，不是全表罗列）" },
+    "nodes_missing": { "type": "array", "items": { "type": "string" }, "description": "所需但查无的节点——缺一个就意味着该模板不可用，img-plan 会拒绝，不是试试看" },
+    "models_seen": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "目录里实际看到的模型文件（画像声明的文件名要在这些清单里查到才算数）",
+      "properties": {
+        "unet": { "type": "array", "items": { "type": "string" } },
+        "clip": { "type": "array", "items": { "type": "string" } },
+        "vae": { "type": "array", "items": { "type": "string" } },
+        "lora": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "declared_models_check": {
+      "type": "array",
+      "description": "画像声明的模型逐一核对（absent 的模型用它出图必失败——probe 把它顶到人脸前）",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["slot", "name", "present"],
+        "properties": {
+          "slot": { "type": "string", "description": "unet / clip / vae / lora:<引擎档>" },
+          "name": { "type": "string" },
+          "present": { "type": "boolean" },
+          "where": { "type": ["string", "null"], "description": "在哪个目录看到（相对路径，不写盘符）" }
+        }
+      }
+    },
+    "accelerators_detected": {
+      "type": "array",
+      "description": "签名表命中项（**识别**结果）。没命中的加速件不猜、不列；每条要指回 acceleration.json 条目与其出处收据",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "matched_by", "ready"],
+        "properties": {
+          "name": { "type": "string" },
+          "matched_by": { "type": "string", "description": "靠什么命中：lora_name_pattern / required_nodes / model_pattern（多条件命中要写全）" },
+          "files": { "type": "array", "items": { "type": "string" }, "description": "匹配到的具体文件" },
+          "ready": { "type": "boolean", "description": "签名要求的节点与文件齐备（true 才谈得上可启用）" },
+          "missing": { "type": "array", "items": { "type": "string" }, "description": "不齐备时缺什么（点名到节点名或文件）" },
+          "measured": { "type": ["string", "null"], "description": "签名表里带的实测数字，照抄不换算（含出处硬件与收据路径）" },
+          "enabled_now": { "type": "boolean", "description": "画像默认档是否已在用它（缺省 false——识别不等于启用）" },
+          "memory_note": { "type": ["string", "null"], "description": "签名表里的显存/内存注意项转述（如「缓存节点须 off」）" }
+        }
+      }
+    },
+    "capability_matrix": {
+      "type": "object",
+      "description": "能力位三方对照：画像声明 / 实测证据 / 生效值。observed 只在有硬证据时才填（如 reference_edit 需编辑链节点齐备），无证据留 null——这是「判断由实测出收据，不由代码假设」的落地点",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["declared"],
+        "properties": {
+          "declared": { "type": ["boolean", "null"] },
+          "observed": { "type": ["boolean", "null"] },
+          "evidence": { "type": ["string", "null"], "description": "实测依据（哪个节点在/不在、哪份收据）" },
+          "effective": { "type": ["boolean", "null"], "description": "img-plan 实际采用的值（分歧未裁前按保守 = false）" }
+        }
+      }
+    },
+    "divergences": {
+      "type": "array",
+      "description": "声明与实测的分歧清单（交人裁；工具不改画像）",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "declared", "observed", "note"],
+        "properties": {
+          "key": { "type": "string" },
+          "declared": { "type": ["string", "boolean", "number", "null"] },
+          "observed": { "type": ["string", "boolean", "number", "null"] },
+          "note": { "type": "string", "description": "影响面与处置建议（如「ref_edit 模板不可用 → 一致性策略须降 seed_lock，需人改分镜表或补节点」）" }
+        }
+      }
+    },
+    "guardrail_read": {
+      "type": ["object", "null"],
+      "description": "护栏现场读数（提交前预检输入）。读不到就整块 null，禁止填 0 冒充「余量充足」",
+      "additionalProperties": false,
+      "required": ["source"],
+      "properties": {
+        "vram_total_gb": { "type": ["number", "null"] },
+        "vram_free_gb": { "type": ["number", "null"] },
+        "ram_total_gb": { "type": ["number", "null"] },
+        "ram_free_gb": { "type": ["number", "null"] },
+        "source": { "type": "string", "description": "读数来源（/system_stats 或 os 侧；两源不一致以引擎侧为准并记分歧）" },
+        "at": { "type": ["string", "null"] }
+      }
+    },
+    "unreachable_reason": { "type": ["string", "null"], "description": "status=unreachable 时必填：错误原文 + 起法提示（引擎是否已启动、地址是否对、是否需要 token）" },
+    "not_probed": { "type": "array", "items": { "type": "string" }, "description": "本次没探的东西（如 in_model_text 必须真出图才能验）——显式承认未知，比假装知道强" },
+    "probe_files": { "type": "array", "items": { "type": "string" }, "description": "探针用到的样本文件（相对路径）。跑过探针要可复核：留痕" },
+    "driver": { "type": ["string", "null"] },
+    "note": { "type": "string" }
+  }
+}

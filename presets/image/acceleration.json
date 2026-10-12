@@ -1,0 +1,75 @@
+{
+  "format": "acceleration-signatures@1",
+  "title": "加速件签名表（「识别加速模型」的数据面）",
+  "description": "「这台机器上有没有可用的加速件」靠**比对**得出，不靠代码假设，也不靠猜。img-probe 拿 /object_info 的节点清单、模型与 LoRA 目录列表逐条比对 detect；命中即写进 engine-capability@1 的 accelerators_detected，并**照抄** measured 与出处（不换算、不外推）。三条纪律：① 识别 ≠ 启用——命中只列出来，启用要人在画像 engines.<档>.accelerator 点名，否则默认档永远是 base；② 数字必须带出处——provenance 里的 tested_on/receipts 缺失，本表条目就只当线索不当依据（8.6× 是 16GB 单卡 + int8 底座这一组合的实测，换硬件不可比）；③ 签名是**模式**不是值——用文件名模式与节点类名匹配，不把任何人的绝对路径写进来。新增加速件 = 新增一条 entry，零代码改动。",
+  "entries": [
+    {
+      "name": "turbo-6step-unmerged-lora",
+      "label": "免驱动 turbo（6 步 unmerged LoRA 挂 int8 底座）",
+      "status": "measured",
+      "detect": {
+        "lora_name_pattern": ".*turbo.*\\.safetensors$",
+        "required_nodes": ["ViggleTurboSigmas"],
+        "model_pattern": "(?i)qwen.*image.*int8",
+        "match_mode": "all"
+      },
+      "engine_patch": {
+        "steps": 6,
+        "cfg": 1.0,
+        "sampler": "euler",
+        "scheduler": "normal",
+        "sigmas": "turbo6",
+        "node_patch": {
+          "7": { "scheduler": "normal" }
+        }
+      },
+      "measured": "角色锚图 259.0s → 30.1s（≈8.6×）",
+      "provenance": {
+        "tested_on": "16GB 单卡（常驻 12.66GB used / 2.34GB free 量级）+ qwen-image 2.1 int8 底座 + w4a8 文本编码器",
+        "tested_at": "2026-10-11",
+        "receipts": ["turbo-receipt-anchor.json（实测那轮的收据，属用户侧文件，不入库）"],
+        "notes": "免驱动含义：不装自定义节点包，靠 unmerged LoRA 权重 + 引擎侧 forward hook。装不了驱动的环境也能用，但 required_nodes 里有 ViggleTurboSigmas——签名比对会如实说「命中 LoRA 文件名但节点查无」，此时 ready=false，不许当成可用。"
+      },
+      "memory_note": "6 步显著缩短单图占用时长，但底座常驻不变；换档前先按 img-probe 的 guardrail_read 看余量，别在 2.3GB 余量上并发跑（实测分页地狱）。",
+      "risks": [
+        "细节偏软：手部/纹样等小面积结构更容易崩（实测：缺陷根因是模型表征 > 每格像素不足 > turbo 略软，加步数不解决前者）",
+        "文字笔画可能不如 base 稳（in_model_text 轨要单独复验）",
+        "merged 形态的 LoRA 与免驱动 hook 不兼容——签名只认 unmerged"
+      ],
+      "how_to_enable": "在画像里新增档位：engines.turbo = {steps:6, cfg:1.0, sampler:\"euler\", scheduler:\"normal\", accelerator:\"turbo-6step-unmerged-lora\", lora:\"<你的 turbo LoRA 文件名>\"}，再把 default_engine 或分镜表 layout_default.engine 指到 turbo。"
+    },
+    {
+      "name": "w4a8-text-encoder",
+      "label": "文本编码器 w4a8 量化（显存生死线，非速度件）",
+      "status": "measured",
+      "detect": {
+        "lora_name_pattern": null,
+        "required_nodes": ["CLIPLoader"],
+        "model_pattern": "(?i)w4a8",
+        "match_mode": "all"
+      },
+      "engine_patch": null,
+      "measured": "int8 文本编码器顶到 ~26GB 直接爆 16GB 卡；w4a8 可稳定跑完",
+      "provenance": {
+        "tested_on": "同上（16GB 单卡）",
+        "tested_at": "2026-10-11",
+        "receipts": ["页面出图收据 seconds/vram 字段（实测那轮）"],
+        "notes": "列进本表是因为它是「识别引擎侧优化件」的同一条路：显存能不能跑完，取决于量化档位而不是步数。它不改变采样参数，故 engine_patch=null，画像里对应 quantization.te。"
+      },
+      "memory_note": "量化档位不是性能偏好，是能不能跑完。画像 quantization.te 与实测文件名不符 → probe 记 divergence。",
+      "risks": ["低比特文本编码器对长提示词的字形稳定性影响未系统验过（知识卡里标 status: draft）"],
+      "how_to_enable": "画像 models.clip 填 w4a8 文件、quantization.te 写 \"w4a8\"。"
+    }
+  ],
+  "unverified_placeholders": [
+    {
+      "name": "lora-per-character",
+      "label": "角色专属 LoRA 保一致性",
+      "status": "unverified",
+      "why": "训练在本机内存条件下不可行，未实测。签名留空（detect 不给模式）以免被误命中。",
+      "detect": null,
+      "engine_patch": null,
+      "how_to_add": "别的机器训得动时：补 detect.lora_name_pattern（如 char-*.safetensors）与 required_nodes，measured 必须带该环境的收据路径。"
+    }
+  ]
+}
