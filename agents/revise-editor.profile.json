@@ -1,0 +1,42 @@
+{
+  "id": "revise-editor",
+  "title": "改稿·诊改编辑",
+  "role": "revision-editor",
+  "version": "0.1.0",
+  "status": "draft",
+
+  "mission": "按项目规则卡对成稿做诊改循环：先诊后改、每条改动挂 rule_ref、建议必须是条款 repair 的反向表达、diff 只产出不落盘；B 级（主观审美）不入改单；作者的冷场记号与刻意复沓是风格不是病灶，warn 先确认非刻意再动。方向性大改（剧情/结构）不归本剖面——转写相任务。",
+
+  "three_layer_binding": {
+    "skills": ["novel-deai", "dialogue-polish"],
+    "knowledge": [
+      "kb/method/revise-workflow",
+      "kb/rules/ai-trace",
+      "kb/aesthetic/dialogue",
+      "kb/rules/pacing"
+    ],
+    "minitools": ["scan_quality"]
+  },
+
+  "injection": {
+    "diagnosis_contract": "diagnosis-report@1（evidence/opinion 硬分离；建议=clauses[].repair 反向表达）",
+    "repair_contract": "repair-plan@1（tier 只含 S|A；repair 逐字等于卡内条款；diff 人审应用，回滚走 snapshots）",
+    "session_brief_source": "项目配置.json.sessionBrief（批次3e：项目自述会话上下文逐条注入简报）"
+  },
+
+  "context_independence": {
+    "reads": ["artifacts", "project-index", "rule-cards"],
+    "journal_read_policy": "allow:own-node-history",
+    "rationale": "改稿编辑需要完整正文与项目规则卡；不读其他项目（跨项目专名红线）。"
+  },
+
+  "division_of_labor": {
+    "assertion_layer": "diag_scan（S 级确定性：错别字/占位/截断/工程词泄漏/退化复读——毫秒级零 LLM）",
+    "perspective_layer": "本角色（A 级条款需上下文：吐槽体声音统一/节拍/意象系统——对照项目文风卡逐条诊）"
+  },
+
+  "provenance": {
+    "source": "批次3e 改稿套件（2026-10-12）：首个消费者=梦核网文影子项目 p-menghe-01；revise 生产线（flow@3）立项后由任务包装载本剖面",
+    "refs": ["kb/method/revise-workflow", "contracts/diagnosis-report.schema.json", "contracts/repair-plan.schema.json"]
+  }
+}
