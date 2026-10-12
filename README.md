@@ -5,7 +5,7 @@
 > 浏览器、Electron、CLI、MCP——同一个适配层接入。审核、打回、合规宿主自己写（我们有接入协议），运行时不含任何裁决逻辑。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![version](https://img.shields.io/badge/version-0.10.0-green.svg)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-6.0.0-green.svg)](CHANGELOG.md)
 ![tests](https://img.shields.io/badge/tests-core%20498%20%2B%20harness%20161-brightgreen)
 
 ---

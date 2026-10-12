@@ -1,3 +1,20 @@
+## [6.0.0] · 2026-10-13 · 对外发布基线（综合能力套件 · 批次1–4）
+
+> **版本纪律（自本版起）**：每批次落库同步三处——根 `VERSION`、本文件条目、README badge；`Unreleased` 段只做工作记录，发版时收拢归属。契约代数（flow@3/module@1/…）与产品 semver 仍是两个轴。
+
+0.10.0（断言预设/生产线预设时代）以来的累积发布。大里程碑：
+
+1. **协议与内核**：断言体系退役 → agent-only 执行模型（机器只出证据）；FS 抽象层；生成式 flow + 运行时编排（R5）；模块化 flow@3/module@1（R6）；开源部署与可调面（R7）；候选库与选择面（R8）；项目文件体系与外部项目根。
+2. **四相能力落地**：写（4+1 生产线）/ 诊（diag_scan 毫秒级 S 级 + 退化四组 + 改稿诊改循环）/ 改（repair-plan@1 改单 + diff 人审 + 可回滚）/ 拆（deconstruct-report@1 采样→归因→回流）——诊/建/改同源铁律。
+3. **知识库治理**：117 词条/12 域/板块 track/编译期聚类 54 簇/双根检索/亲和对账/kb-health 体检/检索质量探针评测（before-after 可证提升）。
+4. **改稿套件 + 项目套件**：project-init --domain/--import/--upgrade + project-index（build/diff/memory）+ kit-compile --project/--src/--root 外部根 + revise-workflow 方法卡 + revise-editor 剖面。
+5. **冷启动与综合套件**：openQuestions 询问清单（图/视频强制 mediaEndpoints 生图接口）+ sessionBrief 项目自述注入会话简报 + 领域骨架预设。
+6. **前端形态收敛**：pi-web fork（kitapp 1188 文件/1.7GB）与零构建范本（902 件）整体湮灭出仓；唯一前端形态 = 静态项目看板（dashboard.py 七区自包含 HTML + 文件读写三通道 + Cloudflare 分发）；/api/panel/* 三读一写为文件原语保留。
+7. **治理与卫生**：仓库湮灭三刀（索引 20050→~2100、node_modules/回执/墓碑外出仓）、KB 体检与豁免票、工单制（批次4 五单）。
+8. **对外可用性**：MCP/HTTP/CLI 三脸同源——codex/workbuddy/dsh 等 agent 软件经 MCP 挂 28 动词即用；方法卡 kb/method/revise-workflow 为遵循入口。
+
+下方各 Unreleased 段为本版累积的工作记录（发版收拢，不再散佚）。
+
 ## Unreleased · 批次4 W4.4 湮灭第二刀：官方面板退役（panel/ + desktop/ + cali/ + /panel 托管）（2026-10-13）
 
 1. **执行范围（用户裁定「panel可删，这几个都删」）**： tracked 出仓 **908 件** = `panel/` 零构建前端 **902**（app/bin/components/demo/docs/e2e/hooks/lib/public 七类源码 + `package*.json`/`next.config.ts`/`tailwind.config.ts`/`tsconfig.json` 等配置 + `.github/*` + 五语 README + LICENSE，全仓只剩 `panel/FROZEN.md` 墓碑）+ `storyharness/desktop/` **5**（Electron 壳 `main.cjs`/`shot.cjs`/`shots.cjs` + 两份 package 清单）+ `storyharness/cali/` **1**（`calibrate.mjs`）。代码两处：`storyharness/src/serve.ts` 摘掉 `/panel` 静态托管整块（原 224–265，42 行，用行首/行尾 assert 卡边界后删）并把落地页指针改成「看板不在本端口：由 `tools/dashboard.py` 出静态 HTML，读写走通道 A／通道 B」；`storyharness/src/web.ts` 自动开门目标从 `{port}/panel/` 回落协议面落地页，提示语点名 `python tools/dashboard.py --project <id>`。
