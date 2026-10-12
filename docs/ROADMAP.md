@@ -175,8 +175,9 @@
 | `panel/build.mjs` + `make-extension.mjs`（fork 双形态构建编排） | 删除 | ✅ 本 commit |
 | ops `kit-app.vbs`（30142 dev）+ 三 bat 端口表 | 删除/收窄至 8421+8431 | ✅ 本 commit |
 | `assertion-presets/`（v5.0 退役目录） | 删除；`assertion-preset.schema.json` 落 tombstone（deprecated:true + 说明） | ✅ 本 commit |
-| `panel/` 零构建范本 + serve `/panel/*` 托管块 | **retired-pending**——看板 v1 落地即退役；`/api/panel/files\|raw\|preview` 三读原语**已被看板 W4.2 通道 B 消费**（2026-10-12 增 `PUT /api/panel/files` 写端点：临时件＋回读校验＋原子替换＋乐观锁），API 面保留、`panel/` 前端范本仍待裁 | 待看板 v1 |
-| `storyharness/desktop`、`cali/` | 候选（panel/laya 冻结连带），看板 v1 后一并裁 | 待议 |
+| `panel/` 零构建范本 + serve `/panel/*` 托管块 | ✅ **2026-10-13 已退役**：902 tracked 文件出仓（`git rm`），`serve.ts` 的 `/panel` 静态托管块摘除 42 行（含 `/panel/client.mjs` → `adapter/storyflow-client.mjs` 别名），`web.ts` 自动开门目标改回协议面落地页；目录只剩 tombstone `panel/FROZEN.md`。`/api/panel/files|raw|preview`＋`PUT` 三读一写**原样保留**（=看板通道 B），`panel-files.test.ts` 零改造仍 161/161 绿——因为没有任何测试打 `/panel` 静态路由，注释里那句「byte-equal 有测试钉住」经查是假的 | ✅ 2026-10-13 |
+| `storyharness/desktop`、`cali/` | ✅ **2026-10-13 已删**：desktop 5 tracked（electron 截图壳 main/shot/shots.cjs + package*）＋ cali 1 tracked（`calibrate.mjs`，仓内无消费者）。全仓 grep 只有文档 prose 提到它们，无代码/配置/ops/构建引用，删后零悬空 | ✅ 2026-10-13 |
+| `projects/proj_*`「空壳」×3 | ❌ **工单记错了，这不是空壳**：`ls -la` 实测三个全是**符号链接**，指向用户真书——`proj_muxulht3n90m → Documents\Pinax\时空崩毁，我为司辰`（159 件）、`proj_muwoefim891r → D:\Projects\雾海航志`（11 件）、`proj_livetest01 → pinax-probe/rag-live-fixture`（15 件，我的探针 fixture）。`find -type f`/`du` 默认不跟随链接，所以看起来是 0 字节的壳——**这个误判如果落到 `rm -rf` 就是删用户的书**。本刀一个没动，三个链接目标复核完好。只有 `projects/p-t`（实体空骨架，1 个空目录、0 文件）删了 | 保留·禁删 |
 
 > **kitapp 磁盘残留清理注（2026-10-13，附三条如实口径）**：`panel/kitapp/` 的 40499 件未跟踪残留（1542 MB）已随 W4.4 第一刀清尽，`du -sh panel` 1.7G→12M。要说清「还能不能追回来」：**① tracked 那 283 件在 git 历史里，实测可取回**（删除发生在 `7c86cba4`，`git ls-tree -r 7c86cba4^ -- panel/kitapp` 得 283，`git cat-file` 抽样命中）；**② 上表「`D:\storyflow-extracts` 有存档」这句对 kitapp 源码不成立**——2026-10-13 实测该目录只有 `kit-frontend-precut/`（300K，两个 HTML 模板）与 `panel-lite-batchBC/`（100K），没有 Next.js 工程本体，README 也不提 kitapp；**③ 那 4 万件未跟踪残留只留了聚合数（件数/字节），没有逐文件清单**——清单收据 `w44-purge-manifest-20261012.json` 只对水浒 116 件逐文件记了 sha256。按工单原述与删除时撞锁的路径（`kitapp/node_modules/@next/swc-win32-x64-msvc/…`）判断，这批大头是 `node_modules` 与构建缓存，`npm install` 可重建，故未逐件留账；但如果里面混过谁的手工产物，那份账追不回来，这里明说。真正不可恢复且已由用户点名裁定的只有水浒世界书卡 116 件。
 

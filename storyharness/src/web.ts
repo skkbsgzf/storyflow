@@ -74,13 +74,13 @@ export async function runWeb(cfg: HarnessConfig, opts: WebOptions = {}): Promise
 
   const okKernel = await waitUp(`http://127.0.0.1:${kernelPort}/`, 120_000);
   if (!okKernel) console.error("[storyharness] 警告：内核未就绪——立项/生产线稍后重试");
-  // 自动开门目标 = 官方面板静态产物（8431 自托管 /panel/，零 Next 进程）；面板没起再回落协议面落地页。
-  // 此前固定开 8431——协议面只有 API 说明页，用户每轮守活重启都收到一个"这个是啥"。
-  const panelUrl = `http://127.0.0.1:${port}/panel/`;
-  const panelUp = await waitUp(panelUrl, 15_000);
-  const url = panelUp ? panelUrl : `http://127.0.0.1:${port}/`;
+  // 自动开门目标 = 协议面落地页（2026-10-13 官方面板退役后改此）。
+  // 曾经固定开 /panel/（零构建面板静态托管），那块托管已随 panel/ 前端范本退役；
+  // 项目看板现在是仓内 tools/dashboard.py 出的静态 dashboard.html，落地页里写明怎么出。
+  const url = `http://127.0.0.1:${port}/`;
   console.error(`[storyharness] 就绪：${url}`);
-  console.error("[storyharness] 界面 = 官方面板（pi-web fork）；协议细节见 adapter/README.md");
+  console.error("[storyharness] 本端口只出协议面；项目看板用 `python tools/dashboard.py --project <id>` 出静态 dashboard.html");
+  console.error("[storyharness] 协议细节见 adapter/README.md");
   if (!opts.noOpen) exec(`start "" "${url}"`);
 
   const cleanup = () => {

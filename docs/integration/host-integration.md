@@ -49,7 +49,7 @@ storyharness 的 pinax 桥是把 kit 能力接进 Pinax 写作软件的**活样�
 ## 四、边界声明（立场，不是缺口）
 
 - **kit 无审核 / 打回 / 合规**：宿主自己写，接入协议见 `docs/PROTOCOL-REVIEW.md`；执行环交卷到 manual gate 必须停下等人裁。
-- **kit 无前端**：三输出立场见 `docs/ARCHITECTURE.md` §0；`/api/panel/*` 已 410 退役（`adapter/README.md`），panel/kitapp 存量冻结（`panel/FROZEN.md`）。
+- **kit 无前端**：三输出立场见 `docs/ARCHITECTURE.md` §0。**注意 `/api/panel/*` 没退役**——它是项目看板的通道 B 文件读写原语（`GET` files/raw/preview ＋ `PUT` files，实现在 `storyharness/src/panel-files.ts`，2026-10-10 那句「已 410 退役」说的是当时的前端面，2026-10-12 W4.2 之后这套 API 复活并更名沿用，纪律见 `adapter/README.md`）；退役的是 **`panel/` 前端本体与 `/panel` 静态托管**（2026-10-13，tombstone 见 `panel/FROZEN.md`）。宿主自己出界面，数据走 `/api/*`。
 - **人的动词不进机器工具环**：`flow_gate` / `set_decision` / `ig_commit` / `ig_exclude` 刻意不给 agent（`AGENTS.md` 红线 4）。
 - **HTML 页零反向调用**：kit 生成的页只消费生成时内联的数据，不 fetch kit、不带 CDN/字体等运行时依赖；宿主要新可视化 = 走新数据包契约，不是给页面开 API。
 - **运行数据不入库**：`projects/` 运行数据与 `.external/` 的 apiKey 一律不进 git，宿主侧同步遵守（`AGENTS.md` 发布口径）。

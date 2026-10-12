@@ -218,49 +218,7 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
 <li>agent 会话：/api/projects/:id/agent/sessions（+ /turn SSE）</li>
 <li>内核动词：POST /api/kernel-verb ｜ 内核 HTTP 面 :8421 与 MCP 同表</li>
 <li>协议细节：adapter/README.md 与 docs/integration/</li></ul>
-<p style="color:#8a8375">版本 ${cfg.harnessVersion} ｜ 官方面板在 <a href="http://127.0.0.1:30142/" style="color:#a5433a">:30142</a>（本端口只是协议面）</p></body></html>`);
-          return;
-        }
-        // ── 官方 panel 静态托管：优先 kitapp 的静态导出产物（next build，PAGES_BASE_PATH=/panel），
-        //    无产物时回落 panel/ 白名单后缀目录（零构建直出）。/panel/client.mjs 固定别名 →
-        //    adapter/storyflow-client.mjs（单一事实源，byte-equal 有测试钉住）。
-        if (url === "/panel" || url.startsWith("/panel/") || url.startsWith("/panel?")) {
-          const HERE = path.dirname(fileURLToPath(import.meta.url));
-          const OUT_DIR = path.join(HERE, "..", "..", "panel", "kitapp", "out");
-          const PANEL_DIR = fs.existsSync(path.join(OUT_DIR, "index.html"))
-            ? OUT_DIR
-            : path.join(HERE, "..", "..", "panel");
-          const MIME: Record<string, string> = {
-            ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".mjs": "text/javascript",
-            ".json": "application/json", ".css": "text/css", ".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon",
-            ".woff2": "font/woff2", ".woff": "font/woff", ".txt": "text/plain; charset=utf-8", ".map": "application/json",
-          };
-          let rel = decodeURIComponent(url.split("?")[0].slice("/panel/".length)) || "index.html";
-          let abs: string;
-          if (rel === "client.mjs") {
-            abs = path.join(PANEL_DIR, "..", "adapter", "storyflow-client.mjs"); // 固定别名，单一事实源
-          } else {
-            abs = path.resolve(PANEL_DIR, rel);
-            if (!abs.startsWith(path.resolve(PANEL_DIR) + path.sep)) {
-              res.writeHead(403, { "content-type": "application/json" });
-              res.end(JSON.stringify({ error: "FORBIDDEN", note: "路径越出 panel 目录" }));
-              return;
-            }
-          }
-          const mime = MIME[path.extname(abs).toLowerCase()];
-          if (!mime) {
-            res.writeHead(415, { "content-type": "application/json" });
-            res.end(JSON.stringify({ error: "UNSUPPORTED_TYPE", note: "panel 静态面只出白名单后缀" }));
-            return;
-          }
-          try {
-            const buf = fs.readFileSync(abs);
-            res.writeHead(200, { "content-type": mime, "cache-control": "no-store" });
-            res.end(buf);
-          } catch {
-            res.writeHead(404, { "content-type": "application/json" });
-            res.end(JSON.stringify({ error: "NOT_FOUND", note: `panel 下没有 ${rel}` }));
-          }
+<p style="color:#8a8375">版本 ${cfg.harnessVersion} ｜ 项目看板不在本端口：由仓内 <code>tools/dashboard.py</code> 出静态 <code>dashboard.html</code>（读写走通道 A 本地授权 / 通道 B 本端口 <code>/api/panel/files</code>）</p></body></html>`);
           return;
         }
         // D-E · 新建工作区：注册表（.storyharness.workspaces.json）——门面「＋」创建，hub 读它出分组

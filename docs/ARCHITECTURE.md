@@ -16,7 +16,7 @@ agent runtime（pi-agent-core）+ 模块化 flow + MCP + 确定性工具链 + �
 | 不做 | 谁做 |
 | --- | --- |
 | 审核 / 打回 / 红队 / 合规裁决 | 宿主（接入协议见 `docs/PROTOCOL-REVIEW.md`） |
-| 前端 UI / 页面 | 宿主。kit 只出三样：文档、自包含可视化 HTML、契约数据包（2026-10-10 决议：pi-web fork 演进线冻结，`panel/` 为存量；宿主适配活样板 = pinax-bridge） |
+| 前端 UI / 页面 | 宿主。kit 只出三样：文档、自包含可视化 HTML、契约数据包（2026-10-10 决议：pi-web fork 演进线冻结；**2026-10-13 `panel/` 全线退役**，902 文件出仓、`/panel` 静态托管摘除，只剩 tombstone `panel/FROZEN.md`；kit 自己的界面只有静态项目看板；宿主适配活样板 = pinax-bridge） |
 | 语料内容本身 | 用户（源 md 是本地资产，不入库） |
 
 ---
@@ -40,7 +40,7 @@ agent runtime（pi-agent-core）+ 模块化 flow + MCP + 确定性工具链 + �
         │ HTTP /api/verbs  │ 子进程
 ┌───────▼─────────┐  ┌──────▼────────┐
 │ tools/ Python   │  │ 前端 = 宿主    │
-│ lint/scan/...   │  │ /api/panel/* 410│
+│ lint/scan/...   │  │ 看板走 /api/*  │
 └─────────────────┘  └───────────────┘
 ```
 
