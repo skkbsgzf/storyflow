@@ -15,6 +15,14 @@
 
 下方各 Unreleased 段为本版累积的工作记录（发版收拢，不再散佚）。
 
+## Unreleased · 看板 v3：六面板只读看板整体替换 + payload 扩展（2026-10-13）
+
+1. **模板整体替换**（`tools/dashboard-template.html`，规格唯一真相 = `docs/工单-20261013-看板v3规格.md`，四条实施裁定随单落定）：三栏式（标题栏 + 44px SVG 内联图标工具栏 + 主内容区）；六图标（世界书/人物/大纲/大事记/文档/配置）点击开、再点关、ESC 关（层级：弹层→抽屉→面板）。五面板：世界书（搜索/分类/分组折叠/详情弹层 + Canvas 力导向图谱——分类着色、拖节点/滚轮缩放/拖画布平移、点节点回列表定位）；人物（cat=人物 过滤卡片网格，状态点绿/金/红，详情带关系与出场次数）；大纲（目录树，诊断/registry/编译产物/快照**前端**排除，文件点击直达文档阅读）；大事记（垂直时间线、金色时间标签、人物蓝名、5W1H 弹层、Δ 矛盾红标；不展示叙事层导语与段带导语）；文档阅读（**只读**裁定：.md 渲染/.html iframe `sandbox="allow-scripts"`/.txt 纯文本/.json 无预览提示；720px doc 排版、15px/1.8、粗体金色；File System Access 只读授权直读盘上文件，v2 编辑三通道不入板——serve 的 PUT `/api/panel/files` 保留为 API 原语、无看板入口）。配置抽屉 500px：模型配置（只读展示+来源标注，无 apiKey）/日志（时间倒序、INFO 蓝/WARN 金/ERROR 红、级别筛选+搜索+复制、≤1000）/历史快照（≤50 条预览+恢复确认弹窗——纯静态页不落盘，生成补丁文本复制或复制 snapshot.py restore 命令，调用方落盘，页面写明）/偏好（字号 12–20、行高 1.4–2.2、主题色金/蓝/绿/紫、紧凑模式、暗色↔浅色「白灰青」，localStorage 持久化）。硬约束全守住：零外部资源、幂等（无生成时刻、排序稳定）、性能边界（词条≤200 O(n)、图谱≤200、文档≤200KB、日志≤1000、快照≤50、payload≤500KB）。
+2. **payload 扩展**（`tools/dashboard.py`）：`meta.layout_version="3"` + `config{models,logs,snapshots}`——models=项目配置.json 模型类非敏感字段 + `.external/storyharness.json` 的 provider/model 名（白名单递归收集，敏感键名子树整棵跳过，行={name,value,source}）；logs=journal.jsonl 尾部 ≤1000 条 {time,level,msg}（level 由事件名派生，坏行记账）；snapshots=snapshots/index.json 最近 ≤50 条（时间倒序、占位登记不入账，文本快照在 240KB 预算内内嵌内容＋现行版每文件嵌一次，供页内预览与补丁生成）。世界书/chronicle/artifacts 采集链复用 v2；v2 的 cards/journal/graph 三区**不再入 payload**（cards 正文内嵌是旧体积大头）。脱敏是机器闸不是口号：`check_shape` 对 payload 全文断言（sk- 形态零容忍、apiKey 键名零存活、models 行名不命中敏感键），`--selfcheck` 另埋真形 apiKey 的 fixture 逐字验证＋坏 payload 反向题必须被拦。
+3. **验收（p-menghe-01 实跑 + 真浏览器走查）**：出板 170KB（v2 同项目 632KB，≤500KB 预算）；幂等双跑 sha256 一致（`f3901e04…`）；独立正则扫 src/href/url()/@import 外部引用 0 命中；payload 全文 grep `sk-`/`apiKey`/敏感键名 0 命中。浏览器走查（IAB，http 静态伺服）：世界书 6 词条·11 边（搜索过滤、详情弹层六字段齐、图谱 Canvas 6 节点 11 边渲染、点节点回列表定位闪框）；人物空态（该项目无 cat=人物 卡，口径如实）；大纲 80 件（82 减 2 份诊断报告，排除清单生效）文件点击直达文档面板；大事记 52 事件·26 轨·矛盾 2 红标、5W1H 弹层九栏（未登记显式）；文档面板路径栏+类型路由+授权提示；配置抽屉模型 6 行无 key、日志/快照空态、偏好四项即时生效且 localStorage 持久化；自检 fixture 板（日志 3 条含 ERROR 级 + 快照 2 轮）走查日志筛选与快照→预览→恢复确认→补丁生成全链（unified diff 逐行正确）；控制台零报错。
+4. **docs**：`docs/integration/dashboard-deploy.md` 加看板 v3 段（payload 键面/体积 632KB→170KB/只读边界/形态取舍表改写）；ROADMAP 4.1 增「看板 v3（整体替换）」行。
+5. **闸门**：`dashboard.py --selfcheck` OK（形状+脱敏+幂等+空态，合成 fixture 71KB）；三 lint 0 error（flow 0W/module 33W/kit 3W 与基线同）；core `vitest run test/kits.test.ts test/r2-kb-cluster.test.ts` 与 storyharness 全量不回归（本单未触 ts）。
+
 ## Unreleased · 创作模式思维切换：人文创作换脑子卡 + chat create 档 + produce 任务包自动注入（2026-10-13）
 
 1. **方法卡 `kb/method/creative-mindset`（track=通用，1.0.0 active）**：创作思维切换卡——进入创作 = 放下验收眼光，规则卡/扫描器/改单是边界与地基、不是视野。正文四节：切换宣言（人物与读者进心，不是条款）；操作要点 7 条（人物意志优先/在场感/声音一致/先活后修【待修：××】标记法/节拍靠直觉卡是参考系/具体压倒抽象/查证后置）；与验收体系的关系（创作相唯一义务=写完交扫；诊改相换回 revise-workflow 脑子——两张卡对偶：写作问「活不活」、诊改问「符不符」；扫描 warn 不是改稿清单）；入口与指引。已登记 `knowledge/index.json`（97 条目）；kit-compile 重编译 **117→118 词条 / 0 边 / 56 簇**（+1 簇），`--check` 逐键一致。

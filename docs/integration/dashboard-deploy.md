@@ -1,6 +1,8 @@
 # 看板分发 · Cloudflare Pages + Access（W4.3）
 
-一句话：**看板是一个自包含的 HTML 文件**，静态托管到 Cloudflare Pages 就能在任何设备打开你的项目全貌；配 Cloudflare Access 之后，只有你邮箱收验证码的人看得见。代价是它是**只读＋补丁流**的形态——想在线改盘上的产物，得另开一条到 8431 的隧道（§6）。
+一句话：**看板是一个自包含的 HTML 文件**，静态托管到 Cloudflare Pages 就能在任何设备打开你的项目全貌；配 Cloudflare Access 之后，只有你邮箱收验证码的人看得见。代价是它是**只读**的形态——想改盘上的产物，走改稿套件或自开 8431 隧道（§6）。
+
+> **看板 v3（2026-10-13 整体替换）**：模板换为六图标五面板＋配置抽屉（世界书 / 人物 / 大纲 / 大事记 / 文档阅读 / 配置），`meta.layout_version="3"`；payload 键面 `worldbook{entries,relations}` + `artifacts[]` + `chronicle{events,lanes}` + `config{models,logs,snapshots}`——v2 的知识表格 / 执行流水 / RAG 图谱三区数据**不再入 payload**（`cards` 连正文内嵌是旧体积大头）。文档阅读**只读**（File System Access 只读授权），v2 的编辑三通道不入板；`/api/panel/files` 的 PUT 端点保留为 API 原语、无看板入口。`config.models` 只收 provider/model 类非敏感字段（`.external/storyharness.json` 的 apiKey 一律不入 payload，`--selfcheck` 有全文断言）。实测 p-menghe-01：payload 减重 632KB → **170KB**（≤500KB 预算），幂等双跑 sha256 一致（`f3901e04…`）。
 
 本页文档的实测数字来自 2026-10-12 的真实出板与真浏览器校验（p-menghe-01），收据 `projects/_reports/w43-static-dist-verify-20261012.json`。凡是要用你自己 Cloudflare 账号才能确认的部分，我在 §4 和 §7 明确标了「未在测试账号实走」，不当已验证的结论讲。
 
@@ -80,8 +82,8 @@ Cloudflare Zero Trust 的 Access 免费额度是 50 个用户，本项目自用�
 
 | 形态 | 能做什么 | 前置条件 |
 | --- | --- | --- |
-| **纯静态**（Pages + Access） | 看七区、搜索、钻取、下载副本、产 diff/ops（通道 C）；**通道 A 也可用**——File System Access API 是浏览器本地能力，https 属 secure context，它读写的是「这台设备上手忙授权过的目录」，跟页面来自哪个域名无关 | 无（就是 §1–§4） |
-| **在线写**（通道 B，8431） | 在任意设备上读/写盘上产物、乐观锁防覆盖、写后回执 | 你自己把 8431 暴露出去（如 cloudflared 隧道），口令必设，并把 Pages 源放行（见下） |
+| **纯静态**（Pages + Access） | 看五面板（世界书/人物/大纲/大事记）、配置抽屉（模型只读 / 日志 / 历史快照预览＋补丁复制）、文档阅读（File System Access **只读**授权后按类型渲染）；恢复快照＝页内生成补丁文本复制，落盘由调用方执行 | 无（就是 §1–§4） |
+| **在线写**（通道 B，8431） | 看板 v3 已无写入口；要在任意设备写盘，用你自己的客户端直调 `PUT /api/panel/files`（端点现役，纪律见 `adapter/README.md`） | 你自己把 8431 暴露出去（如 cloudflared 隧道），口令必设，并把客户端源放行（见下） |
 
 在线写那条线的硬要求，照抄即可：
 
@@ -105,7 +107,7 @@ SH_PASSWORD=<你的口令> SH_ALLOWED_ORIGINS=https://<项目名>.pages.dev \
 ## 7. 第一次上真账号的验收清单
 
 - [ ] 无痕窗口打开 Pages URL → 被 302 到 Cloudflare 登录 / 收邮箱验证码，**看不到任何项目内容**
-- [ ] 登录后七区计数与本地版一致（p-menghe-01 本次：总览 82 件 / 世界书 6 词条 / 大事记 52 事件·26 轨 / 执行流水 0 / RAG 128 节点·23 边 / 知识卡 131 / 产物 82）
+- [ ] 登录后面板计数与本地版一致（p-menghe-01 v3 本次：世界书 6 词条·11 边 / 大事记 52 事件·26 轨 / 产物 80 件（大纲树，已排除 2 份诊断报告）/ 模型 6 项 / 日志 0 / 快照 0；v2 七区计数存档：总览 82 件 / 执行流水 0 / RAG 128 节点·23 边 / 知识卡 131）
 - [ ] 手机 390 宽不破版：七区逐区可见、横向溢出 0 条像素（本地已实测，截图 `projects/_reports/w43-m-1..7-*.png`）
 - [ ] 出板命令的「分发前自检」提示已看过，残留的本机路径是否处理过，是你明确的选择而不是没注意到
 - [ ] 若要用在线写：Pages 源已进 `allowedOrigins`，看板产物区状态条显示「通道 B 连通（N 件）」，而不是「8431 要口令」或「通道 B 不通」
@@ -116,17 +118,17 @@ SH_PASSWORD=<你的口令> SH_ALLOWED_ORIGINS=https://<项目名>.pages.dev \
 ## 8. 局限与不做的事（如实）
 
 - kit **不托管、不代部署、不保存任何 Cloudflare 凭据**。本页只给步骤。
-- 静态页**不回连 kit**，零 kit 侧代码依赖已实证：`file://` 直接打开即全区渲染、控制台零报错。
-- docx 二进制编辑仍然不做；看板里 doc/docx 是只读抽屉＋下载副本，要改就转 md 走改稿套件（`python tools/export-doc.py`）。
-- 通道 A 在公网域名下能用，但授权动作必须在**看这块屏幕的那台设备**上手工完成一次，且换设备要重新授权——这是浏览器的安全模型，不是本项目的实现限制。
+- 静态页**不回连 kit**，零 kit 侧代码依赖：`file://` 直接打开即全部面板渲染。
+- docx 二进制编辑仍然不做；看板 v3 里 doc/docx 在大纲树标「二进制」、文档阅读面板给转 md 提示（`python tools/export-doc.py`）。
+- 文档阅读的授权动作必须在**看这块屏幕的那台设备**上手工完成一次，且换设备要重新授权——这是浏览器的安全模型，不是本项目的实现限制。
 - Cloudflare 控制台的具体措辞可能变（Access 应用类型、Pages 直传入口）；本页按 2026-10 官方文档写，CF 侧那边走通一次后请把差异补进 §4/§7。
 
 ---
 
 ## 9. 相关件与出处
 
-- 出板器：`tools/dashboard.py`（零外部资源红线 + `--selfcheck` + 分发前自检）
-- 模板：`tools/dashboard-template.html`（七区 + W4.2 三通道）
+- 出板器：`tools/dashboard.py`（零外部资源红线 + 脱敏断言 + `--selfcheck` + 分发前自检）
+- 模板：`tools/dashboard-template.html`（v3：六图标五面板 + 配置抽屉 + 双主题；规格唯一真相 `docs/工单-20261013-看板v3规格.md`）
 - 写端点纪律与全部错误码：`adapter/README.md`「写端点纪律」段
 - 工单与验收：`docs/工单-20261012-批次4-项目看板与湮灭批次2.md` W4.3
 - §7 清单与 §4 的走查归到待裁账 **A2** 条目（`docs/待裁账-批次4-20261012.md`），实走后的差异回改本文档
