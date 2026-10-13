@@ -8,6 +8,8 @@ import { buildProjectBrief, gatherBriefParts } from "../src/brief.js";
 // 批次3e 改造（2026-10-12）：项目配置.json.sessionBrief 声明位 → 会话简报逐条注入。
 // 无 flow 的改稿/协作会话靠它携带文风卡路径、协作纪律、外部资产库位置等项目专属上下文。
 // 批次4 4.2 改造（2026-10-12）：openQuestions 冷启动询问未答项 → 简报尾部「【待询问（冷启动）】」段。
+// 模式感知约束（2026-10-13）：constraintMode 三档（strict/assist/idle）随简报注入——
+// 与 tools/whereami.py::determine_constraint_mode 双实现同启发式，两侧测试钉住。
 
 function tmpProject(cfg: Record<string, unknown>, state?: Record<string, unknown>): string {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "brief-sb-"));
@@ -103,4 +105,61 @@ test("openQuestions：全部答完 → 不注入待询问段（简报回到历�
   assert.ok(brief2);
   assert.doesNotMatch(brief2, /待询问/);
   assert.match(brief2, /- 项目：p-done2/);
+});
+
+// ── 约束档位（模式感知约束 P0-C，2026-10-13）：三档各一例，与 whereami --selfcheck 同矩阵 ──
+
+test("constraintMode：有 state 且 pending 有 produce → strict 行注入（kind 取 registry/effective.json）", () => {
+  const dir = tmpProject(
+    { 项目: "p-strict", 灵感: "长篇网文" },
+    // 有 state：1.1 done / 1.2 pending（写作产出相）
+    {
+      flowId: "novel", status: "running",
+      plan: { order: ["1.1", "1.2"] },
+      nodes: { "1.1": { status: "done" }, "1.2": { status: "pending" } },
+    },
+  );
+  // 生效编排节点表（kernel persistEffective 落盘位）：1.2 = produce
+  fs.mkdirSync(path.join(dir, "registry"), { recursive: true });
+  fs.writeFileSync(
+    path.join(dir, "registry", "effective.json"),
+    JSON.stringify({ flowId: "novel", nodes: { "1.1": { kind: "review" }, "1.2": { kind: "produce" } }, edges: [] }),
+    "utf-8",
+  );
+  const parts = gatherBriefParts(fakeKernel(dir), "p-strict");
+  assert.equal(parts.constraintMode, "strict");
+  const brief = buildProjectBrief(fakeKernel(dir), "p-strict");
+  assert.ok(brief);
+  assert.match(brief, /- 约束模式：strict（项目创作中——KB\/世界书检索结果按强相关档遵循）/);
+  // 约束模式行在项目行之后、题材方向之前
+  const lines = brief.split("\n");
+  const projIdx = lines.findIndex((l) => l.startsWith("- 项目："));
+  const modeIdx = lines.findIndex((l) => l.includes("约束模式：strict"));
+  const dirIdx = lines.findIndex((l) => l.startsWith("- 题材方向："));
+  assert.ok(projIdx < modeIdx && modeIdx < dirIdx, "约束模式行位置：项目行之后、题材方向之前");
+});
+
+test("constraintMode：无 state 有 sessionBrief → assist 行注入（改稿场景，p-menghe-01 同形）", () => {
+  const dir = tmpProject({
+    项目: "p-menghe",
+    灵感: "梦核网文长篇改稿",
+    sessionBrief: ["文风约束（active v1.0.0）：规则/文风-梦核叙事.md"],
+  });
+  const parts = gatherBriefParts(fakeKernel(dir), "p-menghe");
+  assert.equal(parts.constraintMode, "assist");
+  const brief = buildProjectBrief(fakeKernel(dir), "p-menghe");
+  assert.ok(brief);
+  assert.match(brief, /- 约束模式：assist（项目运行中——KB\/世界书检索结果强烈推荐参考）/);
+});
+
+test("constraintMode：全无（无 state 无 sessionBrief 无 direction）→ idle 且维持无简报历史行为", () => {
+  const dir = tmpProject({ 项目: "p-idle" });
+  const parts = gatherBriefParts(fakeKernel(dir), "p-idle");
+  assert.equal(parts.constraintMode, "idle");
+  // idle 不单独触发简报（闲聊零打扰）；「灵感在但 idle」的历史简报也不注入约束行（防噪音）
+  assert.equal(buildProjectBrief(fakeKernel(dir), "p-idle"), null);
+  const dir2 = tmpProject({ 项目: "p-idle-dir", 灵感: "只有方向没有运行态" });
+  const brief2 = buildProjectBrief(fakeKernel(dir2), "p-idle-dir");
+  assert.ok(brief2);
+  assert.doesNotMatch(brief2, /约束模式/); // idle 档不注入约束行
 });

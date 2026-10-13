@@ -80,7 +80,7 @@ npx tsx src/cli.ts                     # 无参数 = 打印由表生成的 usage
 | `ig_commit` | 立意图（决策桥） | `--universe <string>` ★ · `--node <string>` ★ · `--candidate <string>` ★ · `--reason <string>` ★ | 拍板：候选置 committed（节点随之 committed）。必须带 reason（拍板留痕，R8）；决策落盘另走 ig_sync |
 | `ig_exclude` | 立意图（决策桥） | `--universe <string>` ★ · `--node <string>` ★ · `--candidate <string>` ★ · `--reason <string>` ★ | 排除候选（必须带理由——「为什么没选 X」不许哑，R8） |
 | `ig_sync` | 立意图（决策桥） | `--universe <string>` ★ · `--project <string>` ★ | 立意图 → 项目决策单向桥：committed 候选落 decisions/<decision_key>.json（setDecision 单源；已存在不回填；证据带 scorer+p 明示「剪枝排序分，禁当放行闸」） |
-| `whereami` | 底座工具桥（挂表） | `--project <string>` · `--json <boolean>` | 我在哪：项目/当前节点/必读输入/应产输出（tools/whereami.py 转发；开工定位） |
+| `whereami` | 底座工具桥（挂表） | `--project <string>` · `--json <boolean>` | 我在哪：项目/当前节点/必读输入/应产输出 + 约束档位 constraint_mode（strict/assist/idle，检索档位信号非裁决；tools/whereami.py 转发；开工定位） |
 | `snapshot` | 底座工具桥（挂表） | `--action <capture\|diff>` ★ · `--flow <string>` · `--project <string>` ★ · `--node <string>` ★ · `--files <a,b>` · `--note <string>` · `--a <string>` · `--b <string>` | 交付快照 capture / 两版 diff（tools/snapshot.py 转发；铁律 7：产物落盘后留档） |
 | `quality_scan` | 底座工具桥（挂表） | `--project <string>` ★ · `--file <string>` ★ · `--budget <json>` · `--no_receipt <boolean>` | 确定性质量扫描：证据聚合器（tools/quality-scan.py 转发 = core quality-cli 桥 aesthetic 真身，禁止第二份计数逻辑）；只出证据+收据，裁决归 agent/人裁 |
 | `diag_scan` | 快诊断（批次3a） | `--project <string>` ★ · `--text <string>` · `--path <string>` · `--dims <a,b>` · `--proposal <boolean>` | 快诊断：对一段文本/一个文件做确定性体检，产出 diagnosis-report@1（机器只出证据不裁决，零 LLM）。S 级=aesthetic 引擎真身进程内直调（quality-cli 同一实现，毫秒级）；消费 项目配置.validation 声明位（tierThreshold 通道门槛 / cardScope 装卡范围 / severityFloor 优先级下限，缺省 S+A·both·minor）；items 由规则卡条款机械投影（建议=条款 repair 反向表达）；A 级 laya 学生头仅在 proposal=true 显式开启时跑，venv/权重缺失显式报 LAYA_UNAVAILABLE 带回填指引（绝不回落 4B/API） |
@@ -108,6 +108,36 @@ npx tsx src/cli.ts                     # 无参数 = 打印由表生成的 usage
 - **决策必须有来源**：`set_decision` 的 `by` + `evidence` 必填，缺了进 issues 不进 values（R8）。
 - **质量扫描只出证据，不出裁决**：`quality_scan` 返回 findings + 收据文件路径；
   数值线不构成提交闸（2026-09-24 清剿口径）。
+
+### 模式感知约束（constraint_mode · 2026-10-13）
+
+「项目态强约束 / 闲聊态弱约束」的档位信号：`whereami` 返回体（文本 `CONSTRAINT:` 行与 `--json`
+逐项目字段两形态）带 `constraint_mode`。**kit 只出检索档位信号，不出裁决语义**——「必须遵循」
+的纪律语言归方法论与注入文案；是否遵循、何时破例，裁决归宿主与项目主人。
+同一启发式双实现同源、两侧测试钉住：`tools/whereami.py::determine_constraint_mode`（`--selfcheck`
+合成 fixture 全矩阵）与 `storyharness/src/brief.ts::determineConstraintMode`（brief-session.test.ts）。
+
+| whereami kind | 盘面事实（判定启发式） | constraint_mode | 档位 | 用法 |
+| --- | --- | --- | --- | --- |
+| FOCUSED（--project 指定） | 有 state，pending 节点（status≠done）中有 `kind:"produce"`（写作产出相） | `strict` | 检索结果按强相关档遵循 | 产出节点执行期：KB/世界书检索结果当强约束输入用 |
+| FOCUSED | 有 state，有 pending 无 produce（评审/门/准备相） | `assist` | 检索结果强烈推荐参考 | 辅助判断参考，非硬约束 |
+| FOCUSED（--project 指定） | 无 state.json，项目配置.sessionBrief 非空（改稿/协作会话，如 p-menghe-01） | `assist` | 检索结果强烈推荐参考 | 改稿前按 sessionBrief 指针读卡；检索结果强烈推荐遵循 |
+| FOCUSED | 无 state，sessionBrief 空；或有 state 无 pending（全部 done） | `idle` | 检索结果仅供参考 | 复盘/问答姿态 |
+| IDLE（无待办项目） | —— | `idle` | 检索结果仅供参考 | 闲聊无需调 kb_search |
+| AMBIGUOUS（多项目待办） | 未定 | —— 先 `--project` 指定再读档位 | —— | 见铁律 2 |
+
+注入链：storyharness `buildProjectBrief`（chat 每回合 `transformContext` 注入，执行环任务包同源）
+在简报头部落「约束模式」行——strict/assist 注入；**idle 不注入该行、也不因 idle 单独出简报**
+（闲聊每轮零噪音，历史触发条件原样保留）。kind 事实源 = 生效编排节点表（whereami 侧 flows/
+直图或 `registry/effective.json`，brief 侧只读项目目录 effective.json）。
+
+铁律：
+
+1. **创作任务前必查 whereami**——开工自检拿 constraint_mode 再定检索姿态，别凭感觉切换轻重；
+2. **多项目歧义必须 `--project` 指定**（AMBIGUOUS 不静默猜，老规矩）；
+3. **闲聊（idle）无需调 kb_search**——档位说「仅供参考」时检索是可选动作不是必修课；
+4. **档位语义：strict=遵循、assist=强烈推荐、relaxed(idle)=仅供参考**——这是检索档位不是
+   提交闸，裁决语义归宿主与项目主人（与「质量扫描只出证据」同一立场）。
 
 ## 六、现状与未实现（诚实面，接入前必读）
 

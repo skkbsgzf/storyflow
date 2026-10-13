@@ -641,7 +641,7 @@ export const VERBS: VerbDef[] = [
   //    事故口径（2026-09-22 耗时复盘）：这些件此前只能 bash 起，会话白付冷启动。
   {
     name: "whereami",
-    description: "我在哪：项目/当前节点/必读输入/应产输出（tools/whereami.py 转发；开工定位）",
+    description: "我在哪：项目/当前节点/必读输入/应产输出 + 约束档位 constraint_mode（strict/assist/idle，检索档位信号非裁决；tools/whereami.py 转发；开工定位）",
     group: G_BRIDGE,
     params: [
       { name: "project", type: "string", desc: "项目 id（多项目歧义时必给，工具返回 AMBIGUOUS 不静默猜）" },

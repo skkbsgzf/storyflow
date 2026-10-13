@@ -8658,7 +8658,7 @@
     },
     "/api/v1/verbs/whereami": {
       "post": {
-        "summary": "[底座工具桥（挂表）] 我在哪：项目/当前节点/必读输入/应产输出（tools/whereami.py 转发；开工定位）",
+        "summary": "[底座工具桥（挂表）] 我在哪：项目/当前节点/必读输入/应产输出 + 约束档位 constraint_mode（strict/assist/idle，检索档位信号非裁决；tools/whereami.py 转发；开工定位）",
         "description": "动词直通 · 三面同源（CLI/MCP/HTTP 同一条执行路径）。入参形状派生自 core/src/verbs.ts 的动词表。",
         "tags": [
           "verbs"

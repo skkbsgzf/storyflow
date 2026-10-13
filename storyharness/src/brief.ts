@@ -12,6 +12,40 @@ export interface OpenQuestion {
   options?: string[];
 }
 
+// ── 约束档位（模式感知约束 P0-C，2026-10-13）────────────────────────────────
+// kit 只出「检索档位」信号（strict/assist/idle），不出裁决语义——「必须遵循」的纪律语言
+// 归 Agent.md 方法论与本文件的注入文案。与 tools/whereami.py::determine_constraint_mode
+// **双实现同启发式**，确定性小逻辑，两侧测试钉住（storyharness/test/brief-session.test.ts /
+// whereami --selfcheck）：
+//   ① 无 state.json → 项目配置.json.sessionBrief 非空 ? "assist" : "idle"（改稿/协作会话）
+//   ② 有 state：pending 节点（status≠done）中存在 kind=="produce"（写作产出相）→ "strict"；
+//      有 pending 无 produce → "assist"；无 pending → "idle"。
+// kind 事实源 = registry/effective.json（生效编排节点表，kernel flow_run/flow_effect 后落盘）；
+// 本侧只读项目目录、不读 flows/（whereami 侧另有 flows/ 直图兜底——legacy 项目两侧可能差一档，
+// 口径见 docs/Agent.md「模式感知约束」）。
+export type ConstraintMode = "strict" | "assist" | "idle";
+
+export function determineConstraintMode(
+  state: { nodes?: Record<string, { status?: string }>; plan?: { order?: string[] } } | null,
+  cfg: { sessionBrief?: unknown } | null | undefined,
+  kinds?: Record<string, unknown> | null,
+): ConstraintMode {
+  if (!state) {
+    // ① 无 state：未立项/改稿项目——sessionBrief 非空 = 改稿/协作会话进行中
+    const sb = cfg?.sessionBrief;
+    return Array.isArray(sb) && sb.some((x) => typeof x === "string" && x.trim()) ? "assist" : "idle";
+  }
+  // ② 有 state：pending（status≠done）里找写作产出相（kind=produce）
+  const nodes = state.nodes ?? {};
+  const order = state.plan?.order?.length ? state.plan.order : Object.keys(nodes);
+  const pending = order.filter((n) => (nodes[n] ?? {}).status !== "done");
+  if (!pending.length) return "idle";
+  for (const n of pending) {
+    if (((kinds?.[n] ?? {}) as { kind?: string }).kind === "produce") return "strict";
+  }
+  return "assist";
+}
+
 export interface BriefParts {
   project: string;
   flowId?: string;
@@ -23,6 +57,7 @@ export interface BriefParts {
   episodes?: number;
   gate?: string;
   telemetry?: string;
+  constraintMode?: ConstraintMode;
   sessionBrief?: string[];
   openQuestions?: OpenQuestion[];
 }
@@ -30,8 +65,9 @@ export interface BriefParts {
 export function gatherBriefParts(kernel: KernelClient, project: string): BriefParts {
   const dir = kernel.projectDir(project);
   const parts: BriefParts = { project };
+  let st: any = null;
   try {
-    const st = JSON.parse(fs.readFileSync(path.join(dir, "state.json"), "utf-8"));
+    st = JSON.parse(fs.readFileSync(path.join(dir, "state.json"), "utf-8"));
     parts.flowId = st.flowId;
     parts.status = st.status;
     parts.direction = st.inputs?.direction;
@@ -48,8 +84,9 @@ export function gatherBriefParts(kernel: KernelClient, project: string): BriefPa
     const next = Object.entries(nodes).find(([, v]: any) => v.status !== "done");
     parts.next = next ? next[0] : "全部完成";
   } catch { /* 无 state：未立项项目，简报降级 */ }
+  let cfg: any = null;
   try {
-    const cfg = JSON.parse(fs.readFileSync(path.join(dir, "项目配置.json"), "utf-8"));
+    cfg = JSON.parse(fs.readFileSync(path.join(dir, "项目配置.json"), "utf-8"));
     parts.direction = parts.direction ?? cfg.灵感 ?? cfg.direction;
     // 项目自述会话上下文（批次3e 改稿套件改造）：sessionBrief 字符串数组逐条注入简报——
     // 无 flow 的改稿/协作会话靠它携带文风卡路径、协作纪律、外部资产库位置等项目专属上下文。
@@ -73,6 +110,14 @@ export function gatherBriefParts(kernel: KernelClient, project: string): BriefPa
       if (open.length) parts.openQuestions = open;
     }
   } catch { /* 无配置 */ }
+  // 约束档位（模式感知约束 P0-C）：kind 事实源 = registry/effective.json（生效编排节点表，
+  // 缺失/坏 JSON = kind 不可见 → pending 项目按 assist 降级，见 determineConstraintMode 注释）
+  let kinds: Record<string, unknown> | null = null;
+  try {
+    const eff = JSON.parse(fs.readFileSync(path.join(dir, "registry", "effective.json"), "utf-8")) as { nodes?: Record<string, unknown> };
+    if (eff && typeof eff.nodes === "object" && eff.nodes) kinds = eff.nodes;
+  } catch { /* 无生效编排 */ }
+  parts.constraintMode = determineConstraintMode(st, cfg, kinds);
   // 最近判官 flagged（过闸收据，mtime 最近一份）
   try {
     const recDir = path.join(dir, kernel.corpus.receiptsDir);
@@ -99,7 +144,9 @@ export function gatherBriefParts(kernel: KernelClient, project: string): BriefPa
 
 /** 拼人类+LLM 双读的项目简报。空项目返回 null（调用方零打扰）；
  *  冷启动例外：有未答 openQuestions 也出简报（批次4 4.2——冷启动项目无 flow 无 direction，
- *  问题必须能送达会话 agent；历史配置不含该字段，零回归）。 */
+ *  问题必须能送达会话 agent；历史配置不含该字段，零回归）。
+ *  约束模式（模式感知约束 P0-C）：strict/assist 随简报注入「约束模式」行；
+ *  idle 不注入该行、也不单独触发简报（闲聊零打扰，历史触发条件原样保留）。 */
 export function buildProjectBrief(kernel: KernelClient, project: string): string | null {
   const p = gatherBriefParts(kernel, project);
   if (!p.flowId && !p.direction && !p.openQuestions?.length) return null;
@@ -107,6 +154,11 @@ export function buildProjectBrief(kernel: KernelClient, project: string): string
     `【项目简报（系统注入——本段是事实快照，直接采信，禁止再调工具重复核实）】`,
     `- 项目：${p.project}${p.flowId ? ` ｜ 流程：${p.flowId}` : ""}${p.status ? ` ｜ 状态：${p.status}` : ""}`,
   ];
+  // 约束模式行（模式感知约束 P0-C）：检索档位信号随简报每回合下发，会话 agent 据此定
+  // KB/世界书检索结果的遵循强度。idle 档不注入本行、也不因 idle 单独出简报——idle=无活跃
+  // 创作、检索仅供参考，是缺省姿态，注入反给闲聊轮加噪音（whereami 文本脸三档都渲染）。
+  if (p.constraintMode === "strict") lines.push(`- 约束模式：strict（项目创作中——KB/世界书检索结果按强相关档遵循）`);
+  else if (p.constraintMode === "assist") lines.push(`- 约束模式：assist（项目运行中——KB/世界书检索结果强烈推荐参考）`);
   if (p.direction) lines.push(`- 题材方向：${p.direction}${p.episodes ? `（${p.episodes} 集）` : ""}`);
   if (p.sessionBrief?.length) lines.push(...p.sessionBrief.map((s) => `- ${s}`));
   if (p.progress) lines.push(`- 进度：${p.progress}`);
