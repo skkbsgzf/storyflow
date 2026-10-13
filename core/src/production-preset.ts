@@ -50,7 +50,8 @@ export function listProductionPresets(repoRoot: string, fs: IFileSystem = nodeFs
     const presetDir = path.join(dir, child.name);
     const manifestPath = path.join(presetDir, "preset.yml");
     if (!fs.exists(manifestPath)) {
-      out.push({ id: child.name, flows: [], broken: "preset.yml is missing" });
+      // presets/ 是多族共用目录（批次4）：skeletons/（领域骨架 JSON）、image/（图像预设族）等
+      // 不含 preset.yml 的目录不是生产线预设，跳过——不标 broken（它们由各自工具消费）。
       continue;
     }
     let manifest: { name?: unknown; description?: unknown; flows?: unknown };

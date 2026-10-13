@@ -1,0 +1,25 @@
+# ═══════════════════════════════════════════
+# 断言预设：minimal
+# 只保留 exists（产物缺失）为硬闸，其余全部降级为提醒。
+# ═══════════════════════════════════════════
+id: minimal
+trust: system
+defaultGateMode: warn-only
+diagnosticEnabled: true
+progressiveResetMs: 0
+
+groups:
+  - id: mandatory
+    gateMode: strict
+    assertions:
+      - assertionType: exists
+
+  - id: relaxed
+    gateMode: warn-only
+    assertions:
+      - assertionType: nonempty
+      - assertionType: no-debris
+      - assertionType: beat-count
+      - assertionType: ep-title
+      - assertionType: artifact-header
+      - assertionType: glossary

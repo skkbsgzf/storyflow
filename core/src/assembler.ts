@@ -115,6 +115,31 @@ function clip(text: string, cap: number): { text: string; truncated: boolean } {
   return { text: text.slice(0, cap), truncated: true };
 }
 
+/**
+ * 创作思维切换（批次4）：produce 类节点的任务包自动附「创作模式」段。
+ *
+ * - kind 事实源 = modules/<id>/module.json 的 op.kind（经 resolveNodeOp 解析，缺省 produce）；
+ *   只有 op.kind==="produce"（写作产出相）注入，review/check 与无 op 节点零变化（additive，测试钉住）。
+ * - 浓缩宣言内联在代码里（确定性，不依赖读盘）；方法卡本体是本地层（knowledge/ gitignore，
+ *   引擎现读盘）：卡文件在库时附「全文见 kb_read」指针；卡缺失 = 降级用内联段，**不崩、不记缺口**——
+ *   思维段自足（区别于判定标尺：标尺缺失必须显式回显，这里缺的只是全文指针）。
+ * - 段落在任务包指令**最前**：第一段话定视角——先说「你在写故事」，再给「判定标尺」。
+ */
+export const CREATIVE_MINDSET_CARD = "kb/method/creative-mindset";
+const CREATIVE_MINDSET_CARD_FILE = "knowledge/method/creative-mindset.md";
+const CREATIVE_MINDSET_DIGEST =
+  "进入创作 = 放下验收眼光：判定标尺、扫描器与改单是边界与地基，不是视野——写的时候心里是人物在想什么、" +
+  "读者在感受什么，不是条款在查什么。人物意志优先（情节服务于「这个人会怎么做」，不是「剧情需要什么」）；" +
+  "写你看见听见的，不写你总结的；一个具体细节胜过三句抽象形容。先活后修：初稿允许粗糙，写作途中不因规则停笔自查，" +
+  "本步唯一的义务是把活写完交扫——先成活，再谈好坏。";
+
+/** 创作模式段：宣言浓缩（内联自足）+ 卡在库时的全文指针；卡缺失降级为纯内联段（不抛错）。 */
+export function creativeMindsetSection(root: string, fs: IFileSystem = nodeFs, path: IFsPath = nodePath): string {
+  const cardFile = path.join(root, CREATIVE_MINDSET_CARD_FILE);
+  const pointer = fs.exists(cardFile) ? ` 全文见 kb_read ${CREATIVE_MINDSET_CARD}。` : "（创作思维卡不在本机知识层，此为内联浓缩段。）";
+  return `## 创作模式（本步是写作产出相——规则是地基，不是视野）\n\n${CREATIVE_MINDSET_DIGEST}${pointer}`;
+}
+
 /** kb 条目 id → 知识文件（支持 kb/... 路径、目录与 /* glob）。 */
 function resolveKbPaths(root: string, ids: string[], fs: IFileSystem, path: IFsPath): { id: string; file: string }[] {
   const out: { id: string; file: string }[] = [];
@@ -353,6 +378,9 @@ export function buildTaskPackage(
     }
   }
   const parts: string[] = [];
+  // 创作思维切换：produce 相（op.kind=produce）的任务包第一段是创作模式段——
+  // 第一段话定视角：先说「你在写故事」，再给判定标尺（规则是地基不是视野的落点）。
+  if (opRef?.kind === "produce") parts.push(creativeMindsetSection(rootOf(), fs, path));
   if (kb.text) {
     const origin = opRef ? `kit ${opRef.kit}/${opRef.op}` : "节点 kb 声明";
     parts.push(`## 判定标尺（本步必须逐条对照的硬条款；出自 ${origin}）\n\n${kb.text}`);

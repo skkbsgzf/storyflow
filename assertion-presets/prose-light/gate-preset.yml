@@ -1,0 +1,49 @@
+# ═══════════════════════════════════════════
+# 断言预设：prose-light（初稿期）
+# 确定性完整性照拦，其余全 warn-only——「先写完，再打磨」阶段的门控行为。
+# ═══════════════════════════════════════════
+id: prose-light
+trust: system
+defaultGateMode: warn-only
+diagnosticEnabled: true
+progressiveResetMs: 0
+
+groups:
+  - id: integrity
+    gateMode: warn-only
+    assertions:
+      - assertionType: exists
+        gateMode: strict
+      - assertionType: no-debris
+        gateMode: block-critical   # 过程残留还是拦——它是事故级污染
+      - assertionType: artifact-header
+      - assertionType: glossary
+        warnThreshold: 2
+        blockThreshold: 3
+
+  - id: prose
+    gateMode: warn-only
+    disabled: "!isChapter"
+    assertions:
+      - assertionType: AE-PROSE-TRIPLET
+      - assertionType: AE-PROSE-NOTBUT
+      - assertionType: AE-PROSE-RHYTHM
+      - assertionType: AE-PROSE-SLOP
+      - assertionType: AE-CH-LEN
+      - assertionType: AE-WNF-HOOK
+        warnThreshold: 3
+        blockThreshold: 10
+
+  - id: consistency
+    gateMode: warn-only
+    disabled: "!isChapter"
+    assertions:
+      - assertionType: AE-CONT-KNOW
+        warnThreshold: 3
+        blockThreshold: 8
+      - assertionType: AE-CONT-ITEM
+        warnThreshold: 3
+        blockThreshold: 8
+      - assertionType: AE-CONT-FORESHADOW
+        warnThreshold: 3
+        blockThreshold: 8

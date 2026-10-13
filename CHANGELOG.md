@@ -15,6 +15,16 @@
 
 下方各 Unreleased 段为本版累积的工作记录（发版收拢，不再散佚）。
 
+## Unreleased · 创作模式思维切换：人文创作换脑子卡 + chat create 档 + produce 任务包自动注入（2026-10-13）
+
+1. **方法卡 `kb/method/creative-mindset`（track=通用，1.0.0 active）**：创作思维切换卡——进入创作 = 放下验收眼光，规则卡/扫描器/改单是边界与地基、不是视野。正文四节：切换宣言（人物与读者进心，不是条款）；操作要点 7 条（人物意志优先/在场感/声音一致/先活后修【待修：××】标记法/节拍靠直觉卡是参考系/具体压倒抽象/查证后置）；与验收体系的关系（创作相唯一义务=写完交扫；诊改相换回 revise-workflow 脑子——两张卡对偶：写作问「活不活」、诊改问「符不符」；扫描 warn 不是改稿清单）；入口与指引。已登记 `knowledge/index.json`（97 条目）；kit-compile 重编译 **117→118 词条 / 0 边 / 56 簇**（+1 簇），`--check` 逐键一致。
+2. **chat 第五档 `create`（创作模式·人文视角）**：`CHAT_MODES` 加 create——systemAddon = 思维切换浓缩 5 句 + 「全文见 kb_read kb/method/creative-mindset」+ 诊改后置纪律（写完的章节交 diag_scan/扫描器，写时不因规则停笔）+ 与 auto 同档的工具约束语义（写入可直接执行、推进流程前先说明，工具环零改动：`toolsForMode` 只削 plan）；`serve.ts` 模式白名单同步（未知值仍回落 full）。与约束档位正交写进 addon 文案：constraint_mode 管检索遵循强度、create 管视野。
+3. **生产线自动注入（core/src/assembler.ts）**：`buildTaskPackage` 对 `opRef.kind === "produce"`（事实源 = modules/<id>/module.json 的 op.kind，resolveNodeOp 解析、缺省 produce）的任务包在指令**最前**附「创作模式」段——内联浓缩宣言（确定性，不依赖读盘）+ 卡在库时附 kb_read 全文指针；卡缺失降级为纯内联段（knowledge/ 是 gitignore 本地层，缺卡不崩、不记缺口——思维段自足，区别于判定标尺的缺失显式回显）。**additive**：review/check 与无 op 节点任务包零变化（测试钉住）。prose/plot 等 produce 类 op **不挂卡**——assembler 统一注入已覆盖，op 再挂会双份注入。
+4. **测试**：core 新增 `test/creative-mindset.test.ts` 4 例（produce 注入且在指令最前 / 非 produce 零变化 / 缺卡降级不崩不记缺口 / 段函数两态）；`defaults-registration.test.ts` 尾参默认普查 168→**170**（assembler 创作模式段 fs/path 两个尾参默认，仍走注册表，27 文件不变）。storyharness `chat-mode.test.ts` 扩 create 2 例（工具环逐名与 auto 全等 / addon 八断言：宣言关键句·卡指针·diag_scan·revise-workflow·auto 推进语义）。
+5. **docs**：`docs/Agent.md`「模式感知约束」节补创作模式与 constraint_mode 正交一段；FS 抽象层行尾参默认计数补 170。
+6. **诚实账**：kit-lint 0E / **3W（基线 2W +1）**——新增「悬空知识条目: kb/method/creative-mindset」：卡消费面是 assembler 常量 + kb_read（代码路径），kit-lint 只看 op 声明看不到；不挂 op（会双注入）不改 exempt 表语义（非人工链路证据件），warn 如实入账，豁免票归 N3 工具票口径。存量（本单未引入、clean HEAD 复现）：core 8 例 preset 系失败（presets/image、presets/skeletons 已入库而测试期望 5 预设）；validate-kb 4 FAIL（user-style-rules 坏 frontmatter、9 卡未入索引、退役台账在 projects/ 运行数据缺失、semif 报告悬空引用）——本单后 md 120/索引 97 全覆盖新卡，缺口清单与基线逐条一致；门禁 1（gen-verbs-doc --check）FAIL 为行尾环境账（core.autocrlf=true 检出 CRLF vs 生成器 LF，逐行内容全同），门禁 2（gen-openapi --check）OK。
+7. **闸门（实测）**：core `tsc --noEmit` 0 错；vitest **495/503**（8 失败全为第 6 条存量，本单新增 6 例全过）；storyharness **166/166**（基线 164+2）+ `tsc --noEmit` 0 错；三 lint 0 error（flow 0W / module 33W 与基线同 / kit 3W 见第 6 条）；validate-kb 新卡入索引；不发版不动 VERSION/README badge。
+
 ## Unreleased · 批次4 W4.4 湮灭第二刀：官方面板退役（panel/ + desktop/ + cali/ + /panel 托管）（2026-10-13）
 
 1. **执行范围（用户裁定「panel可删，这几个都删」）**： tracked 出仓 **908 件** = `panel/` 零构建前端 **902**（app/bin/components/demo/docs/e2e/hooks/lib/public 七类源码 + `package*.json`/`next.config.ts`/`tailwind.config.ts`/`tsconfig.json` 等配置 + `.github/*` + 五语 README + LICENSE，全仓只剩 `panel/FROZEN.md` 墓碑）+ `storyharness/desktop/` **5**（Electron 壳 `main.cjs`/`shot.cjs`/`shots.cjs` + 两份 package 清单）+ `storyharness/cali/` **1**（`calibrate.mjs`）。代码两处：`storyharness/src/serve.ts` 摘掉 `/panel` 静态托管整块（原 224–265，42 行，用行首/行尾 assert 卡边界后删）并把落地页指针改成「看板不在本端口：由 `tools/dashboard.py` 出静态 HTML，读写走通道 A／通道 B」；`storyharness/src/web.ts` 自动开门目标从 `{port}/panel/` 回落协议面落地页，提示语点名 `python tools/dashboard.py --project <id>`。

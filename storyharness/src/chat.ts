@@ -50,16 +50,29 @@ const CHAT_SYSTEM = [
   "- 文件路径一律相对项目根；不要改 flow/state/registry 等运行状态文件。全程中文。",
 ].join("\n");
 
-/** 权限四档（对齐 Codex 模式）：每档 = 工具子集 + 系统提示附加段。 */
-export type ChatMode = "plan" | "confirm" | "auto" | "full";
+/** 权限五档（对齐 Codex 模式 + 创作模式）：每档 = 工具子集 + 系统提示附加段。 */
+export type ChatMode = "plan" | "confirm" | "auto" | "full" | "create";
 export const CHAT_MODES: Record<ChatMode, { label: string; systemAddon: string }> = {
   plan: { label: "计划模式", systemAddon: "当前为计划模式：你只有只读工具——只做调研、盘面分析与方案建议，不产出文件、不推进流程。" },
   confirm: { label: "变更前确认", systemAddon: "当前为变更前确认模式：写文件或推进流程前，必须先在回复里列出将要做的变更（写什么文件/交什么卷），等用户在下一轮消息里明确同意后才执行。" },
   auto: { label: "自动编辑", systemAddon: "当前为自动编辑模式：文件写入可直接执行；推进流程（mf_flow_run/mf_flow_submit/mf_flow_resume）前先在回复里说明你要做什么。" },
   full: { label: "完全访问", systemAddon: "" },
+  // 创作模式（思维切换）：工具环与 auto 同档（toolsForMode 只削 plan），addon 换脑子——
+  // 约束管边界（constraint_mode 检索档位语义照旧），创作管视野；全文见 kb/method/creative-mindset。
+  create: {
+    label: "创作模式（人文视角）",
+    systemAddon: [
+      "当前为创作模式（人文视角）：进入创作 = 放下验收眼光——规则卡、扫描器、改单是边界与地基，不是视野；写的时候心里是人物在想什么、读者在感受什么，不是条款在查什么。",
+      "人物意志优先：情节服务于「这个人会怎么做」，不是「剧情需要什么」；写你看见听见的，不写你总结的；一个具体细节胜过三句抽象形容。",
+      "先活后修：初稿允许粗糙（就地标【待修：××】），完成优先于完美，写作途中不因规则停笔自查——创作相唯一的义务是写完交扫。",
+      "诊改后置：写完的章节再交 diag_scan/扫描器出证据，按 kb/method/revise-workflow 先诊后改；约束模式（strict/assist）管检索遵循强度，本模式管视野，两者正交。",
+      "方法卡全文：kb_read kb/method/creative-mindset。",
+      "文件写入可直接执行；推进流程（mf_flow_run/mf_flow_submit/mf_flow_resume）前先在回复里说明你要做什么。",
+    ].join(""),
+  },
 };
 
-/** 按权限档装配工具环（E-A 权限四档）：plan=只读；其余档全环（confirm/auto 靠提示词纪律）。 */
+/** 按权限档装配工具环（E-A 权限档）：plan=只读；其余档（含 create）全环（confirm/auto/create 靠提示词纪律）。 */
 export function toolsForMode(kernel: KernelClient, project: string, mode: ChatMode): ReturnType<typeof buildTools> {
   const all = buildTools(kernel, project, { lifecycle: mode !== "plan" });
   if (mode === "plan") return all.filter((t) => t.name !== "fs_write");
@@ -244,7 +257,7 @@ function extractText(content: unknown): string {
 }
 
 /** 一个对话回合：SSE 逐事件产出（内核形状），同时落会话 JSONL。
- *  mode = 权限四档（plan/confirm/auto/full，D-E 权限设置）；turn 记录到会话元数据。 */
+ *  mode = 权限档（plan/confirm/auto/full/create，D-E 权限设置 + 批次4 创作模式）；turn 记录到会话元数据。 */
 export async function* chatTurn(
   kernel: KernelClient,
   cfg: HarnessConfig,

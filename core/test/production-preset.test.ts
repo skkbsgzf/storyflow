@@ -28,13 +28,17 @@ describe("production-preset · manifest 与 overlay 装载", () => {
     expect(byId.get("short-story")?.flows).toEqual([{ flowId: "topic", hasOverlay: true }]);
   });
 
-  it("broken preset 照常列出（缺 manifest / 非法目录名跳过）", () => {
+  it("broken preset 照常列出（manifest 非法 = broken；缺 manifest = 非生产线预设族跳过 / 非法目录名跳过）", () => {
     const root = tmpRoot();
     fs.mkdirSync(path.join(root, "presets", "no-manifest"), { recursive: true });
+    fs.mkdirSync(path.join(root, "presets", "bad-yaml"), { recursive: true });
+    fs.writeFileSync(path.join(root, "presets", "bad-yaml", "preset.yml"), "\t: tab-indent breaks yaml", "utf-8");
     fs.mkdirSync(path.join(root, "presets", "Bad_ID"), { recursive: true });
     const list = listProductionPresets(root);
-    expect(list.map((p) => p.id)).toEqual(["no-manifest"]);
-    expect(list[0]?.broken).toMatch(/missing/);
+    // 批次4：presets/ 是多族共用目录——缺 preset.yml 的族（skeletons/image 形态）跳过不标 broken；
+    // preset.yml 存在但解析失败才是真 broken。
+    expect(list.map((p) => p.id)).toEqual(["bad-yaml"]);
+    expect(list[0]?.broken).toMatch(/invalid preset.yml/);
   });
 
   it("loadPresetOverlay：缺失 = undefined；JSON/schema/flowId 不符 → 大声失败", () => {

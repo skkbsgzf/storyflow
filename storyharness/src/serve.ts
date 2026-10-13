@@ -34,7 +34,7 @@ import { Agent } from "@earendil-works/pi-agent-core";
 import type { HarnessConfig } from "./config.js";
 import type { KernelClient } from "./kernel.js";
 import { runFlow, type FlowRunResult } from "./scheduler.js";
-import { listChats, createChat, chatTranscript, deleteChat, renameChat, setSessionFlags, forkChat, chatTurn, sessionStats, modelMetaOf } from "./chat.js";
+import { listChats, createChat, chatTranscript, deleteChat, renameChat, setSessionFlags, forkChat, chatTurn, sessionStats, modelMetaOf, type ChatMode } from "./chat.js";
 import { saveAttachment, listAttachments } from "./attachments.js";
 import { loadPacks, packsBootLog, PackRuntime } from "./packs.js";
 import { packGateReport, setPackGate, packAllowed, projectFromRequest, cloneTemplateProject } from "./packgate.js";
@@ -494,7 +494,8 @@ export function startServe(kernel: KernelClient, cfg: HarnessConfig, port = 8431
               return;
             }
             const b = body ? (JSON.parse(body) as { text?: string; mode?: string }) : {};
-            const mode = (["plan", "confirm", "auto", "full"].includes(b.mode ?? "") ? b.mode : "full") as "plan" | "confirm" | "auto" | "full";
+            // 模式白名单与 CHAT_MODES 同步（批次4 +create 创作模式）——未知值回落 full（缺省全环）
+            const mode = (["plan", "confirm", "auto", "full", "create"].includes(b.mode ?? "") ? b.mode : "full") as ChatMode;
             const raw = new URLSearchParams(req.url?.split("?")[1] ?? "").get("raw") === "1";
             busyTurns.add(turnKey);
             res.writeHead(200, { "content-type": "text/event-stream; charset=utf-8", "cache-control": "no-cache", connection: "keep-alive" });

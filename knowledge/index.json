@@ -950,6 +950,23 @@
    ]
   },
   {
+   "id": "kb/method/creative-mindset",
+   "type": "deconstruct-protocol",
+   "title": "创作思维切换卡（进入创作 = 放下验收眼光：规则是地基，不是视野）",
+   "dimension": "method",
+   "routes": [
+    "all"
+   ],
+   "file": "method/creative-mindset.md",
+   "tags": [
+    "all"
+   ],
+   "applies_to": [
+    "long-form",
+    "short-drama"
+   ]
+  },
+  {
    "id": "kb/structure/ascent",
    "type": "structure-archetype",
    "title": "结构母型 · 逆袭/升级（欲望递进）",
