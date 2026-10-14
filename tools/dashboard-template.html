@@ -5,8 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>__TITLE__</title>
 <style>
-  /* 项目看板 v3 · 固定模板（工单-20261013 用户定盘规格）。
-     三栏式：标题栏 / 44px 图标工具栏 / 主内容区；五面板 + 配置抽屉。
+  /* 项目看板 v4 · 固定模板（看板 v4 工单 V4-1 三段式框架）。
+     顶栏（项目名 + 右上角配置）/ 44px 图标栏（五浏览面板 + 文档）/ 主区 = 总览面板 ∥ 详情面板（右侧滑入）。
+     主区零弹窗（唯一豁免：破坏性确认）；配置 = 右上角二层抽屉；详情弹性收起（保留滚动状态）；
+     文档阅读支持 1+1 并行分栏，分栏比与详情宽度 localStorage 记忆。
      零外部资源：系统字体栈、内联样式、SVG 内联图标、数据生成时内联为惰性 JSON，不回 call kit。
      双主题：暗色（规格 §一色板）为默认，浅色「白灰青」为备选；强调色四选；CSS 变量切换。 */
   :root, body[data-theme="dark"] {
@@ -42,6 +44,8 @@
   .tbtn { background:var(--panel2); color:var(--dim); border:1px solid var(--border); border-radius:6px;
           padding:5px 11px; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:6px; }
   .tbtn:hover { color:var(--ink); border-color:var(--accent); }
+  #ovTab { display:none; }
+  body.ov-folded #ovTab { display:flex; }
   /* ── 图标工具栏（44px） ── */
   #app { flex:1; display:flex; min-height:0; }
   #rail { width:44px; flex:0 0 44px; background:var(--panel); border-right:1px solid var(--border);
@@ -50,10 +54,23 @@
              color:var(--dim); cursor:pointer; display:flex; align-items:center; justify-content:center; }
   .railbtn:hover { color:var(--ink); background:var(--panel2); }
   .railbtn.on { color:var(--ink); border-left-color:var(--accent); background:var(--panel2); }
-  /* ── 主内容区 ── */
-  #main { flex:1; min-width:0; overflow:auto; padding:16px 22px 48px;
-          font-size:var(--fs); line-height:var(--lh); }
-  body.compact #main { padding:10px 14px 32px; }
+  /* ── 主区（总览 ∥ doc 分栏 ∥ 详情滑入） ── */
+  #stage { flex:1; display:flex; min-width:0; position:relative; overflow:hidden;
+           --dw:460px; padding-right:0; transition:padding-right .18s ease; }
+  #stage.has-detail { padding-right:var(--dw); }
+  #stage.noanim, #stage.noanim #detail { transition:none; }
+  #ov { flex:1; min-width:0; overflow:auto; padding:16px 22px 48px;
+        font-size:var(--fs); line-height:var(--lh); }
+  body.compact #ov { padding:10px 14px 32px; }
+  body.ov-folded #ov { display:none; }
+  /* ── 文档阅读区（1+1 并行分栏） ── */
+  #docs { flex:1; min-width:0; display:none; flex-direction:column; }
+  #doccols { flex:1; display:flex; min-height:0; min-width:0; }
+  .dcol { display:flex; flex-direction:column; min-width:0; overflow:hidden; }
+  #docGutter { flex:0 0 6px; cursor:col-resize; background:var(--border); }
+  #docGutter:hover { background:var(--accent); }
+  .dpbody { flex:1; overflow:auto; padding:10px 18px 40px; font-size:var(--fs); line-height:var(--lh); }
+  body.compact .dpbody { padding:6px 10px 24px; }
   .wrap { max-width:980px; margin:0 auto; }
   .bar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
   input[type=search], select { background:var(--panel2); color:var(--ink); border:1px solid var(--border);
@@ -75,7 +92,8 @@
   .empty { padding:30px 6px; color:var(--dim); font-size:13px; }
   .muted { color:var(--dim); }
   .mono { font-family:var(--mono); }
-  /* ── 3.1 世界书 ── */
+  .who { color:var(--blue); }
+  /* ── 世界书 ── */
   .grp-h { display:flex; align-items:center; gap:8px; padding:7px 10px; cursor:pointer; user-select:none;
            color:var(--dim); border-radius:6px; }
   .grp-h:hover { background:var(--panel2); color:var(--ink); }
@@ -96,7 +114,7 @@
         display:inline-block; background:var(--panel2); }
   .lg .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; vertical-align:-1px; }
   .lg.off { opacity:.32; }
-  /* ── 3.2 人物 ── */
+  /* ── 人物 ── */
   .pgrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:12px; }
   body.compact .pgrid { gap:8px; }
   .pcard { background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:12px 14px;
@@ -108,15 +126,17 @@
   .dot { display:inline-block; width:8px; height:8px; border-radius:50%; }
   .st-active { color:var(--green); } .st-draft { color:var(--gold); }
   .st-retired { color:var(--red); } .st-other { color:var(--dim); }
-  /* ── 3.3 大纲 ── */
+  /* ── 大纲 ── */
   .tree .frow { display:flex; align-items:baseline; gap:8px; padding:4px 8px; cursor:pointer;
                 border-bottom:1px solid var(--border); flex-wrap:wrap; }
   body.compact .tree .frow { padding:2px 8px; }
   .tree .frow:hover { background:var(--panel); }
   .tree .tw { color:var(--dim); font-family:var(--mono); font-size:10px; width:14px; display:inline-block; }
   .tree .tm { margin-left:auto; font-family:var(--mono); font-size:11px; color:var(--dim); }
+  .tree .spl { visibility:hidden; padding:1px 8px; }
+  .tree .frow:hover .spl { visibility:visible; }
   .role-human { color:var(--gold); } .role-generated { color:var(--blue); }
-  /* ── 3.4 大事记 ── */
+  /* ── 大事记 ── */
   .tl { border-left:2px solid var(--border); margin-left:8px; padding-left:18px; }
   .tlev { position:relative; padding:7px 0 9px; border-bottom:1px solid var(--border); cursor:pointer; }
   body.compact .tlev { padding:4px 0 5px; }
@@ -126,11 +146,11 @@
   .tlev:hover::before { background:var(--accent); }
   .tlev.drift::before { background:var(--red); }
   .tlev .tm { font-family:var(--mono); font-size:12px; color:var(--gold); margin-right:8px; }
-  .tlev .who { color:var(--blue); }
   .tlev.drift .tm { color:var(--red); }
   .tlev .dr { color:var(--red); font-family:var(--mono); font-size:11px; margin-left:8px; }
-  /* ── 3.5 文档阅读（doc 排版：居中 720px） ── */
-  .docbar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+  /* ── doc 排版（居中 720px） ── */
+  .docbar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:10px 18px 0; }
+  body.compact .docbar { padding:6px 10px 0; }
   .docbar .path { font-family:var(--mono); font-size:12px; color:var(--dim); overflow-wrap:anywhere; }
   article.doc { max-width:720px; margin:0 auto; padding:6px 2px 60px; }
   article.doc h1, article.doc h2, article.doc h3,
@@ -153,20 +173,40 @@
                   font:var(--fs)/var(--lh) var(--mono); }
   .docframe { width:100%; height:calc(100vh - 140px); min-height:400px; border:1px solid var(--border);
               border-radius:8px; background:#fff; }
-  /* ── 配置抽屉（500px 右滑） ── */
+  /* ── 详情面板（右侧滑入，弹性收起保留状态） ── */
+  #detail { position:absolute; top:0; right:0; bottom:0; width:var(--dw); background:var(--panel);
+            border-left:1px solid var(--border); transform:translateX(calc(var(--dw) + 8px));
+            transition:transform .18s ease; display:flex; flex-direction:column; z-index:12; }
+  #detail.open { transform:none; }
+  #dresizer { position:absolute; top:0; bottom:0; right:var(--dw); width:6px; cursor:col-resize;
+              z-index:13; display:none; }
+  #dresizer:hover { background:var(--accent); opacity:.5; }
+  #stage.has-detail #dresizer { display:block; }
+  .vhead { flex:0 0 auto; padding:12px 16px; border-bottom:1px solid var(--border); display:flex;
+           align-items:center; gap:10px; }
+  .vhead b { font-size:14px; letter-spacing:1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .vhead .meta { font-family:var(--mono); font-size:11px; color:var(--dim); flex:1; overflow:hidden;
+                 text-overflow:ellipsis; white-space:nowrap; }
+  .vhead .x { margin-left:auto; cursor:pointer; color:var(--dim); background:none; border:0; font-size:14px; flex:0 0 auto; }
+  .vhead .x:hover { color:var(--ink); }
+  .vhead .back { background:var(--panel2); border:1px solid var(--border); border-radius:6px;
+                 color:var(--dim); cursor:pointer; font-size:12px; padding:2px 9px; flex:0 0 auto; }
+  .vhead .back:hover { color:var(--ink); border-color:var(--accent); }
+  .vbody { flex:1; overflow:auto; padding:14px 16px 40px; font-size:13px; }
+  #detail .vbody { font-size:var(--fs); line-height:var(--lh); }
+  /* ── 配置二层抽屉（500px 右滑；一层导航 / 二层内容页） ── */
   #drawer { position:fixed; top:0; right:0; height:100%; width:min(500px,92vw); background:var(--panel);
             border-left:1px solid var(--border); transform:translateX(100%); transition:transform .16s ease;
             display:flex; flex-direction:column; z-index:20; }
   #drawer.open { transform:none; }
-  #drawer .dhead { padding:12px 16px; border-bottom:1px solid var(--border); display:flex;
-                   align-items:center; gap:10px; }
-  #drawer .dhead b { font-size:14px; letter-spacing:2px; }
-  #drawer .dhead .x { margin-left:auto; cursor:pointer; color:var(--dim); background:none; border:0;
-                      font-size:14px; }
-  #drawer .dhead .x:hover { color:var(--ink); }
-  #drawer .dbody { overflow:auto; padding:4px 16px 40px; flex:1; font-size:13px; }
-  #drawer h3 { font-size:12px; letter-spacing:1px; color:var(--accent); margin:18px 0 8px; font-weight:600; }
+  #drawer .vhead b { letter-spacing:2px; }
+  #drawer .vbody { font-size:13px; padding:4px 16px 40px; }
+  #drawer h3 { font-size:12px; letter-spacing:1px; color:var(--accent); margin:14px 0 8px; font-weight:600; }
   #drawer h3:first-child { margin-top:10px; }
+  .navrow { display:flex; align-items:center; gap:10px; padding:13px 10px; cursor:pointer;
+            border-bottom:1px solid var(--border); font-size:13.5px; }
+  .navrow:hover { background:var(--panel2); }
+  .navrow .ar { color:var(--dim); font-family:var(--mono); font-size:11px; margin-left:auto; }
   .lrow { display:flex; gap:8px; align-items:baseline; padding:4px 0; border-bottom:1px solid var(--border);
           font-size:12px; flex-wrap:wrap; }
   .lrow .tm { font-family:var(--mono); font-size:11px; color:var(--dim); flex:0 0 118px; }
@@ -180,18 +220,13 @@
         background:var(--panel2); color:var(--dim); padding:4px 10px; cursor:pointer; font-size:12px; }
   .sw.on { color:var(--accent); border-color:var(--accent); }
   .sw .dot { background:currentColor; }
-  /* ── 弹层 ── */
+  /* ── 确认弹窗（唯一豁免：破坏性确认「恢复快照」） ── */
   #modal { position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; z-index:30;
            align-items:flex-start; justify-content:center; padding:6vh 16px 16px; }
   #modal.open { display:flex; }
-  .mbox { background:var(--panel); border:1px solid var(--border); border-radius:10px; width:720px;
+  .mbox { background:var(--panel); border:1px solid var(--border); border-radius:10px; width:640px;
           max-width:100%; max-height:84vh; display:flex; flex-direction:column; }
-  .mhead { padding:12px 16px; border-bottom:1px solid var(--border); display:flex; gap:10px; align-items:center; }
-  .mhead b { font-size:14px; overflow-wrap:anywhere; }
-  .mhead .meta { font-family:var(--mono); font-size:11px; color:var(--dim); }
-  .mhead .x { margin-left:auto; cursor:pointer; color:var(--dim); background:none; border:0; font-size:14px; }
-  .mhead .x:hover { color:var(--ink); }
-  .mbody { overflow:auto; padding:14px 16px 30px; }
+  /* 详情正文通用块 */
   .w5 { display:grid; grid-template-columns:64px 1fr; gap:6px 12px; font-size:13px; }
   .w5 .k5 { font-family:var(--mono); font-size:11px; color:var(--accent); padding-top:2px; }
   .w5 .v5 { overflow-wrap:anywhere; }
@@ -202,39 +237,37 @@
   .diffbox .add { color:var(--green); } .diffbox .del { color:var(--red); } .diffbox .hud { color:var(--accent); }
   .diffbox .ctx { color:var(--dim); }
   .note { font-family:var(--mono); font-size:11px; color:var(--dim); line-height:1.8; margin:8px 0; }
-  @media (max-width:640px) { #main { padding:10px 10px 32px; } .pgrid { grid-template-columns:1fr 1fr; } }
+  @media (max-width:640px) { #ov { padding:10px 10px 32px; } .pgrid { grid-template-columns:1fr 1fr; }
+    #doccols { flex-direction:column; } #docGutter { flex:0 0 6px; cursor:row-resize; } }
 </style>
 </head>
 <body data-theme="dark" data-accent="gold">
 <header id="topbar">
   <span class="t" id="tbTitle"></span>
   <span class="pid" id="tbPid"></span>
+  <button class="tbtn" id="ovTab" title="展开总览">总览</button>
   <button class="tbtn" id="tbConfig"></button>
 </header>
 <div id="app">
   <nav id="rail"></nav>
-  <main id="main"></main>
+  <div id="stage">
+    <section id="ov"></section>
+    <section id="docs"></section>
+    <div id="dresizer" title="拖动调整详情宽度"></div>
+    <aside id="detail" aria-hidden="true">
+      <div class="vhead"><b id="dtTitle"></b><span class="meta" id="dtMeta"></span><button class="x" id="dtClose" title="关闭">✕</button></div>
+      <div class="vbody" id="dtBody"></div>
+    </aside>
+  </div>
 </div>
 <aside id="drawer" aria-hidden="true">
-  <div class="dhead"><b>配置</b><button class="x" id="dwClose" title="关闭">✕</button></div>
-  <div class="dbody">
-    <h3>模型配置</h3><div id="modelsBody"></div>
-    <h3>日志</h3>
-    <div class="bar" style="margin-bottom:8px">
-      <select id="logLevel"><option value="">全部级别</option><option>ERROR</option><option>WARN</option><option>INFO</option></select>
-      <input type="search" id="logQ" placeholder="搜日志内容" style="min-width:150px">
-      <button class="btn" id="logCopy">复制</button>
-      <span class="chip" id="logCount"></span>
-    </div>
-    <div id="logsBody"></div>
-    <h3>历史快照</h3><div id="snapsBody"></div>
-    <h3>偏好</h3><div id="prefsBody"></div>
-  </div>
+  <div class="vhead"><button class="back" id="dwBack" title="返回导航">← 返回</button><b id="dwTitle">配置</b><button class="x" id="dwClose" title="关闭">✕</button></div>
+  <div class="vbody" id="dwBody"></div>
 </aside>
 <div id="modal">
   <div class="mbox">
-    <div class="mhead"><b id="mTitle"></b><span class="meta" id="mMeta"></span><button class="x" id="mClose" title="关闭">✕</button></div>
-    <div class="mbody" id="mBody"></div>
+    <div class="vhead"><b id="mTitle"></b><span class="meta" id="mMeta"></span><button class="x" id="mClose" title="关闭">✕</button></div>
+    <div class="vbody" id="mBody"></div>
   </div>
 </div>
 <script>
@@ -248,11 +281,14 @@ const CFG = { models: (D.config || {}).models || [], logs: (D.config || {}).logs
 const PALETTE = ["#e8b33d","#6ea8fe","#5f9c7a","#d98a83","#8a6fb0","#c9a227","#4fb3c9","#b0765a",
                  "#7f9e4a","#c97ba3","#88b0d8","#a3907c","#6fc0a8","#d089c0","#9aa7e0","#c0b28a"];
 
-// ── 状态（规格 §五） ──
+// ── 状态（v3 §五 + v4 布局记忆键） ──
 const PREF_KEY = "dashv3.prefs";
+const DETW_KEY = "dashv4.detailW";
+const SPLIT_KEY = "dashv4.docSplit";
 const state = {
   activePanel: "",   // "" = 空白
-  docPath: "",
+  ovPanel: "",       // 总览区当前承载的浏览面板（doc 模式下不清）
+  docPath: "",       // 兼容位：等同 docState.a
   config: { fontSize: 15, lineHeight: 1.8, themeColor: "gold", compact: false, theme: "dark" },
 };
 try {
@@ -269,6 +305,11 @@ function applyPrefs() {
   r.setProperty("--lh", String(state.config.lineHeight));
 }
 
+// ── DOM 锚点 ──
+const stage = document.getElementById("stage");
+const ovEl = document.getElementById("ov");
+const docsEl = document.getElementById("docs");
+
 // ── SVG 图标（内联线性，零外部依赖） ──
 const ICONS = {
   worldbook: '<svg class="ic" width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="3.5" y="3.5" width="13" height="13" rx="1.5"/><path d="M7.5 3.5v13"/><path d="M10.5 7.5h3.5M10.5 10h3.5"/></svg>',
@@ -278,16 +319,68 @@ const ICONS = {
   doc: '<svg class="ic" width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M10 3l7 7-7 7-7-7z"/><path d="M10 7.2l2.8 2.8-2.8 2.8L7.2 10z"/></svg>',
   config: '<svg class="ic" width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="10" r="3"/><circle cx="10" cy="10" r="6.5" stroke-dasharray="3.4 2.2"/></svg>',
 };
+// 图标栏 = 总览浏览形态五入口 + 文档阅读；「配置」按 v4 规格移到顶栏右上角
 const TOOLS = [
   ["worldbook", "世界书"],
   ["people", "人物"],
   ["outline", "大纲"],
   ["chronicle", "大事记"],
   ["doc", "文档"],
-  ["config", "配置"],
 ];
 
-// ── 工具栏 + 面板切换（点击开 / 再点关 / ESC 关） ──
+// ── 详情面板（右侧滑入；弹性收起 = 收起不销毁，重开同一详情恢复滚动） ──
+const detailEl = document.getElementById("detail");
+const dtTitle = document.getElementById("dtTitle");
+const dtMeta = document.getElementById("dtMeta");
+const dtBody = document.getElementById("dtBody");
+const dt = { key: "", scroll: 0, open: false };
+let detailW = 460;
+function clampDetailW(w) { return Math.max(280, Math.min(w, Math.max(320, window.innerWidth - 300))); }
+function setDetailW(w) { detailW = clampDetailW(Math.round(w)); stage.style.setProperty("--dw", detailW + "px"); }
+try { const w0 = +localStorage.getItem(DETW_KEY); if (w0 >= 280) setDetailW(w0); } catch (e) {}
+setDetailW(detailW);
+function openDetail(key, title, meta, htmlBody, wire) {
+  if (dt.key !== key) {
+    dtBody.innerHTML = htmlBody;
+    dt.key = key; dt.scroll = 0; dtBody.scrollTop = 0;
+    if (wire) wire();
+  }
+  dtTitle.textContent = title;
+  dtMeta.textContent = meta || "";
+  stage.classList.add("has-detail");
+  detailEl.classList.add("open");
+  detailEl.setAttribute("aria-hidden", "false");
+  dt.open = true;
+  dtBody.scrollTop = dt.scroll;
+}
+function closeDetail() {
+  if (!dt.open) return;
+  dt.scroll = dtBody.scrollTop;        // 弹性收起：保留状态与滚动位置
+  dt.open = false;
+  stage.classList.remove("has-detail");
+  detailEl.classList.remove("open");
+  detailEl.setAttribute("aria-hidden", "true");
+}
+document.getElementById("dtClose").addEventListener("click", closeDetail);
+(function wireDetailResizer() {
+  const h = document.getElementById("dresizer");
+  h.addEventListener("mousedown", e => {
+    e.preventDefault();
+    stage.classList.add("noanim");
+    const move = ev => {
+      const r = stage.getBoundingClientRect();
+      setDetailW(r.right - ev.clientX - 2);
+    };
+    const up = () => {
+      window.removeEventListener("mousemove", move); window.removeEventListener("mouseup", up);
+      stage.classList.remove("noanim");
+      try { localStorage.setItem(DETW_KEY, String(detailW)); } catch (err) {}
+    };
+    window.addEventListener("mousemove", move); window.addEventListener("mouseup", up);
+  });
+})();
+
+// ── 图标栏 + 面板切换（点击开 / 再点关 / ESC 关；doc 与浏览面板两翼并行） ──
 const rail = document.getElementById("rail");
 rail.innerHTML = TOOLS.map(([k, label]) =>
   `<button class="railbtn" data-k="${k}" title="${label}">${ICONS[k]}</button>`).join("");
@@ -299,31 +392,43 @@ function show(k) {
   stopGraph();
   state.activePanel = k;
   rail.querySelectorAll(".railbtn").forEach(b => b.classList.toggle("on", b.dataset.k === k));
-  const m = document.getElementById("main");
-  m.innerHTML = "";                                  // 切换＝清空重渲染（规格 §二）
+  if (k === "doc") {                       // 文档阅读区展开，总览区保留上一浏览面板
+    docsEl.style.display = "flex";
+    if (!state.ovPanel && !ovEl.innerHTML) {
+      ovEl.innerHTML = `<div class="wrap"><div class="empty">从左侧图标栏选择浏览面板（世界书 / 人物 / 大纲 / 大事记）。</div></div>`;
+    }
+    renderDoc();
+    return;
+  }
+  docsEl.style.display = "none";           // 切浏览 = 收起 doc 区，总览区清空重渲染（规格 §二）
+  state.ovPanel = k;
+  ovEl.innerHTML = "";
   if (k === "worldbook") renderWorldbook();
   else if (k === "people") renderPeople();
   else if (k === "outline") renderOutline();
   else if (k === "chronicle") renderChronicle();
-  else if (k === "doc") renderDoc();
-  m.scrollTop = 0;
+  ovEl.scrollTop = 0;
 }
 document.getElementById("tbConfig").innerHTML = ICONS.config + "<span>配置</span>";
 document.getElementById("tbConfig").addEventListener("click", () => openDrawer());
 document.getElementById("tbTitle").textContent = D.title || D.project || "项目看板";
 document.getElementById("tbPid").textContent = D.project || "";
+document.getElementById("ovTab").addEventListener("click", () => {
+  document.body.classList.remove("ov-folded");
+  show(state.ovPanel || "outline");
+});
 
-// ── 弹层（词条详情 / 5W1H / 快照预览 / 恢复确认共用） ──
+// ── 确认弹窗（主区零弹窗的唯一豁免：破坏性确认「恢复快照」） ──
 const modal = document.getElementById("modal");
-function openModal(title, meta, htmlBody) {
+function openConfirm(title, meta, htmlBody) {
   document.getElementById("mTitle").textContent = title;
   document.getElementById("mMeta").textContent = meta || "";
   document.getElementById("mBody").innerHTML = htmlBody;
   modal.classList.add("open");
 }
-function closeModal() { modal.classList.remove("open"); }
-document.getElementById("mClose").addEventListener("click", closeModal);
-modal.addEventListener("click", e => { if (e.target === modal) closeModal(); });
+function closeConfirm() { modal.classList.remove("open"); }
+document.getElementById("mClose").addEventListener("click", closeConfirm);
+modal.addEventListener("click", e => { if (e.target === modal) closeConfirm(); });
 function copyText(t, btn, done) {
   const fin = ok => { if (btn) btn.textContent = ok ? (done || "已复制") : "复制失败"; if (btn) setTimeout(() => { btn.textContent = "复制"; }, 1600); };
   if (navigator.clipboard && navigator.clipboard.writeText)
@@ -336,22 +441,34 @@ function copyText(t, btn, done) {
   }
 }
 
-// ── ESC 层级：弹层 → 配置抽屉 → 面板 ──
+// ── ESC 逐层退：确认弹窗 → 抽屉二层→一层→关 → 详情面板 → 面板 ──
 window.addEventListener("keydown", e => {
   if (e.key !== "Escape") return;
-  if (modal.classList.contains("open")) { closeModal(); return; }
+  if (modal.classList.contains("open")) { closeConfirm(); return; }
   const dw = document.getElementById("drawer");
-  if (dw.classList.contains("open")) { dw.classList.remove("open"); return; }
+  if (dw.classList.contains("open")) {
+    if (dwPage) { dwGo(""); }
+    else { closeDrawer(); }
+    return;
+  }
+  if (dt.open) { closeDetail(); return; }
   if (state.activePanel) show("");
 });
 
-// ── 3.1 世界书面板 ──
+// ── 总览折叠（给 doc 分栏让位） ──
+function foldOverview() { document.body.classList.add("ov-folded"); }
+function unfoldOverview() {
+  document.body.classList.remove("ov-folded");
+  if (!state.ovPanel) show("outline");
+}
+
+// ── 世界书面板（总览区） ──
 const wbState = { q: "", cat: "", mode: "list", collapsed: new Set() };
 const wbCats = [...new Set(WB.entries.map(e => e.cat || "总览"))].sort((a, b) => a.localeCompare(b, "zh"));
 const wbColor = {}; wbCats.forEach((c, i) => wbColor[c] = PALETTE[i % PALETTE.length]);
 function wbDetail(i) {
   const e = WB.entries[i]; if (!e) return;
-  openModal(e.title || e.id, e.path || "",
+  openDetail("wb:" + (e.id || i), e.title || e.id, e.path || "",
     `<div class="w5">` + [
       ["标题", esc(e.title || "")],
       ["分类", esc(e.cat || "总览")],
@@ -362,7 +479,6 @@ function wbDetail(i) {
     ].map(([k, v]) => `<div class="k5">${k}</div><div class="v5">${v}</div>`).join("") + `</div>`);
 }
 function renderWorldbook() {
-  const m = document.getElementById("main");
   const bar = `<div class="bar">` +
     `<input type="search" id="wbQ" placeholder="搜标题/摘要/标签" value="${esc(wbState.q)}">` +
     `<select id="wbCat"><option value="">全部分类</option>` +
@@ -371,7 +487,7 @@ function renderWorldbook() {
     `<button class="btn${wbState.mode === "graph" ? " on" : ""}" id="wbGraphBtn">图谱</button>` +
     `<span class="chip">词条 ${WB.entries.length}</span><span class="chip">关系 ${WB.relations.length}</span>` +
     `</div>`;
-  m.innerHTML = `<div class="wrap">${bar}<div id="wbBody"></div></div>`;
+  ovEl.innerHTML = `<div class="wrap">${bar}<div id="wbBody"></div></div>`;
   if (wbState.mode === "graph") { renderWbGraph(); }
   else renderWbList();
   const q = document.getElementById("wbQ");
@@ -510,7 +626,7 @@ function renderWbGraph() {
     view.tx = mx - (mx - view.tx) * (ns / view.scale); view.ty = my - (my - view.ty) * (ns / view.scale); view.scale = ns; }, { passive: false });
 }
 
-// ── 3.2 人物档案面板 ──
+// ── 人物档案面板（总览区） ──
 const peopleState = { q: "" };
 const stCls = s => s === "active" ? "st-active" : s === "draft" ? "st-draft" : s === "retired" ? "st-retired" : "st-other";
 function personEvents(name) {
@@ -522,7 +638,7 @@ function personDetail(i) {
   const e = WB.entries[i]; if (!e) return;
   const rels = WB.relations.filter(r => r.a === e.id || r.b === e.id);
   const other = rid => { const t = WB.entries.find(x => x.id === rid); return t ? (t.title || rid) : rid; };
-  openModal(e.title || e.id, e.path || "",
+  openDetail("person:" + (e.id || i), e.title || e.id, e.path || "",
     `<div class="w5">` + [
       ["角色定位", esc(e.summary || "") || '<span class="none">—</span>'],
       ["状态", `<span class="${stCls(e.status)} mono">${esc(e.status || "active")}</span>`],
@@ -535,12 +651,11 @@ function personDetail(i) {
     ].map(([k, v]) => `<div class="k5">${k}</div><div class="v5">${v}</div>`).join("") + `</div>`);
 }
 function renderPeople() {
-  const m = document.getElementById("main");
   const q = peopleState.q.trim().toLowerCase();
   const hits = WB.entries.map((e, i) => [e, i])
     .filter(([e]) => (e.cat || "总览") === "人物")
     .filter(([e]) => !q || ((e.title || "") + (e.summary || "") + (e.tags || []).join(" ")).toLowerCase().includes(q));
-  m.innerHTML = `<div class="wrap">` +
+  ovEl.innerHTML = `<div class="wrap">` +
     `<div class="bar"><input type="search" id="pQ" placeholder="搜人物名/角色定位" value="${esc(peopleState.q)}">` +
     `<span class="chip">人物 ${hits.length}</span></div>` +
     (hits.length
@@ -555,10 +670,10 @@ function renderPeople() {
   const inp = document.getElementById("pQ");
   inp.addEventListener("input", () => { peopleState.q = inp.value; renderPeople();
     const n = document.getElementById("pQ"); if (n) { n.focus(); n.setSelectionRange(n.value.length, n.value.length); } });
-  m.querySelectorAll(".pcard").forEach(c => c.addEventListener("click", () => personDetail(+c.dataset.pi)));
+  ovEl.querySelectorAll(".pcard").forEach(c => c.addEventListener("click", () => personDetail(+c.dataset.pi)));
 }
 
-// ── 3.3 大纲面板（排除清单在前端：诊断报告 / registry / 编译产物 / 快照） ──
+// ── 大纲面板（总览区；排除清单在前端：诊断报告 / registry / 编译产物 / 快照） ──
 const outlineState = { collapsed: new Set() };
 const OUTLINE_EXCL = /^(reports|registry|kit|snapshots|\.external|内部)\//;
 function fileType(p) {
@@ -577,7 +692,6 @@ const FICON = {
   binary: '<svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><rect x="2" y="3.5" width="10" height="7" rx="1.5"/><path d="M5 6.5h4"/></svg>',
 };
 function renderOutline() {
-  const m = document.getElementById("main");
   const list = ARTS.filter(a => !OUTLINE_EXCL.test(a.path));
   const root = {};
   for (const a of list) {
@@ -605,6 +719,7 @@ function renderOutline() {
       h += `<div class="frow" data-doc="${esc(a.path)}" style="padding-left:${8 + depth * 16}px">` +
         `<span class="tw">${FICON[t] || FICON.md}</span>${esc(a.path.split("/").pop())} ${st}` +
         (a.missing ? "" : `<span class="tm">${esc((a.mtime || "").replace("T", " ").slice(0, 16))}</span>`) +
+        `<button class="btn spl" data-spl="${esc(a.path)}" title="在分栏打开（1+1 并行阅读）">分栏</button>` +
         `</div>`;
     }
     return h;
@@ -614,7 +729,7 @@ function renderOutline() {
     for (const k of Object.keys(node)) if (k !== "") n += countFiles(node[k]);
     return n;
   }
-  m.innerHTML = `<div class="wrap">` +
+  ovEl.innerHTML = `<div class="wrap">` +
     `<div class="bar"><span class="chip">产物 ${list.length} 件</span>` +
     `<span class="chip">人写 ${list.filter(a => a.role === "human").length}</span>` +
     `<span class="chip">生成 ${list.filter(a => a.role === "generated").length}</span>` +
@@ -623,20 +738,20 @@ function renderOutline() {
     (list.length ? `<div class="tree card">${drawTree(root, 0, "")}</div>`
       : `<div class="empty">无产物清单——跑 python tools/project-index.py index --project ${esc(D.project || "")} 出索引</div>`) +
     `</div>`;
-  m.querySelectorAll("[data-fold]").forEach(r => r.addEventListener("click", () => {
+  ovEl.querySelectorAll("[data-fold]").forEach(r => r.addEventListener("click", () => {
     const k = r.dataset.fold;
     outlineState.collapsed.has(k) ? outlineState.collapsed.delete(k) : outlineState.collapsed.add(k);
     renderOutline();
   }));
-  m.querySelectorAll("[data-doc]").forEach(r => r.addEventListener("click", () => {
-    state.docPath = r.dataset.doc;
-    show("doc");
+  ovEl.querySelectorAll("[data-doc]").forEach(r => r.addEventListener("click", () => openDocA(r.dataset.doc)));
+  ovEl.querySelectorAll("[data-spl]").forEach(b => b.addEventListener("click", e => {
+    e.stopPropagation();
+    openDocB(b.dataset.spl);
   }));
 }
 
-// ── 3.4 大事记面板（垂直时间线；矛盾红标；不展示叙事层导语/段带导语） ──
+// ── 大事记面板（总览区；垂直时间线；矛盾红标；不展示叙事层导语/段带导语） ──
 function renderChronicle() {
-  const m = document.getElementById("main");
   const evs = CH.events.slice().sort((a, b) => {
     const ka = a.storyKey || [0, 0], kb = b.storyKey || [0, 0];
     return (ka[0] - kb[0]) || (ka[1] - kb[1]) || (a.seq - b.seq);
@@ -645,7 +760,7 @@ function renderChronicle() {
     `<span class="chip">轨道 ${CH.lanes.length}</span>` +
     `<span class="chip${evs.filter(e => e.drift).length ? " warn" : ""}">矛盾 ${evs.filter(e => e.drift).length}</span></div>`;
   if (!evs.length) {
-    m.innerHTML = `<div class="wrap">${chipbar}<div class="empty">大事记为空——真相源：世界书/时间线.md 或 世界书/编年/大事记.md，写条目后重跑 python tools/chronicle.py 再出板。</div></div>`;
+    ovEl.innerHTML = `<div class="wrap">${chipbar}<div class="empty">大事记为空——真相源：世界书/时间线.md 或 世界书/编年/大事记.md，写条目后重跑 python tools/chronicle.py 再出板。</div></div>`;
     return;
   }
   const timeLabel = e => {
@@ -654,16 +769,16 @@ function renderChronicle() {
     if (r) return r.from === r.to ? `第${r.from}章` : `第${r.from}-${r.to}章`;
     return "—";
   };
-  m.innerHTML = `<div class="wrap">${chipbar}<div class="tl">` +
+  ovEl.innerHTML = `<div class="wrap">${chipbar}<div class="tl">` +
     evs.map((e, i) => `<div class="tlev${e.drift ? " drift" : ""}" data-ev="${i}">` +
       `<span class="tm">${esc(timeLabel(e))}</span>` +
       ((e.who || []).length ? `<span class="who">${e.who.map(esc).join("、")}</span> ` : "") +
       `<span>${esc((e.what || "").slice(0, 80))}${(e.what || "").length > 80 ? "…" : ""}</span>` +
       (e.drift ? `<span class="dr">Δ ${esc(e.drift).slice(0, 40)}</span>` : "") +
       `</div>`).join("") + `</div></div>`;
-  m.querySelectorAll("[data-ev]").forEach(r => r.addEventListener("click", () => eventModal(evs[+r.dataset.ev])));
+  ovEl.querySelectorAll("[data-ev]").forEach(r => r.addEventListener("click", () => eventDetail(evs[+r.dataset.ev])));
 }
-function eventModal(e) {
+function eventDetail(e) {
   if (!e) return;
   const w = e.when || {};
   const none = '<span class="none">未登记</span>';
@@ -679,12 +794,15 @@ function eventModal(e) {
     ["矛盾", e.drift ? `<span style="color:var(--red)">${esc(e.drift)}</span>` : '<span class="none">无</span>'],
     ["源", `<span class="mono">${esc(e.file)}:${e.line}</span>`],
   ];
-  openModal(`事件 ${e.id || ""}`, (e.who || []).join("、"),
+  openDetail("ev:" + (e.id || ""), `事件 ${e.id || ""}`, (e.who || []).join("、"),
     `<div class="w5">${rows.map(([k, v]) => `<div class="k5">${k}</div><div class="v5">${v}</div>`).join("")}</div>`);
 }
 
-// ── 3.5 文档阅读面板（只读；.md 渲染 / .html iframe / .txt 纯文本 / .json 无预览） ──
+// ── 文档阅读区（只读；.md 渲染 / .html iframe / .txt 纯文本 / .json 无预览；1+1 并行分栏） ──
 let fsRoot = null;
+const docState = { a: "", b: "", parallel: false };
+let splitRatio = 0.5;
+try { const r0 = +localStorage.getItem(SPLIT_KEY); if (r0 > 0.1 && r0 < 0.9) splitRatio = r0; } catch (e) {}
 async function fsPick() {
   if (!window.showDirectoryPicker) { alert("本浏览器无文件系统访问能力，文档阅读不可用"); return; }
   try {
@@ -731,75 +849,167 @@ function mdRender(src) {
   flushAll();
   return out.join("\n");
 }
-function renderDoc() {
-  const m = document.getElementById("main");
-  const rel = state.docPath;
-  const authBtn = fsRoot
-    ? `<span class="chip g">已授权 ${esc(fsRoot.name)}</span>`
-    : `<button class="btn" id="docAuth">授权项目目录</button>`;
-  if (!rel) {
-    m.innerHTML = `<div class="wrap"><div class="docbar">${authBtn}<span class="chip">未打开文档</span></div>` +
-      `<div class="empty">从「大纲」点文件，或直接打开项目文件。</div></div>`;
-    wireAuth(); return;
-  }
-  const t = fileType(rel);
-  const typeChip = { md: "Markdown", txt: "纯文本", html: "HTML", json: "JSON", binary: "二进制" }[t];
-  m.innerHTML = `<div class="wrap"><div class="docbar">${authBtn}` +
-    `<span class="path">${esc(rel)}</span><span class="chip">${typeChip}</span><span id="docStat"></span></div>` +
-    `<div id="docBody"><div class="empty">读取中…</div></div></div>`;
-  wireAuth();
-  if (!fsRoot) { setDocBody(`<div class="empty">先授权项目目录（只读），再读这篇文档。</div>`); return; }
-  loadDoc(rel, t);
+function openDocA(p) { docState.a = p; state.docPath = p; show("doc"); }
+function openDocB(p) {
+  docState.b = p; docState.parallel = true;
+  if (!docState.a) { docState.a = p; state.docPath = p; }
+  show("doc");
 }
-function wireAuth() { const b = document.getElementById("docAuth"); if (b) b.addEventListener("click", fsPick); }
-function setDocBody(html) { const b = document.getElementById("docBody"); if (b) b.innerHTML = html; }
-function setDocStat(s, warn) { const el = document.getElementById("docStat");
+function paneBar(suf, rel, isA) {
+  const authBtn = isA ? (fsRoot
+    ? `<span class="chip g">已授权 ${esc(fsRoot.name)}</span>`
+    : `<button class="btn" id="docAuth">授权项目目录</button>`) : "";
+  const foldBtn = isA && state.ovPanel
+    ? `<button class="btn" id="docFold" title="折叠总览，给分栏让位">⟨⟨ 收起总览</button>` : "";
+  const splitBtn = isA
+    ? `<button class="btn${docState.parallel ? " on" : ""}" id="docSplit">${docState.parallel ? "关分栏" : "开分栏"}</button>`
+    : `<button class="btn" id="docCloseB" title="关闭右侧分栏">✕ 关闭</button>`;
+  const t = rel ? fileType(rel) : null;
+  const typeChip = t ? `<span class="chip">${{ md: "Markdown", txt: "纯文本", html: "HTML", json: "JSON", binary: "二进制" }[t]}</span>` : "";
+  return `<div class="docbar">${authBtn}${foldBtn}${splitBtn}` +
+    `<span class="path">${esc(rel || "未打开文档")}</span>${typeChip}<span id="docStat${suf}"></span></div>` +
+    `<div class="dpbody" id="docBody${suf}"><div class="empty">读取中…</div></div>`;
+}
+function renderDoc() {
+  const par = docState.parallel && docState.b;
+  docsEl.innerHTML = `<div id="doccols">` +
+    `<div class="dcol" id="dcolA" style="flex:0 0 ${par ? (splitRatio * 100).toFixed(1) + "%" : "100%"}">` + paneBar("A", docState.a, true) + `</div>` +
+    (par ? `<div id="docGutter" title="拖动调整分栏比例"></div>` +
+      `<div class="dcol" id="dcolB" style="flex:1 1 auto">` + paneBar("B", docState.b, false) + `</div>` : "") +
+    `</div>`;
+  const auth = document.getElementById("docAuth"); if (auth) auth.addEventListener("click", fsPick);
+  const fold = document.getElementById("docFold"); if (fold) fold.addEventListener("click", foldOverview);
+  const sp = document.getElementById("docSplit");
+  if (sp) sp.addEventListener("click", () => {
+    if (docState.parallel) { docState.parallel = false; docState.b = ""; }
+    else { docState.b = docState.a; docState.parallel = true; }
+    renderDoc();
+  });
+  const cb = document.getElementById("docCloseB");
+  if (cb) cb.addEventListener("click", () => { docState.parallel = false; docState.b = ""; renderDoc(); });
+  wireGutter();
+  if (!docState.a) {
+    setDocBody("A", `<div class="empty">从「大纲」点文件（分栏按钮 = 右侧并排打开），或直接打开项目文件。</div>`);
+  } else if (!fsRoot) {
+    setDocBody("A", `<div class="empty">先授权项目目录（只读），再读这篇文档。</div>`);
+  } else {
+    loadPane("A", docState.a);
+  }
+  if (par) {
+    if (!fsRoot) setDocBody("B", `<div class="empty">先在左栏授权项目目录。</div>`);
+    else loadPane("B", docState.b);
+  }
+}
+function wireGutter() {
+  const g = document.getElementById("docGutter"); if (!g) return;
+  g.addEventListener("mousedown", e => {
+    e.preventDefault();
+    const cols = document.getElementById("doccols");
+    const move = ev => {
+      const r = cols.getBoundingClientRect();
+      splitRatio = Math.max(0.15, Math.min(0.85, (ev.clientX - r.left) / r.width));
+      const a = document.getElementById("dcolA");
+      if (a) a.style.flex = `0 0 ${(splitRatio * 100).toFixed(1)}%`;
+    };
+    const up = () => {
+      window.removeEventListener("mousemove", move); window.removeEventListener("mouseup", up);
+      try { localStorage.setItem(SPLIT_KEY, String(splitRatio)); } catch (err) {}
+    };
+    window.addEventListener("mousemove", move); window.addEventListener("mouseup", up);
+  });
+}
+function setDocBody(suf, html) { const b = document.getElementById("docBody" + suf); if (b) b.innerHTML = html; }
+function setDocStat(suf, s, warn) { const el = document.getElementById("docStat" + suf);
   if (el) el.innerHTML = `<span class="chip${warn ? " warn" : ""}">${esc(s)}</span>`; }
-async function loadDoc(rel, t) {
+async function loadPane(suf, rel) {
   let file;
   try { file = await fsRead(rel); }
-  catch (e) { setDocBody(`<div class="empty">读取失败：${esc(e.message || e)}</div>`); return; }
+  catch (e) { setDocBody(suf, `<div class="empty">读取失败：${esc(e.message || e)}</div>`); return; }
   if (file.size > 200 * 1024) {
-    setDocStat(`${file.size} 字节，超 200KB，只渲染前 200KB`, true);
+    setDocStat(suf, `${file.size} 字节，超 200KB，只渲染前 200KB`, true);
   } else {
-    setDocStat(`${file.size} 字节`, false);
+    setDocStat(suf, `${file.size} 字节`, false);
   }
+  const t = fileType(rel);
   if (t === "binary") {
-    setDocBody(`<div class="empty">二进制文档不预览；转 md 走改稿套件：python tools/export-doc.py</div>`);
+    setDocBody(suf, `<div class="empty">二进制文档不预览；转 md 走改稿套件：python tools/export-doc.py</div>`);
     return;
   }
   if (t === "json") {
-    setDocBody(`<div class="empty">.json 不提供预览</div>`);
+    setDocBody(suf, `<div class="empty">.json 不提供预览</div>`);
     return;
   }
   let text;
   try { text = await file.slice(0, 200 * 1024).text(); }
-  catch (e) { setDocBody(`<div class="empty">读取失败：${esc(e.message || e)}</div>`); return; }
+  catch (e) { setDocBody(suf, `<div class="empty">读取失败：${esc(e.message || e)}</div>`); return; }
   if (t === "html") {
-    setDocBody("");
+    setDocBody(suf, "");
     const fr = document.createElement("iframe");
     fr.className = "docframe";
     fr.setAttribute("sandbox", "allow-scripts");   // 内联 JS 可跑、无同源特权
     fr.srcdoc = text;
-    const body = document.getElementById("docBody");
+    const body = document.getElementById("docBody" + suf);
     if (body) body.appendChild(fr);
     return;
   }
   if (t === "txt") {
-    setDocBody(`<article class="doc plain">${esc(text)}</article>`);
+    setDocBody(suf, `<article class="doc plain">${esc(text)}</article>`);
     return;
   }
-  setDocBody(`<article class="doc">${mdRender(text)}</article>`);
+  setDocBody(suf, `<article class="doc">${mdRender(text)}</article>`);
 }
 
-// ── 配置抽屉（模型配置 / 日志 / 历史快照 / 偏好） ──
+// ── 配置二层抽屉（一层导航：模型配置 / 日志 / 历史快照 / 偏好；二层内容页） ──
+const drawer = document.getElementById("drawer");
+const dwBody = document.getElementById("dwBody");
+const dwBack = document.getElementById("dwBack");
+const dwTitle = document.getElementById("dwTitle");
+const DW_PAGES = { models: "模型配置", logs: "日志", snaps: "历史快照", prefs: "偏好" };
+let dwPage = "";
 const logState = { level: "", q: "" };
-function openDrawer() {
-  document.getElementById("drawer").classList.add("open");
-  renderModels(); renderLogs(); renderSnaps(); renderPrefs();
+function openDrawer() { drawer.classList.add("open"); dwGo(dwPage); }
+function closeDrawer() { drawer.classList.remove("open"); dwPage = ""; }
+function dwGo(page) {
+  dwPage = page;
+  dwBack.style.visibility = page ? "visible" : "hidden";
+  dwTitle.textContent = page ? DW_PAGES[page] : "配置";
+  if (!page) {
+    const c = state.config;
+    dwBody.innerHTML = `<h3>配置</h3>` +
+      `<div class="navrow" data-p="models"><span>模型配置</span><span class="chip">${CFG.models.length} 项</span><span class="ar">›</span></div>` +
+      `<div class="navrow" data-p="logs"><span>日志</span><span class="chip">${CFG.logs.length} 条</span><span class="ar">›</span></div>` +
+      `<div class="navrow" data-p="snaps"><span>历史快照</span><span class="chip">${CFG.snapshots.length} 条</span><span class="ar">›</span></div>` +
+      `<div class="navrow" data-p="prefs"><span>偏好</span>` +
+      `<span class="chip">${c.theme === "light" ? "白灰青" : "暗色"} · ${{ gold: "金", blue: "蓝", green: "绿", purple: "紫" }[c.themeColor] || c.themeColor}</span>` +
+      `<span class="ar">›</span></div>` +
+      `<div class="note">「配置」入口在顶栏右上角；ESC 逐层退出。</div>`;
+    dwBody.querySelectorAll(".navrow").forEach(r =>
+      r.addEventListener("click", () => dwGo(r.dataset.p)));
+    return;
+  }
+  if (page === "models") { dwBody.innerHTML = `<div id="modelsBody"></div>`; renderModels(); }
+  else if (page === "logs") {
+    dwBody.innerHTML =
+      `<div class="bar" style="margin:10px 0 8px">` +
+      `<select id="logLevel"><option value="">全部级别</option><option${logState.level === "ERROR" ? " selected" : ""}>ERROR</option><option${logState.level === "WARN" ? " selected" : ""}>WARN</option><option${logState.level === "INFO" ? " selected" : ""}>INFO</option></select>` +
+      `<input type="search" id="logQ" placeholder="搜日志内容" value="${esc(logState.q)}" style="min-width:150px">` +
+      `<button class="btn" id="logCopy">复制</button>` +
+      `<span class="chip" id="logCount"></span></div>` +
+      `<div id="logsBody"></div>`;
+    document.getElementById("logLevel").addEventListener("change", e => { logState.level = e.target.value; renderLogs(); });
+    const lq = document.getElementById("logQ");
+    lq.addEventListener("input", () => { logState.q = lq.value; renderLogs();
+      const n = document.getElementById("logQ"); if (n) { n.focus(); n.setSelectionRange(n.value.length, n.value.length); } });
+    document.getElementById("logCopy").addEventListener("click", e => {
+      copyText(logFiltered().map(l => `${l.time}\t${l.level}\t${l.msg}`).join("\n"), e.target, "已复制");
+    });
+    renderLogs();
+  }
+  else if (page === "snaps") { dwBody.innerHTML = `<div id="snapsBody"></div>`; renderSnaps(); }
+  else if (page === "prefs") { dwBody.innerHTML = `<div id="prefsBody"></div>`; renderPrefs(); }
 }
-document.getElementById("dwClose").addEventListener("click", () =>
-  document.getElementById("drawer").classList.remove("open"));
+dwBack.addEventListener("click", () => dwGo(""));
+document.getElementById("dwClose").addEventListener("click", closeDrawer);
 function renderModels() {
   const el = document.getElementById("modelsBody");
   el.innerHTML = CFG.models.length
@@ -809,10 +1019,13 @@ function renderModels() {
       + `<div class="note">只读展示；密钥类字段一律不入板。</div>`
     : `<div class="empty">无模型配置</div>`;
 }
-function renderLogs() {
+function logFiltered() {
   const q = logState.q.trim().toLowerCase();
-  const rows = CFG.logs.filter(l => (!logState.level || l.level === logState.level) &&
+  return CFG.logs.filter(l => (!logState.level || l.level === logState.level) &&
     (!q || l.msg.toLowerCase().includes(q)));
+}
+function renderLogs() {
+  const rows = logFiltered();
   const view = rows.slice().reverse();   // 时间倒序（台账为 append-only 时序）
   document.getElementById("logsBody").innerHTML =
     (view.length ? view.map(l => `<div class="lrow"><span class="tm">${esc(l.time)}</span>` +
@@ -821,15 +1034,6 @@ function renderLogs() {
       : `<div class="empty">无日志（journal.jsonl 缺席或无匹配）</div>`);
   document.getElementById("logCount").textContent = `${rows.length} / ${CFG.logs.length} 条`;
 }
-document.getElementById("logLevel").addEventListener("change", e => { logState.level = e.target.value; renderLogs(); });
-document.getElementById("logQ").addEventListener("input", e => { logState.q = e.target.value; renderLogs(); });
-document.getElementById("logCopy").addEventListener("click", e => {
-  const q = logState.q.trim().toLowerCase();
-  const rows = CFG.logs.filter(l => (!logState.level || l.level === logState.level) &&
-    (!q || l.msg.toLowerCase().includes(q)));
-  copyText(rows.map(l => `${l.time}\t${l.level}\t${l.msg}`).join("\n"), e.target, "已复制");
-});
-const snapState = { open: "" };
 function restoreCmd(s) {
   return `python tools/snapshot.py restore ${D.project || "<项目>"} ${s.node} --r ${s.round} --file ${s.file}`;
 }
@@ -840,25 +1044,32 @@ function renderSnaps() {
         `<span class="tm" style="color:var(--accent)">${esc(s.time)}</span>` +
         `<span class="lmsg mono">${esc(s.name)}</span>` +
         `<span class="chip mono">${esc((s.hash || "—").slice(0, 8))}</span></div>`).join("")
-      + `<div class="note">最近 ${CFG.snapshots.length} 条（≤50）；点一条预览。</div>`
+      + `<div class="note">最近 ${CFG.snapshots.length} 条（≤50）；点一条在右侧详情面板预览。</div>`
     : `<div class="empty">无快照（snapshots/index.json 缺席）</div>`;
-  el.querySelectorAll("[data-snap]").forEach(r => r.addEventListener("click", () => snapPreview(+r.dataset.snap)));
+  el.querySelectorAll("[data-snap]").forEach(r => r.addEventListener("click", () => {
+    closeDrawer();               // 快照预览走详情面板（主区零弹窗），抽屉让位
+    snapDetail(+r.dataset.snap);
+  }));
 }
-function snapPreview(i) {
+function snapDetail(i) {
   const s = CFG.snapshots[i]; if (!s) return;
   const body = s.text
     ? `<pre class="view">${esc(s.text)}</pre>` + (s.truncated ? `<div class="note">内容超出内嵌上限，只显示前段。</div>` : "")
     : `<div class="empty">快照内容未内嵌（超体积预算或二进制）——用恢复命令取回。</div>`;
-  openModal(s.name, `${s.time} · hash ${s.hash || "—"}` + (s.note ? ` · ${s.note}` : ""),
+  openDetail("snap:" + (s.time || "") + "|" + (s.name || ""), s.name,
+    `${s.time} · hash ${s.hash || "—"}` + (s.note ? ` · ${s.note}` : ""),
     body +
     `<div class="bar" style="margin-top:12px">` +
     `<button class="btn" id="snapRestore">恢复到此版本</button>` +
-    `<button class="btn" id="snapCmd">复制恢复命令</button></div>`);
-  document.getElementById("snapCmd").addEventListener("click", e => copyText(restoreCmd(s), e.target, "已复制"));
-  document.getElementById("snapRestore").addEventListener("click", () => snapConfirm(s));
+    `<button class="btn" id="snapCmd">复制恢复命令</button></div>`,
+    () => {
+      document.getElementById("snapCmd").addEventListener("click", e => copyText(restoreCmd(s), e.target, "已复制"));
+      document.getElementById("snapRestore").addEventListener("click", () => snapConfirm(s));
+    });
 }
+// 破坏性确认：v4 框架下唯一保留的弹窗（豁免项）
 function snapConfirm(s) {
-  openModal("恢复确认", s.name,
+  openConfirm("恢复确认", s.name,
     `<div class="note">把「${esc(s.file)}」恢复到 ${esc(s.node)} 第 ${s.round} 轮（${esc(s.time)}）。<br>` +
     `纯静态页不落盘：生成补丁由你复制落盘，或用快照命令由调用方执行。</div>` +
     `<div class="bar"><button class="btn" id="cfPatch">生成恢复补丁并复制</button>` +
@@ -949,7 +1160,7 @@ function unifiedDiff(rel, d) {
   }
   return out.join("\n");
 }
-// ── 偏好：字号 / 行高 / 主题色 / 紧凑 / 主题（localStorage 持久化） ──
+// ── 偏好（抽屉二层「偏好」页）：字号 / 行高 / 主题色 / 紧凑 / 主题（localStorage 持久化） ──
 function renderPrefs() {
   const c = state.config;
   document.getElementById("prefsBody").innerHTML =
@@ -964,11 +1175,12 @@ function renderPrefs() {
     `<div class="prefrow"><label>行高</label><input type="range" id="pfLh" min="1.4" max="2.2" step="0.05" value="${c.lineHeight}"><span class="v" id="pfLhV">${c.lineHeight}</span></div>` +
     `<div class="prefrow"><label>紧凑</label>` +
     `<button class="sw${c.compact ? " on" : ""}" id="pfCompact">紧凑模式</button></div>`;
-  document.querySelectorAll("[data-th]").forEach(b => b.addEventListener("click", () => { c.theme = b.dataset.th; savePrefs(); applyPrefs(); renderPrefs(); }));
-  document.querySelectorAll("[data-ac]").forEach(b => b.addEventListener("click", () => { c.themeColor = b.dataset.ac; savePrefs(); applyPrefs(); renderPrefs(); }));
+  const scoped = sel => dwBody.querySelectorAll(sel);
+  scoped("[data-th]").forEach(b => b.addEventListener("click", () => { c.theme = b.dataset.th; savePrefs(); applyPrefs(); dwGo("prefs"); }));
+  scoped("[data-ac]").forEach(b => b.addEventListener("click", () => { c.themeColor = b.dataset.ac; savePrefs(); applyPrefs(); dwGo("prefs"); }));
   document.getElementById("pfFs").addEventListener("input", e => { c.fontSize = +e.target.value; document.getElementById("pfFsV").textContent = c.fontSize + "px"; savePrefs(); applyPrefs(); });
   document.getElementById("pfLh").addEventListener("input", e => { c.lineHeight = +e.target.value; document.getElementById("pfLhV").textContent = c.lineHeight; savePrefs(); applyPrefs(); });
-  document.getElementById("pfCompact").addEventListener("click", () => { c.compact = !c.compact; savePrefs(); applyPrefs(); renderPrefs(); });
+  document.getElementById("pfCompact").addEventListener("click", () => { c.compact = !c.compact; savePrefs(); applyPrefs(); dwGo("prefs"); });
 }
 applyPrefs();
 </script>
