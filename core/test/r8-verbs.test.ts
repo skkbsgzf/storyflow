@@ -44,8 +44,9 @@ describe("R8 · 动词表是唯一台账", () => {
   it("表非空、名字唯一、且含 R8-OPS 前「只有 CLI 有」的那批动词", () => {
     expect(VERB_NAMES.length).toBeGreaterThanOrEqual(13);
     expect(new Set(VERB_NAMES).size).toBe(VERB_NAMES.length);
-    // 这 6 个正是改造前 MCP 面（7 个手写 tool）与 HTTP 面（4 个 case）**都缺失**的
-    for (const v of ["flow_init", "flow_effect", "flow_mine", "skill_patch", "flow_optimize", "flow_overlay"]) {
+    // 这三个正是改造前 MCP 面（7 个手写 tool）与 HTTP 面（4 个 case）**都缺失**的
+    // （批1 flow 出清 2026-10-14：同批点名的 flow_mine / flow_optimize / flow_overlay 已从台账出清，不再钉）
+    for (const v of ["flow_init", "flow_effect", "skill_patch"]) {
       expect(VERB_NAMES).toContain(v);
     }
   });

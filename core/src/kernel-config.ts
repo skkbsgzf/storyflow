@@ -6,10 +6,7 @@ import { listDecisions, setDecision, decisionsDir } from "./decisions.js";
 import { gateToken, nowIso } from "./ids.js";
 import { compilePlan, PlanCycleError, upstreamOf } from "./plan.js";
 import { resolveInputs, evalWhen, isBackEdge, condContextOf, pendingInstancesOf, type CondContext } from "./cond.js";
-import {
-  freshState, loadState, saveState, migrateRunState, writeJournalSeed,
-  legacyStatePath, planDrifted,
-} from "./state.js";
+import { freshState, loadState, saveState, planDrifted } from "./state.js";
 import { journalAppend, journalQuery } from "./journal.js";
 import {
   makeArtifact, captureSnapshot, inputFingerprint, listArtifacts, readRegisteredText, readSnapshots,
@@ -29,7 +26,6 @@ import {
 } from "./overlay.js";
 import { recordMetric, readMetrics, summarizeMetrics, extractCtxUsage } from "./metrics.js";
 import { recordDiag, summarizeDiags } from "./diag.js";
-import { proposeFromMetrics, buildReport, overlayFromProposals, readMinerFindings, minerToProposals } from "./optimize.js";
 import { resolveToolConfig } from "./kits.js";
 import { fnv1a, stableStringify } from "./ids.js";
 import type { Kernel, AdvanceStop, GateRequest } from "./kernel.js";

@@ -84,54 +84,6 @@ describe("R8 · 单进程 HTTP 面：静态 + legacy 端点", () => {
     await app.close();
   });
 
-  it("写入端点：合法 .md 落盘，敏感路径被拒（与静态面同判定）", async () => {
-    const root = seedRoot();
-    const { app } = await appOf(root);
-
-    const ok = await app.inject({
-      method: "POST",
-      url: "/_kit/save",
-      payload: { name: "projects/p1/内部/稿本/a.md", content: "# 批注" },
-    });
-    expect(ok.statusCode).toBe(200);
-    expect(fs.readFileSync(path.join(root, "projects/p1/内部/稿本/a.md"), "utf-8")).toBe("# 批注");
-
-    // /api/save 与 /_kit/save 同语义
-    const ok2 = await app.inject({ method: "POST", url: "/api/save", payload: { path: "projects/p1/意见.md", content: "x" } });
-    expect(ok2.statusCode).toBe(200);
-
-    for (const bad of ["src/kakaxing-Json/evil.json", ".zhuque-key", "projects/p1/a.exe"]) {
-      const r = await app.inject({ method: "POST", url: "/_kit/save", payload: { name: bad, content: "{}" } });
-      expect({ bad, code: r.statusCode }).toEqual({ bad, code: 400 });
-    }
-    await app.close();
-  });
-
-  it("归档端点把项目移进 _archived，而不是真删", async () => {
-    const root = seedRoot();
-    fs.writeFileSync(path.join(root, "projects", "p1", "x.json"), "{}", "utf-8");
-    const { app } = await appOf(root);
-
-    const r = await app.inject({ method: "POST", url: "/api/archive-project", payload: { project: "p1" } });
-    expect(r.statusCode).toBe(200);
-    expect(JSON.parse(r.body).to).toContain("projects/_archived/p1-");
-    expect(fs.existsSync(path.join(root, "projects", "p1"))).toBe(false);
-    expect(fs.readdirSync(path.join(root, "projects", "_archived")).length).toBe(1);
-
-    const bad = await app.inject({ method: "POST", url: "/api/archive-project", payload: { project: "_archived" } });
-    expect(bad.statusCode).toBe(400);
-    await app.close();
-  });
-
-  it("隧道端点显式声明未启用（不假装有隧道）", async () => {
-    const root = seedRoot();
-    const { app } = await appOf(root);
-    const r = await app.inject({ method: "GET", url: "/_kit/tunnel.json" });
-    expect(r.statusCode).toBe(200);
-    expect(JSON.parse(r.body)).toMatchObject({ active: false, url: "" });
-    await app.close();
-  });
-
   it("诊断端点分两档：/api/diagnostics（仓库级）与 /api/projects/:id/diagnostics（项目级）", async () => {
     const root = seedRoot();
     const { app } = await appOf(root);

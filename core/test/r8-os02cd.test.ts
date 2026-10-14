@@ -15,7 +15,6 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { effectiveFlow3, expandFlow3, defaultArtifactTemplate } from "../src/modules.js";
 import { resolveToolConfig } from "../src/kits.js";
-import { overlayFromProposals, proposeFromMetrics, isStructuralPatch, type Proposal } from "../src/optimize.js";
 import { runCoreNode } from "../src/minitools.js";
 import { rootOf } from "../src/schema.js";
 import { resolveBudget, DEFAULT_BUDGET } from "../src/budget.js";
@@ -132,67 +131,6 @@ describe("OS-02 N4 · set-link（per-link 降级通道）", () => {
     });
     expect(badMode.appliedCount).toBe(0);
     expect(badMode.unsupported.join("｜")).toContain("sometimes");
-  });
-
-  it("set-link 属结构类：adapt=apply 也不自动落地（搬动的是「哪里必须人批」）", () => {
-    expect(isStructuralPatch({ kind: "set-link" })).toBe(true);
-    const p: Proposal = {
-      id: "R7@m2.link", rule: "R7-boundary-auto", severity: "medium", risk: "medium",
-      title: "t", reason: "r",
-      evidence: { rule: "R7-boundary-auto", metric: "boundary.sendBacks", value: 0, samples: 5 },
-      patch: { kind: "set-link", link: "m2.link", mode: "auto", reason: "r" },
-    };
-    const ov = overlayFromProposals([p], { flowId: "f", adapt: "apply" });
-    expect(ov.patches).toHaveLength(1);
-    expect(ov.patches[0].status).toBe("proposed");
-  });
-
-  it("R7 规则：连接件连续全过 → 产 set-link（不是退役键 set-policy{kit_boundary}）", () => {
-    const flow = {
-      graph: { nodes: { "m2.link": { kind: "gate", gate_role: "link", link_mode: "manual" } }, edges: [] },
-      outputs: [],
-    } as never as FlowDescriptor;
-    const summary = {
-      events: 5, byNode: {}, byTool: {}, knowledge: [],
-      gates: [{ nodeId: "m2.link", phase: "link", passes: 5, sendBacks: 0, samples: 5 }],
-      window: {},
-    } as never as MetricsSummary;
-    const props = proposeFromMetrics(flow, summary, { root: rootOf(), policy: {} as FlowPolicy });
-    const r7 = props.find((p) => p.rule === "R7-boundary-auto");
-    expect(r7).toBeTruthy();
-    expect(r7!.patch.kind).toBe("set-link");
-    expect((r7!.patch as { link?: string }).link).toBe("m2.link");
-    expect((r7!.patch as { mode?: string }).mode).toBe("auto");
-    expect(r7!.risk).toBe("medium"); // 结构类，永不自落
-
-    // 已经是 auto ⇒ 不再重复提案
-    const autoFlow = {
-      graph: { nodes: { "m2.link": { kind: "gate", gate_role: "link", link_mode: "auto" } }, edges: [] },
-      outputs: [],
-    } as never as FlowDescriptor;
-    expect(proposeFromMetrics(autoFlow, summary, { root: rootOf(), policy: {} as FlowPolicy })
-      .some((p) => p.rule === "R7-boundary-auto")).toBe(false);
-  });
-});
-
-describe("OS-02 N2 · adapt:\"off\" = 只观测，不产出提案", () => {
-  const p: Proposal = {
-    id: "R4@m-plot.bible", rule: "R4-tier-down", severity: "medium", risk: "low",
-    title: "t", reason: "r",
-    evidence: { rule: "R4-tier-down", metric: "efficiency", value: 0.5, samples: 4 },
-    patch: { kind: "set-tool", kit: "m-plot", op: "bible", model_tier: "lite", reason: "r" },
-  };
-
-  it("off ⇒ 零补丁（此前与 propose 完全等价，那是「契约里的装饰」）", () => {
-    const ov = overlayFromProposals([p], { flowId: "f", adapt: "off" });
-    expect(ov.patches).toEqual([]);
-    expect(ov.reason).toContain("只观测");
-    expect(ov.reason).toContain("1 条"); // 观测到几条要如实说
-  });
-
-  it("propose ⇒ proposed；apply ⇒ 低风险内容类 applied（两种语义不变）", () => {
-    expect(overlayFromProposals([p], { flowId: "f", adapt: "propose" }).patches[0].status).toBe("proposed");
-    expect(overlayFromProposals([p], { flowId: "f", adapt: "apply" }).patches[0].status).toBe("applied");
   });
 });
 

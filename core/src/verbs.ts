@@ -311,13 +311,6 @@ export const VERBS: VerbDef[] = [
     run: (kernel, a) => kernel.viewEffect(String(a.project)),
   },
   {
-    name: "flow_mine",
-    description: "组装编排挖掘包（journal/指标/中间文件），交编排挖掘师产出 findings@1",
-    group: G_ORCH,
-    params: [{ name: "project", type: "string", required: true, desc: "项目 id" }],
-    run: (kernel, a) => kernel.flowMine(String(a.project)),
-  },
-  {
     name: "skill_patch",
     description: "提示词补丁（默认 proposed 不生效；须显式 approve 才装载）",
     group: G_ORCH,
@@ -369,59 +362,6 @@ export const VERBS: VerbDef[] = [
       op: flags.op,
       origin: flags.origin,
     }),
-  },
-  {
-    name: "flow_optimize",
-    description: "由指标产出编排调优提案；--apply 落 overlay（低风险自动，其余待批）",
-    group: G_ORCH,
-    params: [
-      { name: "project", type: "string", required: true, desc: "项目 id" },
-      { name: "apply", type: "boolean", desc: "落 overlay（低风险自动，其余待批）" },
-      { name: "actor", type: "string", desc: "操作者标识" },
-    ],
-    run: (kernel, a) => kernel.flowOptimize(String(a.project), { apply: B(a.apply) ?? false, actor: S(a.actor) }),
-  },
-  {
-    name: "flow_overlay",
-    description: "改写运行时编排（tool 的位置与内容配置）；--replan 立即重编译计划",
-    group: G_ORCH,
-    params: [
-      { name: "project", type: "string", required: true, desc: "项目 id" },
-      { name: "patches", type: "record", desc: "patch 数组或 {patches:[...]}（CLI 用 --patches <file.json>）" },
-      { name: "approve", type: "string[]", desc: "批准待批 patch 的 id（逗号分隔）" },
-      { name: "actor", type: "string", desc: "操作者" },
-      { name: "reason", type: "string", desc: "改写理由" },
-      { name: "replan", type: "boolean", desc: "立即重编译计划" },
-    ],
-    run: (kernel, a) => {
-      let patches = a.patches as unknown;
-      if (patches && !Array.isArray(patches) && typeof patches === "object" && Array.isArray((patches as { patches?: unknown }).patches)) {
-        patches = (patches as { patches?: unknown }).patches;
-      }
-      const approve = Array.isArray(a.approve)
-        ? a.approve.map(String)
-        : S(a.approve)
-          ? String(a.approve)
-              .split(",")
-              .map((x) => x.trim())
-              .filter(Boolean)
-          : undefined;
-      return kernel.flowOverlay(String(a.project), {
-        patches: patches as never,
-        approve,
-        actor: S(a.actor),
-        reason: S(a.reason),
-        replan: B(a.replan) ?? false,
-      });
-    },
-    fromFlags: (kernel, flags) => {
-      const file = S(flags.patches);
-      const raw: { patches?: unknown } | unknown[] | undefined = file
-        ? JSON.parse(kernel.fs.readText(file))
-        : undefined;
-      const patches = Array.isArray(raw) ? raw : raw?.patches;
-      return { project: flags.project, patches, approve: flags.approve, actor: flags.actor, reason: flags.reason, replan: flags.replan };
-    },
   },
   {
     name: "set_decision",

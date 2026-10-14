@@ -145,8 +145,8 @@ export interface AgentTool {
 //     flow_next 返回 gate/manual 时本 agent 只能停下并推人裁卡片；
 //   · set_decision 维持禁入（决策登记面不在 agent 职责内）。
 const AGENT_VERBS = new Set([
-  "flow_list", "flow_next", "flow_effect", "flow_mine", "flow_optimize", "flow_init",
-  "flow_run", "flow_resume", "flow_submit", "flow_rerun", "flow_overlay",
+  "flow_list", "flow_next", "flow_effect", "flow_init",
+  "flow_run", "flow_resume", "flow_submit", "flow_rerun",
   "cfg_template", "list_decisions", "worldbook_search", "whereami", "quality_scan", "skill_patch",
   // 立意图（方案盘 20260924）：agent 只读图 + 提案（ig_propose 带 scorer 纪律）；
   // ig_commit/ig_exclude/ig_sync 是拍板与执行，归人/主会话——同 set_decision 禁入逻辑

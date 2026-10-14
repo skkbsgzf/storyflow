@@ -52,7 +52,7 @@ npx tsx src/cli.ts                     # 无参数 = 打印由表生成的 usage
 `--check` 用于对账（门禁之一）。
 
 <!-- GEN:VERBS:BEGIN 由 scripts/gen-verbs-doc.mjs 从 core/src/verbs.ts 生成，勿手改 -->
-动词共 **28** 个，分 8 组：`内核动词（七动词）` ｜ `生成式编排（R5）` ｜ `选择面（R8）` ｜ `知识库（KB 只读）` ｜ `世界书（GraphHyperRAG）` ｜ `立意图（决策桥）` ｜ `底座工具桥（挂表）` ｜ `快诊断（批次3a）`。
+动词共 **25** 个，分 8 组：`内核动词（七动词）` ｜ `生成式编排（R5）` ｜ `选择面（R8）` ｜ `知识库（KB 只读）` ｜ `世界书（GraphHyperRAG）` ｜ `立意图（决策桥）` ｜ `底座工具桥（挂表）` ｜ `快诊断（批次3a）`。
 
 | 动词 | 组 | 入参（★=必填，其余可缺省） | 说明 |
 | --- | --- | --- | --- |
@@ -66,10 +66,7 @@ npx tsx src/cli.ts                     # 无参数 = 打印由表生成的 usage
 | `flow_gate` | 内核动词（七动词） | `--project <string>` ★ · `--node <string>`（键 nodeId） ★ · `--verdict <pass\|pass-with-conditions\|send-back\|reject>` ★ · `--comment <string>` · `--root-cause-stage <string>`（键 rootCauseStage） · `--round <number>` · `--token <string>` | 提交人工裁决（pass / pass-with-conditions / send-back / reject；send-back 级联失效） |
 | `flow_rerun` | 内核动词（七动词） | `--project <string>` ★ · `--node <string>`（键 nodeId） ★ · `--dry-run <boolean>`（键 dryRun） | 重跑范围推演/执行（缓存命中语义：未变上游不重做） |
 | `flow_effect` | 生成式编排（R5） | `--project <string>` ★ | 生效编排 + 指标汇总（tool 效率 / 上下文命中率 / 诊断汇总） |
-| `flow_mine` | 生成式编排（R5） | `--project <string>` ★ | 组装编排挖掘包（journal/指标/中间文件），交编排挖掘师产出 findings@1 |
 | `skill_patch` | 生成式编排（R5） | `--action <add\|approve\|reject\|list>` · `--id <string>` · `--target <string>` · `--text <string>` · `--reason <string>` · `--section <string>` · `--op <append\|replace>` · `--origin <user\|miner\|agent>` | 提示词补丁（默认 proposed 不生效；须显式 approve 才装载） |
-| `flow_optimize` | 生成式编排（R5） | `--project <string>` ★ · `--apply <boolean>` · `--actor <string>` | 由指标产出编排调优提案；--apply 落 overlay（低风险自动，其余待批） |
-| `flow_overlay` | 生成式编排（R5） | `--project <string>` ★ · `--patches <json>` · `--approve <a,b>` · `--actor <string>` · `--reason <string>` · `--replan <boolean>` | 改写运行时编排（tool 的位置与内容配置）；--replan 立即重编译计划 |
 | `set_decision` | 选择面（R8） | `--project <string>` ★ · `--key <string>` ★ · `--picked <a,b>` ★ · `--by <string>` ★ · `--evidence <string>` ★ · `--excluded-tags <a,b>`（键 excludedTags） · `--confidence <number>` · `--actor <string>` | 落一条决策事实（decision@1 → <项目>/decisions/<key>.json）。选择面的唯一写入口：by/evidence 必填，无来源的决策=猜即拒（R8 铁律 3） |
 | `list_decisions` | 选择面（R8） | `--project <string>` ★ | 读项目全部决策事实（坏条目进 issues 不静默）——回答「这一步凭什么这么选」 |
 | `kb_search` | 知识库（KB 只读） | `--q <string>` ★ · `--dir <string>` · `--k <number>` · `--cluster <string>` · `--project <string>` | 检索知识库（95 张方法论/标尺卡：aesthetic/craft/market/structure/rules/trope…）——标题/标签/正文打分排序。带编译期聚类的产物（kit-compile ≥ R2）走两段式：查询先匹配最相关簇（簇名+簇内卡词面），簇内有词面命中即簇锚定优先排序（同簇成员含零词面卡一并进场），簇内无命中回落全局排序；cluster 参数可显式指定簇过滤（全名如 簇#03[钩子,开篇,悬念] 或前缀 簇#03；产物无聚类数据时忽略）。带 project 时双根合并：全局 kit 图 + projects/<id>/kit/hypergraph.rag.json 项目档一起查，命中带 source=global\|project。合并口径：同一卡两根都命中只留项目侧（source=project）；分数为主、同分项目排前；总量仍守 k（各根 top-k 合并去重后截回 k） |
@@ -85,7 +82,7 @@ npx tsx src/cli.ts                     # 无参数 = 打印由表生成的 usage
 | `quality_scan` | 底座工具桥（挂表） | `--project <string>` ★ · `--file <string>` ★ · `--budget <json>` · `--no_receipt <boolean>` | 确定性质量扫描：证据聚合器（tools/quality-scan.py 转发 = core quality-cli 桥 aesthetic 真身，禁止第二份计数逻辑）；只出证据+收据，裁决归 agent/人裁 |
 | `diag_scan` | 快诊断（批次3a） | `--project <string>` ★ · `--text <string>` · `--path <string>` · `--dims <a,b>` · `--proposal <boolean>` | 快诊断：对一段文本/一个文件做确定性体检，产出 diagnosis-report@1（机器只出证据不裁决，零 LLM）。S 级=aesthetic 引擎真身进程内直调（quality-cli 同一实现，毫秒级）；消费 项目配置.validation 声明位（tierThreshold 通道门槛 / cardScope 装卡范围 / severityFloor 优先级下限，缺省 S+A·both·minor）；items 由规则卡条款机械投影（建议=条款 repair 反向表达）；A 级 laya 学生头仅在 proposal=true 显式开启时跑，venv/权重缺失显式报 LAYA_UNAVAILABLE 带回填指引（绝不回落 4B/API） |
 
-> 三面同源（表即面）：CLI `core/src/cli.ts` ｜ HTTP `POST /api/verbs/:verb` ｜ MCP stdio 注册 28 个同名工具。改动词只需改 `core/src/verbs.ts` 一处。
+> 三面同源（表即面）：CLI `core/src/cli.ts` ｜ HTTP `POST /api/verbs/:verb` ｜ MCP stdio 注册 25 个同名工具。改动词只需改 `core/src/verbs.ts` 一处。
 <!-- GEN:VERBS:END -->
 
 ## 四、数据与目录契约

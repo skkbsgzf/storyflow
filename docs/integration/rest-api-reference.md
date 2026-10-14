@@ -149,10 +149,12 @@ POST /api/verbs/<verb>     body = 归一化入参（键名用 VerbParam.name，�
 当前会遇到的：`VALIDATION` 400、`MISSING_PATH` 400、`UNKNOWN_VERB` 404、`NO_RUN` 404、`NO_FLOW` 404、
 `NOT_REGISTERED` 403，以及内核侧全部 `KernelError.code`（码表见 MCP 参考第四节）。
 
-## 五、legacy 兼容面（`compat.ts`，新前端请勿使用）
+## 五、legacy 兼容面（已退役，批1 flow 出清 2026-10-14）
 
-`/_kit/save`、`/api/save`、`/_kit/history`(GET/POST)、`/api/archive-project`、`/api/import-flow`、
-`/api/regen`、`/api/import-demo`、`/_kit/tunnel.json`——原 `tools/serve.py` 的语义并入内核，契约里均标 deprecated。
+原 `compat.ts` 的页面端点（`/_kit/save`、`/api/save`、`/_kit/history`、`/api/archive-project`、
+`/api/import-flow`、`/api/regen`、`/api/import-demo`、`/_kit/tunnel.json`）是 `tools/serve.py` 时代的
+复刻层——serve.py 与页面生成器退役后它们**零消费者**，故整层出仓（git 历史可溯）。
+写盘走 `/api/panel/files` 通道（纪律见 `adapter/README.md`）；项目归档/导入由宿主自己管数据根 `projects/<id>/`。
 
 ## 六、静态面
 

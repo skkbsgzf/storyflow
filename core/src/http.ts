@@ -8,7 +8,6 @@ import "./abstraction/adapters/node.js";
 import { contractsDirOf, rootOf } from "./schema.js";
 import { Kernel, KernelError } from "./kernel.js";
 import { recordDiag } from "./diag.js";
-import { registerCompat } from "./compat.js";
 import { registerLegacyMarkers, registerV1, resolveProjectFlowId } from "./api-v1.js";
 import type { RouteRegistrar } from "./api-v1.js";
 import { contentTypeOf, resolveStaticPath } from "./static.js";
@@ -37,11 +36,6 @@ export function buildHttpApp(kernel: Kernel) {
     const dir = kernel.projectDir(id);
     const file = kernel.path.join(dir, "state.json");
     if (!kernel.fs.exists(file)) {
-      const legacy = kernel.path.join(dir, "run-state.json");
-      if (kernel.fs.exists(legacy)) {
-        reply.code(200);
-        return { ...(JSON.parse(kernel.fs.readText(legacy)) as object), _legacy: true };
-      }
       reply.code(404);
       return { error: "NO_RUN" };
     }
@@ -167,9 +161,6 @@ export function buildHttpApp(kernel: Kernel) {
       return httpError(reply, e);
     }
   });
-
-  // R8-OPS：legacy 页面端点（serve.py 语义）并入内核面 —— 同一份页面在本进程内即可跑。
-  registerCompat(app, kernel);
 
   // ── pi-agent 对话流（2026-09-22）：会话管理 + 工具环 + SSE 逐事件流 ─────────
   // 工具内联 = miniflow 动词白名单 ∷ 项目文件系统 ∷ flow-lint ∷ MCP（.external/agent-mcp.json）。

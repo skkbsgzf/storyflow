@@ -7,10 +7,7 @@ import { listDecisions, setDecision, decisionsDir } from "./decisions.js";
 import { gateToken, nowIso } from "./ids.js";
 import { compilePlan, PlanCycleError, upstreamOf } from "./plan.js";
 import { resolveInputs, evalWhen, isBackEdge, condContextOf, pendingInstancesOf, type CondContext } from "./cond.js";
-import {
-  freshState, loadState, saveState, migrateRunState, writeJournalSeed,
-  legacyStatePath, planDrifted,
-} from "./state.js";
+import { freshState, loadState, saveState, planDrifted } from "./state.js";
 import { journalAppend, journalQuery } from "./journal.js";
 import {
   makeArtifact, captureSnapshot, inputFingerprint, listArtifacts, readRegisteredText, readSnapshots,
@@ -30,7 +27,6 @@ import {
 } from "./overlay.js";
 import { recordMetric, readMetrics, summarizeMetrics, extractCtxUsage } from "./metrics.js";
 import { recordDiag, summarizeDiags } from "./diag.js";
-import { proposeFromMetrics, buildReport, overlayFromProposals, readMinerFindings, minerToProposals } from "./optimize.js";
 import { resolveToolConfig } from "./kits.js";
 import { fnv1a, stableStringify } from "./ids.js";
 import type { Kernel, AdvanceStop, GateRequest } from "./kernel.js";
@@ -78,8 +74,7 @@ export function viewProjects(kernel: Kernel) {
       const st = kernel.fs.stat(dir);
       if (!st || (!st.isFile && !st.isDirectory)) continue;
       const state = loadState(dir, kernel.fs, kernel.path);
-      const legacy = state ? undefined : readJson<RunState>(legacyStatePath(dir, kernel.path), kernel.fs);
-      const raw: RunState | undefined = state ?? legacy;
+      const raw: RunState | undefined = state;
       const nodes = raw?.nodes ?? {};
       const order = raw?.plan?.order ?? Object.keys(nodes);
       const pending = order.filter((id) => (nodes[id]?.status ?? "none") !== "done");
@@ -128,7 +123,7 @@ export function viewLive(kernel: Kernel, projectId: string, opts: { files?: bool
         return null;
       }
     };
-    const state = loadState(projectDir, kernel.fs, kernel.path) ?? readJson("run-state.json");
+    const state = loadState(projectDir, kernel.fs, kernel.path);
     const eff = readJson(kernel.path.join("registry", "effective.json")) as { overlayHash?: string; planHash?: string } | null;
     const overlay = readJson(kernel.path.join("registry", "overlay.json"));
     const optimize = readJson(kernel.path.join("registry", "optimize.json"));
@@ -351,7 +346,7 @@ export function viewWorkbenchPayload(kernel: Kernel, projectId: string) {
     return {
       flow,
       files,
-      runstate: state ?? (() => { try { return JSON.parse(kernel.fs.readText(legacyStatePath(projectDir, kernel.path))); } catch { return {}; } })(),
+      runstate: state ?? {},
       project: projectId,
       snapshots,
       // R8-OPS：旁路失败的可见面。页面据此显示「本项目有 N 条诊断」——能力必须有家的第③环（UI 可见）。

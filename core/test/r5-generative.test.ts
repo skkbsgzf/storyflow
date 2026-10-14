@@ -13,10 +13,9 @@ import os from "node:os";
 import path from "node:path";
 import { Kernel } from "../src/kernel.js";
 import { rootOf } from "../src/schema.js";
-import { applyOverlay, effectiveFlow, domainMap, isWorkGate, type FlowOverlay } from "../src/overlay.js";
+import { applyOverlay, effectiveFlow, domainMap, isWorkGate, writeProjectOverlay, type FlowOverlay } from "../src/overlay.js";
 import { expandFlow3, effectiveFlow3 } from "../src/modules.js";
 import { extractCtxUsage, readMetrics, recordMetric, summarizeMetrics } from "../src/metrics.js";
-import { proposeFromMetrics, overlayFromProposals } from "../src/optimize.js";
 import { resolveToolConfig } from "../src/kits.js";
 import { runAestheticAsserts } from "../src/aesthetic.js";
 import { runCoreNode } from "../src/minitools.js";
@@ -261,111 +260,7 @@ describe("R5 · 指标：tool 效率 与 上下文命中率", () => {
   });
 });
 
-describe("R5 · 优化器：确定性规则 + 风险分级", () => {
-  const events = [
-    // 死条款：装了 4 次零命中
-    ...Array.from({ length: 4 }, (_, i) => ({
-      ts: `2026-09-17T10:0${i}:00Z`, runId: "r", nodeId: "tropes", kit: "search", op: "find-trope",
-      phase: "submit" as const, ctx: { used: 0, hitIds: [] }, checks: { pass: 1, block: 0 },
-    })),
-    ...Array.from({ length: 4 }, (_, i) => ({
-      ts: `2026-09-17T10:1${i}:00Z`, runId: "r", nodeId: "tropes", kit: "search", op: "find-trope",
-      phase: "dispatch" as const,
-      ctx: { offered: 3, ids: ["kb/market/snapshot", "kb/market/structure", "kb/aesthetic/ai-trace"] },
-    })),
-    // 高打回 + 标尺零命中 → R2「标尺饥荒」（medium risk，必须待批）
-    ...Array.from({ length: 4 }, (_, i) => ({
-      ts: `2026-09-17T11:0${i}:00Z`, runId: "r", nodeId: "structure", kit: "plot", op: "structure-design",
-      phase: "submit" as const, ctx: { used: 0, hitIds: [] }, checks: { pass: 0, block: 2 },
-    })),
-  ];
-
-  it("R1 死条款；提案带指标证据", () => {
-    const proposals = proposeFromMetrics(TS, summarizeMetrics(events), { root: rootOf() });
-    const r1 = proposals.find((p) => p.rule === "R1-ctx-dead");
-    expect(r1).toBeDefined();
-    expect(r1?.patch.kind).toBe("set-tool");
-    expect(r1?.evidence.samples).toBeGreaterThan(0);
-    const r2 = proposals.find((p) => p.rule === "R2-ctx-starved");
-    expect(r2?.risk).toBe("medium"); // 补标尺会改上下文预算，必须人点头
-    expect(r2?.patch).toMatchObject({ kind: "set-tool", kit: "plot", op: "structure-design" });
-  });
-
-  it("R6 旧门清场：纯汇合点无需样本即提裁；评审步必须跑够样本才敢下结论", () => {
-    // R6 处理的是「图上常驻的评审节点」这一 archetypes（纯汇合点 vs 带产活评审步）。
-    // 迁移后真实 flow@3 里唯一的 kind=gate 是模块连接件（gate_role=link），既非评审步也非纯汇合点，
-    // 无真实节点可锚这两类判据 ⇒ 按 r7-runtime.test.ts 做法合成一条含两类门的小流，隔离 R6 语义。
-    const gateFlow = () => ({
-      format: "flow@2" as const, id: "ov-r6", title: "R6 门清场夹具", version: "1.0.0", status: "active" as const,
-      inputs: {}, outputs: [],
-      graph: {
-        nodes: {
-          "gate-plain": { kind: "gate" as const, stage: "S1", title: "纯汇合点" },
-          "gate-review": { kind: "gate" as const, stage: "S1", title: "评审步", kit: "plot", op: "plot-redline", output: "内部/意见/意见书-gate-review.md" },
-          structure: { kind: "agent" as const, stage: "S2", title: "结构", kit: "plot", op: "structure-design", output: "内部/稿本/structure.md" },
-        },
-        edges: [{ id: "e-gate-review-struct", from: "gate-review", to: "structure", role: "flow" as const }],
-      },
-    }) as unknown as typeof TS;
-
-    // ① 纯汇合点：无 skill/op/output → 不是评审步；零样本也提裁（价值为零是构造性的）
-    const plain = gateFlow();
-    expect(isWorkGate(plain.graph.nodes["gate-plain"])).toBe(false);
-    const p1 = proposeFromMetrics(plain, summarizeMetrics([]), { root: rootOf() });
-    expect(p1.find((p) => p.id === "R6@gate-plain")?.patch).toMatchObject({ kind: "remove-node", id: "gate-plain" });
-
-    // ② 评审步（带产活）：isWorkGate=true；零样本不下结论（凭格式猜会删掉有效质量信号）
-    const review = gateFlow();
-    expect(isWorkGate(review.graph.nodes["gate-review"])).toBe(true);
-    const p2 = proposeFromMetrics(review, summarizeMetrics([]), { root: rootOf() });
-    expect(p2.some((p) => p.id === "R6@gate-review")).toBe(false);
-
-    // ③ 评审步跑够样本、产物无人消费 → 提裁（红蓝对抗残留）
-    const cold = Array.from({ length: 4 }, (_, i) => ({
-      ts: `2026-09-17T13:0${i}:00Z`, runId: "r", nodeId: "gate-review", kit: "plot", op: "plot-redline",
-      phase: "submit" as const, ctx: { used: 0, hitIds: [] }, checks: { pass: 1, block: 0 },
-    }));
-    const p3 = proposeFromMetrics(gateFlow(), summarizeMetrics(cold), { root: rootOf() });
-    const r6 = p3.find((p) => p.id === "R6@gate-review");
-    expect(r6?.patch).toMatchObject({ kind: "remove-node", id: "gate-review" });
-    expect(r6?.reason).toContain("被下游引用 0 次");
-    expect(r6?.reason).not.toContain("<code>"); // 报告是机器可读的，不带标记
-
-    // ④ 产物有人消费 → 不裁（它还有信息价值，只是裁决自动）
-    const warm = [
-      ...cold,
-      {
-        ts: "2026-09-17T14:00:00Z", runId: "r", nodeId: "structure", kit: "plot", op: "structure-design",
-        phase: "submit" as const,
-        ctx: { used: 1, ids: ["内部/意见/意见书-gate-review.md"], hitIds: ["内部/意见/意见书-gate-review.md"] },
-      },
-    ];
-    const p4 = proposeFromMetrics(gateFlow(), summarizeMetrics(warm, { pathToNode: { "内部/意见/意见书-gate-review.md": "gate-review" } }), { root: rootOf() });
-    expect(p4.some((p) => p.id === "R6@gate-review")).toBe(false);
-  });
-
-  it("adapt=apply 只自动落地 low risk，其余一律待批", () => {
-    const proposals = proposeFromMetrics(TS, summarizeMetrics(events), { root: rootOf() });
-    const ov = overlayFromProposals(proposals, { flowId: TS.id, adapt: "apply" });
-    const applied = ov.patches.filter((p) => p.status === "applied");
-    expect(applied.length).toBeGreaterThan(0);
-    for (const p of applied) {
-      const src = proposals.find((x) => x.patch === p || (x.patch.kind === p.kind && JSON.stringify(x.patch) === JSON.stringify({ ...p, status: undefined })));
-      expect(src?.risk ?? "low").toBe("low");
-    }
-    const medium = ov.patches.filter((p) => p.status === "proposed");
-    expect(medium.length).toBeGreaterThan(0);
-    // 提案里没有 medium/high risk 被自动应用
-    expect(ov.patches.filter((p) => p.status === "applied" && p.kind === "remove-node")).toHaveLength(0);
-  });
-
-  it("adapt=off 时优化器只观测（不产出提案落地）", () => {
-    const ov = overlayFromProposals([], { flowId: TS.id, adapt: "off" });
-    expect(ov.patches).toEqual([]);
-  });
-});
-
-describe("R5 · 内核端到端：连接件自动放行 + 人工交界拦人 + 指标与提案落盘", () => {
+describe("R5 · 内核端到端：连接件自动放行 + 人工交界拦人 + 指标落盘", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "miniflow-r5-"));
   const projectId = "p-r5";
   const kernel = new Kernel({ root });
@@ -428,25 +323,6 @@ describe("R5 · 内核端到端：连接件自动放行 + 人工交界拦人 + �
     // flow@3 的「边界清单」就是 links（内核 boundaries 恒空，改由 links 表达）
     expect(eff.boundaries).toEqual([]);
     expect(eff.policy.link_default).toBe("auto");
-  });
-
-  it("flow_optimize 产出提案并落 registry/optimize.json；flow_overlay 改写后重编译计划", async () => {
-    const first = kernel.flowOptimize(projectId, {});
-    expect(fs.existsSync(path.join(pd, "registry", "optimize.json"))).toBe(true);
-    expect(first.report.format).toBe("optimize@1");
-
-    const r = await kernel.flowOverlay(projectId, {
-      patches: [{ kind: "set-node", id: "m1.find-trope", config: { depth: "深" }, reason: "梗选型决定下游一切，加注" }],
-      reason: "R5 e2e：编排改写 + 重编译",
-      replan: true,
-      actor: "test",
-    });
-    expect(r.applied).toBe(1);
-    expect(fs.existsSync(path.join(pd, "registry", "overlay.json"))).toBe(true);
-    // 重编译后：编排指纹与计划指纹都已生成
-    const eff = kernel.viewEffect(projectId);
-    expect(eff.overlayHash).toBeTruthy();
-    expect(eff.planHash).toBeTruthy();
   });
 
   it("策略是旋钮不是硬编码：set-link 单点把自动交界转人工拦人（旧 gate_mode=manual / kit_boundary=off 的 flow@3 表达）", async () => {
@@ -588,18 +464,22 @@ describe("R5 · 读模型：生效编排与指标汇总只由内核定义一次�
     expect(sum.window).toEqual(eff.metrics.window);
   });
 
-  it("overlay 改写后读模型跟着变：消费的 patch 计数回显，不消费的显式回显不静默", async () => {
+  it("项目 overlay 改写后读模型跟着变：消费的 patch 计数回显，不消费的显式回显不静默", () => {
     const before = kernel.viewEffect(projectId);
     expect(before.applied).toBe(0);
-    await kernel.flowOverlay(projectId, {
+    // 批1 flow 出清（2026-10-14）：flow_overlay 动词已下架，overlay 回到「人／声明层写、内核只读」。
+    // 用例因此按人写路径直接落 registry/overlay.json，验的仍是同一件事：读模型跟着生效编排走。
+    writeProjectOverlay(pd, {
+      format: "flow-overlay@1",
+      flowId: "topic",
+      origin: "user",
+      reason: "读模型覆盖用例",
       patches: [
         // 旧 kit:"search" ⇒ topic 派生节点的 op 归口是模块 kit 名（"topic.find-trope"）
         { kind: "set-tool", kit: "topic", op: "find-trope", config: { depth: "深" }, reason: "梗选型决定下游一切" },
         { kind: "set-node", id: "m1.find-trope", config: { 不存在的旋钮: 1 }, reason: "故意用 flow@3 不消费的 kind，验证不静默丢弃" },
       ] as never,
-      reason: "读模型覆盖用例",
-      actor: "test",
-    });
+    }, "test", before.overlayHash, undefined, nodeFs, nodePath);
     const ve = kernel.viewEffect(projectId);
     // 旧「节点配置来源标 overlay + unknownKeys 显式回显」⇒ flow@3 的对应面：
     //   ① applied 只计真被展开器消费的 patch（set-tool=1，set-node 被拒不计）；
@@ -607,8 +487,9 @@ describe("R5 · 读模型：生效编排与指标汇总只由内核定义一次�
     expect(ve.applied).toBe(1);
     expect(ve.composition.some((s) => s.includes("set-tool topic.find-trope"))).toBe(true);
     expect(ve.composition.some((s) => s.includes("set-node") && s.includes("未被 flow@3 消费"))).toBe(true);
-    // overlay 本身也是读模型的一部分（patch 明细原样可查）
-    expect(ve.overlay?.patches.some((p: { kind: string; op?: string }) => p.kind === "set-tool" && p.op === "find-trope")).toBe(true);
+    // patch 明细原样在盘上（人写的文件，内核不回写）
+    const onDisk = JSON.parse(fs.readFileSync(path.join(pd, "registry", "overlay.json"), "utf-8")) as { patches: { kind: string; op?: string }[] };
+    expect(onDisk.patches.some((p) => p.kind === "set-tool" && p.op === "find-trope")).toBe(true);
     // 落盘的生效面同步重派生（同一事实源，两处消费同值）
     const view = JSON.parse(fs.readFileSync(effPath, "utf-8"));
     expect(view.format).toBe("effective@2");
@@ -804,128 +685,5 @@ describe("WO-A · 文本层扫描器（证据不裁决；AE-* 只是扫描器收
     const v = runAestheticAsserts(dir, "对外交付/03-小纲.md").find((x) => x.name === "AE-VIS-EMPTY");
     expect(v?.status).toBe("block");
     expect(v?.detail).toContain("心想");
-  });
-});
-
-/* ============================================================================
- * R5 §六 · 编排挖掘师（质性通道）
- * 指标只看得见数字；journal / 打回根因 / 批注 / 中间文件里的「为什么」由通用 Skill
- * orchestration-miner 挖掘（flow_mine 组装任务包），findings@1 经 flow_optimize 并入提案管道：
- * 非结构类 → M@ 提案（risk 恒 medium，人批才落地）；结构类 → mineStructural 拍板清单，永不进 overlay。
- * ==========================================================================*/
-describe("R5 §六 · 编排挖掘师（质性通道并入提案管道）", () => {
-  it("flow_mine 组装挖掘包（journal/打回/证据清单 + spawnPrompt），并推进 mine 游标", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "miniflow-mine1-"));
-    const kernel = new Kernel({ root });
-    const pd = path.join(root, "projects", "p-mine");
-    fs.mkdirSync(pd, { recursive: true });
-    fs.writeFileSync(path.join(pd, "选题素材.md"), "# 选题素材\n\n甲方点子：编排挖掘用例。\n", "utf-8");
-    await kernel.flow_run("topic", "p-mine", { route: "hot", region: "CN", direction: "编排挖掘用例" });
-
-    const mine = kernel.flowMine("p-mine");
-    expect(mine.package.format).toBe("mine-package@1");
-    expect(mine.package.flowId).toBe("topic");
-    expect(mine.package.sources.journal.events).toBeGreaterThan(0);
-    expect(mine.package.sources.evidenceFiles.length).toBeGreaterThan(0);
-    expect(mine.package.goals).toContain("上下文命中率（标尺被产物真正引用）");
-    expect(mine.spawnPrompt).toContain("orchestration-miner");
-    expect(fs.existsSync(path.join(pd, "registry", "mine-package.json"))).toBe(true);
-    // 游标推进：刚组装过 → mine.due 复位
-    const eff = kernel.viewEffect("p-mine");
-    expect(eff.mine.due).toBe(false);
-    expect(eff.mine.eventsAtLastMine).toBe(eff.mine.events);
-  });
-
-  it("findings 并入：非结构类→M@提案（risk=medium 待批）；结构类→拍板清单，apply 也不进 overlay", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "miniflow-mine2-"));
-    const kernel = new Kernel({ root });
-    const pd = path.join(root, "projects", "p-mine2");
-    fs.mkdirSync(pd, { recursive: true });
-    fs.writeFileSync(path.join(pd, "选题素材.md"), "# 选题素材\n\n甲方点子：findings 并入用例。\n", "utf-8");
-    await kernel.flow_run("topic", "p-mine2", { route: "hot", region: "CN", direction: "findings 并入用例" });
-
-    fs.writeFileSync(
-      path.join(pd, "registry", "miner-findings.json"),
-      JSON.stringify({
-        format: "miner-findings@1",
-        flowId: "topic",
-        runId: "r-mine2",
-        at: new Date().toISOString(),
-        findings: [
-          {
-            // flow@3 迁移映射：tool 归口 = 模块 kit 名（旧 search.find-trope ⇒ topic.find-trope）
-            id: "Mctx@topic.find-trope",
-            dimension: "ctx",
-            severity: "medium",
-            title: "市场结构卡零命中",
-            reason: "装载 3 次从未被梗卡引用——移出或改写成可引用形式",
-            evidence: [{ source: "journal:12", quote: "梗卡 v3 未引用 kb/market/structure" }],
-            patch: {
-              kind: "set-tool", kit: "topic", op: "find-trope",
-              remove_knowledge: ["kb/market/structure"],
-              reason: "零命中条款移出标尺", evidence: { rule: "M-ctx", metric: "miner.evidence", value: 1, samples: 1 },
-            },
-          },
-          {
-            id: "Mstruct@parallel",
-            dimension: "structure",
-            severity: "high",
-            title: "素材解剖与竞品对标可并行",
-            reason: "两步无数据依赖却串行等门",
-            evidence: [{ source: "journal:15", quote: "material-dissect 与 benchmark 顺序完成，互不引用" }],
-            structural: "把 material-dissect 与 benchmark 改为并行分叉",
-          },
-        ],
-      }),
-      "utf-8",
-    );
-    // topic 出厂 policy.adapt=off（只观测，N2 显式不落 overlay）——本用例锁的是
-    // 「apply 边界」，须经 flow@3 的 policy 旋钮 set-policy:adapt 提升为 propose 后再验。
-    fs.writeFileSync(
-      path.join(pd, "registry", "overlay.json"),
-      JSON.stringify({
-        format: "flow-overlay@1", flowId: "topic", origin: "user",
-        reason: "开启自动提案通道以验 apply 边界",
-        patches: [{ kind: "set-policy", key: "adapt", value: "propose", status: "applied", reason: "用例前置" }],
-      }, null, 2) + "\n",
-      "utf-8",
-    );
-
-    const { report, mineStructural } = kernel.flowOptimize("p-mine2", { apply: true, actor: "test" });
-    expect(report.sources).toEqual(["metrics", "miner"]);
-    const m = report.proposals.find((p) => p.id === "Mctx@topic.find-trope");
-    expect(m).toBeTruthy();
-    expect(m?.risk).toBe("medium"); // 质性提案不享受自动落地
-    expect(m?.title).toContain("挖掘");
-    // 结构类只进拍板清单
-    expect(mineStructural.map((s) => s.id)).toContain("Mstruct@parallel");
-    // 落地边界：M@ 提案 risk=medium → 即使 --apply 也 proposed；结构类完全不在 overlay 里
-    const ov = JSON.parse(fs.readFileSync(path.join(pd, "registry", "overlay.json"), "utf-8"));
-    const ids = ov.patches.map((p: { proposal?: string }) => p.proposal);
-    expect(ids).toContain("Mctx@topic.find-trope");
-    const mPatch = ov.patches.find((p: { proposal?: string }) => p.proposal === "Mctx@topic.find-trope");
-    expect(mPatch.status).toBe("proposed");
-    expect(ids).not.toContain("Mstruct@parallel");
-    // 消费游标推进
-    const st = JSON.parse(fs.readFileSync(path.join(pd, "registry", "miner-state.json"), "utf-8"));
-    expect(st.phase).toBe("consumed");
-    expect(st.findings).toBe(2);
-  });
-
-  it("脏 findings 拒绝并入：format 非法 / flowId 不匹配都要显式报错，不静默", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "miniflow-mine3-"));
-    const kernel = new Kernel({ root });
-    const pd = path.join(root, "projects", "p-mine3");
-    fs.mkdirSync(pd, { recursive: true });
-    fs.writeFileSync(path.join(pd, "选题素材.md"), "# 选题素材\n\n甲方点子：脏 findings 用例。\n", "utf-8");
-    await kernel.flow_run("topic", "p-mine3", { route: "hot", region: "CN", direction: "脏 findings 用例" });
-
-    const bad = path.join(pd, "registry", "miner-findings.json");
-    fs.mkdirSync(path.join(pd, "registry"), { recursive: true });
-    fs.writeFileSync(bad, JSON.stringify({ format: "not-mine", findings: [] }), "utf-8");
-    expect(() => kernel.flowOptimize("p-mine3")).toThrow(/format 非法/);
-
-    fs.writeFileSync(bad, JSON.stringify({ format: "miner-findings@1", flowId: "other-flow", findings: [] }), "utf-8");
-    expect(() => kernel.flowOptimize("p-mine3")).toThrow(/属于流 other-flow/);
   });
 });

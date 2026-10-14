@@ -102,10 +102,11 @@ data: [DONE]
 
 ## 五、工具环（帧里会出现的 `name`）
 
-- `mf_<verb>` —— 动词白名单 **19 个**（`AGENT_VERBS`）：
-  `flow_list / flow_next / flow_effect / flow_mine / flow_optimize / flow_init / flow_run /
-  flow_resume / flow_submit / flow_rerun / flow_overlay / cfg_template / list_decisions /
+- `mf_<verb>` —— 动词白名单 **16 个**（`AGENT_VERBS`）：
+  `flow_list / flow_next / flow_effect / flow_init / flow_run /
+  flow_resume / flow_submit / flow_rerun / cfg_template / list_decisions /
   worldbook_search / whereami / quality_scan / skill_patch / ig_load / ig_propose`
+  （批1 flow 出清 2026-10-14：`flow_mine` / `flow_optimize` / `flow_overlay` 已不在台账，白名单随之缩）
 - 项目文件系统：`fs_tree` / `fs_read` / `fs_write` / `fs_grep`（路径越出项目目录 → `INVALID_INPUT`）＋ `flow_lint`
   （改 `flows/*/flow.json` 后必跑）。
 - 分析工具（都要走模型端点）：`mf_analyze_card`（**卡驱动诊断**：`card`=kb 卡 id（规则卡/方法论卡）＋

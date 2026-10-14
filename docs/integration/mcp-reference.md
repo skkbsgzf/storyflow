@@ -14,12 +14,15 @@ VERBS.forEach((def, i) => server.registerTool(def.name, {
   description: def.description, inputSchema: specs[i].inputSchema }, handler))
 ```
 
-⇒ **动词数 = 工具数**。当前 **28 个工具**，名字与[总览的动词表](../Agent.md#三动词表生成的不手写)逐字相同
+⇒ **动词数 = 工具数**。当前 **25 个工具**，名字与[总览的动词表](../Agent.md#三动词表生成的不手写)逐字相同
 （`flow_list` / `flow_run` / `flow_init` / `cfg_template` / `flow_next` / `flow_submit` / `flow_resume`
-/ `flow_gate` / `flow_rerun` / `flow_effect` / `flow_mine` / `skill_patch` / `flow_optimize`
-/ `flow_overlay` / `set_decision` / `list_decisions` / `kb_search` / `kb_read` / `worldbook_search`
+/ `flow_gate` / `flow_rerun` / `flow_effect` / `skill_patch`
+/ `set_decision` / `list_decisions` / `kb_search` / `kb_read` / `worldbook_search`
 / `ig_load` / `ig_propose` / `ig_commit` / `ig_exclude` / `ig_sync` / `whereami` / `snapshot` / `quality_scan`
 / `diag_scan`）。
+
+（批1 flow 出清 2026-10-14：`flow_mine` / `flow_optimize` / `flow_overlay` 三个「引擎自己改自己编排」的动词
+已出清，MCP 面随之少三件；编排改写的唯一入口回到声明面 `flows/` + `modules/`。）
 
 新增动词只改 `verbs.ts` 一处，MCP 面自动跟上——**这是本轮之后不许破的规矩**。
 

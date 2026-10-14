@@ -9,10 +9,7 @@ import { listDecisions, setDecision, decisionsDir } from "./decisions.js";
 import { gateToken, nowIso } from "./ids.js";
 import { compilePlan, PlanCycleError, upstreamOf } from "./plan.js";
 import { resolveInputs, evalWhen, isBackEdge, condContextOf, pendingInstancesOf, type CondContext } from "./cond.js";
-import {
-  freshState, loadState, saveState, migrateRunState, writeJournalSeed,
-  legacyStatePath, planDrifted,
-} from "./state.js";
+import { freshState, loadState, saveState, planDrifted } from "./state.js";
 import { journalAppend, journalQuery } from "./journal.js";
 import {
   makeArtifact, captureSnapshot, inputFingerprint, listArtifacts, readRegisteredText, readSnapshots,
@@ -34,7 +31,6 @@ import {
 } from "./overlay.js";
 import { recordMetric, readMetrics, summarizeMetrics, extractCtxUsage } from "./metrics.js";
 import { recordDiag, summarizeDiags } from "./diag.js";
-import { proposeFromMetrics, buildReport, overlayFromProposals, readMinerFindings, minerToProposals } from "./optimize.js";
 import { resolveToolConfig } from "./kits.js";
 import { fnv1a, stableStringify } from "./ids.js";
 import type { Kernel, AdvanceStop, GateRequest } from "./kernel.js";
@@ -95,27 +91,6 @@ export async function flow_run(kernel: Kernel, flowId: string, projectId: string
     // K1.5 项目初始化配置：合并序 = 显式入参 > 项目配置.json > flow 默认（配置非法开跑前大声失败）
     const cfg = readProjectConfig(kernel, projectDir);
     const cfgInputs = cfg ? configToInputs(cfg, flow) : {};
-
-    // 现网 run-state.json 自动迁移（幂等入口）
-    if (kernel.fs.exists(legacyStatePath(projectDir, kernel.path))) {
-      const resolved = resolveInputs(flow, { ...cfgInputs, ...inputs }, { project: projectId });
-      const { state, seedEvents } = migrateRunState(projectDir, projectId, flow, resolved, kernel.fs, kernel.path);
-      if (cfg?.presets) state.presets = { ...state.presets, ...cfg.presets };
-      if (presetId) state.preset = presetId;
-      saveState(projectDir, state, kernel.fs, kernel.path);
-      writeJournalSeed(projectDir, seedEvents, kernel.fs, kernel.path);
-      journalAppend(kernel, projectDir, state.runId, "run-start", {
-        actor: "kernel:migrate",
-        detail: `迁移自 run-state.json（${flow.id}@${flow.version}），gate=${state.gate.verdict}`,
-      });
-      noteConfig(kernel, projectDir, state.runId, cfg);
-      state.status = state.gate.verdict === "awaiting" ? "suspended" : "running";
-      state.overlayHash = eff.overlayHash;
-      state.policy = eff.policy as Record<string, unknown>;
-      state.planHash = planHashOf(kernel, state.plan?.order ?? [], flow, eff.overlayHash);
-      saveState(projectDir, state, kernel.fs, kernel.path);
-      return advance(kernel, projectId, state, projectDir, bootstrap);
-    }
 
     let resolved: Record<string, unknown>;
     try {
@@ -729,12 +704,6 @@ export async function doGate(kernel: Kernel, projectId: string, req: GateRequest
         state.status = "completed";
         journalAppend(kernel, projectDir, state.runId, "run-end", { detail: "srd 裁决通过，run 完成" });
         saveState(projectDir, state, kernel.fs, kernel.path);
-        try {
-          kernel.flowMine(projectId);
-          kernel.flowOptimize(projectId, { actor: "auto-completed" });
-        } catch {
-          /* 负反馈旁路 */
-        }
         return { applied: true, completed: true };
       }
       state.status = "running";
@@ -889,7 +858,7 @@ export async function advance(kernel: Kernel, projectId: string, state: RunState
         if (eff.boundaries.length) {
           journalAppend(kernel, projectDir, state.runId, "note", {
             actor: "kernel:overlay",
-            detail: `R5 编排已就绪（${eff.boundaries.length} 个 kit 边界验收待生效）。本次沿用快照内计划；如需启用请 flow_overlay --replan。`,
+            detail: `R5 编排已就绪（${eff.boundaries.length} 个 kit 边界验收待生效）。本次沿用快照内计划。`,
           });
         }
         saveState(projectDir, state, kernel.fs, kernel.path);
@@ -1135,14 +1104,6 @@ export async function advance(kernel: Kernel, projectId: string, state: RunState
     state.status = "completed";
     journalAppend(kernel, projectDir, state.runId, "run-end", { detail: "全部节点 done" });
     saveState(projectDir, state, kernel.fs, kernel.path);
-    // W-06 负反馈自动触发：completed 即自动组装挖掘包 + 刷新提案池（内核不做 LLM 判断；提案仍待人批）
-    try {
-      kernel.flowMine(projectId);
-      kernel.flowOptimize(projectId, { actor: "auto-completed" });
-    } catch (e) {
-      // 负反馈是旁路（不阻塞完成态），但"声明了却静默没跑"正是本仓最反感的模式 ⇒ 留痕
-      recordDiag(kernel, projectDir, "feedback", "auto-mine+optimize", e);
-    }
     return { status: "completed" };
   }
 

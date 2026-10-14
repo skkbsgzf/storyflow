@@ -2,10 +2,10 @@
  * R7-1 · 平台默认适配器注册表（`core/src/abstraction/defaults.ts`）
  *
  * 拆包（工单 R7）要求 `@storyflow/core` 不 import 任何宿主实现，而 FS1 §四第 2 条的
- * 170 处尾参默认 `= nodeFs` 得有个缺省值——两头同时成立只有一招：默认值改成「一次查找」。
- * 数字口径（可复算，R7-2 销账后）：`src` 内四种标注形态字面匹配 171 处，
- * 减 `defaults.ts` 头注释 1 处 = 真默认参数 170 处（批次4 +2：assembler 创作模式段）；cfg-template
- * 的 10 处已改吃注册表（不再是宿主例外），170 处分布在 27 个文件，默认值全部取自 `abstraction/defaults.js`。
+ * 150 处尾参默认 `= nodeFs` 得有个缺省值——两头同时成立只有一招：默认值改成「一次查找」。
+ * 数字口径（可复算，批1 flow 出清后）：`src` 内四种标注形态字面匹配 151 处，
+ * 减 `defaults.ts` 头注释 1 处 = 真默认参数 150 处；cfg-template
+ * 的 10 处已改吃注册表（不再是宿主例外），140 处分布在 25 个文件，默认值全部取自 `abstraction/defaults.js`。
  * 本文件钉住这招的四件事：① core 侧确实没人再 import Node 适配器（普查双向死表）；
  * ② `defaults.ts` 自身零 `node:*`；③ 没注册就抛、注册了就转发（不静默回落）；
  * ④ 用了尾参默认的文件除宿主入口外一律从 `defaults.js` 取（不许绕过注册表直抓实现）。
@@ -96,12 +96,13 @@ describe("R7-1 · core 与 Node 适配器解绑", () => {
       if (!/(?:from\s+|^\s*import\s)["'][^"']*defaults\.js["']/m.test(f.text)) bypass.push(f.rel);
     }
     expect(bypass, "绕过注册表直抓宿主实现的默认点").toEqual([]);
-    // 头注口径逐数可复算：170 处真默认 = 160（经注册表，27 个文件）+ 10（cfg-template）
-    // （批次4 +2：assembler.creativeMindsetSection 的 fs/path 尾参默认——仍走注册表，文件数不变）
-    expect(total).toBe(170);
+    // 头注口径逐数可复算：150 处真默认 = 140（经注册表，25 个文件）+ 10（cfg-template）
+    // 批1 flow 出清（compat/optimize/kernel-optimize 三件出仓 + state.ts 迁移段摘除）后复算：
+    // 默认点 170→150、计数文件 27→25，cfg-template 的 10 处不变。
+    expect(total).toBe(150);
     expect(hostEntry).toBe(10);
-    expect(total - hostEntry).toBe(160);
-    expect(servedFiles).toBe(27);
+    expect(total - hostEntry).toBe(140);
+    expect(servedFiles).toBe(25);
   });
 
   it("宿主 setup 已注册：currentAdapters() 非空，三个转发对象身份稳定且可用", () => {

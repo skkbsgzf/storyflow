@@ -37,7 +37,7 @@ describe("pi-agent · 会话存储（projects/<id>/registry/agent-sessions/）",
 });
 
 describe("pi-agent · 工具集（动词白名单 ∷ fs ∷ lint）", () => {
-  it("P0 宿主解禁：run 状态动词入环（flow_run/resume/submit/rerun/overlay），唯 flow_gate 与 set_decision 维持禁入", async () => {
+  it("P0 宿主解禁：run 状态动词入环（flow_run/resume/submit/rerun），唯 flow_gate 与 set_decision 维持禁入", async () => {
     const { root, pid } = tmpRoot();
     const k = new Kernel({ root });
     const tools = await buildTools(k, pid, { tools: async () => [] } as never);
@@ -46,8 +46,12 @@ describe("pi-agent · 工具集（动词白名单 ∷ fs ∷ lint）", () => {
     expect(names).toContain("mf_flow_next");
     expect(names).toContain("mf_skill_patch");
     // P0 解禁（09-23 甲方批准，docs/排期-pi-agent原生workflow运行时）：宿主可驱动 workflow
-    for (const promoted of ["mf_flow_run", "mf_flow_resume", "mf_flow_submit", "mf_flow_rerun", "mf_flow_overlay"]) {
+    for (const promoted of ["mf_flow_run", "mf_flow_resume", "mf_flow_submit", "mf_flow_rerun"]) {
       expect(names).toContain(promoted);
+    }
+    // 批1 flow 出清（2026-10-14 决议）：编排自调优三动词下架，工具面随台账一起缩——钉住它们不回来
+    for (const gone of ["mf_flow_mine", "mf_flow_optimize", "mf_flow_overlay"]) {
+      expect(names).not.toContain(gone);
     }
     // 纪律仍守住的两条：门裁决是人的动词（铁律 6：机器不得代裁）；决策登记面不在 agent 职责内
     for (const banned of ["mf_flow_gate", "mf_set_decision"]) {

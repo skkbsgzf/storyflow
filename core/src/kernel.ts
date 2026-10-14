@@ -8,10 +8,7 @@ import { listDecisions, setDecision, decisionsDir } from "./decisions.js";
 import { gateToken, nowIso } from "./ids.js";
 import { compilePlan, PlanCycleError, upstreamOf } from "./plan.js";
 import { resolveInputs, evalWhen, isBackEdge, condContextOf, pendingInstancesOf, type CondContext } from "./cond.js";
-import {
-  freshState, loadState, saveState, migrateRunState, writeJournalSeed,
-  legacyStatePath, planDrifted,
-} from "./state.js";
+import { freshState, loadState, saveState, planDrifted } from "./state.js";
 import { journalAppend, journalQuery } from "./journal.js";
 import {
   makeArtifact, captureSnapshot, inputFingerprint, listArtifacts, readRegisteredText, readSnapshots,
@@ -26,19 +23,18 @@ import { loadProjectConfig, configToInputs, configBudget, type ProjectConfig } f
 import { listConfigTemplates } from "./cfg-template.js";
 import type { BatchEntry, FlowNode, MetricPhase, RunMetric } from "./types.js";
 import {
-  effectiveFlow, isBoundaryGate, isWorkGate, factoryOverlayPath, projectOverlayPath, readOverlay, writeProjectOverlay,
-  type EffectiveFlow, type FlowOverlay, type FlowPolicy, type OverlayPatch,
+  effectiveFlow, isBoundaryGate, isWorkGate, factoryOverlayPath, projectOverlayPath, readOverlay,
+  type EffectiveFlow, type FlowOverlay, type FlowPolicy,
 } from "./overlay.js";
 import { recordMetric, readMetrics, summarizeMetrics, extractCtxUsage } from "./metrics.js";
 import { recordDiag, summarizeDiags } from "./diag.js";
-import { proposeFromMetrics, buildReport, overlayFromProposals, readMinerFindings, minerToProposals } from "./optimize.js";
 import { resolveToolConfig } from "./kits.js";
 import { fnv1a, stableStringify } from "./ids.js";
 
 import { KernelError } from "./kernel-base.js";
 export { KernelError } from "./kernel-base.js";
 import { flow_list, flow_run, flow_next, flow_submit, flow_resume, flow_gate, flow_rerun, flow_chain } from "./kernel-run.js";
-import { viewEffect, flowOptimize, flowMine, flowOverlay } from "./kernel-optimize.js";
+import { viewEffect } from "./kernel-effect.js";
 import {
   viewProjects, viewArtifacts, viewArtifactContent, viewJournal, viewSnapshots, viewLive,
   worldbookSearch, viewWorkbenchPayload, viewDiagnostics,
@@ -467,7 +463,6 @@ export class Kernel {
   async flow_gate(projectId: string, req: GateRequest) { return flow_gate(this, projectId, req); }
   async flow_rerun(projectId: string, req: { nodeId: string; dryRun?: boolean }) { return flow_rerun(this, projectId, req); }
   viewEffect(projectId: string) { return viewEffect(this, projectId); }
-  flowOptimize(projectId: string, opts: { apply?: boolean; actor?: string } = {}) { return flowOptimize(this, projectId, opts); }
   private persistModuleReports(projectDir: string, state: RunState, eff: EffectiveFlow): void {
     const nodes = eff.flow.graph.nodes;
     const outputs = eff.flow.outputs ?? [];
@@ -559,16 +554,6 @@ export class Kernel {
     }
   }
 
-  /**
-   * R5 §六 质性通道（编排挖掘师）：组装事后挖掘任务包。
-   * 挖掘师（通用 Skill orchestration-miner）消费本包 → 写 registry/miner-findings.json（findings@1）
-   * → flow_optimize 自动并入提案。内核不做任何 LLM 判断，只负责把证据摆上桌。
-   */
-  flowMine(projectId: string) { return flowMine(this, projectId); }
-  async flowOverlay(
-    projectId: string,
-    req: { patches?: OverlayPatch[]; approve?: string[]; actor?: string; reason?: string; replan?: boolean },
-  ) { return flowOverlay(this, projectId, req); }
   viewProjects() { return viewProjects(this); }
   viewArtifacts(projectId: string, opts: { node?: string; latest?: boolean }) { return viewArtifacts(this, projectId, opts); }
   viewArtifactContent(projectId: string, relPath: string) { return viewArtifactContent(this, projectId, relPath); }
