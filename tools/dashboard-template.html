@@ -13,23 +13,37 @@
      主区零弹窗（唯一豁免：破坏性确认）；配置 = 右上角二层抽屉；详情弹性收起（保留滚动状态）；
      文档阅读支持 1+1 并行分栏，分栏比与详情宽度 localStorage 记忆。
      零外部资源：系统字体栈、内联样式、SVG 内联图标、数据生成时内联为惰性 JSON，不回 call kit。
-     双主题：暗色（规格 §一色板）为默认，浅色「白灰青」为备选；强调色四选；CSS 变量切换。 */
-  :root, body[data-theme="dark"] {
-    --bg:#16181d; --panel:#1d2027; --panel2:#22262e; --border:#2a2e37;
-    --ink:#d8d4cb; --dim:#8a8375;
-    --gold:#e8b33d; --blue:#6ea8fe; --green:#5f9c7a; --red:#d98a83; --purple:#8a6fb0;
+     主题：浅色「纸灰青」为默认（清新易读人文板），暗色为可选；自定义主题经偏好导入（JSON 配置文件）。
+     设计令牌（OpenDesign 式公开规范）：
+       间距 --sp-1:4px --sp-2:8px --sp-3:12px --sp-4:16px --sp-5:24px
+       圆角 --r-s:2px --r-m:3px（三不原则：无大圆角）
+       字号 --fs-s:12px --fs-m:13px --fs-d:14px --fs-l:15px
+       语义层 --bg/--panel/--panel2/--border/--ink/--dim/--accent + 功能色 --blue/--green/--red
+     强调色五选：金/蓝/绿/紫/青（浅色缺省青，暗色缺省金）；自定义主题经导入覆写语义层。 */
+  :root {
+    --bg:#f5f6f4; --panel:#fcfcfb; --panel2:#eef0ec; --border:#d9ddd6;
+    --ink:#2b2f2a; --dim:#66705f;
+    --gold:#a97b1a; --blue:#3568c9; --green:#35744f; --red:#b3524b; --purple:#6b53a8;
+    --cyan:#3f8e8c;
+    --accent:var(--cyan);
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px;
+    --r-s:2px; --r-m:3px;
+    --fs-s:12px; --fs-m:13px; --fs-d:14px; --fs-l:15px;
     --mono:ui-monospace,Consolas,"Courier New",monospace;
     --fs:15px; --lh:1.8;
   }
-  body[data-theme="light"] {
-    --bg:#edf0f2; --panel:#ffffff; --panel2:#f4f6f7; --border:#d8dce1;
-    --ink:#2c3036; --dim:#78808a;
-    --gold:#a97b1a; --blue:#3568c9; --green:#35744f; --red:#b3524b; --purple:#6b53a8;
+  body[data-theme="dark"] {
+    --bg:#16181d; --panel:#1d2027; --panel2:#22262e; --border:#2a2e37;
+    --ink:#d8d4cb; --dim:#8a8375;
+    --gold:#e8b33d; --blue:#6ea8fe; --green:#5f9c7a; --red:#d98a83; --purple:#8a6fb0;
+    --cyan:#5fb3a0;
+    --accent:var(--gold);
   }
   body[data-accent="gold"]   { --accent:var(--gold); }
   body[data-accent="blue"]   { --accent:var(--blue); }
   body[data-accent="green"]  { --accent:var(--green); }
   body[data-accent="purple"] { --accent:var(--purple); }
+  body[data-accent="cyan"]   { --accent:var(--cyan); }
   * { box-sizing:border-box; }
   html, body { height:100%; }
   body { margin:0; background:var(--bg); color:var(--ink); overflow:hidden;
@@ -44,7 +58,7 @@
                text-overflow:ellipsis; white-space:nowrap; }
   #topbar .pid { font-family:var(--mono); font-size:11px; color:var(--dim); flex:1;
                  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .tbtn { background:var(--panel2); color:var(--dim); border:1px solid var(--border); border-radius:6px;
+  .tbtn { background:var(--panel2); color:var(--dim); border:1px solid var(--border); border-radius:var(--r-m);
           padding:5px 11px; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:6px; }
   .tbtn:hover { color:var(--ink); border-color:var(--accent); }
   #ovTab { display:none; }
@@ -77,9 +91,9 @@
   .wrap { max-width:980px; margin:0 auto; }
   .bar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
   input[type=search], select { background:var(--panel2); color:var(--ink); border:1px solid var(--border);
-     border-radius:6px; padding:4px 9px; font:12px/1.5 var(--mono); }
+     border-radius:var(--r-m); padding:4px 9px; font:12px/1.5 var(--mono); }
   input[type=search] { min-width:220px; }
-  .btn { background:var(--panel2); color:var(--dim); border:1px solid var(--border); border-radius:6px;
+  .btn { background:var(--panel2); color:var(--dim); border:1px solid var(--border); border-radius:var(--r-m);
          padding:4px 10px; font:12px/1.4 var(--mono); cursor:pointer; }
   .btn:hover { color:var(--ink); }
   .btn.on { color:var(--accent); border-color:var(--accent); }
@@ -110,7 +124,7 @@
   .wb3 { display:flex; gap:14px; align-items:flex-start; min-width:0; }
   .wbtree { flex:0 0 200px; background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:6px; }
   .wbtree .tnode { display:flex; align-items:baseline; gap:6px; padding:4px 8px; cursor:pointer;
-                   border-radius:6px; color:var(--dim); font-size:12.5px; }
+                   border-radius:var(--r-m); color:var(--dim); font-size:12.5px; }
   .wbtree .tnode:hover { background:var(--panel2); color:var(--ink); }
   .wbtree .tnode.on { color:var(--accent); }
   .wbtree .tnode .n { font-family:var(--mono); font-size:11px; margin-left:auto; }
@@ -182,7 +196,7 @@
   /* 时间块（band）折叠分组 */
   .chrband { margin-bottom:12px; }
   .chrband-hd { display:flex; align-items:baseline; gap:8px; padding:5px 9px; cursor:pointer;
-                border-radius:6px; background:var(--panel); border:1px solid var(--border); }
+                border-radius:var(--r-m); background:var(--panel); border:1px solid var(--border); }
   .chrband-hd:hover { background:var(--panel2); }
   .chrband-hd:focus-visible { outline:2px solid var(--accent); outline-offset:-2px; }
   .chrband-hd .ar { font-family:var(--mono); font-size:10px; width:12px; flex:0 0 12px; }
@@ -205,7 +219,7 @@
   article.doc li { margin-bottom:4px; }
   article.doc blockquote { margin:0 0 12px; padding:2px 14px; border-left:3px solid var(--border);
                            color:var(--dim); }
-  article.doc pre.code { background:var(--panel); border:1px solid var(--border); border-radius:6px;
+  article.doc pre.code { background:var(--panel); border:1px solid var(--border); border-radius:var(--r-m);
                          padding:10px 12px; overflow:auto; font:12.5px/1.7 var(--mono); margin:0 0 12px; }
   article.doc code { font-family:var(--mono); font-size:.92em; background:var(--panel2);
                      border:1px solid var(--border); border-radius:4px; padding:0 4px; }
@@ -231,7 +245,7 @@
                  text-overflow:ellipsis; white-space:nowrap; }
   .vhead .x { margin-left:auto; cursor:pointer; color:var(--dim); background:none; border:0; font-size:14px; flex:0 0 auto; }
   .vhead .x:hover { color:var(--ink); }
-  .vhead .back { background:var(--panel2); border:1px solid var(--border); border-radius:6px;
+  .vhead .back { background:var(--panel2); border:1px solid var(--border); border-radius:var(--r-m);
                  color:var(--dim); cursor:pointer; font-size:12px; padding:2px 9px; flex:0 0 auto; }
   .vhead .back:hover { color:var(--ink); border-color:var(--accent); }
   .vbody { flex:1; overflow:auto; padding:14px 16px 40px; font-size:13px; }
@@ -258,7 +272,7 @@
   .prefrow label { flex:0 0 64px; color:var(--dim); font-size:12px; }
   .prefrow input[type=range] { flex:1; accent-color:var(--accent); }
   .prefrow .v { font-family:var(--mono); font-size:11px; color:var(--dim); width:44px; text-align:right; }
-  .sw { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); border-radius:6px;
+  .sw { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); border-radius:var(--r-m);
         background:var(--panel2); color:var(--dim); padding:4px 10px; cursor:pointer; font-size:12px; }
   .sw.on { color:var(--accent); border-color:var(--accent); }
   .sw[disabled] { opacity:.45; cursor:default; }
@@ -284,7 +298,7 @@
   .edbar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
   .edta { display:block; width:100%; height:calc(100vh - 300px); min-height:260px;
           background:var(--panel2); color:var(--ink); border:1px solid var(--border);
-          border-radius:6px; padding:10px 12px; font:12.5px/1.7 var(--mono);
+          border-radius:var(--r-m); padding:10px 12px; font:12.5px/1.7 var(--mono);
           resize:none; outline:none; tab-size:2; }
   .edta:focus { border-color:var(--accent); }
   @media (max-width:640px) { #ov { padding:10px 10px 32px; } .pgrid { grid-template-columns:1fr 1fr; }
@@ -292,7 +306,7 @@
     #doccols { flex-direction:column; } #docGutter { flex:0 0 6px; cursor:row-resize; } }
 </style>
 </head>
-<body data-theme="dark" data-accent="gold">
+<body data-theme="light" data-accent="cyan">
 <header id="topbar">
   <span class="t" id="tbTitle"></span>
   <span class="pid" id="tbPid"></span>
@@ -343,7 +357,7 @@ const state = {
   activePanel: "",   // "" = 空白
   ovPanel: "",       // 总览区当前承载的浏览面板（doc 模式下不清）
   docPath: "",       // 兼容位：等同 docState.a
-  config: { fontSize: 15, lineHeight: 1.8, themeColor: "gold", compact: false, theme: "dark", plugins: {},
+  config: { fontSize: 15, lineHeight: 1.8, themeColor: "cyan", compact: false, theme: "light", plugins: {},
             // V4-4 偏好：本地历史开关（默认开）+ 定期保存字数间隔 intervalWords（200–2000，默认 500）
             localHistory: true, histInterval: 500 },
 };
@@ -355,9 +369,27 @@ if (!state.config.plugins || typeof state.config.plugins !== "object") state.con
 if (typeof state.config.localHistory !== "boolean") state.config.localHistory = true;
 state.config.histInterval = Math.min(2000, Math.max(200, Math.round(+state.config.histInterval || 500)));
 function savePrefs() { try { localStorage.setItem(PREF_KEY, JSON.stringify(state.config)); } catch (e) {} }
+function readCustomTheme() { try { return JSON.parse(localStorage.getItem("dashv4.customTheme") || "null"); } catch (e) { return null; } }
+const THEME_ACCENTS = ["gold", "blue", "green", "purple", "cyan"];
+const THEME_NAMES = { gold: "金", blue: "蓝", green: "绿", purple: "紫", cyan: "青" };
+function applyCustomColors(colors) {
+  ["bg", "panel", "panel2", "border", "ink", "dim", "accent"].forEach(k => {
+    if (colors && colors[k]) document.body.style.setProperty("--" + k, colors[k]);
+    else document.body.style.removeProperty("--" + k);
+  });
+}
 function applyPrefs() {
-  document.body.dataset.theme = state.config.theme === "light" ? "light" : "dark";
-  document.body.dataset.accent = state.config.themeColor;
+  // 主题三态：light（缺省纸灰青）/ dark / custom（偏好导入的主题配置文件，颜色经内联覆写生效）
+  const cm = state.config.theme === "custom" ? readCustomTheme() : null;
+  if (state.config.theme === "custom" && cm && cm.colors) {
+    document.body.dataset.theme = "custom";
+    applyCustomColors(cm.colors);
+  } else {
+    applyCustomColors(null);
+    document.body.dataset.theme = state.config.theme === "light" ? "light" : "dark";
+  }
+  document.body.dataset.accent = THEME_ACCENTS.includes(state.config.themeColor)
+    ? state.config.themeColor : (state.config.theme === "dark" ? "gold" : "cyan");
   document.body.classList.toggle("compact", !!state.config.compact);
   const r = document.documentElement.style;
   r.setProperty("--fs", state.config.fontSize + "px");
@@ -2261,12 +2293,18 @@ function renderPrefs() {
   const c = state.config;
   document.getElementById("prefsBody").innerHTML =
     `<div class="prefrow"><label>主题</label>` +
-    `<button class="sw${c.theme !== "light" ? " on" : ""}" data-th="dark">暗色</button>` +
-    `<button class="sw${c.theme === "light" ? " on" : ""}" data-th="light">白灰青</button></div>` +
-    `<div class="prefrow"><label>主题色</label>` +
-    ["gold", "blue", "green", "purple"].map(k =>
-      `<button class="sw${c.themeColor === k ? " on" : ""}" data-ac="${k}"><span class="dot"></span>${{ gold: "金", blue: "蓝", green: "绿", purple: "紫" }[k]}</button>`).join("") +
+    `<button class="sw${c.theme === "light" ? " on" : ""}" data-th="light">白灰青</button>` +
+    `<button class="sw${c.theme === "dark" ? " on" : ""}" data-th="dark">暗色</button>` +
+    (readCustomTheme() ? `<button class="sw${c.theme === "custom" ? " on" : ""}" data-th="custom">自定义</button>` : "") +
     `</div>` +
+    `<div class="prefrow"><label>主题色</label>` +
+    THEME_ACCENTS.map(k =>
+      `<button class="sw${c.themeColor === k ? " on" : ""}" data-ac="${k}"><span class="dot"></span>${THEME_NAMES[k]}</button>`).join("") +
+    `</div>` +
+    `<div class="prefrow"><label>配置文件</label>` +
+    `<button class="btn" id="pfThExp">导出主题</button><button class="btn" id="pfThImp">导入主题</button>` +
+    `<span class="muted" id="pfThMsg" style="font-size:12px"></span>` +
+    `<input type="file" id="pfThFile" accept=".json" style="display:none"></div>` +
     `<div class="prefrow"><label>字号</label><input type="range" id="pfFs" min="12" max="20" step="1" value="${c.fontSize}"><span class="v" id="pfFsV">${c.fontSize}px</span></div>` +
     `<div class="prefrow"><label>行高</label><input type="range" id="pfLh" min="1.4" max="2.2" step="0.05" value="${c.lineHeight}"><span class="v" id="pfLhV">${c.lineHeight}</span></div>` +
     `<div class="prefrow"><label>紧凑</label>` +
@@ -2286,6 +2324,44 @@ function renderPrefs() {
   const scoped = sel => dwBody.querySelectorAll(sel);
   scoped("[data-th]").forEach(b => b.addEventListener("click", () => { c.theme = b.dataset.th; savePrefs(); applyPrefs(); dwGo("prefs"); }));
   scoped("[data-ac]").forEach(b => b.addEventListener("click", () => { c.themeColor = b.dataset.ac; savePrefs(); applyPrefs(); dwGo("prefs"); }));
+  // 主题配置文件导出/导入（V4-7）：导出=当前解析配色（getComputedStyle 实取）；导入=校验七色键后存
+  // dashv4.customTheme 并切 custom 档（内联覆写生效）；坏文件逐键点名，不静默。
+  document.getElementById("pfThExp").addEventListener("click", () => {
+    const cs = getComputedStyle(document.body);
+    const pick = k => (cs.getPropertyValue("--" + k) || "").trim();
+    const data = { name: "StoryFlow 主题", theme: c.theme === "custom" ? "custom" : (c.theme || "light"),
+      accent: THEME_ACCENTS.includes(c.themeColor) ? c.themeColor : "cyan",
+      colors: { bg: pick("bg"), panel: pick("panel"), panel2: pick("panel2"),
+                border: pick("border"), ink: pick("ink"), dim: pick("dim"), accent: pick("accent") } };
+    const text = JSON.stringify(data, null, 2);
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(() => {});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+    a.download = "storyflow-theme.json"; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    const msg = document.getElementById("pfThMsg"); if (msg) msg.textContent = "已导出（JSON 已复制到剪贴板并下载）";
+  });
+  document.getElementById("pfThImp").addEventListener("click", () => document.getElementById("pfThFile").click());
+  document.getElementById("pfThFile").addEventListener("change", e => {
+    const f = e.target.files[0]; if (!f) return;
+    const msg = document.getElementById("pfThMsg");
+    const say = t => { if (msg) msg.textContent = t; };
+    const rd = new FileReader();
+    rd.onload = () => {
+      let d = null;
+      try { d = JSON.parse(rd.result); } catch (err) { say("导入失败：JSON 解析错误"); return; }
+      const keys = ["bg", "panel", "panel2", "border", "ink", "dim", "accent"];
+      const bad = keys.filter(k => !d.colors || typeof d.colors[k] !== "string" || !/^#[0-9a-fA-F]{3,8}$/.test(d.colors[k].trim()));
+      if (bad.length) { say("导入失败：缺/坏色键 " + bad.join(",")); return; }
+      if (d.theme && !["light", "dark", "custom"].includes(d.theme)) { say("导入失败：theme 枚举不符"); return; }
+      localStorage.setItem("dashv4.customTheme", JSON.stringify({ name: d.name || "自定义主题", colors: d.colors }));
+      c.theme = "custom";
+      if (THEME_ACCENTS.includes(d.accent)) c.themeColor = d.accent;
+      savePrefs(); applyPrefs(); dwGo("prefs");
+      say("已导入自定义主题（切回白灰青/暗色即退出自定义）");
+    };
+    rd.readAsText(f);
+  });
   document.getElementById("pfFs").addEventListener("input", e => { c.fontSize = +e.target.value; document.getElementById("pfFsV").textContent = c.fontSize + "px"; savePrefs(); applyPrefs(); });
   document.getElementById("pfLh").addEventListener("input", e => { c.lineHeight = +e.target.value; document.getElementById("pfLhV").textContent = c.lineHeight; savePrefs(); applyPrefs(); });
   document.getElementById("pfCompact").addEventListener("click", () => { c.compact = !c.compact; savePrefs(); applyPrefs(); dwGo("prefs"); });

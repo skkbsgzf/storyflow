@@ -1,7 +1,0 @@
-{
-  "format": "flow-overlay@1",
-  "flowId": "screenplay",
-  "origin": "factory",
-  "reason": "ComfyUI Script 预设：Seedance 视频提示词插入已随 2026-10-10 图文视频冻结摘除（drama op 声明同步摘除；prose 原生声明与技能文件保留）。预设壳与 Auto 路由占位保留，批次3 图文视频重建时恢复 patches",
-  "patches": []
-}
