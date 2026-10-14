@@ -174,6 +174,22 @@
   .tlev .tm { font-family:var(--mono); font-size:12px; color:var(--gold); margin-right:8px; }
   .tlev.drift .tm { color:var(--red); }
   .tlev .dr { color:var(--red); font-family:var(--mono); font-size:11px; margin-left:8px; }
+  .tlev:focus-visible { outline:2px solid var(--accent); outline-offset:-2px; border-radius:4px; background:var(--panel); }
+  /* 大事记左栏（Pinax CanvasTimeline 范式：轨道筛选轴 + 时间块导航） */
+  .chrhd { font-family:var(--mono); font-size:11px; color:var(--dim); margin:10px 0 4px; padding-top:8px; border-top:1px solid var(--border); }
+  .chrhd:first-child { margin-top:0; padding-top:0; border-top:0; }
+  .wbtree .tnode .dot { flex:0 0 8px; width:8px; height:8px; margin-right:2px; }
+  /* 时间块（band）折叠分组 */
+  .chrband { margin-bottom:12px; }
+  .chrband-hd { display:flex; align-items:baseline; gap:8px; padding:5px 9px; cursor:pointer;
+                border-radius:6px; background:var(--panel); border:1px solid var(--border); }
+  .chrband-hd:hover { background:var(--panel2); }
+  .chrband-hd:focus-visible { outline:2px solid var(--accent); outline-offset:-2px; }
+  .chrband-hd .ar { font-family:var(--mono); font-size:10px; width:12px; flex:0 0 12px; }
+  .chrband-hd b { font-weight:600; color:var(--gold); }
+  .chrband-hd .n { font-family:var(--mono); font-size:11px; margin-left:auto; color:var(--dim); }
+  .chrband .tl { margin-top:8px; }
+  .chrband.folded { margin-bottom:5px; }
   /* ── doc 排版（居中 720px） ── */
   .docbar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:10px 18px 0; }
   body.compact .docbar { padding:6px 10px 0; }
@@ -302,7 +318,7 @@
 const D = __DASHBOARD__;
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const WB = { entries: (D.worldbook || {}).entries || [], relations: (D.worldbook || {}).relations || [] };
-const CH = { events: (D.chronicle || {}).events || [], lanes: (D.chronicle || {}).lanes || [] };
+const CH = { events: (D.chronicle || {}).events || [], lanes: (D.chronicle || {}).lanes || [], bands: (D.chronicle || {}).bands || [] };
 const ARTS = D.artifacts || [];
 const CFG = { models: (D.config || {}).models || [], logs: (D.config || {}).logs || [], snapshots: (D.config || {}).snapshots || [] };
 const PALETTE = ["#e8b33d","#6ea8fe","#5f9c7a","#d98a83","#8a6fb0","#c9a227","#4fb3c9","#b0765a",
@@ -1003,33 +1019,169 @@ function renderOutline() {
   }));
 }
 
-// ── 大事记面板（总览区；垂直时间线；矛盾红标；不展示叙事层导语/段带导语） ──
-function renderChronicle() {
-  const evs = CH.events.slice().sort((a, b) => {
+// ── 大事记面板（总览区；Pinax CanvasTimeline 范式对标：卡片键盘可达 + 头部状态 chip + 空态引导；
+//    轨道筛选轴对齐 V4-3a；时间块（band）折叠导航；矛盾红标「只看矛盾」切换。写动词（拖拽重排/移除/清空/导演导出）刻意不移植，只读纪律） ──
+const CHRV_KEY = "dashv4.chrView";
+const chrState = { lane: "", drift: false, collapsed: new Set() };
+try {
+  const v0 = JSON.parse(localStorage.getItem(CHRV_KEY) || "{}");
+  if (typeof v0.lane === "string" && (v0.lane === "" || CH.lanes.some(l => l.name === v0.lane))) chrState.lane = v0.lane;
+  chrState.drift = !!v0.drift;
+} catch (e) { /* 坏档按缺省 */ }
+function saveChrView() {
+  try { localStorage.setItem(CHRV_KEY, JSON.stringify({ lane: chrState.lane, drift: chrState.drift })); } catch (e) {}
+}
+const chrById = new Map(); CH.events.forEach(e => { if (e.id && !chrById.has(e.id)) chrById.set(e.id, e); });
+const chrBandById = {}; CH.bands.forEach(b => { if (b.id) chrBandById[b.id] = b; });
+const laneColor = {}; CH.lanes.forEach((l, i) => {
+  laneColor[l.name] = l.kind === "faction" ? "#c9a227" : l.kind === "person" ? "#6ea8fe" : PALETTE[i % PALETTE.length];
+});
+const chrLaneCount = {};
+CH.lanes.forEach(l => { chrLaneCount[l.name] = l.events != null ? l.events : CH.events.filter(e => (e.tracks || []).includes(l.name)).length; });
+const chrDriftN = CH.events.filter(e => e.drift).length;
+function chrSorted() {
+  return CH.events.slice().sort((a, b) => {
     const ka = a.storyKey || [0, 0], kb = b.storyKey || [0, 0];
     return (ka[0] - kb[0]) || (ka[1] - kb[1]) || (a.seq - b.seq);
   });
-  const chipbar = `<div class="bar"><span class="chip">事件 ${evs.length}</span>` +
+}
+function chrMatch(e) {
+  if (chrState.drift && !e.drift) return false;
+  if (chrState.lane && !(e.tracks || []).includes(chrState.lane)) return false;
+  return true;
+}
+function chrTimeLabel(e) {
+  const r = (e.refs || [])[0];
+  if ((e.when || {}).raw) return e.when.raw;
+  if (r) return r.from === r.to ? `第${r.from}章` : `第${r.from}-${r.to}章`;
+  return "—";
+}
+// 事件里出现过的时间块（按 CH.bands 文档序，缺 meta 的孤立 band 追加在尾）
+function chrBandList() {
+  const countBy = {};
+  CH.events.forEach(e => { const id = e.band || ""; countBy[id] = (countBy[id] || 0) + 1; });
+  const ids = [];
+  CH.bands.forEach(b => { if (b.id && countBy[b.id]) ids.push(b.id); });
+  Object.keys(countBy).forEach(id => { if (!ids.includes(id)) ids.push(id); });
+  return { ids, countBy };
+}
+const chrBandName = id => { const b = chrBandById[id]; return b ? (b.name || id) : ("段 " + (id || "—")); };
+function renderChronicle() {
+  const chipbar = `<div class="bar"><span class="chip">事件 ${CH.events.length}</span>` +
     `<span class="chip">轨道 ${CH.lanes.length}</span>` +
-    `<span class="chip${evs.filter(e => e.drift).length ? " warn" : ""}">矛盾 ${evs.filter(e => e.drift).length}</span></div>`;
-  if (!evs.length) {
+    `<span class="chip${chrDriftN ? " warn" : ""}">矛盾 ${chrDriftN}</span></div>`;
+  if (!CH.events.length) {
     ovEl.innerHTML = `<div class="wrap">${chipbar}<div class="empty">大事记为空——真相源：世界书/时间线.md 或 世界书/编年/大事记.md，写条目后重跑 python tools/chronicle.py 再出板。</div></div>`;
     return;
   }
-  const timeLabel = e => {
-    const r = (e.refs || [])[0];
-    if ((e.when || {}).raw) return e.when.raw;
-    if (r) return r.from === r.to ? `第${r.from}章` : `第${r.from}-${r.to}章`;
-    return "—";
-  };
-  ovEl.innerHTML = `<div class="wrap">${chipbar}<div class="tl">` +
-    evs.map((e, i) => `<div class="tlev${e.drift ? " drift" : ""}" data-ev="${i}">` +
-      `<span class="tm">${esc(timeLabel(e))}</span>` +
+  ovEl.innerHTML = `<div class="wrap">${chipbar}<div class="wb3">` +
+    `<div class="wbtree" id="chrSide"></div><div class="wbmain" id="chrMain"></div></div></div>`;
+  renderChrSidebar();
+  renderChrMain();
+}
+function chrSidebarHtml() {
+  const lanes = [`<div class="tnode${chrState.lane === "" ? " on" : ""}" data-lane="">` +
+    `<span class="ar">•</span>全部轨道<span class="n">${CH.events.length}</span></div>`];
+  for (const l of CH.lanes) {
+    lanes.push(`<div class="tnode${chrState.lane === l.name ? " on" : ""}" data-lane="${esc(l.name)}" title="${esc(l.kind || "")}">` +
+      `<span class="dot" style="background:${laneColor[l.name] || "#8a8375"}"></span>${esc(l.name)}` +
+      `<span class="n">${chrLaneCount[l.name] || 0}</span></div>`);
+  }
+  const filter = `<div class="wbfilter" role="group" aria-label="大事记筛选">` +
+    `<button class="btn${chrState.drift ? " on" : ""}" id="chrDrift" title="只显示带 Δ 的矛盾条目">只看矛盾${chrDriftN ? " " + chrDriftN : ""}</button>` +
+    (chrState.lane || chrState.drift ? `<button class="btn" id="chrClr">清除筛选</button>` : "") + `</div>`;
+  const { ids, countBy } = chrBandList();
+  const nav = ids.map(id => {
+    const collapsed = chrState.collapsed.has(id);
+    return `<div class="tnode" data-jump="${esc(id)}"><span class="ar" data-fold="${esc(id)}">${collapsed ? "▶" : "▼"}</span>` +
+      `${esc(chrBandName(id))}<span class="n">${countBy[id]}</span></div>`;
+  }).join("") || `<div class="muted" style="font-size:12px;padding:4px 8px">无时间块</div>`;
+  const navCtl = ids.length ? `<div class="wbfilter"><button class="btn" id="chrAllOpen">全部展开</button>` +
+    `<button class="btn" id="chrAllFold">全部收起</button></div>` : "";
+  return `<div class="chrhd">轨道筛选</div>` + lanes.join("") + filter +
+    `<div class="chrhd">时间块导航</div>` + nav + navCtl;
+}
+function renderChrSidebar() {
+  const el = document.getElementById("chrSide");
+  if (!el) return;
+  el.innerHTML = chrSidebarHtml();
+  el.querySelectorAll("[data-lane]").forEach(t => t.addEventListener("click", () => {
+    chrState.lane = t.dataset.lane; saveChrView(); renderChronicle();
+  }));
+  el.querySelectorAll("[data-fold]").forEach(a => a.addEventListener("click", ev => {
+    ev.stopPropagation();
+    const id = a.dataset.fold;
+    chrState.collapsed.has(id) ? chrState.collapsed.delete(id) : chrState.collapsed.add(id);
+    renderChrSidebar(); renderChrMain();
+  }));
+  el.querySelectorAll("[data-jump]").forEach(t => t.addEventListener("click", () => chrJump(t.dataset.jump)));
+  const d = document.getElementById("chrDrift");
+  if (d) d.addEventListener("click", () => { chrState.drift = !chrState.drift; saveChrView(); renderChronicle(); });
+  const c = document.getElementById("chrClr");
+  if (c) c.addEventListener("click", () => { chrState.lane = ""; chrState.drift = false; saveChrView(); renderChronicle(); });
+  const ao = document.getElementById("chrAllOpen");
+  if (ao) ao.addEventListener("click", () => { chrState.collapsed.clear(); renderChrSidebar(); renderChrMain(); });
+  const af = document.getElementById("chrAllFold");
+  if (af) af.addEventListener("click", () => { chrBandList().ids.forEach(id => chrState.collapsed.add(id)); renderChrSidebar(); renderChrMain(); });
+}
+function chrJump(id) {
+  if (chrState.collapsed.has(id)) {
+    chrState.collapsed.delete(id);
+    renderChrSidebar(); renderChrMain();
+  }
+  const blk = Array.from(ovEl.querySelectorAll(".chrband")).find(x => x.dataset.band === id);
+  if (blk) blk.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function renderChrMain() {
+  const main = document.getElementById("chrMain");
+  if (!main) return;
+  const shown = chrSorted().filter(chrMatch);
+  if (!shown.length) {
+    const tags = [chrState.lane ? "轨道「" + esc(chrState.lane) + "」" : "", chrState.drift ? "只看矛盾" : ""].filter(Boolean).join(" + ");
+    main.innerHTML = `<div class="empty">无匹配事件——${tags}条件下没有条目。${chrState.drift ? "" : "可点左栏「全部轨道」或清除筛选回看。"}</div>`;
+    return;
+  }
+  const groups = [], gmap = {};
+  shown.forEach(e => {
+    const id = e.band || "";
+    if (!(id in gmap)) { gmap[id] = groups.length; groups.push({ id, items: [] }); }
+    groups[gmap[id]].items.push(e);
+  });
+  main.innerHTML = groups.map(g => {
+    const b = chrBandById[g.id];
+    const sub = b && b.sub ? b.sub : "";
+    const collapsed = chrState.collapsed.has(g.id);
+    const head = `<div class="chrband-hd" tabindex="0" role="button" data-toggle="${esc(g.id)}" title="展开/收起这一时间块">` +
+      `<span class="ar">${collapsed ? "▶" : "▼"}</span><b>${esc(chrBandName(g.id))}</b>` +
+      (sub ? `<span class="muted">${esc(sub)}</span>` : "") + `<span class="n">${g.items.length}</span></div>`;
+    if (collapsed) return `<div class="chrband folded" data-band="${esc(g.id)}">${head}</div>`;
+    const rows = g.items.map(e => `<div class="tlev${e.drift ? " drift" : ""}" data-ev="${esc(e.id)}" tabindex="0" role="button">` +
+      `<span class="tm">${esc(chrTimeLabel(e))}</span>` +
       ((e.who || []).length ? `<span class="who">${e.who.map(esc).join("、")}</span> ` : "") +
       `<span>${esc((e.what || "").slice(0, 80))}${(e.what || "").length > 80 ? "…" : ""}</span>` +
       (e.drift ? `<span class="dr">Δ ${esc(e.drift).slice(0, 40)}</span>` : "") +
-      `</div>`).join("") + `</div></div>`;
-  ovEl.querySelectorAll("[data-ev]").forEach(r => r.addEventListener("click", () => eventDetail(evs[+r.dataset.ev])));
+      `</div>`).join("");
+    return `<div class="chrband" data-band="${esc(g.id)}">${head}<div class="tl">${rows}</div></div>`;
+  }).join("");
+  main.querySelectorAll(".tlev[data-ev]").forEach(r => {
+    const e = chrById.get(r.dataset.ev);
+    if (!e) return;
+    r.addEventListener("click", () => eventDetail(e));
+    r.addEventListener("keydown", ev => {
+      if (ev.key === "Enter" || ev.key === " " || ev.key === "Spacebar") { ev.preventDefault(); eventDetail(e); }
+    });
+  });
+  main.querySelectorAll("[data-toggle]").forEach(h => {
+    const id = h.dataset.toggle;
+    h.addEventListener("click", () => chrToggleBand(id));
+    h.addEventListener("keydown", ev => {
+      if (ev.key === "Enter" || ev.key === " " || ev.key === "Spacebar") { ev.preventDefault(); chrToggleBand(id); }
+    });
+  });
+}
+function chrToggleBand(id) {
+  chrState.collapsed.has(id) ? chrState.collapsed.delete(id) : chrState.collapsed.add(id);
+  renderChrSidebar(); renderChrMain();
 }
 function eventDetail(e) {
   if (!e) return;
