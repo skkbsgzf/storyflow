@@ -51,6 +51,7 @@ cd storyharness && npx tsx src/cli.ts web   # 拉起运行时（内核 8421 + �
 9. **运行时无审核/合规逻辑**——是立场不是缺口，宿主自己写，接入协议见 `docs/PROTOCOL-REVIEW.md`。
 10. **MCP 资源/提示**：改 `mcp.ts` 里的 `MCP_RESOURCES` / `MCP_PROMPTS` 两张表本身，注册与测试自动跟上；不要在注册处硬写 URI 字符串。
 11. **改任一面**（CLI/HTTP/MCP 的路由、工具名、参数）→ 同步 `docs/integration/` 对应文件（mcp-reference / rest-api-reference / sse-events / embedding-modes）。
+12. **冷启动询问不可跳过**：init/--domain 后必须 `python tools/dashboard.py --wizard <id>` 出向导板（projects/<id>/wizard.html，五步：作品画像/模块勾选/工具入口/文件结构/完成），引导用户走完五步，复制 JSON 后 `python tools/apply-wizard.py --answers <json> --project <id>` 回填——不得跳过冷启动询问（向导板纯静态不回写，回填补丁的落盘归 apply-wizard）。
 
 ## 已知坑
 

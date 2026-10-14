@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>__TITLE__</title>
+<style>
+  /* 初始化向导板（看板 v4 工单 V4-5）。固定模板：五步分步表单，零外部资源——
+     系统字体栈、内联样式、数据生成时内联为惰性 JSON（__WIZARD__），不回 call kit、不落盘。
+     色板与看板 v3 暗色同规格：背景 #16181d / 面板 #1d2027 / 主文字 #d8d4cb / 强调金 #e8b33d /
+     辅助 #8a8375 / 边框 #2a2e37；无渐变、无阴影、无大圆角。 */
+  :root {
+    --bg:#16181d; --panel:#1d2027; --panel2:#22262e; --border:#2a2e37;
+    --ink:#d8d4cb; --dim:#8a8375;
+    --gold:#e8b33d; --green:#5f9c7a; --red:#d98a83;
+    --mono:ui-monospace,Consolas,"Courier New",monospace;
+  }
+  * { box-sizing:border-box; }
+  html, body { height:100%; }
+  body { margin:0; background:var(--bg); color:var(--ink); display:flex; flex-direction:column;
+         font:14px/1.7 system-ui,-apple-system,"Segoe UI","Noto Sans SC","Microsoft YaHei",sans-serif; }
+  button, input { font-family:inherit; }
+  /* ── 标题栏 ── */
+  #topbar { flex:0 0 auto; display:flex; align-items:center; gap:10px; padding:10px 16px;
+            background:var(--panel); border-bottom:1px solid var(--border); }
+  #topbar .t { font-size:15px; font-weight:600; letter-spacing:1px; }
+  #topbar .pid { font-family:var(--mono); font-size:11px; color:var(--dim); flex:1;
+                 overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #topbar .kind { font-family:var(--mono); font-size:11px; color:var(--gold);
+                  border:1px solid var(--border); border-radius:6px; padding:1px 8px; }
+  /* ── 步骤指示 ── */
+  #steps { flex:0 0 auto; display:flex; gap:6px; padding:10px 16px; background:var(--panel);
+           border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .step { display:flex; align-items:center; gap:7px; border:1px solid var(--border); border-radius:6px;
+          padding:4px 11px; cursor:pointer; color:var(--dim); background:var(--panel2); font-size:12.5px;
+          user-select:none; }
+  .step .n { font-family:var(--mono); font-size:11px; width:18px; height:18px; line-height:17px;
+             text-align:center; border:1px solid var(--border); border-radius:50%; }
+  .step:hover { color:var(--ink); }
+  .step.on { color:var(--gold); border-color:var(--gold); }
+  .step.on .n { border-color:var(--gold); color:var(--gold); }
+  .step.done { color:var(--green); }
+  .step.done .n { border-color:var(--green); color:var(--green); }
+  /* ── 主内容 ── */
+  #main { flex:1; min-height:0; overflow:auto; padding:18px 22px 90px; }
+  .wrap { max-width:860px; margin:0 auto; }
+  .h2 { font-size:15px; font-weight:600; margin:0 0 4px; }
+  .sub { color:var(--dim); font-size:12.5px; margin:0 0 14px; }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:8px;
+          padding:12px 14px; margin-bottom:10px; }
+  .qtitle { font-weight:600; margin-bottom:6px; }
+  .qkey { font-family:var(--mono); font-size:11px; color:var(--dim); margin-left:8px; }
+  .opt { display:flex; align-items:flex-start; gap:8px; padding:3px 4px; cursor:pointer; border-radius:6px; }
+  .opt:hover { background:var(--panel2); }
+  .opt input { margin-top:5px; accent-color:var(--gold); }
+  .opt .lab { flex:1; }
+  .free { display:flex; align-items:center; gap:8px; margin-top:8px; }
+  .free .lab { flex:0 0 auto; color:var(--dim); font-size:12.5px; }
+  input[type=text] { flex:1; background:var(--panel2); color:var(--ink); border:1px solid var(--border);
+                     border-radius:6px; padding:5px 10px; font:13px/1.5 var(--mono); min-width:0; }
+  input[type=text]:focus { outline:none; border-color:var(--gold); }
+  .note { color:var(--gold); font-size:12px; margin-top:6px; }
+  .badge { font-family:var(--mono); font-size:10.5px; border:1px solid var(--border); border-radius:999px;
+           padding:0 8px; color:var(--dim); margin-left:8px; }
+  .badge.g { color:var(--gold); border-color:var(--gold); }
+  /* 模块/工具勾选行 */
+  .pick { display:flex; align-items:flex-start; gap:10px; padding:9px 11px; cursor:pointer;
+          border:1px solid var(--border); border-radius:8px; margin-bottom:8px; background:var(--panel); }
+  .pick:hover { border-color:var(--gold); }
+  .pick input { margin-top:4px; accent-color:var(--gold); }
+  .pick .nm { font-weight:600; }
+  .pick .id { font-family:var(--mono); font-size:11px; color:var(--dim); margin-left:8px; }
+  .pick .ds { color:var(--dim); font-size:12.5px; margin-top:2px; }
+  /* 骨架树 */
+  pre.tree, pre.json { background:var(--panel); border:1px solid var(--border); border-radius:8px;
+       padding:12px 14px; font:12.5px/1.7 var(--mono); color:var(--ink); overflow:auto; margin:0;
+       white-space:pre; }
+  pre.tree .d { color:var(--blue, #6ea8fe); }
+  /* 完成步 */
+  #warnline { font-size:12.5px; margin:0 0 10px; }
+  #warnline.ok { color:var(--green); }
+  #warnline.pending { color:var(--gold); }
+  /* ── 底部导航 ── */
+  #foot { position:fixed; left:0; right:0; bottom:0; display:flex; align-items:center; gap:8px;
+          padding:10px 16px; background:var(--panel); border-top:1px solid var(--border); }
+  #foot .pg { font-family:var(--mono); font-size:12px; color:var(--dim); }
+  #foot .sp { flex:1; }
+  .btn { background:var(--panel2); color:var(--ink); border:1px solid var(--border); border-radius:6px;
+         padding:5px 14px; font-size:13px; cursor:pointer; }
+  .btn:hover { border-color:var(--gold); color:var(--gold); }
+  .btn:disabled { color:var(--dim); cursor:default; border-color:var(--border); }
+  .btn.gold { color:var(--gold); border-color:var(--gold); }
+  #copytip { font-size:12px; color:var(--dim); }
+  .empty { padding:26px 6px; color:var(--dim); font-size:13px; }
+</style>
+</head>
+<body>
+<div id="topbar">
+  <span class="t">初始化向导</span>
+  <span class="pid" id="pid"></span>
+  <span class="kind">wizard · 纯静态不回写</span>
+</div>
+<nav id="steps"></nav>
+<main id="main"><div class="wrap" id="body"></div></main>
+<footer id="foot">
+  <button class="btn" id="bPrev">← 上一步</button>
+  <button class="btn" id="bNext">下一步 →</button>
+  <span class="sp"></span>
+  <span id="copytip"></span>
+  <button class="btn gold" id="bCopy" style="display:none">复制 JSON</button>
+  <span class="pg" id="pg"></span>
+</footer>
+<script id="wizdata" type="application/json">__WIZARD__</script>
+<script>
+"use strict";
+/* 数据源：生成时内联（dashboard.py --wizard），页面不回 call kit、不写盘。
+   P = {meta:{layout_version,kind,project,title,config}, questions, modules, tools, skeleton} */
+var P = JSON.parse(document.getElementById("wizdata").textContent);
+var STEPS = ["作品画像", "模块勾选", "工具与入口", "文件结构", "完成"];
+var cur = 0;
+
+/* ── 状态 ── */
+var ans = {};                       /* question.key -> 答案串 */
+(P.questions || []).forEach(function (q) { ans[q.key] = (q.answer || "") + ""; });
+var modSel = Object.create(null);   /* module.id -> bool */
+var toolSel = Object.create(null);  /* tool.id -> bool（预勾选） */
+(P.tools || []).forEach(function (t) { toolSel[t.id] = true; });
+
+function el(tag, cls, text) {
+  var n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text !== undefined) n.textContent = text;
+  return n;
+}
+function isMedia(q) {
+  return q.key === "mediaEndpoints" || /接口/.test(q.question || "");
+}
+function answeredCount() {
+  var qs = P.questions || [], n = 0;
+  for (var i = 0; i < qs.length; i++) if ((ans[qs[i].key] || "").trim()) n++;
+  return n;
+}
+
+/* ── 步骤① 作品画像 ── */
+function renderQuestions(body) {
+  var qs = P.questions || [];
+  if (!qs.length) { body.appendChild(el("div", "empty", "项目配置.json 没有 openQuestions——本步无需作答，直接下一步。")); return; }
+  qs.forEach(function (q) {
+    var c = el("div", "card");
+    var t = el("div"); t.style.display = "flex"; t.style.alignItems = "baseline"; t.style.flexWrap = "wrap";
+    t.appendChild(el("span", "qtitle", q.question));
+    t.appendChild(el("span", "qkey", "key: " + q.key));
+    if (isMedia(q)) t.appendChild(el("span", "badge g", "图/视频场景必须提供接口"));
+    c.appendChild(t);
+    var box = el("input", null); box.type = "text"; box.value = ans[q.key] || "";
+    var textWrap = el("div", "free");
+    if (q.options && q.options.length) {
+      q.options.forEach(function (o) {
+        var lab = el("label", "opt");
+        var r = el("input"); r.type = "radio"; r.name = "q_" + q.key; r.value = o;
+        if ((ans[q.key] || "") === o) r.checked = true;
+        r.addEventListener("change", function () {
+          ans[q.key] = o; box.value = "";
+          if (cur === 4) refreshJson();
+        });
+        lab.appendChild(r); lab.appendChild(el("span", "lab", o));
+        c.appendChild(lab);
+      });
+      textWrap.appendChild(el("span", "lab", "自由作答"));
+    } else {
+      textWrap.appendChild(el("span", "lab", "答案"));
+    }
+    box.addEventListener("input", function () {
+      if (box.value.trim()) {
+        ans[q.key] = box.value;
+        var rs = c.querySelectorAll("input[type=radio]");
+        for (var i = 0; i < rs.length; i++) rs[i].checked = false;
+      } else if (!(q.options && q.options.length)) {
+        ans[q.key] = "";
+      }
+      if (cur === 4) refreshJson();
+    });
+    textWrap.appendChild(box);
+    c.appendChild(textWrap);
+    if (isMedia(q)) c.appendChild(el("div", "note", "图/视频场景必须提供接口（如 ComfyUI endpoint），拿不到接口不开工；纯文字可答「无」。"));
+    body.appendChild(c);
+  });
+  var done = qs.length - answeredCount();
+  body.appendChild(el("p", "sub", done > 0 ? "还有 " + done + " 问未作答——未答项不会写进生成的 JSON。" : "全部已作答。"));
+}
+
+/* ── 步骤② 模块勾选 ── */
+function renderModules(body) {
+  body.appendChild(el("p", "sub", "勾选本项目加载哪些模块（结果写入 项目配置.json 的 loadedModules 字段）。"));
+  (P.modules || []).forEach(function (m) {
+    var lab = el("label", "pick");
+    var cb = el("input"); cb.type = "checkbox"; cb.checked = !!modSel[m.id];
+    cb.addEventListener("change", function () { modSel[m.id] = cb.checked; if (cur === 4) refreshJson(); });
+    lab.appendChild(cb);
+    var rt = el("div"); rt.style.flex = "1"; rt.style.minWidth = "0";
+    var nm = el("div"); nm.appendChild(el("span", "nm", m.name)); nm.appendChild(el("span", "id", m.id));
+    rt.appendChild(nm); rt.appendChild(el("div", "ds", m.desc || ""));
+    lab.appendChild(rt);
+    body.appendChild(lab);
+  });
+}
+
+/* ── 步骤③ 工具与入口 ── */
+function renderTools(body) {
+  body.appendChild(el("p", "sub", "看板功能入口清单（已预勾选；这些入口随向导说明保留，配置面板勾选状态存浏览器本地）。"));
+  (P.tools || []).forEach(function (t) {
+    var lab = el("label", "pick");
+    var cb = el("input"); cb.type = "checkbox"; cb.checked = toolSel[t.id] !== false;
+    cb.addEventListener("change", function () { toolSel[t.id] = cb.checked; });
+    lab.appendChild(cb);
+    var rt = el("div"); rt.style.flex = "1"; rt.style.minWidth = "0";
+    var nm = el("div"); nm.appendChild(el("span", "nm", t.name)); nm.appendChild(el("span", "id", t.id));
+    rt.appendChild(nm); rt.appendChild(el("div", "ds", t.desc || ""));
+    lab.appendChild(rt);
+    body.appendChild(lab);
+  });
+}
+
+/* ── 步骤④ 文件结构（只读） ── */
+function renderSkeleton(body) {
+  body.appendChild(el("p", "sub", "本项目初始化骨架（presets/skeletons/writing.json，只读预览）。"));
+  var pre = el("pre", "tree");
+  var lines = (P.skeleton || []).map(function (p) {
+    return p.charAt(p.length - 1) === "/" ? "├─ " + p : "│   " + p;
+  });
+  pre.textContent = lines.join("\n") || "（骨架清单为空）";
+  body.appendChild(pre);
+}
+
+/* ── 步骤⑤ 完成：生成配置 patch ── */
+function buildConfigJson() {
+  var cfg;
+  try { cfg = JSON.parse(JSON.stringify(P.meta.config || {})); } catch (e) { cfg = {}; }
+  var oq = Array.isArray(cfg.openQuestions) && cfg.openQuestions.length
+    ? cfg.openQuestions
+    : (P.questions || []).map(function (q) {
+        var e = { key: q.key, question: q.question };
+        if (q.options && q.options.length) e.options = q.options.slice();
+        return e;
+      });
+  oq.forEach(function (e) {
+    var v = (ans[e.key] || "").trim();
+    if (v) e.answer = v; else delete e.answer;
+  });
+  cfg.openQuestions = oq;
+  cfg.loadedModules = (P.modules || []).filter(function (m) { return modSel[m.id]; }).map(function (m) { return m.id; });
+  return JSON.stringify(cfg, null, 2);
+}
+var jsonPre = null;
+function refreshJson() {
+  if (!jsonPre) return;
+  jsonPre.textContent = buildConfigJson();
+  var done = (P.questions || []).length - answeredCount();
+  var w = document.getElementById("warnline");
+  if (!w) return;
+  w.className = done > 0 ? "pending" : "ok";
+  w.textContent = done > 0
+    ? "提示：尚有 " + done + " 问未作答（answer 字段不会写入）。复制后由你/agent 用 tools/apply-wizard.py 回填——本页面不写盘。"
+    : "全部 " + (P.questions || []).length + " 问已作答，模块勾选 " + cfg_modcount() + " 项。复制后运行：python tools/apply-wizard.py --answers <保存的json> --project " + (P.meta.project || "<id>");
+}
+function cfg_modcount() {
+  return (P.modules || []).filter(function (m) { return modSel[m.id]; }).length;
+}
+function renderDone(body) {
+  var w = el("p", "sub", ""); w.id = "warnline"; body.appendChild(w);
+  body.appendChild(el("div", "h2", "项目配置.json · 完整新 JSON"));
+  jsonPre = el("pre", "json");
+  body.appendChild(jsonPre);
+  body.appendChild(el("p", "sub", "「复制 JSON」保存后交 tools/apply-wizard.py 原位回填（openQuestions[].answer + loadedModules）；本向导板纯静态，绝不改盘。"));
+  refreshJson();
+}
+
+/* ── 导航与渲染骨架 ── */
+var RENDER = [renderQuestions, renderModules, renderTools, renderSkeleton, renderDone];
+function paint() {
+  jsonPre = null;
+  var nav = document.getElementById("steps");
+  nav.textContent = "";
+  STEPS.forEach(function (s, i) {
+    var b = el("div", "step");
+    if (i === cur) b.className += " on";
+    else if (i < cur) b.className += " done";
+    b.appendChild(el("span", "n", String(i + 1)));
+    b.appendChild(el("span", null, s));
+    b.addEventListener("click", function () { go(i); });
+    nav.appendChild(b);
+  });
+  var body = document.getElementById("body");
+  body.textContent = "";
+  body.appendChild(el("div", "h2", "步骤 " + "①②③④⑤".charAt(cur) + " · " + STEPS[cur]));
+  RENDER[cur](body);
+  document.getElementById("pg").textContent = (cur + 1) + " / " + STEPS.length;
+  document.getElementById("bPrev").disabled = cur === 0;
+  document.getElementById("bNext").style.display = cur === STEPS.length - 1 ? "none" : "";
+  document.getElementById("bCopy").style.display = cur === STEPS.length - 1 ? "" : "none";
+  document.getElementById("main").scrollTop = 0;
+}
+function go(i) { cur = Math.max(0, Math.min(STEPS.length - 1, i)); paint(); }
+
+document.getElementById("bPrev").addEventListener("click", function () { go(cur - 1); });
+document.getElementById("bNext").addEventListener("click", function () { go(cur + 1); });
+document.getElementById("bCopy").addEventListener("click", function () {
+  var txt = jsonPre ? jsonPre.textContent : buildConfigJson();
+  var tip = document.getElementById("copytip");
+  function fallback() {
+    try {
+      var r = document.createRange(); r.selectNode(jsonPre);
+      var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      var ok = document.execCommand("copy");
+      sel.removeAllRanges();
+      tip.textContent = ok ? "已选中并复制" : "复制失败——请手动全选上方 JSON 复制";
+    } catch (e) { tip.textContent = "复制失败——请手动全选上方 JSON 复制"; }
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(
+      function () { tip.textContent = "已复制到剪贴板"; },
+      function () { fallback(); });
+  } else fallback();
+});
+document.getElementById("pid").textContent = (P.meta.project || "?") + (P.meta.title ? " · " + P.meta.title : "");
+paint();
+</script>
+</body>
+</html>

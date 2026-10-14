@@ -34,6 +34,12 @@
       双根口径（架构红线 2「双根不许合一」）：--root 只管项目数据，config.models 的 .external 全局档
       永远取 --kit-root（缺省本脚本所在仓根），所以外部根出板时模型配置照常齐全。
   python tools/dashboard.py --project <id> --print-payload   # 只出 dashboard@1 JSON（对账/排障，不写盘）
+  python tools/dashboard.py --wizard <projectId> [--root <数据父目录>] [--kit-root <kit 仓根>] [--out <html>]
+      初始化向导板（看板 v4 工单 V4-5，模板 tools/wizard-template.html）：五步分步表单独立 HTML，
+      出 projects/<id>/wizard.html。采集 项目配置.json 的 openQuestions（原样）+ modules/*/module.json
+      （id/name/desc）+ 看板六入口常量 + presets/skeletons/writing.json 骨架清单。
+      与 --project 互斥；python 端**不回写** 项目配置.json（纯静态纪律，回填走 tools/apply-wizard.py）；
+      无生成时刻、幂等；内嵌基档剥敏感键（合并回填语义下剥掉的字段不会丢）。
   python tools/dashboard.py --selfcheck
 
 退出码：0 成功；1 项目/模板缺失 / 契约形状不符 / 脱敏断言失败 / 零外部资源断言失败；2 用法错误（argparse）。
@@ -50,6 +56,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE = Path(__file__).resolve().parent / "dashboard-template.html"
+WIZARD_TEMPLATE = Path(__file__).resolve().parent / "wizard-template.html"
 
 REQUIRED_TOP = ("format", "project", "title", "zones", "worldbook",
                 "chronicle", "artifacts", "config", "meta")
@@ -85,6 +92,17 @@ SECRET_KEY_RE = re.compile(r"key|secret|token|password|credential", re.I)
 SECRET_VALUE_RE = re.compile(r"sk-[A-Za-z0-9_\-]{8,}")
 
 PROJECT_CONFIG_KEYS = ("id", "title", "灵感", "flowId", "flowVersion", "layout", "项目")
+
+# 向导步骤③ 看板功能入口清单（代码常量，与 dashboard-template v3 面板一一对齐；
+# 勾选只是用户偏好，本工具不回写——V4-2 插件化工具栏落地后由注册表接管）
+WIZARD_TOOLS = [
+    {"id": "worldbook", "name": "世界书", "desc": "词条卡片图谱与检索（页内直读 世界书/**/*.md）"},
+    {"id": "people", "name": "人物", "desc": "人物档案（世界书 entries 按 cat=人物 过滤）"},
+    {"id": "outline", "name": "大纲", "desc": "产物索引树（project-index.json 的 role/kind/hash/mtime）"},
+    {"id": "chronicle", "name": "大事记", "desc": "叙事时间线（世界书/时间线.md，5W1H 多轨）"},
+    {"id": "docs", "name": "文档", "desc": "md/txt 页内只读直读（File System Access，正文不内嵌）"},
+    {"id": "config", "name": "配置", "desc": "模型/日志/快照只读抽屉（apiKey 类字段永不入板）"},
+]
 
 
 def load_sibling_module(filename: str):
@@ -597,6 +615,175 @@ def cmd_build(project: str, out: str | None, root_dir: str, title: str | None,
     return 0
 
 
+# ────────────────────────────── 向导板（看板 v4 工单 V4-5） ──────────────────────────────
+
+def _strip_secrets(obj):
+    """向导板内嵌 项目配置.json 基档前的脱敏：命中敏感键名的子树整棵剔除（看板 v3 同口径红线）。
+    apply-wizard 是**合并回填**（answer/loadedModules 原位更新）而非整档替换，基档里剥掉的字段不会丢。"""
+    if isinstance(obj, dict):
+        return {k: _strip_secrets(v) for k, v in obj.items() if not SECRET_KEY_RE.search(str(k))}
+    if isinstance(obj, list):
+        return [_strip_secrets(v) for v in obj]
+    return obj
+
+
+def wizard_collect(root: Path, project: str, kit_root: Path) -> tuple[dict, Path]:
+    """向导 payload 采集：openQuestions 原样 + modules/ 目录 + 六入口常量 + writing 骨架清单。
+    缺件＝该区空态加提示（不是错）——骨架期项目没写 openQuestions 属正常态。"""
+    notices: list = []
+    proj = resolve_project(root, project)
+    cfg_path = proj / "项目配置.json"
+    cfg = load_json(cfg_path)
+    if not isinstance(cfg, dict):
+        notices.append(f"项目配置.json 缺失或不是 JSON 对象（{disp_path(cfg_path, root)}）——questions 为空，向导照常出")
+        cfg = {}
+    raw_q = cfg.get("openQuestions")
+    if not isinstance(raw_q, list):
+        raw_q = []
+    questions = [q for q in raw_q
+                 if isinstance(q, dict) and isinstance(q.get("key"), str) and isinstance(q.get("question"), str)]
+    if isinstance(cfg.get("openQuestions"), list) and len(questions) != len(cfg["openQuestions"]):
+        notices.append(f"openQuestions 有 {len(cfg['openQuestions']) - len(questions)} 条坏条目（缺 key/question）被跳过")
+
+    modules: list = []
+    mdir = kit_root / "modules"
+    if mdir.is_dir():
+        for mj in sorted(mdir.glob("*/module.json"), key=lambda p: str(p.parent.name)):
+            d = load_json(mj)
+            if not isinstance(d, dict):
+                notices.append(f"module.json 解析失败，跳过：{disp_path(mj, kit_root)}")
+                continue
+            modules.append({"id": str(d.get("id") or mj.parent.name),
+                            "name": str(d.get("name") or mj.parent.name),
+                            "desc": str(d.get("desc") or "")})
+    else:
+        notices.append(f"modules/ 目录不存在：{disp_path(mdir, kit_root)}——模块勾选页为空")
+
+    skeleton: list = []
+    sk_path = kit_root / "presets" / "skeletons" / "writing.json"
+    sk = load_json(sk_path)
+    if isinstance(sk, dict):
+        dirs = sk.get("directories")
+        if isinstance(dirs, list):
+            skeleton += [str(x) for x in dirs]
+        files = sk.get("files")
+        if isinstance(files, dict):
+            skeleton += sorted(str(k) for k in files)
+    else:
+        notices.append(f"骨架预设缺失或解析失败：{disp_path(sk_path, kit_root)}——文件结构页为空")
+
+    payload = {
+        "meta": {
+            "layout_version": "3",
+            "kind": "wizard",
+            "project": project,
+            "title": str(cfg.get("title") or cfg.get("项目") or project),
+            "config": _strip_secrets(cfg),
+            "project_dir": disp_path(proj, root),
+            "notices": sorted(set(notices)),
+        },
+        "questions": questions,
+        "modules": modules,
+        "tools": [dict(t) for t in WIZARD_TOOLS],
+        "skeleton": skeleton,
+    }
+    return payload, proj
+
+
+def check_wizard_shape(d: dict) -> list:
+    """向导 payload 形状校验（渲染前提）+ 脱敏断言（同看板 v3 全文闸：sk- 形态与 apiKey 键名零容忍）。
+    返回问题列表（空 = 通过）。"""
+    problems = []
+    if not isinstance(d, dict):
+        return ["顶层必须是 JSON 对象"]
+    for k in ("meta", "questions", "modules", "tools", "skeleton"):
+        if k not in d:
+            problems.append(f"缺必填顶层键: {k}")
+    meta = d.get("meta")
+    if not isinstance(meta, dict):
+        problems.append("meta 必须是对象")
+    else:
+        if str(meta.get("layout_version")) != "3":
+            problems.append('meta.layout_version 必须是 "3"')
+        if meta.get("kind") != "wizard":
+            problems.append('meta.kind 必须是 "wizard"')
+    if "questions" in d:
+        if not isinstance(d["questions"], list):
+            problems.append("questions 必须是数组")
+        else:
+            for i, q in enumerate(d["questions"]):
+                if not isinstance(q, dict) or not isinstance(q.get("key"), str) or not isinstance(q.get("question"), str):
+                    problems.append(f"questions[{i}] 必须是含 key/question 字符串的对象")
+                elif "options" in q and not (isinstance(q["options"], list) and all(isinstance(x, str) for x in q["options"])):
+                    problems.append(f"questions[{i}].options 必须是字符串数组")
+    for key in ("modules", "tools"):
+        if key in d:
+            if not isinstance(d[key], list):
+                problems.append(f"{key} 必须是数组")
+            else:
+                for i, m in enumerate(d[key]):
+                    if not isinstance(m, dict) or not all(isinstance(m.get(x), str) for x in ("id", "name", "desc")):
+                        problems.append(f"{key}[{i}] 必须是含 id/name/desc 字符串的对象")
+    if "skeleton" in d:
+        if not isinstance(d["skeleton"], list) or not all(isinstance(x, str) for x in d["skeleton"]):
+            problems.append("skeleton 必须是字符串数组")
+    full = json.dumps(d, ensure_ascii=False, sort_keys=True)
+    m = SECRET_VALUE_RE.search(full)
+    if m:
+        problems.append(f"payload 全文命中 sk- 形态密钥串（脱敏红线）：{m.group(0)[:16]}…")
+    if '"apiKey"' in full or "'apiKey'" in full:
+        problems.append('payload 全文出现 "apiKey" 键名（脱敏红线）')
+    return problems
+
+
+def render_wizard(payload: dict, title: str) -> str:
+    template = WIZARD_TEMPLATE.read_text(encoding="utf-8")
+    hits = external_hits(template)
+    if hits:
+        raise SystemExit(f"[ABORT] 向导模板含外部资源引用（零依赖红线）: {hits[:3]}")
+    # 同看板 v3：</ 转义成 <\/（JSON 字符串合法转义，语义不变），防正文里的 </script> 提前闭合脚本块。
+    body = json.dumps(payload, ensure_ascii=False, sort_keys=True).replace("</", "<\\/")
+    return template.replace("__TITLE__", html.escape(title, quote=True)).replace("__WIZARD__", body)
+
+
+def cmd_wizard(project: str, out: str | None, root_dir: str, kit_root_dir: str | None = None) -> int:
+    root = Path(root_dir).resolve()
+    if not WIZARD_TEMPLATE.exists():
+        print(f"[ABORT] 向导模板缺失：{WIZARD_TEMPLATE}", file=sys.stderr)
+        return 1
+    proj = resolve_project(root, project)
+    if not proj.is_dir():
+        print(f"[ABORT] 项目目录不存在：{proj}（--root {root}）", file=sys.stderr)
+        return 1
+    payload, proj = wizard_collect(root, project, Path(kit_root_dir or ROOT).resolve())
+    problems = check_wizard_shape(payload)
+    if problems:
+        print("[ABORT] 向导 payload 形状/脱敏校验不符：", file=sys.stderr)
+        for p in problems:
+            print(f"  ! {p}", file=sys.stderr)
+        return 1
+    page = render_wizard(payload, payload["meta"]["title"] + " · 初始化向导")
+    hits = external_hits(page)
+    if hits:
+        print("[FAIL] 向导产物含外部资源引用（零依赖红线）:", file=sys.stderr)
+        for h in hits:
+            print(f"  ! {h}", file=sys.stderr)
+        return 1
+    leaks = abs_path_hits(page)
+    dst = Path(out) if out else proj / "wizard.html"
+    dst = dst if dst.is_absolute() else root / dst
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    dst.write_text(page, encoding="utf-8")
+    print(f"wizard → {dst}（问题 {len(payload['questions'])} 问 / 模块 {len(payload['modules'])} 个 / "
+          f"入口 {len(payload['tools'])} 项 / 骨架 {len(payload['skeleton'])} 件；"
+          f"零外部资源引用；不回写 项目配置.json——复制 JSON 后走 python tools/apply-wizard.py 回填）")
+    for n in payload["meta"]["notices"]:
+        print(f"  · 提示：{n}")
+    if leaks:
+        print(f"  · 分发前自检：页面残留 {len(leaks)} 处本机绝对路径（多为配置/原文自述，工具不替作者改写）——{'、'.join(leaks[:3])}")
+    return 0
+
+
 # ────────────────────────────── 合成 fixture ──────────────────────────────
 
 def synth_root(base: Path):
@@ -812,11 +999,17 @@ def main() -> int:
     ap.add_argument("--title", help="页标题（缺省 项目配置.json 的 title）")
     ap.add_argument("--selfcheck", action="store_true", help="合成 fixture 全链自测（形状+脱敏+幂等+零外部资源）")
     ap.add_argument("--print-payload", action="store_true", help="只打印 dashboard@1 payload JSON（排障/对账用，不写盘）")
+    ap.add_argument("--wizard", metavar="projectId",
+                    help="初始化向导板（看板 v4 工单 V4-5）：出 projects/<id>/wizard.html；与 --project 互斥")
     args = ap.parse_args()
     if args.selfcheck:
         return cmd_selfcheck()
+    if args.wizard:
+        if args.project:
+            ap.error("--wizard 与 --project 互斥（向导板与主看板各出各的）")
+        return cmd_wizard(args.wizard, args.out, args.root, args.kit_root)
     if not args.project:
-        ap.error("需要 --project <id>（或 --selfcheck）")
+        ap.error("需要 --project <id>（或 --wizard <projectId> / --selfcheck）")
         return 2
     root = Path(args.root).resolve()
     if args.print_payload:
