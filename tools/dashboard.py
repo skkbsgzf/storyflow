@@ -20,6 +20,9 @@
                 （level 由事件名派生：error/fail→ERROR、warn/retry/skip/timeout→WARN、其余 INFO）。
   · config.snapshots ← projects/<id>/snapshots/index.json 最近 ≤50 条（time/name/hash/node/round/file）；
                  文本快照在体积预算内内嵌内容（预览与「生成恢复补丁」用），现行版文本每文件只嵌一次。
+  · config.entryDefaults ← （看板 v4 工单 V4-2）loadedModules 映射出的默认入口集，注册表序；
+                 入口关 → 其 dataSourceKey 采集整体跳过（worldbook 空壳带 skipped:true、chronicle 空骨架、
+                 artifacts 空表；顶层键面不变）。loadedModules 缺省/空 = 全采集，历史行为不变。
 
 工程范式与 tools/kb-graph-page.py / diagnosis-page.py 一致：
   · 零外部资源红线（ARCHITECTURE §9 不变量 6）：模板与产物 src/href/url()/@import 不得指 http(s):// 或 //host；
@@ -37,7 +40,8 @@
   python tools/dashboard.py --wizard <projectId> [--root <数据父目录>] [--kit-root <kit 仓根>] [--out <html>]
       初始化向导板（看板 v4 工单 V4-5，模板 tools/wizard-template.html）：五步分步表单独立 HTML，
       出 projects/<id>/wizard.html。采集 项目配置.json 的 openQuestions（原样）+ modules/*/module.json
-      （id/name/desc）+ 看板六入口常量 + presets/skeletons/writing.json 骨架清单。
+      （id/name/desc）+ 看板入口注册表六入口（ENTRY_REGISTRY 单源，loadedModules 生效时标注 defaultOn）
+      + presets/skeletons/writing.json 骨架清单。
       与 --project 互斥；python 端**不回写** 项目配置.json（纯静态纪律，回填走 tools/apply-wizard.py）；
       无生成时刻、幂等；内嵌基档剥敏感键（合并回填语义下剥掉的字段不会丢）。
   python tools/dashboard.py --selfcheck
@@ -93,16 +97,58 @@ SECRET_VALUE_RE = re.compile(r"sk-[A-Za-z0-9_\-]{8,}")
 
 PROJECT_CONFIG_KEYS = ("id", "title", "灵感", "flowId", "flowVersion", "layout", "项目")
 
-# 向导步骤③ 看板功能入口清单（代码常量，与 dashboard-template v3 面板一一对齐；
-# 勾选只是用户偏好，本工具不回写——V4-2 插件化工具栏落地后由注册表接管）
-WIZARD_TOOLS = [
-    {"id": "worldbook", "name": "世界书", "desc": "词条卡片图谱与检索（页内直读 世界书/**/*.md）"},
-    {"id": "people", "name": "人物", "desc": "人物档案（世界书 entries 按 cat=人物 过滤）"},
-    {"id": "outline", "name": "大纲", "desc": "产物索引树（project-index.json 的 role/kind/hash/mtime）"},
-    {"id": "chronicle", "name": "大事记", "desc": "叙事时间线（世界书/时间线.md，5W1H 多轨）"},
-    {"id": "docs", "name": "文档", "desc": "md/txt 页内只读直读（File System Access，正文不内嵌）"},
-    {"id": "config", "name": "配置", "desc": "模型/日志/快照只读抽屉（apiKey 类字段永不入板）"},
+# ── 入口注册表（看板 v4 工单 V4-2 插件化工具栏；模板 dashboard-template.html 的 ENTRIES 与本表按 id 一一对齐）──
+# 两层配置口径：
+#   ① 服务端默认（本节）：projects/<id>/项目配置.json 的 loadedModules（V4-5 向导步骤②勾选、apply-wizard 回填）
+#      映射默认入口集——dashboard.py 据此跳过对应数据源采集（省体积）。生效条件：loadedModules 存在
+#      且为非空列表；缺省/空列表/类型不符 = 全入口开（历史行为不变）。
+#   ② 客户端个人开关：localStorage 覆盖（模板侧），只藏入口、payload 不变——与本表无关。
+# 入口 ↔ 模块映射口径（命中任一支撑模块 → 入口开、其 dataSourceKey 照常采集；全不命中 → 入口默认关、跳过采集）：
+#   worldbook / people ← plot（世界观/人设/伏笔编排）+ drama（剧本 IR 角色表）——两者同读 世界书/**/*.md
+#   chronicle          ← plot（主线剧情/章回锚点）+ prose（成文逐章编年）——真相源 世界书/时间线.md 属剧情资产
+#   outline / docs     ← topic / plan / prose / drama / delivery / search——六域皆产 md/txt 交付物，经 project-index 进板
+#   config             ← modules=None 表示永驻：模型配置/台账/快照是运行时事实，不随模块开关，永不跳过
+# dataSourceKey 共享规则：worldbook（worldbook+people）、artifacts（outline+docs）——任一入口开即采集，全关才跳。
+# 向导步骤③ tools[] 勾选与本表同源（id/title 单源），并在 loadedModules 生效时逐项标注 defaultOn 与之对齐。
+ENTRY_REGISTRY = [
+    {"id": "worldbook", "icon": "worldbook", "title": "世界书", "dataSourceKey": "worldbook",
+     "modules": {"plot", "drama"},
+     "desc": "词条卡片图谱与检索（页内直读 世界书/**/*.md）"},
+    {"id": "people", "icon": "people", "title": "人物", "dataSourceKey": "worldbook",
+     "modules": {"plot", "drama"},
+     "desc": "人物档案（世界书 entries 按 cat=人物 过滤）"},
+    {"id": "outline", "icon": "outline", "title": "大纲", "dataSourceKey": "artifacts",
+     "modules": {"topic", "plan", "prose", "drama", "delivery", "search"},
+     "desc": "产物索引树（project-index.json 的 role/kind/hash/mtime）"},
+    {"id": "chronicle", "icon": "chronicle", "title": "大事记", "dataSourceKey": "chronicle",
+     "modules": {"plot", "prose"},
+     "desc": "叙事时间线（世界书/时间线.md，5W1H 多轨）"},
+    {"id": "docs", "icon": "doc", "title": "文档", "dataSourceKey": "artifacts",
+     "modules": {"topic", "plan", "prose", "drama", "delivery", "search"},
+     "desc": "md/txt 页内只读直读（File System Access，正文不内嵌）"},
+    {"id": "config", "icon": "config", "title": "配置", "dataSourceKey": "config",
+     "modules": None,
+     "desc": "模型/日志/快照只读抽屉（apiKey 类字段永不入板；永驻入口不可关）"},
 ]
+
+
+def entry_defaults(cfg):
+    """项目配置 → 默认入口集（服务端默认层，注册表序）。返回 (开启的入口 id 列表, loadedModules 是否生效)。
+    生效 = cfg.loadedModules 存在且为非空列表；否则全入口开（历史行为不变）。"""
+    all_ids = [e["id"] for e in ENTRY_REGISTRY]
+    mods = cfg.get("loadedModules") if isinstance(cfg, dict) else None
+    if not isinstance(mods, list):
+        return all_ids, False
+    mset = {str(x) for x in mods if str(x).strip()}
+    if not mset:
+        return all_ids, False
+    on = [e["id"] for e in ENTRY_REGISTRY if e["modules"] is None or (e["modules"] & mset)]
+    return on, True
+
+
+def source_enabled(enabled_ids, key):
+    """dataSourceKey 是否需采集：其名下任一入口开启即采集（共享源全关才跳）。"""
+    return any(e["dataSourceKey"] == key and e["id"] in enabled_ids for e in ENTRY_REGISTRY)
 
 
 def load_sibling_module(filename: str):
@@ -212,23 +258,28 @@ def zone_worldbook(proj: Path, notices: list):
     return graph
 
 
+def _chronicle_empty(proj: Path) -> dict:
+    """大事记空区骨架（chronicle@1 契约形状）：缺源与「入口关→跳过采集」共用，键面稳定不破模板。
+    叙述层空态也要有人话（v3 页面不展示导语，但 payload 保留契约字段，排障有账可查）。"""
+    return {"format": "chronicle@1", "project": proj.name, "sources": [],
+            "bands": [], "lanes": [], "events": [], "stats": {},
+            "narrative": {
+                "lead": "这个项目还没有大事记。真相源是作者手写的 世界书/时间线.md，"
+                        "或者 世界书/编年/大事记.md。写下第一条编年再重跑归纳器，"
+                        "这一页就成了多轨时间线。",
+                "hint": "一条编年就是一行 - 开头的短句，写清何时、何地、谁做了什么，"
+                        "末尾用（第N章）标章。要起因与手法说话，就在行里加〔因：…〕〔如何：…〕。",
+                "gaps": [],
+                "beats": [{"k": k, "label": lab} for k, lab in
+                          (("s", "情境"), ("t", "起因"), ("a", "经过"), ("r", "落点"))],
+            }}
+
+
 def zone_chronicle(proj: Path, notices: list):
     """大事记区：叙事 5W1H 多轨时间线。复用 tools/chronicle.py 在内存内出 chronicle@1——
     看板**不写** chronicle.json（派生件由 chronicle.py 独占写，两处写会养出两套时序），
     源 md 永不被改写。缺时间线文件＝空区不是错（骨架模板项目还没写编年属正常态）。"""
-    empty = {"format": "chronicle@1", "project": proj.name, "sources": [],
-             "bands": [], "lanes": [], "events": [], "stats": {},
-             # 叙述层空态也要有人话（v3 页面不展示导语，但 payload 保留契约字段，排障有账可查）
-             "narrative": {
-                 "lead": "这个项目还没有大事记。真相源是作者手写的 世界书/时间线.md，"
-                         "或者 世界书/编年/大事记.md。写下第一条编年再重跑归纳器，"
-                         "这一页就成了多轨时间线。",
-                 "hint": "一条编年就是一行 - 开头的短句，写清何时、何地、谁做了什么，"
-                         "末尾用（第N章）标章。要起因与手法说话，就在行里加〔因：…〕〔如何：…〕。",
-                 "gaps": [],
-                 "beats": [{"k": k, "label": lab} for k, lab in
-                           (("s", "情境"), ("t", "起因"), ("a", "经过"), ("r", "落点"))],
-             }}
+    empty = _chronicle_empty(proj)
     try:
         ch = load_sibling_module("chronicle.py")
     except Exception as e:  # noqa: BLE001 归纳器坏了不拖垮整张看板，但要显式说
@@ -519,18 +570,28 @@ def check_shape(d: dict) -> list:
 
 def build_payload(root: Path, project: str | None, kit_root: Path | None = None) -> tuple[dict, Path]:
     """root = 数据根（项目父目录，--root）；kit_root = 全局配置/语料所在根（--kit-root，缺省本仓根）。
-    双根不合一（架构红线 2）：外部平铺项目根出板时，.external 模型档仍取 kit 仓根。"""
+    双根不合一（架构红线 2）：外部平铺项目根出板时，.external 模型档仍取 kit 仓根。
+    V4-2 采集联动：loadedModules 生效（存在且非空）时按其映射默认入口集跳过关闭入口的数据源
+    （见 ENTRY_REGISTRY 注释口径）；缺省 = 全采集，历史行为不变。config 源永驻不跳。"""
     notices: list = []
     kit_root = (kit_root or root).resolve()
     proj = resolve_project(root, project or "")
-    wb = zone_worldbook(proj, notices)
-    chronicle = zone_chronicle(proj, notices)
-    artifacts = zone_artifacts(proj, notices)
+    cfg_raw = load_json(proj / "项目配置.json") or {}
+    title = str(cfg_raw.get("title") or project)
+    enabled, restricted = entry_defaults(cfg_raw)
+    if restricted:
+        off = [e["id"] for e in ENTRY_REGISTRY if e["id"] not in enabled]
+        if off:
+            mods = "、".join(sorted(str(x) for x in cfg_raw.get("loadedModules", [])))
+            notices.append(f"loadedModules（{mods}）未覆盖入口：{'、'.join(off)}——对应数据源已跳过采集（省体积）")
+    wb = (zone_worldbook(proj, notices) if source_enabled(enabled, "worldbook")
+          else {"entries": [], "relations": [], "skipped": True})
+    chronicle = (zone_chronicle(proj, notices) if source_enabled(enabled, "chronicle")
+                 else _chronicle_empty(proj))
+    artifacts = zone_artifacts(proj, notices) if source_enabled(enabled, "artifacts") else []
     models = zone_models(kit_root, proj, notices)
     logs = zone_logs(proj, notices)
     snapshots = zone_snapshots(proj, notices)
-    cfg_raw = load_json(proj / "项目配置.json") or {}
-    title = str(cfg_raw.get("title") or project)
     payload = {
         "format": "dashboard@1",
         "project": project,
@@ -539,7 +600,10 @@ def build_payload(root: Path, project: str | None, kit_root: Path | None = None)
         "worldbook": wb,
         "chronicle": chronicle,
         "artifacts": artifacts,
-        "config": {"models": models, "logs": logs, "snapshots": snapshots},
+        "config": {"models": models, "logs": logs, "snapshots": snapshots,
+                   # 服务端默认入口集（注册表序）：模板据此定各入口初始开关，localStorage 个人开关再覆盖。
+                   # 顶层键面不变（V4-2 硬约束：config 内部键可加）。
+                   "entryDefaults": enabled},
         "meta": {
             "layout_version": "3",
             # 分发安全（W4.3）：页面一旦挂上公网，绝对路径＝白送本机目录结构与用户名。
@@ -628,7 +692,7 @@ def _strip_secrets(obj):
 
 
 def wizard_collect(root: Path, project: str, kit_root: Path) -> tuple[dict, Path]:
-    """向导 payload 采集：openQuestions 原样 + modules/ 目录 + 六入口常量 + writing 骨架清单。
+    """向导 payload 采集：openQuestions 原样 + modules/ 目录 + 入口注册表六入口 + writing 骨架清单。
     缺件＝该区空态加提示（不是错）——骨架期项目没写 openQuestions 属正常态。"""
     notices: list = []
     proj = resolve_project(root, project)
@@ -672,6 +736,19 @@ def wizard_collect(root: Path, project: str, kit_root: Path) -> tuple[dict, Path
     else:
         notices.append(f"骨架预设缺失或解析失败：{disp_path(sk_path, kit_root)}——文件结构页为空")
 
+    # V4-2 对齐：步骤③ tools[] 与 loadedModules 同源（ENTRY_REGISTRY）；loadedModules 生效时逐项标注
+    # defaultOn（模板当前全预勾，defaultOn 标注是注册表侧的口径事实，向导改版直接读它即可）。
+    enabled, restricted = entry_defaults(cfg)
+    tools = []
+    for e in ENTRY_REGISTRY:
+        t = {"id": e["id"], "name": e["title"], "desc": e["desc"]}
+        if restricted:
+            t["defaultOn"] = e["id"] in enabled
+        tools.append(t)
+    if restricted and any(not t.get("defaultOn", True) for t in tools):
+        off = "、".join(t["name"] for t in tools if not t.get("defaultOn", True))
+        notices.append(f"loadedModules 已生效，入口默认关：{off}（与看板采集跳过同口径）")
+
     payload = {
         "meta": {
             "layout_version": "3",
@@ -684,7 +761,7 @@ def wizard_collect(root: Path, project: str, kit_root: Path) -> tuple[dict, Path
         },
         "questions": questions,
         "modules": modules,
-        "tools": [dict(t) for t in WIZARD_TOOLS],
+        "tools": tools,
         "skeleton": skeleton,
     }
     return payload, proj
@@ -974,11 +1051,39 @@ def cmd_selfcheck() -> int:
         assert again["config"]["logs"], "大事记缺席不影响日志面板"
         assert check_shape(again) == [], check_shape(again)
         size = len(p1.encode("utf-8"))
+        # V4-2 loadedModules 采集联动：只加载 topic → worldbook/people/chronicle 默认关（跳过采集），
+        # outline/docs 开（artifacts 照常）、config 永驻。两版页面字节数即「关入口省体积」的验收证据。
+        cfg_path = root / payload["meta"]["project_dir"] / "项目配置.json"
+        cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+        cfg["loadedModules"] = ["topic"]
+        cfg_path.write_text(json.dumps(cfg, ensure_ascii=False), encoding="utf-8")
+        lim = build_payload(root, "p-selfcheck")[0]
+        assert check_shape(lim) == [], check_shape(lim)
+        assert lim["config"]["entryDefaults"] == ["outline", "docs", "config"], lim["config"]["entryDefaults"]
+        assert lim["worldbook"].get("skipped") is True and lim["worldbook"]["entries"] == []
+        assert lim["chronicle"]["events"] == [] and lim["chronicle"]["format"] == "chronicle@1"
+        assert len(lim["artifacts"]) == c["artifacts"], "outline/docs 开启时产物采集不受影响"
+        assert any("跳过采集" in n for n in lim["meta"]["notices"]), lim["meta"]["notices"]
+        assert any("defaultOn" in n or "入口默认关" in n for n in
+                   wizard_collect(root, "p-selfcheck", root)[0]["meta"]["notices"]), "向导 tools[] 应与 loadedModules 对齐"
+        p_lim = render(lim, "selfcheck")
+        lim_size = len(p_lim.encode("utf-8"))
+        assert len(render(build_payload(root, "p-selfcheck")[0], "selfcheck").encode("utf-8")) == lim_size, \
+            "限制入口后仍幂等"
+        assert lim_size < size, "关闭入口后体积应下降"
+        # loadedModules 空列表 → 不生效，回到全采集（历史行为不变）
+        cfg["loadedModules"] = []
+        cfg_path.write_text(json.dumps(cfg, ensure_ascii=False), encoding="utf-8")
+        full2 = build_payload(root, "p-selfcheck")[0]
+        assert full2["config"]["entryDefaults"] == [e["id"] for e in ENTRY_REGISTRY]
+        # 注意：此处排在「缺源」用例之后——时间线.md 已被删，全量口径=5-1=4 卡（不是开头的 5）
+        assert len(full2["worldbook"]["entries"]) == c["worldbook_entries"] - 1 and not full2["worldbook"].get("skipped"), full2["meta"]["counts"]
     print(f"selfcheck OK：世界书 {c['worldbook_entries']} 词条（人物卡 {len(people)}）/ "
           f"大事记 {len(ch['events'])} 事件·{len(ch['lanes'])} 轨·{len(ch['bands'])} 段带（源 bullet 逐条对齐，零丢弃）/ "
           f"产物 {c['artifacts']} 件 / 模型 {len(models)} 项（apiKey 逐字脱敏＋反向题拦截）/ "
           f"日志 {len(logs)} 条（ERROR 级派生＋坏行记账）/ 快照 {len(snaps)} 条（时间倒序＋占位不入账）；"
-          f"缺源项目＝空区不报错；两次渲染逐字节一致，产物 {size} 字节（≤500KB），零外部资源引用")
+          f"缺源项目＝空区不报错；入口联动：全板 {size:,}B → 只载 topic 板 {lim_size:,}B（省 {size - lim_size:,}B）；"
+          f"两次渲染逐字节一致，产物 {size} 字节（≤500KB），零外部资源引用")
     return 0
 
 

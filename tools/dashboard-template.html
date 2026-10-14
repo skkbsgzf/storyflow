@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>__TITLE__</title>
 <style>
-  /* 项目看板 v4 · 固定模板（看板 v4 工单 V4-1 三段式框架 + V4-3a 世界书 Pinax 移植）。
-     顶栏（项目名 + 右上角配置）/ 44px 图标栏（五浏览面板 + 文档）/ 主区 = 总览面板 ∥ 详情面板（右侧滑入）。
+  /* 项目看板 v4 · 固定模板（看板 v4 工单 V4-1 三段式框架 + V4-3a 世界书 Pinax 移植 + V4-2 插件化工具栏）。
+     顶栏（项目名 + 右上角配置）/ 44px 图标栏（入口注册表驱动，用户可勾选开/关）/ 主区 = 总览面板 ∥ 详情面板（右侧滑入）。
      世界书面板 = 分类树（折叠+计数徽标+状态过滤轴）∥ 统一浏览器（搜索/排序/视图切换记忆；三轴单源：
        词条墙按轴筛、图谱按轴隐节点且布局不重排、检索命中在图上描环、图例点击即分类过滤）∥ 词条 wiki 页（详情面板内，
        含 frontmatter 字段表 / 关联词条跳转链 / 历史栈返回 / 正文页内直读）；图谱点节点直达 wiki。
@@ -261,6 +261,7 @@
   .sw { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); border-radius:6px;
         background:var(--panel2); color:var(--dim); padding:4px 10px; cursor:pointer; font-size:12px; }
   .sw.on { color:var(--accent); border-color:var(--accent); }
+  .sw[disabled] { opacity:.45; cursor:default; }
   .sw .dot { background:currentColor; }
   /* ── 确认弹窗（唯一豁免：破坏性确认「恢复快照」） ── */
   #modal { position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; z-index:30;
@@ -332,12 +333,13 @@ const state = {
   activePanel: "",   // "" = 空白
   ovPanel: "",       // 总览区当前承载的浏览面板（doc 模式下不清）
   docPath: "",       // 兼容位：等同 docState.a
-  config: { fontSize: 15, lineHeight: 1.8, themeColor: "gold", compact: false, theme: "dark" },
+  config: { fontSize: 15, lineHeight: 1.8, themeColor: "gold", compact: false, theme: "dark", plugins: {} },
 };
 try {
   const saved = JSON.parse(localStorage.getItem(PREF_KEY) || "{}");
   Object.assign(state.config, saved);
 } catch (e) { /* 坏档按缺省 */ }
+if (!state.config.plugins || typeof state.config.plugins !== "object") state.config.plugins = {};
 function savePrefs() { try { localStorage.setItem(PREF_KEY, JSON.stringify(state.config)); } catch (e) {} }
 function applyPrefs() {
   document.body.dataset.theme = state.config.theme === "light" ? "light" : "dark";
@@ -362,14 +364,31 @@ const ICONS = {
   doc: '<svg class="ic" width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M10 3l7 7-7 7-7-7z"/><path d="M10 7.2l2.8 2.8-2.8 2.8L7.2 10z"/></svg>',
   config: '<svg class="ic" width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="10" r="3"/><circle cx="10" cy="10" r="6.5" stroke-dasharray="3.4 2.2"/></svg>',
 };
-// 图标栏 = 总览浏览形态五入口 + 文档阅读；「配置」按 v4 规格移到顶栏右上角
-const TOOLS = [
-  ["worldbook", "世界书"],
-  ["people", "人物"],
-  ["outline", "大纲"],
-  ["chronicle", "大事记"],
-  ["doc", "文档"],
+// ── 入口注册表（V4-2 插件化工具栏；id 与 dashboard.py ENTRY_REGISTRY 一一对齐）──
+// 两层配置：① 服务端默认 = D.config.entryDefaults（loadedModules 映射，dashboard.py 据此已跳过采集）；
+// ② 客户端个人开关 = localStorage（state.config.plugins，覆盖默认，只藏入口、payload 不变）。
+// 优先级：localStorage 覆盖 > 服务端默认 > 注册表 defaultOn。「配置」入口永驻不可关（永驻位 = 顶栏右上角）。
+const ENTRIES = [
+  { id: "worldbook", icon: "worldbook", title: "世界书", dataSourceKey: "worldbook", defaultOn: true },
+  { id: "people",    icon: "people",    title: "人物",   dataSourceKey: "worldbook", defaultOn: true },
+  { id: "outline",   icon: "outline",   title: "大纲",   dataSourceKey: "artifacts", defaultOn: true },
+  { id: "chronicle", icon: "chronicle", title: "大事记", dataSourceKey: "chronicle", defaultOn: true },
+  { id: "docs",      icon: "doc",       title: "文档",   dataSourceKey: "artifacts", defaultOn: true },
+  { id: "config",    icon: "config",    title: "配置",   dataSourceKey: "config",    defaultOn: true },
 ];
+const ENTRY_DEFAULTS = Array.isArray((D.config || {}).entryDefaults) ? D.config.entryDefaults : null;
+function entryDefault(id) {
+  if (id === "config") return true;
+  const e = ENTRIES.find(x => x.id === id);
+  if (!e) return false;
+  return ENTRY_DEFAULTS ? ENTRY_DEFAULTS.includes(id) : !!e.defaultOn;
+}
+function entryOn(id) {
+  if (id === "config") return true;
+  const p = state.config.plugins;
+  if (p && typeof p[id] === "boolean") return p[id];
+  return entryDefault(id);
+}
 
 // ── 详情面板（右侧滑入；弹性收起 = 收起不销毁，重开同一详情恢复滚动） ──
 const detailEl = document.getElementById("detail");
@@ -423,19 +442,31 @@ document.getElementById("dtClose").addEventListener("click", closeDetail);
   });
 })();
 
-// ── 图标栏 + 面板切换（点击开 / 再点关 / ESC 关；doc 与浏览面板两翼并行） ──
+// ── 图标栏 + 面板切换（点击开 / 再点关 / ESC 关；docs 与浏览面板两翼并行） ──
+// 渲染循环 = 注册表驱动：只画开启的入口（config 永驻位另在顶栏，不上栏）；入口关 → 图标消失、面板不可达。
 const rail = document.getElementById("rail");
-rail.innerHTML = TOOLS.map(([k, label]) =>
-  `<button class="railbtn" data-k="${k}" title="${label}">${ICONS[k]}</button>`).join("");
+function renderRail() {
+  rail.innerHTML = ENTRIES.filter(e => e.id !== "config" && entryOn(e.id)).map(e =>
+    `<button class="railbtn" data-k="${e.id}" title="${e.title}">${ICONS[e.icon]}</button>`).join("");
+}
+renderRail();
 rail.addEventListener("click", e => {
   const b = e.target.closest(".railbtn"); if (!b) return;
   show(b.dataset.k === state.activePanel ? "" : b.dataset.k);
 });
+function usableBrowsePanel() {
+  // 兜底选位：当前总览面板 → 注册表序第一个开启的浏览面板 → 无（空白）
+  const browse = ENTRIES.filter(e => e.id !== "config" && e.id !== "docs");
+  if (state.ovPanel && entryOn(state.ovPanel)) return state.ovPanel;
+  const alt = browse.find(e => entryOn(e.id));
+  return alt ? alt.id : "";
+}
 function show(k) {
+  if (k && !entryOn(k)) return;           // 入口被关 = 对应面板不可达（含经跳转链/分栏按钮的间接入口）
   stopGraph();
   state.activePanel = k;
   rail.querySelectorAll(".railbtn").forEach(b => b.classList.toggle("on", b.dataset.k === k));
-  if (k === "doc") {                       // 文档阅读区展开，总览区保留上一浏览面板
+  if (k === "docs") {                     // 文档阅读区展开，总览区保留上一浏览面板
     docsEl.style.display = "flex";
     if (!state.ovPanel && !ovEl.innerHTML) {
       ovEl.innerHTML = `<div class="wrap"><div class="empty">从左侧图标栏选择浏览面板（世界书 / 人物 / 大纲 / 大事记）。</div></div>`;
@@ -458,7 +489,7 @@ document.getElementById("tbTitle").textContent = D.title || D.project || "项目
 document.getElementById("tbPid").textContent = D.project || "";
 document.getElementById("ovTab").addEventListener("click", () => {
   document.body.classList.remove("ov-folded");
-  show(state.ovPanel || "outline");
+  show(usableBrowsePanel());
 });
 
 // ── 确认弹窗（主区零弹窗的唯一豁免：破坏性确认「恢复快照」） ──
@@ -502,7 +533,7 @@ window.addEventListener("keydown", e => {
 function foldOverview() { document.body.classList.add("ov-folded"); }
 function unfoldOverview() {
   document.body.classList.remove("ov-folded");
-  if (!state.ovPanel) show("outline");
+  if (!state.ovPanel || !entryOn(state.ovPanel)) show(usableBrowsePanel());
 }
 
 // ── 世界书面板（总览区；Pinax 范式移植：CategoryTree 左栏折叠计数 / UnifiedEntryBrowser 筛选排序视图切换 / EntryWiki 词条页＋跳转链） ──
@@ -677,7 +708,7 @@ function wbWikiHtml(i) {
     `<button class="btn" id="wbHb"${wbState.hi <= 0 ? " disabled" : ""} title="返回上一个词条">‹ 返回</button>` +
     `<button class="btn" id="wbHf"${wbState.hi >= wbState.hist.length - 1 ? " disabled" : ""} title="前进">前进 ›</button>` +
     (histPos ? `<span class="chip">${histPos}</span>` : "") +
-    (e.path ? `<button class="btn" id="wbToDoc" title="在文档分栏打开原文件">分栏打开</button>` : "") +
+    (e.path && entryOn("docs") ? `<button class="btn" id="wbToDoc" title="在文档分栏打开原文件">分栏打开</button>` : "") +
     `</div>`;
   const fields = [
     ["标题", esc(wbName(e))],
@@ -1255,11 +1286,11 @@ function mdRender(src) {
   flushAll();
   return out.join("\n");
 }
-function openDocA(p) { docState.a = p; state.docPath = p; show("doc"); }
+function openDocA(p) { docState.a = p; state.docPath = p; show("docs"); }
 function openDocB(p) {
   docState.b = p; docState.parallel = true;
   if (!docState.a) { docState.a = p; state.docPath = p; }
-  show("doc");
+  show("docs");
 }
 function paneBar(suf, rel, isA) {
   const authBtn = isA ? (fsRoot
@@ -1580,13 +1611,36 @@ function renderPrefs() {
     `<div class="prefrow"><label>字号</label><input type="range" id="pfFs" min="12" max="20" step="1" value="${c.fontSize}"><span class="v" id="pfFsV">${c.fontSize}px</span></div>` +
     `<div class="prefrow"><label>行高</label><input type="range" id="pfLh" min="1.4" max="2.2" step="0.05" value="${c.lineHeight}"><span class="v" id="pfLhV">${c.lineHeight}</span></div>` +
     `<div class="prefrow"><label>紧凑</label>` +
-    `<button class="sw${c.compact ? " on" : ""}" id="pfCompact">紧凑模式</button></div>`;
+    `<button class="sw${c.compact ? " on" : ""}" id="pfCompact">紧凑模式</button></div>` +
+    `<h3 style="margin:14px 0 6px">功能入口</h3>` +
+    `<div class="prefrow"><label>入口开关</label>` + ENTRIES.map(e => {
+      const on = entryOn(e.id), locked = e.id === "config";
+      return `<button class="sw${on ? " on" : ""}"${locked ? " disabled" : ""} data-pl="${e.id}"` +
+        ` title="${locked ? "配置入口永驻，不可关闭" : e.title + (on ? "：开（点击关闭）" : "：关（点击开启）")}">${e.title}</button>`;
+    }).join("") + `</div>` +
+    `<div class="prefrow"><label></label><button class="btn" id="pfPlReset">重置默认</button>` +
+    `<span class="muted" style="font-size:12px">开关只隐藏入口（payload 不变）；关闭后对应面板不可达；重置回默认入口集。</span></div>`;
   const scoped = sel => dwBody.querySelectorAll(sel);
   scoped("[data-th]").forEach(b => b.addEventListener("click", () => { c.theme = b.dataset.th; savePrefs(); applyPrefs(); dwGo("prefs"); }));
   scoped("[data-ac]").forEach(b => b.addEventListener("click", () => { c.themeColor = b.dataset.ac; savePrefs(); applyPrefs(); dwGo("prefs"); }));
   document.getElementById("pfFs").addEventListener("input", e => { c.fontSize = +e.target.value; document.getElementById("pfFsV").textContent = c.fontSize + "px"; savePrefs(); applyPrefs(); });
   document.getElementById("pfLh").addEventListener("input", e => { c.lineHeight = +e.target.value; document.getElementById("pfLhV").textContent = c.lineHeight; savePrefs(); applyPrefs(); });
   document.getElementById("pfCompact").addEventListener("click", () => { c.compact = !c.compact; savePrefs(); applyPrefs(); dwGo("prefs"); });
+  scoped("[data-pl]").forEach(b => b.addEventListener("click", () => {
+    const id = b.dataset.pl;
+    if (id === "config") return;                       // 永驻入口不可关（disabled 双保险）
+    c.plugins[id] = !entryOn(id);
+    savePrefs(); renderRail();
+    if (state.activePanel && !entryOn(state.activePanel)) show("");   // 当前面板的入口被关 → 退回空白
+    dwGo("prefs");
+  }));
+  const plReset = document.getElementById("pfPlReset");
+  if (plReset) plReset.addEventListener("click", () => {
+    c.plugins = {};                                    // 清个人覆盖 → 回默认（服务端默认 > 注册表 defaultOn）
+    savePrefs(); renderRail();
+    if (state.activePanel && !entryOn(state.activePanel)) show("");
+    dwGo("prefs");
+  });
 }
 applyPrefs();
 </script>
