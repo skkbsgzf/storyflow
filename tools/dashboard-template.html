@@ -189,6 +189,16 @@
   .tlev.drift .tm { color:var(--red); }
   .tlev .dr { color:var(--red); font-family:var(--mono); font-size:11px; margin-left:8px; }
   .tlev:focus-visible { outline:2px solid var(--accent); outline-offset:-2px; border-radius:4px; background:var(--panel); }
+  /* 执行流水（journal 台账，kitapp TimelinePage 范式：左侧竖线 + 分类色圆点 + 事件粗体 + 详情） */
+  .jwrap { position:relative; padding-left:18px; max-width:980px; }
+  .jwrap::before { content:""; position:absolute; left:5px; top:4px; bottom:4px; width:2px; background:var(--border); }
+  .jrow { position:relative; padding:0 0 14px 14px; }
+  .jdot { position:absolute; left:-18px; top:4px; width:10px; height:10px; border-radius:999px;
+          background:#8a8375; border:2px solid var(--bg); box-shadow:0 0 0 1px var(--border); }
+  .jrow .tm { font-family:var(--mono); font-size:11px; color:var(--dim); margin-right:8px; }
+  .jrow b { font-size:12px; }
+  .jrow .n_id { font-size:11px; color:var(--dim); font-family:var(--mono); margin-left:8px; }
+  .jdetail { font-size:12.5px; line-height:1.6; margin-top:2px; overflow-wrap:anywhere; }
   /* 大事记左栏（Pinax CanvasTimeline 范式：轨道筛选轴 + 时间块导航） */
   .chrhd { font-family:var(--mono); font-size:11px; color:var(--dim); margin:10px 0 4px; padding-top:8px; border-top:1px solid var(--border); }
   .chrhd:first-child { margin-top:0; padding-top:0; border-top:0; }
@@ -1103,14 +1113,45 @@ function renderOutline() {
 // ── 大事记面板（总览区；Pinax CanvasTimeline 范式对标：卡片键盘可达 + 头部状态 chip + 空态引导；
 //    轨道筛选轴对齐 V4-3a；时间块（band）折叠导航；矛盾红标「只看矛盾」切换。写动词（拖拽重排/移除/清空/导演导出）刻意不移植，只读纪律） ──
 const CHRV_KEY = "dashv4.chrView";
-const chrState = { lane: "", drift: false, collapsed: new Set() };
+// 视图（V4-3b 补正）：大事记缺省 = journal 执行流水（kitapp TimelinePage 范式），「故事编年」为切换层
+const chrState = { view: "flow", filter: "", lane: "", drift: false, collapsed: new Set() };
 try {
   const v0 = JSON.parse(localStorage.getItem(CHRV_KEY) || "{}");
+  if (v0.view === "flow" || v0.view === "story") chrState.view = v0.view;
+  if (typeof v0.filter === "string") chrState.filter = v0.filter;
   if (typeof v0.lane === "string" && (v0.lane === "" || CH.lanes.some(l => l.name === v0.lane))) chrState.lane = v0.lane;
   chrState.drift = !!v0.drift;
 } catch (e) { /* 坏档按缺省 */ }
 function saveChrView() {
-  try { localStorage.setItem(CHRV_KEY, JSON.stringify({ lane: chrState.lane, drift: chrState.drift })); } catch (e) {}
+  try { localStorage.setItem(CHRV_KEY, JSON.stringify({ view: chrState.view, filter: chrState.filter,
+    lane: chrState.lane, drift: chrState.drift })); } catch (e) {}
+}
+// ── 执行流水（journal 台账直读：FS API 页内读 journal.jsonl，不进 payload；kitapp TimelinePage 范式移植） ──
+const KIND_COLORS = { "run-start": "#5f9c7a", "run-end": "#b3564d", "batch-start": "#5b7fa6", "batch-end": "#5b7fa6",
+  "node-start": "#c96f4a", "node-complete": "#5f9c7a", "node-error": "#b3564d",
+  "verdict": "#8a6fb0", "gate-pending": "#b09a5f", "note": "#8a8375" };
+const JR = { rows: [], total: 0, scanned: false, loading: false, note: "" };
+const JR_TAKE = 200;
+async function jrLoad() {
+  JR.scanned = true; JR.rows = []; JR.total = 0; JR.note = "";
+  if (!fsRoot) { JR.note = "auth"; return; }
+  try {
+    const f = await fsRead("journal.jsonl");
+    const all = []; let bad = 0;
+    for (const ln of (await f.text()).split("\n")) {
+      if (!ln.trim()) continue;
+      try { all.push(JSON.parse(ln)); } catch (e) { bad++; }
+    }
+    JR.total = all.length; JR.rows = all.slice(-JR_TAKE);
+    if (bad) JR.note = "journal.jsonl 有 " + bad + " 条坏行跳过";
+  } catch (e) { JR.note = "nofile"; }
+}
+async function jrEnsure() {
+  if (JR.loading) return;
+  JR.loading = true;
+  await jrLoad();
+  JR.loading = false;
+  renderFlowRows();
 }
 const chrById = new Map(); CH.events.forEach(e => { if (e.id && !chrById.has(e.id)) chrById.set(e.id, e); });
 const chrBandById = {}; CH.bands.forEach(b => { if (b.id) chrBandById[b.id] = b; });
@@ -1148,17 +1189,74 @@ function chrBandList() {
 }
 const chrBandName = id => { const b = chrBandById[id]; return b ? (b.name || id) : ("段 " + (id || "—")); };
 function renderChronicle() {
-  const chipbar = `<div class="bar"><span class="chip">事件 ${CH.events.length}</span>` +
-    `<span class="chip">轨道 ${CH.lanes.length}</span>` +
-    `<span class="chip${chrDriftN ? " warn" : ""}">矛盾 ${chrDriftN}</span></div>`;
-  if (!CH.events.length) {
-    ovEl.innerHTML = `<div class="wrap">${chipbar}<div class="empty">大事记为空——真相源：世界书/时间线.md 或 世界书/编年/大事记.md，写条目后重跑 python tools/chronicle.py 再出板。</div></div>`;
+  // 工具栏：执行流水（journal 台账，缺省视图）⇄ 故事编年（chronicle 多轨）切换
+  const bar = `<div class="bar">` +
+    `<button class="btn${chrState.view === "flow" ? " on" : ""}" id="chrVFlow">执行流水</button>` +
+    `<button class="btn${chrState.view === "story" ? " on" : ""}" id="chrVStory">故事编年</button>`;
+  if (chrState.view === "flow") {
+    ovEl.innerHTML = `<div class="wrap">${bar}` +
+      `<span class="chip" id="jrCount">台账 …</span>` +
+      `<input id="chrFlt" placeholder="过滤：事件 / detail / 节点" value="${esc(chrState.filter)}"` +
+      ` style="flex:1;min-width:0;padding:6px 10px;border:1px solid var(--border);border-radius:var(--r-m);background:var(--panel);color:var(--ink);font-size:12px">` +
+      `<button class="btn" id="chrJrReload">刷新</button>` +
+      (fsRoot ? "" : `<button class="btn" id="chrJrAuth">授权项目目录</button>`) +
+      `</div><div class="wrap" id="chrFlow" style="padding-top:6px"><div class="empty">读取台账…</div></div></div>`;
+    renderFlowRows();
+    jrEnsure().then(() => {
+      const cnt = document.getElementById("jrCount");
+      if (cnt) cnt.textContent = JR.note === "nofile" ? "台账 0 条" : "台账 " + JR.total + " 条";
+      renderFlowRows();
+    });
+    const flt = document.getElementById("chrFlt");
+    if (flt) flt.addEventListener("input", () => { chrState.filter = flt.value; saveChrView(); renderFlowRows(); });
+    const rf = document.getElementById("chrJrReload");
+    if (rf) rf.addEventListener("click", () => { JR.scanned = false; jrEnsure().then(renderFlowRows); });
+    const au = document.getElementById("chrJrAuth");
+    if (au) au.addEventListener("click", () => fsPick(() => { JR.scanned = false; renderChronicle(); }));
     return;
   }
-  ovEl.innerHTML = `<div class="wrap">${chipbar}<div class="wb3">` +
+  // 故事编年（chronicle 多轨：轨道筛选 + 时间块导航 + 5W1H + 矛盾红标）
+  const chipbar = `<span class="chip">事件 ${CH.events.length}</span>` +
+    `<span class="chip">轨道 ${CH.lanes.length}</span>` +
+    `<span class="chip${chrDriftN ? " warn" : ""}">矛盾 ${chrDriftN}</span>`;
+  if (!CH.events.length) {
+    ovEl.innerHTML = `<div class="wrap">${bar}${chipbar}<div class="empty">故事编年为空——真相源：世界书/时间线.md 或 世界书/编年/大事记.md，写条目后重跑 python tools/chronicle.py 再出板。</div></div>`;
+    return;
+  }
+  ovEl.innerHTML = `<div class="wrap">${bar}${chipbar}<div class="wb3">` +
     `<div class="wbtree" id="chrSide"></div><div class="wbmain" id="chrMain"></div></div></div>`;
   renderChrSidebar();
   renderChrMain();
+}
+function renderFlowRows() {
+  const main = document.getElementById("chrFlow");
+  if (!main) return;
+  if (!fsRoot) {
+    main.innerHTML = `<div class="empty">执行流水在项目根 journal.jsonl——<button class="btn" id="jrAuth2">授权项目目录</button>后页内直读。</div>`;
+    const b = document.getElementById("jrAuth2");
+    if (b) b.addEventListener("click", () => fsPick(() => { JR.scanned = false; jrEnsure().then(renderFlowRows); }));
+    return;
+  }
+  if (!JR.scanned) { main.innerHTML = `<div class="empty">读取台账…</div>`; return; }
+  if (JR.total === 0) {
+    main.innerHTML = `<div class="empty">该项目还没有台账——journal 由 flow_run（生产线开跑）产生，跑一次生产线这里就会出现流水。</div>`;
+    return;
+  }
+  const q = chrState.filter.trim().toLowerCase();
+  const visible = JR.rows.filter(r => !q ||
+    [r.event, r.detail, r.nodeId, r.actor].some(x => String(x || "").toLowerCase().includes(q)));
+  const rows = visible.map(e0 => {
+    const color = KIND_COLORS[e0.event] || "#8a8375";
+    return `<div class="jrow"><span class="jdot" style="background:${color}"></span>` +
+      `<span class="tm">${esc(String(e0.ts || "").replace("T", " ").slice(0, 19))}</span>` +
+      `<b style="color:${color}">${esc(e0.event || "")}</b>` +
+      (e0.nodeId ? `<span class="n_id">${esc(e0.nodeId)}</span>` : "") +
+      (e0.actor ? `<span class="n_id">${esc(e0.actor)}</span>` : "") +
+      (e0.detail ? `<div class="jdetail">${esc(String(e0.detail)).slice(0, 200)}</div>` : "") +
+      `</div>`;
+  }).join("");
+  main.innerHTML = `<div class="jwrap">${rows}</div>` +
+    (visible.length === 0 ? `<div class="empty">（过滤后无条目）</div>` : "");
 }
 function chrSidebarHtml() {
   const lanes = [`<div class="tnode${chrState.lane === "" ? " on" : ""}" data-lane="">` +
