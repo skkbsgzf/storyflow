@@ -280,6 +280,13 @@
   .diffbox .add { color:var(--green); } .diffbox .del { color:var(--red); } .diffbox .hud { color:var(--accent); }
   .diffbox .ctx { color:var(--dim); }
   .note { font-family:var(--mono); font-size:11px; color:var(--dim); line-height:1.8; margin:8px 0; }
+  /* ── 编辑器（V4-4 编辑回归：textarea 全屏替换渲染区，等宽字体） ── */
+  .edbar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
+  .edta { display:block; width:100%; height:calc(100vh - 300px); min-height:260px;
+          background:var(--panel2); color:var(--ink); border:1px solid var(--border);
+          border-radius:6px; padding:10px 12px; font:12.5px/1.7 var(--mono);
+          resize:none; outline:none; tab-size:2; }
+  .edta:focus { border-color:var(--accent); }
   @media (max-width:640px) { #ov { padding:10px 10px 32px; } .pgrid { grid-template-columns:1fr 1fr; }
     .wb3 { flex-direction:column; } .wbtree { flex:none; align-self:stretch; }
     #doccols { flex-direction:column; } #docGutter { flex:0 0 6px; cursor:row-resize; } }
@@ -321,7 +328,10 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt
 const WB = { entries: (D.worldbook || {}).entries || [], relations: (D.worldbook || {}).relations || [] };
 const CH = { events: (D.chronicle || {}).events || [], lanes: (D.chronicle || {}).lanes || [], bands: (D.chronicle || {}).bands || [] };
 const ARTS = D.artifacts || [];
-const CFG = { models: (D.config || {}).models || [], logs: (D.config || {}).logs || [], snapshots: (D.config || {}).snapshots || [] };
+const CFG = { models: (D.config || {}).models || [], logs: (D.config || {}).logs || [],
+              snapshots: (D.config || {}).snapshots || [],
+              // V4-4 本地历史统计视图（只读：{file,versions,lastTs}；patch 正文永不入 payload）
+              localHistory: Array.isArray((D.config || {}).localHistory) ? D.config.localHistory : [] };
 const PALETTE = ["#e8b33d","#6ea8fe","#5f9c7a","#d98a83","#8a6fb0","#c9a227","#4fb3c9","#b0765a",
                  "#7f9e4a","#c97ba3","#88b0d8","#a3907c","#6fc0a8","#d089c0","#9aa7e0","#c0b28a"];
 
@@ -333,13 +343,17 @@ const state = {
   activePanel: "",   // "" = 空白
   ovPanel: "",       // 总览区当前承载的浏览面板（doc 模式下不清）
   docPath: "",       // 兼容位：等同 docState.a
-  config: { fontSize: 15, lineHeight: 1.8, themeColor: "gold", compact: false, theme: "dark", plugins: {} },
+  config: { fontSize: 15, lineHeight: 1.8, themeColor: "gold", compact: false, theme: "dark", plugins: {},
+            // V4-4 偏好：本地历史开关（默认开）+ 定期保存字数间隔 intervalWords（200–2000，默认 500）
+            localHistory: true, histInterval: 500 },
 };
 try {
   const saved = JSON.parse(localStorage.getItem(PREF_KEY) || "{}");
   Object.assign(state.config, saved);
 } catch (e) { /* 坏档按缺省 */ }
 if (!state.config.plugins || typeof state.config.plugins !== "object") state.config.plugins = {};
+if (typeof state.config.localHistory !== "boolean") state.config.localHistory = true;
+state.config.histInterval = Math.min(2000, Math.max(200, Math.round(+state.config.histInterval || 500)));
 function savePrefs() { try { localStorage.setItem(PREF_KEY, JSON.stringify(state.config)); } catch (e) {} }
 function applyPrefs() {
   document.body.dataset.theme = state.config.theme === "light" ? "light" : "dark";
@@ -368,12 +382,14 @@ const ICONS = {
 // 两层配置：① 服务端默认 = D.config.entryDefaults（loadedModules 映射，dashboard.py 据此已跳过采集）；
 // ② 客户端个人开关 = localStorage（state.config.plugins，覆盖默认，只藏入口、payload 不变）。
 // 优先级：localStorage 覆盖 > 服务端默认 > 注册表 defaultOn。「配置」入口永驻不可关（永驻位 = 顶栏右上角）。
+// V4-4 编辑按钮不占注册表位（与 py 表 id 严格一一对齐）：出现与否 = docs 入口开 × 本地历史/写权限，见文档面板。
 const ENTRIES = [
   { id: "worldbook", icon: "worldbook", title: "世界书", dataSourceKey: "worldbook", defaultOn: true },
   { id: "people",    icon: "people",    title: "人物",   dataSourceKey: "worldbook", defaultOn: true },
   { id: "outline",   icon: "outline",   title: "大纲",   dataSourceKey: "artifacts", defaultOn: true },
   { id: "chronicle", icon: "chronicle", title: "大事记", dataSourceKey: "chronicle", defaultOn: true },
   { id: "docs",      icon: "doc",       title: "文档",   dataSourceKey: "artifacts", defaultOn: true },
+  { id: "edit",      icon: "doc",       title: "编辑",   dataSourceKey: "artifacts", defaultOn: true, hostOnly: true },
   { id: "config",    icon: "config",    title: "配置",   dataSourceKey: "config",    defaultOn: true },
 ];
 const ENTRY_DEFAULTS = Array.isArray((D.config || {}).entryDefaults) ? D.config.entryDefaults : null;
@@ -515,7 +531,7 @@ function copyText(t, btn, done) {
   }
 }
 
-// ── ESC 逐层退：确认弹窗 → 抽屉二层→一层→关 → 详情面板 → 面板 ──
+// ── ESC 逐层退：确认弹窗 → 抽屉二层→一层→关 → 详情面板 → 编辑器（V4-4，脏时先问） → 面板 ──
 window.addEventListener("keydown", e => {
   if (e.key !== "Escape") return;
   if (modal.classList.contains("open")) { closeConfirm(); return; }
@@ -526,6 +542,8 @@ window.addEventListener("keydown", e => {
     return;
   }
   if (dt.open) { closeDetail(); return; }
+  const esuf = editingSuf();
+  if (esuf) { requestCancelEditor(esuf); return; }
   if (state.activePanel) show("");
 });
 
@@ -781,7 +799,7 @@ function wbLoadBody(i) {
   if (!box) return;
   if (!e.path) { box.innerHTML = `<div class="empty">词条无源文件路径</div>`; return; }
   if (!fsRoot) {
-    box.innerHTML = `<div class="empty">正文不内嵌于看板数据（出板规格）——授权项目目录（只读）后页内直读。<br><br>` +
+    box.innerHTML = `<div class="empty">正文不内嵌于看板数据（出板规格）——授权项目目录（读写）后页内直读；编辑与本地历史在「文档」面板。<br><br>` +
       `<button class="btn" id="wbAuth">授权项目目录</button></div>`;
     const a = document.getElementById("wbAuth");
     if (a) a.addEventListener("click", () => fsPick(() => wbLoadBody(wbState.sel >= 0 ? wbState.sel : i)));
@@ -1234,7 +1252,7 @@ function eventDetail(e) {
     `<div class="w5">${rows.map(([k, v]) => `<div class="k5">${k}</div><div class="v5">${v}</div>`).join("")}</div>`);
 }
 
-// ── 文档阅读区（只读；.md 渲染 / .html iframe / .txt 纯文本 / .json 无预览；1+1 并行分栏） ──
+// ── 文档阅读区（1+1 并行分栏；V4-4 编辑回归：授权 = 读写模式，在线场景（无 FS API）编辑按钮降级隐藏） ──
 let fsRoot = null;
 const docState = { a: "", b: "", parallel: false };
 let splitRatio = 0.5;
@@ -1242,15 +1260,25 @@ try { const r0 = +localStorage.getItem(SPLIT_KEY); if (r0 > 0.1 && r0 < 0.9) spl
 async function fsPick(cb) {
   if (!window.showDirectoryPicker) { alert("本浏览器无文件系统访问能力，文档阅读不可用"); return; }
   try {
-    fsRoot = await window.showDirectoryPicker({ mode: "read" });
+    // V4-4：授权即申请读写（编辑落盘走 FS API 直写项目目录，不经服务器）；老浏览器不认 mode 参数则退回默认
+    try { fsRoot = await window.showDirectoryPicker({ mode: "readwrite" }); }
+    catch (e) { fsRoot = await window.showDirectoryPicker(); }
   } catch (e) { return; }
   if (cb) { cb(); return; }
   renderDoc();
 }
+// 写权限探测/申请（编辑与历史恢复的前置闸）；queryPermission 旧拼法 getPermission 兜底
+async function ensureRW() {
+  if (!fsRoot) return false;
+  const want = { mode: "readwrite" };
+  try {
+    let p = fsRoot.queryPermission ? await fsRoot.queryPermission(want) : await fsRoot.getPermission(want);
+    if (p !== "granted" && fsRoot.requestPermission) p = await fsRoot.requestPermission(want);
+    return p === "granted";
+  } catch (e) { return false; }
+}
 async function fsRead(rel) {
-  const parts = String(rel).split("/").filter(Boolean);
-  if (!parts.length || parts.some(p => p === ".." || p.includes("\\") || p.includes(":")))
-    throw new Error("路径含越界段，拒绝读取");
+  const parts = fsParts(rel, "读取");
   let dir = fsRoot;
   for (const p of parts.slice(0, -1)) dir = await dir.getDirectoryHandle(p, { create: false });
   return (await dir.getFileHandle(parts[parts.length - 1], { create: false })).getFile();
@@ -1286,11 +1314,17 @@ function mdRender(src) {
   flushAll();
   return out.join("\n");
 }
-function openDocA(p) { docState.a = p; state.docPath = p; show("docs"); }
+function openDocA(p) {
+  if (editState.rel === p && editState.suf === "A") { show("docs"); return; }   // 正在编辑这篇：回到编辑器，不销毁
+  guardEditorChange("切换文档", () => { docState.a = p; state.docPath = p; show("docs"); });
+}
 function openDocB(p) {
-  docState.b = p; docState.parallel = true;
-  if (!docState.a) { docState.a = p; state.docPath = p; }
-  show("docs");
+  if (editState.rel === p && editState.suf === "B") { docState.parallel = true; show("docs"); return; }
+  guardEditorChange("切换文档", () => {
+    docState.b = p; docState.parallel = true;
+    if (!docState.a) { docState.a = p; state.docPath = p; }
+    show("docs");
+  });
 }
 function paneBar(suf, rel, isA) {
   const authBtn = isA ? (fsRoot
@@ -1303,8 +1337,10 @@ function paneBar(suf, rel, isA) {
     : `<button class="btn" id="docCloseB" title="关闭右侧分栏">✕ 关闭</button>`;
   const t = rel ? fileType(rel) : null;
   const typeChip = t ? `<span class="chip">${{ md: "Markdown", txt: "纯文本", html: "HTML", json: "JSON", binary: "二进制" }[t]}</span>` : "";
+  const editChip = t === "md" || t === "txt"
+    ? `<button class="btn" id="docEdit${suf}" style="display:none" title="编辑此文件（写回原文件，自动记本地历史；Ctrl+S 保存）">编辑</button>` : "";
   return `<div class="docbar">${authBtn}${foldBtn}${splitBtn}` +
-    `<span class="path">${esc(rel || "未打开文档")}</span>${typeChip}<span id="docStat${suf}"></span></div>` +
+    `<span class="path">${esc(rel || "未打开文档")}</span>${typeChip}${editChip}<span id="docStat${suf}"></span></div>` +
     `<div class="dpbody" id="docBody${suf}"><div class="empty">读取中…</div></div>`;
 }
 function renderDoc() {
@@ -1317,18 +1353,22 @@ function renderDoc() {
   const auth = document.getElementById("docAuth"); if (auth) auth.addEventListener("click", () => fsPick());
   const fold = document.getElementById("docFold"); if (fold) fold.addEventListener("click", foldOverview);
   const sp = document.getElementById("docSplit");
-  if (sp) sp.addEventListener("click", () => {
+  if (sp) sp.addEventListener("click", () => guardEditorChange("切换分栏", () => {
     if (docState.parallel) { docState.parallel = false; docState.b = ""; }
     else { docState.b = docState.a; docState.parallel = true; }
     renderDoc();
-  });
+  }));
   const cb = document.getElementById("docCloseB");
-  if (cb) cb.addEventListener("click", () => { docState.parallel = false; docState.b = ""; renderDoc(); });
+  if (cb) cb.addEventListener("click", () => guardEditorChange("关闭分栏", () => { docState.parallel = false; docState.b = ""; renderDoc(); }));
+  ["A", "B"].forEach(suf => {
+    const eb = document.getElementById("docEdit" + suf);
+    if (eb) eb.addEventListener("click", () => clickEditBtn(suf));
+  });
   wireGutter();
   if (!docState.a) {
     setDocBody("A", `<div class="empty">从「大纲」点文件（分栏按钮 = 右侧并排打开），或直接打开项目文件。</div>`);
   } else if (!fsRoot) {
-    setDocBody("A", `<div class="empty">先授权项目目录（只读），再读这篇文档。</div>`);
+    setDocBody("A", `<div class="empty">先授权项目目录（读写），再读这篇文档。</div>`);
   } else {
     loadPane("A", docState.a);
   }
@@ -1389,6 +1429,14 @@ async function loadPane(suf, rel) {
     if (body) body.appendChild(fr);
     return;
   }
+  if (t === "md" || t === "txt") {
+    paneSnap[suf] = { rel, text0: text };
+    if (editState.rel && editState.suf === suf && editState.rel === rel) {
+      startEditor(suf, rel, editState.buf, { keepFocus: true });  // 重渲染后编辑器原位恢复（草稿不丢）
+      return;
+    }
+    showEditBtn(suf, rel, file.size, true);
+  }
   if (t === "txt") {
     setDocBody(suf, `<article class="doc plain">${esc(text)}</article>`);
     return;
@@ -1396,12 +1444,686 @@ async function loadPane(suf, rel) {
   setDocBody(suf, `<article class="doc">${mdRender(text)}</article>`);
 }
 
+// ══════════════════ LocalHistory 本地编辑历史（看板 v4 工单 V4-4；VSCode 式，全前端，不经服务器） ══════════════════
+// 存储布局：<项目根>/.history/<编码文件名>/<ISO时间戳>.patch ＋ 同目录 manifest.json（{"file":原路径,
+//   "entries":[{"ts","words","patch","full","nl"}]}，patch=相对上一版的 unified diff；首版 full:true 存全文；
+//   每次写 patch 后整档重写 manifest——FS API 无 rename 原子换，接受小概率半写，读取时坏条目跳过、坏档显式记账）。
+// 目录名编码规则：相对路径中每个 `\ / : * ? " < > | .` 与空白字符 → "_"（反向解码不需要：manifest.file 存原路径）。
+// 补丁文件名 = ISO 时间戳的 ":"→"-"（Windows 文件名禁冒号），同毫秒冲突自动顺延 1ms。
+// 字数口径：非空白字符数（编辑器统计与「定期保存间隔 intervalWords」同口径）。
+// 触发：①保存必记；②编辑中每新增 intervalWords 字自动记一次「定期保存」（只落 .history，不写目标文件——草稿保护）。
+// diff 算法：行级——掐公共前缀/后缀 + 中段替换（LCS 收窄中段，超大退整块替换），unified diff 格式，确定性输出。
+//<<<LH_CORE_BEGIN——本区无 DOM/全局依赖（文件系统仅经句柄结构访问，假句柄可测）；node 端按标记整段抽出跑自检
+function fsParts(rel, op) {
+  const parts = String(rel ?? "").split("/").filter(Boolean);
+  if (!parts.length || parts.some(p => p === ".." || p.includes("\\") || p.includes(":")))
+    throw new Error("路径含越界段，拒绝" + op);
+  return parts;
+}
+// ── 行级 diff（复用 v2 看板同源实现：掐公共头尾 + LCS，中段过大退整块替换） ──
+function splitLines(t) {
+  const s = String(t ?? "");
+  if (!s.length) return { lines: [], nl: false };
+  if (s.endsWith("\n")) return { lines: s.slice(0, -1).split("\n"), nl: true };
+  return { lines: s.split("\n"), nl: false };
+}
+function lineDiff(a, b) {
+  const sa = splitLines(a), sb = splitLines(b);
+  const A = sa.lines, B = sb.lines, aNL = sa.nl, bNL = sb.nl;
+  let s = 0;
+  while (s < A.length && s < B.length && A[s] === B[s]) s++;
+  let ea = A.length, eb = B.length;
+  while (ea > s && eb > s && A[ea - 1] === B[eb - 1]) { ea--; eb--; }
+  const midA = A.slice(s, ea), midB = B.slice(s, eb), hunks = [];
+  if (midA.length * midB.length > 4000000) { hunks.push({ a1: s, a2: ea, b1: s, b2: eb }); return { A, B, aNL, bNL, hunks }; }
+  const n = midA.length, m = midB.length, W = m + 1;
+  const dp = new Uint32Array((n + 1) * W);
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
+    dp[i * W + j] = midA[i] === midB[j] ? dp[(i + 1) * W + j + 1] + 1 : Math.max(dp[(i + 1) * W + j], dp[i * W + j + 1]);
+  let i = 0, j = 0, cur = null;
+  const flush = () => { if (cur) { hunks.push(cur); cur = null; } };
+  while (i < n && j < m) {
+    if (midA[i] === midB[j]) { flush(); i++; j++; }
+    else if (dp[(i + 1) * W + j] >= dp[i * W + j + 1]) { cur = cur || { a1: s + i, a2: s + i, b1: s + j, b2: s + j }; cur.a2 = ++i + s; }
+    else { cur = cur || { a1: s + i, a2: s + i, b1: s + j, b2: s + j }; cur.b2 = ++j + s; }
+  }
+  if (i < n || j < m) { cur = cur || { a1: s + i, a2: s + i, b1: s + j, b2: s + j }; cur.a2 = s + n; cur.b2 = s + m; }
+  flush();
+  return { A, B, aNL, bNL, hunks };
+}
+function diffScript(d) {
+  const s = [];
+  let ai = 0, bi = 0;
+  for (const h of d.hunks) {
+    while (ai < h.a1) { s.push({ t: "ctx", a: ai, b: bi }); ai++; bi++; }
+    for (let i = h.a1; i < h.a2; i++) s.push({ t: "del", a: i, b: bi });
+    ai = h.a2;
+    for (let i = h.b1; i < h.b2; i++) s.push({ t: "ins", a: ai, b: i });
+    bi = h.b2;
+  }
+  while (ai < d.A.length) { s.push({ t: "ctx", a: ai, b: bi }); ai++; bi++; }
+  return s;
+}
+function unifiedDiff(rel, d) {
+  const s = diffScript(d), C = 3, out = ["--- a/" + rel, "+++ b/" + rel];
+  const keep = new Array(s.length).fill(false);
+  s.forEach((e, i) => {
+    if (e.t === "ctx") return;
+    for (let k = Math.max(0, i - C); k <= Math.min(s.length - 1, i + C); k++) keep[k] = true;
+  });
+  let i = 0;
+  while (i < s.length) {
+    if (!keep[i]) { i++; continue; }
+    let j = i; while (j < s.length && keep[j]) j++;
+    const lines = [];
+    let aN = 0, bN = 0;
+    const noNL = (t, idx) => (t === "ins" ? !d.bNL && idx === d.B.length - 1 : !d.aNL && idx === d.A.length - 1);
+    for (let k = i; k < j; k++) {
+      const e = s[k];
+      if (e.t === "ctx") { lines.push(" " + d.A[e.a]); aN++; bN++; if (noNL("ctx", e.a) && !d.bNL) lines.push("\\ No newline at end of file"); }
+      else if (e.t === "del") { lines.push("-" + d.A[e.a]); aN++; if (noNL("del", e.a)) lines.push("\\ No newline at end of file"); }
+      else { lines.push("+" + d.B[e.b]); bN++; if (noNL("ins", e.b)) lines.push("\\ No newline at end of file"); }
+    }
+    const a1 = aN === 0 ? s[i].a : s[i].a + 1, b1 = bN === 0 ? s[i].b : s[i].b + 1;
+    out.push("@@ -" + a1 + "," + aN + " +" + b1 + "," + bN + " @@");
+    for (const l of lines) out.push(l);
+    i = j;
+  }
+  return out.join("\n");
+}
+// ── diff 生成 / 应用 / 链重放 ──
+function lhMakePatch(rel, oldT, newT) { return unifiedDiff(String(rel || "x"), lineDiff(oldT, newT)); }
+function lhCountWords(s) { const m = String(s ?? "").match(/\S/g); return m ? m.length : 0; }
+function lhEndNL(t) { return String(t ?? "").endsWith("\n"); }
+function lhEncodePath(rel) {
+  return String(rel ?? "").replace(/[\\/:*?"<>|.]/g, "_").replace(/\s+/g, "_");
+}
+function lhSanitize(obj) {
+  const file = obj && typeof obj.file === "string" ? obj.file : "";
+  const raw = obj && Array.isArray(obj.entries) ? obj.entries : [];
+  const entries = [];
+  for (const e of raw) {   // 坏条目跳过不崩页（manifest 半写 / 手改容错）；ts+patch 是重放链命脉
+    if (e && typeof e === "object" && typeof e.ts === "string" && typeof e.patch === "string")
+      entries.push({ ts: e.ts, words: Number.isFinite(+e.words) ? Math.round(+e.words) : 0,
+                     patch: e.patch, full: !!e.full, nl: e.nl !== false });
+  }
+  return { file, entries };
+}
+// 正向重放到 entries[upTo]：从最近一个 full 锚版起，逐 patch 应用（补丁均相对上一版）
+function lhReplayTo(entries, upTo) {
+  if (!entries.length) return { err: "无版本记录" };
+  if (upTo < 0 || upTo >= entries.length) return { err: "版本序号越界" };
+  let k = -1;
+  for (let j = upTo; j >= 0; j--) if (entries[j].full) { k = j; break; }
+  if (k < 0) return { err: "缺 full 首版（manifest 半写或损坏），无法重建该版" };
+  let text = entries[k].patch;
+  for (let i = k + 1; i <= upTo; i++) {
+    if (entries[i].full) { text = entries[i].patch; continue; }
+    try { text = lhApplyPatch(text, entries[i].patch, entries[i].nl !== false); }
+    catch (e) { return { err: "重放到第 " + (i + 1) + " 版失败：" + (e && e.message || e) }; }
+  }
+  return { text };
+}
+// unified diff 正向应用（与上面生成器严格配对；尾换行语义由 nlNew 显式给定——manifest 每版存 nl，
+// 不靠 "\ No newline" 标记反推）。越界即抛——坏 patch 不静默产出错文。
+function lhApplyPatch(oldText, patch, nlNew) {
+  const A = splitLines(String(oldText ?? "")).lines;
+  const pl = String(patch ?? "").split("\n");
+  const out = [];
+  let ai = 0, i = 0;
+  while (i < pl.length && !pl[i].startsWith("@@")) i++;   // 跳过 --- / +++ 文件头
+  while (i < pl.length) {
+    const hm = pl[i].match(/^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/);
+    if (!hm) { i++; continue; }                            // 段间杂行跳过
+    i++;
+    const aCount = hm[2] === undefined ? 1 : +hm[2];
+    const start0 = aCount === 0 ? +hm[1] : +hm[1] - 1;     // 本生成器约定：纯增块的 -a 为 0 基插入点
+    while (ai < start0) { if (ai >= A.length) throw new Error("patch 越界：上下文行数不足"); out.push(A[ai]); ai++; }
+    while (i < pl.length) {
+      const l = pl[i];
+      if (l.startsWith("@@")) break;
+      if (l.startsWith("\\")) { i++; continue; }            // "\ No newline…"（nl 以 manifest 字段为准）
+      const t = l[0];
+      if (l === "") { i++; continue; }                      // 拆行尾产生的空行（空上下文行实为 " "）
+      if (t === " ") { if (ai >= A.length) throw new Error("patch 越界"); out.push(l.slice(1)); ai++; i++; }
+      else if (t === "-") { if (ai >= A.length) throw new Error("patch 越界"); ai++; i++; }
+      else if (t === "+") { out.push(l.slice(1)); i++; }
+      else break;                                            // 非体行 → 本块结束
+    }
+  }
+  while (ai < A.length) { out.push(A[ai]); ai++; }
+  return out.length ? out.join("\n") + (nlNew ? "\n" : "") : "";
+}
+function lhNowTs(entries) {
+  const taken = new Set((entries || []).map(e => e && e.ts));
+  let t = Date.now(), iso = new Date(t).toISOString();
+  while (taken.has(iso)) { t += 1; iso = new Date(t).toISOString(); }
+  return iso;
+}
+// ── .history 读写（只经目录句柄结构，假句柄可测） ──
+async function lhReadText(root, rel) {
+  const parts = fsParts(rel, "读取");
+  let dir = root;
+  for (const p of parts.slice(0, -1)) dir = await dir.getDirectoryHandle(p, { create: false });
+  const fh = await dir.getFileHandle(parts[parts.length - 1], { create: false });
+  return (await (await fh.getFile()).text()).replace(/^\uFEFF/, "");
+}
+async function lhWrite(root, rel, text) {
+  const parts = fsParts(rel, "写入");
+  let dir = root;
+  for (const p of parts.slice(0, -1)) dir = await dir.getDirectoryHandle(p, { create: false });
+  const fh = await dir.getFileHandle(parts[parts.length - 1], { create: false });   // 只写已存在的目标文件
+  const w = await fh.createWritable();
+  await w.write(text);
+  if (w.close) await w.close();
+}
+async function lhDir(root, rel, create) {
+  let dir = root;
+  for (const p of [".history", lhEncodePath(rel)]) dir = await dir.getDirectoryHandle(p, { create: !!create });
+  return dir;
+}
+async function lhManifest(dir) {
+  try {
+    const fh = await dir.getFileHandle("manifest.json", { create: false });
+    return lhSanitize(JSON.parse((await (await fh.getFile()).text()).replace(/^\uFEFF/, "")));
+  } catch (e) { return null; }   // 半写/缺失 → null，由调用方显式记账
+}
+async function lhPutManifest(dir, man) {
+  const fh = await dir.getFileHandle("manifest.json", { create: true });
+  const w = await fh.createWritable();
+  await w.write(JSON.stringify({ file: man.file, entries: man.entries }, null, 1));
+  if (w.close) await w.close();
+}
+async function lhPutPatch(dir, entry) {
+  const fh = await dir.getFileHandle(entry.ts.replace(/:/g, "-") + ".patch", { create: true });
+  const w = await fh.createWritable();
+  await w.write(entry.patch);
+  if (w.close) await w.close();
+}
+// 记一版：基线 = manifest 重放出的上一版；空档时基线 = 盘上现文（调用序保证：保存流先记史后写文件，
+// 此刻盘上仍是旧文）。无变化不记（返回 null）；链断（坏 manifest）以新 full 版重新锚定。
+async function lhAddVersion(root, rel, newText) {
+  const dir = await lhDir(root, rel, true);
+  let man = await lhManifest(dir);
+  if (!man) man = { file: rel, entries: [] };
+  man.file = rel;
+  const pushFull = async (text) => {
+    const en = { ts: lhNowTs(man.entries), words: lhCountWords(text), patch: text, full: true, nl: lhEndNL(text) };
+    man.entries.push(en);
+    await lhPutPatch(dir, en);
+    await lhPutManifest(dir, man);
+    return en.ts;
+  };
+  if (!man.entries.length) {
+    let base = "";
+    try { base = await lhReadText(root, rel); } catch (e) { /* 盘上无此文（新建）：新内容即首版全文 */ }
+    await pushFull(base);
+    if (base === newText) return null;
+  } else {
+    const r = lhReplayTo(man.entries, man.entries.length - 1);
+    if (r.err) return pushFull(newText);       // 半写断链：full 版重锚，历史从这一版续起
+    if (r.text === newText) return null;       // 与上一版一致，不重复记
+  }
+  const r2 = lhReplayTo(man.entries, man.entries.length - 1);
+  const from = r2.err ? "" : r2.text;
+  const ts = lhNowTs(man.entries);
+  const en = { ts, words: lhCountWords(newText), patch: lhMakePatch(rel, from, newText), full: false, nl: lhEndNL(newText) };
+  man.entries.push(en);
+  await lhPutPatch(dir, en);
+  await lhPutManifest(dir, man);
+  return ts;
+}
+// 全量扫描 .history/（设置页数据面；payload 缺席时的实况视图）。坏档目录显式进 broken[] 不静默。
+async function lhScanAll(root) {
+  const out = { files: [], broken: [], scanned: false };
+  if (!root) return out;
+  let base;
+  try { base = await root.getDirectoryHandle(".history", { create: false }); }
+  catch (e) { out.scanned = true; return out; }   // 无 .history = 空态（不是错）
+  try {
+    for await (const [name, h] of base.entries()) {
+      if (h.kind !== "directory") continue;
+      const man = await lhManifest(h);
+      if (!man || !man.file || !man.entries.length) { out.broken.push(name); continue; }
+      out.files.push({ dir: name, file: man.file, entries: man.entries });
+    }
+  } catch (e) { out.scanned = false; return out; }   // 无 entries() 枚举能力 → 退回 payload 视图
+  out.files.sort((a, b) => a.file.localeCompare(b.file, "zh"));
+  out.scanned = true;
+  return out;
+}
+// 页内自检入口（console 里 window.lhSelfCheck() 可复跑）：diff roundtrip + 链重放 + 假句柄整链
+async function lhSelfCheck() {
+  const problems = [];
+  const T = (name, cond) => { if (!cond) problems.push("自检失败: " + name); };
+  const REL = "自检/例.md";
+  const V = ["甲\n乙\n丙\n", "甲\n乙2\n丙\n丁\n", "甲\n丙\n丁\n", "甲\n丙\n丁", "", "回\n来\n"];
+  for (let i = 1; i < V.length; i++) {
+    const patch = lhMakePatch(REL, V[i - 1], V[i]);
+    let got = null, err = "";
+    try { got = lhApplyPatch(V[i - 1], patch, lhEndNL(V[i])); } catch (e) { err = String((e && e.message) || e); }
+    T("roundtrip 第" + (i + 1) + "版" + (err ? "（" + err + "）" : ""), got === V[i]);
+    T("确定性输出 第" + (i + 1) + "版", patch === lhMakePatch(REL, V[i - 1], V[i]));
+  }
+  const pAdd = lhMakePatch(REL, "x\n", "x\ny\n"), pDel = lhMakePatch(REL, "x\ny\n", "x\n");
+  const pMod = lhMakePatch(REL, "x\ny\n", "x\nz\n"), pSame = lhMakePatch(REL, "x\ny\n", "x\ny\n");
+  T("增例有 +y", pAdd.split("\n").some(l => l === "+y"));
+  T("删例有 -y", pDel.split("\n").some(l => l === "-y"));
+  T("改例有 -y/+z", pMod.includes("-y") && pMod.includes("+z"));
+  T("不变例无增删行", !pSame.split("\n").some(l => l.startsWith("+") || l.startsWith("-")));
+  T("CRLF 保留", (() => { const a = "一\r\n二\r\n", b = "一\r\n改\r\n"; return lhApplyPatch(a, lhMakePatch(REL, a, b), true) === b; })());
+  T("编码规则", lhEncodePath('a b/c:d*e?f"g<h>i|j.md') === "a_b_c_d_e_f_g_h_i_j_md");
+  const chain = [{ ts: "t0", words: lhCountWords(V[0]), patch: V[0], full: true, nl: true }];
+  for (let i = 1; i < V.length; i++)
+    chain.push({ ts: "t" + i, words: lhCountWords(V[i]), patch: lhMakePatch(REL, V[i - 1], V[i]), full: false, nl: lhEndNL(V[i]) });
+  for (let k = 0; k < V.length; k++) {
+    const r = lhReplayTo(chain, k);
+    T("链重放到版" + (k + 1), !r.err && r.text === V[k]);
+  }
+  // 假句柄整链（保存流：先记史后写文件）
+  const fr = lhFakeRoot({ "输入/正文/第1章.md": "x\n" });
+  const rel2 = "输入/正文/第1章.md";
+  const ts1 = await lhAddVersion(fr, rel2, "x\ny\n"); await lhWrite(fr, rel2, "x\ny\n");
+  const ts2 = await lhAddVersion(fr, rel2, "x\nz\n"); await lhWrite(fr, rel2, "x\nz\n");
+  T("假句柄保存记史", typeof ts1 === "string" && typeof ts2 === "string");
+  T("无变化不重复记", (await lhAddVersion(fr, rel2, "x\nz\n")) === null);
+  const scan = await lhScanAll(fr);
+  T("扫描一条文件档", scan.scanned && scan.files.length === 1 && scan.files[0].file === rel2 && !scan.broken.length);
+  const ents = scan.files[0].entries;
+  T("首版 full 全文", ents[0].full === true && ents[0].patch === "x\n");
+  T("重放还原逐版", lhReplayTo(ents, 0).text === "x\n" && lhReplayTo(ents, 1).text === "x\ny\n" && lhReplayTo(ents, 2).text === "x\nz\n");
+  T("patch 落盘命名", [...fr.__files.keys()].some(k => /^\.history\/输入_正文_第1章_md\/.+\.patch$/.test(k)));
+  fr.__files.set(".history/输入_正文_第1章_md/manifest.json", "{坏JSON");
+  T("坏 manifest 读作 null", (await lhManifest(await lhDir(fr, rel2, false))) === null);
+  T("坏档显式记账", (await lhScanAll(fr)).broken.length === 1);
+  const ts3 = await lhAddVersion(fr, rel2, "重锚\n");
+  const scan3 = await lhScanAll(fr);
+  // 断链重锚：坏 manifest 整档重写后 = [full(盘上现文基线), patch(→新文)]，首版必为 full 锚
+  T("断链以 full 版重锚", typeof ts3 === "string" && scan3.files.length === 1 &&
+    scan3.files[0].entries.length === 2 && scan3.files[0].entries[0].full === true &&
+    scan3.files[0].entries[1].full === false &&
+    lhReplayTo(scan3.files[0].entries, 1).text === "重锚\n");
+  return problems;
+}
+// 最小假目录树（FS API 句柄的结构化替身，仅自检用）：Map 存文件，Set 存目录
+function lhFakeRoot(initial) {
+  const files = new Map(Object.entries(initial || {}));
+  const norm = p => String(p).replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+  const join = (d, n) => norm(d ? d + "/" + n : n);
+  const dirs = new Set([""]);
+  for (const k of files.keys()) {          // 种子文件的祖先目录必须存在（真盘上目录本来就在）
+    const segs = norm(k).split("/");
+    for (let i = 1; i < segs.length; i++) dirs.add(segs.slice(0, i).join("/"));
+  }
+  function dirObj(path) {
+    return {
+      kind: "directory", name: norm(path).split("/").pop() || path,
+      async getDirectoryHandle(n, opts) {
+        const c = join(path, n);
+        if (!dirs.has(c)) { if (!(opts && opts.create)) throw new Error("NotFoundError dir " + c); dirs.add(c); }
+        return dirObj(c);
+      },
+      async getFileHandle(n, opts) {
+        const c = join(path, n);
+        if (!files.has(c)) { if (!(opts && opts.create)) throw new Error("NotFoundError file " + c); files.set(c, ""); }
+        return fileObj(path, n, c);
+      },
+      async *entries() {
+        const pre = path ? path + "/" : "";
+        for (const [k] of files)
+          if (norm(k).startsWith(pre) && !norm(k).slice(pre.length).includes("/"))
+            yield [norm(k).slice(pre.length), fileObj(path, norm(k).slice(pre.length), k)];
+        for (const d of dirs)
+          if (pre && d.startsWith(pre)) { const rest = d.slice(pre.length); if (rest && !rest.includes("/")) yield [rest, dirObj(d)]; }
+      },
+    };
+  }
+  function fileObj(dirPath, name, full) {
+    return {
+      kind: "file", name,
+      async getFile() { const text = files.get(full) || ""; return { size: text.length, async text() { return text; } }; },
+      async createWritable() {
+        if (!files.has(full)) throw new Error("NotFoundError " + full);
+        files.set(full, "");                        // 真 API 缺省语义：创建即截断（manifest 整档重写靠它）
+        return { async write(s) { files.set(full, (files.get(full) || "") + String(s)); }, async close() {} };
+      },
+    };
+  }
+  return Object.assign(dirObj(""), { __files: files, __dirs: dirs });
+}
+//>>>LH_CORE_END
+// 写动词串行闸：同页多触发源（保存/定期/恢复）排队落 .history，杜绝并发交错半写
+let lhChain = Promise.resolve();
+function lhEnqueue(fn) { const run = lhChain.then(fn, fn); lhChain = run.then(() => {}, () => {}); return run; }
+window.lhSelfCheck = lhSelfCheck;
+lhSelfCheck().then(ps => { if (ps.length) console.warn("LocalHistory 页内自检发现问题：", ps); })
+  .catch(e => console.warn("LocalHistory 页内自检异常：", e));
+
+// ── 文档面板编辑器（V4-4 编辑回归；textarea 全屏替换渲染区） ──
+const EDIT_MAX = 200 * 1024;          // 与预览同预算：超大件不提供编辑（防截断写回毁文件）
+const paneSnap = { A: null, B: null }; // 每分栏最近一次读盘 {rel, text0(脏位基线)}
+let edSeq = 0;
+const editState = { seq: 0, suf: "", rel: "", buf: "", lastWords: 0, busy: false, note: "" };
+function editingSuf() { return editState.rel ? editState.suf : ""; }
+function editDirty() {
+  const snap = paneSnap[editState.suf];
+  return !!(editState.rel && snap && snap.rel === editState.rel && editState.buf !== snap.text0);
+}
+async function rwQuery() {
+  if (!fsRoot) return false;
+  const want = { mode: "readwrite" };
+  try {
+    if (fsRoot.queryPermission) return (await fsRoot.queryPermission(want)) === "granted";
+    if (fsRoot.getPermission) return (await fsRoot.getPermission(want)) === "granted";
+    return true;   // 无查询 API 的实现按授权结果假设可写（保存时真写会暴露问题）
+  } catch (e) { return false; }
+}
+function showEditBtn(suf, rel, size, editable) {
+  const btn = document.getElementById("docEdit" + suf);
+  if (!btn) return;
+  rwQuery().then(ok => {
+    if (btn.isConnected) btn.style.display = (editable && size <= EDIT_MAX && entryOn("docs") && ok) ? "" : "none";
+  });
+}
+function editorHtml(suf) {
+  return `<div class="edbar">` +
+    `<button class="btn" id="edSave${suf}" title="写回原文件并自动记本地历史（Ctrl+S）">保存</button>` +
+    `<button class="btn" id="edCancel${suf}">取消</button>` +
+    `<span class="chip" id="edWords${suf}"></span>` +
+    `<span class="chip" id="edHist${suf}">${esc(editState.note || "编辑中：保存与定期保存都记入 .history/")}</span>` +
+    `<span class="muted" style="font-size:12px">ESC 退出编辑</span></div>` +
+    `<textarea class="edta" id="edTa${suf}" spellcheck="false"></textarea>`;
+}
+function startEditor(suf, rel, text, opts) {
+  opts = opts || {};
+  editState.seq = ++edSeq; editState.suf = suf; editState.rel = rel;
+  editState.busy = false; editState.buf = text; editState.lastWords = lhCountWords(text);
+  if (opts.note !== undefined) editState.note = opts.note;
+  if (!paneSnap[suf] || paneSnap[suf].rel !== rel) paneSnap[suf] = { rel, text0: text };
+  setDocBody(suf, editorHtml(suf));
+  const ta = document.getElementById("edTa" + suf);
+  ta.value = text;
+  wireEditor(suf, ta);
+  edUpdateWords(suf);
+  const eb = document.getElementById("docEdit" + suf);
+  if (eb) eb.style.display = "none";
+  if (!opts.keepFocus) { editState.note = ""; edSetHist(suf, "编辑中：保存与定期保存都记入 .history/", false); ta.focus(); }
+}
+function stopEditor() {
+  editState.seq = ++edSeq; editState.suf = ""; editState.rel = ""; editState.buf = ""; editState.note = "";
+}
+function wireEditor(suf, ta) {
+  ta.addEventListener("input", () => {
+    if (editingSuf() !== suf) return;
+    editState.buf = ta.value;
+    edUpdateWords(suf);
+    edPeriodic(suf);
+  });
+  ta.addEventListener("keydown", e => {
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && String(e.key).toLowerCase() === "s") { e.preventDefault(); docSave(suf); }
+  });
+  document.getElementById("edSave" + suf).onclick = () => docSave(suf);
+  document.getElementById("edCancel" + suf).onclick = () => requestCancelEditor(suf);
+}
+function edUpdateWords(suf) {
+  const el = document.getElementById("edWords" + suf);
+  if (el) el.textContent = "字数 " + lhCountWords(editState.buf) + "（非空白字符）";
+}
+function edSetHist(suf, msg, warn) {
+  const el = document.getElementById("edHist" + suf);
+  if (el) el.innerHTML = `<span class="chip${warn ? " warn" : ""}">${esc(msg)}</span>`;
+  editState.note = msg;
+}
+function edPeriodic(suf) {
+  if (!state.config.localHistory || !fsRoot) return;
+  const w = lhCountWords(editState.buf);
+  if (w - editState.lastWords < state.config.histInterval) return;
+  editState.lastWords = w;                       // 乐观推进：失败不重试同一字数，防写盘风暴
+  const seq = editState.seq, rel = editState.rel, text = editState.buf;
+  lhEnqueue(() => lhAddVersion(fsRoot, rel, text)).then(ts => {
+    if (seq === editState.seq && editingSuf() === suf)
+      edSetHist(suf, ts ? "定期保存 " + ts.slice(11, 19) + "（未落盘）" : "定期保存（无新增内容）", false);
+  }).catch(e => {
+    if (seq === editState.seq && editingSuf() === suf)
+      edSetHist(suf, "历史记档失败：" + ((e && e.message) || e), true);
+  });
+}
+function clickEditBtn(suf) {
+  if (editingSuf() === suf) return;
+  const open = async () => {
+    if (!(await ensureRW())) {
+      setDocStat(suf, "无写权限——编辑不可用（在线场景降级只读）", true);
+      const eb = document.getElementById("docEdit" + suf);
+      if (eb) eb.style.display = "none";
+      return;
+    }
+    const snap = paneSnap[suf];
+    if (!snap || !snap.rel) return;
+    let file;
+    try { file = await fsRead(snap.rel); }      // 编辑取全文（预览可能只渲染了前 200KB）
+    catch (e) { setDocBody(suf, `<div class="empty">读取失败：${esc(e.message || e)}</div>`); return; }
+    if (file.size > EDIT_MAX) { setDocStat(suf, `超 ${EDIT_MAX / 1024}KB 不提供编辑`, true); return; }
+    let text;
+    try { text = (await file.slice(0, file.size).text()).replace(/^\uFEFF/, ""); }
+    catch (e) { setDocBody(suf, `<div class="empty">读取失败：${esc(e.message || e)}</div>`); return; }
+    paneSnap[suf] = { rel: snap.rel, text0: text };
+    startEditor(suf, snap.rel, text, { note: "" });
+  };
+  const other = editingSuf();
+  if (other && other !== suf) guardEditorChange("切换编辑窗", () => { stopEditor(); open(); });
+  else open();
+}
+async function docSave(suf) {
+  if (editingSuf() !== suf || editState.busy) return;
+  const ta = document.getElementById("edTa" + suf);
+  if (!ta) return;
+  const text = ta.value;
+  const rel = editState.rel;
+  editState.busy = true;
+  const btn = document.getElementById("edSave" + suf);
+  if (btn) btn.disabled = true;
+  edSetHist(suf, "保存中…", false);
+  try {
+    let msg;
+    if (state.config.localHistory) {
+      // 顺序即语义：先记史（空档时以盘上旧文为首版全文基线）→ 再写文件 → 刷脏位。
+      // 记史+写文件同排一队：期间插入的定期保存不会把基线搅乱（写序=记序）。
+      const ts = await lhEnqueue(async () => {
+        const t = await lhAddVersion(fsRoot, rel, text);
+        await lhWrite(fsRoot, rel, text);
+        return t;
+      });
+      msg = ts ? "已保存 " + ts.slice(11, 19) + " · 已记本地历史" : "已保存（内容无变化，未记历史）";
+    } else {
+      await lhEnqueue(() => lhWrite(fsRoot, rel, text));
+      msg = "已保存（本地历史开关为关，未记历史）";
+    }
+    editState.buf = text;
+    editState.lastWords = lhCountWords(text);
+    if (paneSnap[suf]) paneSnap[suf].text0 = text;    // 落盘即新基线，脏位清零
+    edSetHist(suf, msg, false);
+    edUpdateWords(suf);
+    if (lhUI.scanned) lhUI.scanned = false;           // 历史变了，设置页下次进入重扫
+  } catch (e) {
+    edSetHist(suf, "保存失败：" + ((e && e.message) || e), true);
+  }
+  editState.busy = false;
+  const b2 = document.getElementById("edSave" + suf);
+  if (b2) b2.disabled = false;
+}
+function requestCancelEditor(suf, after) {
+  const doIt = () => {
+    const rel = (paneSnap[suf] || {}).rel || editState.rel;
+    stopEditor();
+    if (rel) loadPane(suf, rel);                       // 回渲染视图（编辑按钮按权限重新出现）
+    if (after) after();
+  };
+  if (editingSuf() === suf && editDirty()) {
+    openConfirm("放弃未保存修改？", editState.rel,
+      `<div class="note">「${esc(editState.rel)}」有未落盘的修改。退出编辑将丢弃这些修改` +
+      `（已记入本地历史的定期保存版本保留，可在「配置 → 本地历史」查看）。</div>` +
+      `<div class="bar"><button class="btn" id="ecYes">放弃并退出编辑</button><button class="btn" id="ecNo">继续编辑</button></div>`);
+    document.getElementById("ecYes").onclick = () => { closeConfirm(); doIt(); };
+    document.getElementById("ecNo").onclick = () => closeConfirm();
+  } else doIt();
+}
+function guardEditorChange(what, fn) {
+  if (!editingSuf()) { fn(); return; }
+  if (!editDirty()) { stopEditor(); fn(); return; }        // 干净草稿：静默收起编辑器再切
+  openConfirm("离开编辑？", editState.rel,
+    `<div class="note">${esc(what)}将关闭「${esc(editState.rel)}」的编辑器，未保存的修改会丢弃` +
+    `（已记入本地历史的定期保存版本保留）。</div>` +
+    `<div class="bar"><button class="btn" id="geYes">离开并继续</button><button class="btn" id="geNo">留下继续编辑</button></div>`);
+  document.getElementById("geYes").onclick = () => { closeConfirm(); stopEditor(); fn(); };
+  document.getElementById("geNo").onclick = () => closeConfirm();
+}
+
+// ── 设置「本地历史」tab（V4-4：按文件分组倒序 → 版本列表 → diff 视图 → 恢复此版） ──
+const LH_FILE_TAKE = 200;    // 渲染上限（全部数据本就在盘，页面按需读）
+const LH_VER_TAKE = 50;
+const lhUI = { scanned: false, files: [], broken: [], open: new Set(), note: "" };
+function lhData() {
+  if (fsRoot && lhUI.scanned) return { live: true, files: lhUI.files, broken: lhUI.broken };
+  return { live: false, files: CFG.localHistory.map(r => ({ file: r.file, dir: "", payload: true,
+    versions: r.versions, lastTs: r.lastTs })), broken: [] };
+}
+function renderHistory() {
+  const host = document.getElementById("histBody");
+  if (!host) return;
+  const note = lhUI.note; lhUI.note = "";
+  const d = lhData();
+  const rows = d.files.slice(0, LH_FILE_TAKE);
+  const chipbar = `<div class="bar" style="margin:10px 0 8px">` +
+    `<span class="chip">文件 ${d.files.length}</span>` +
+    `<span class="chip">版本 ${d.files.reduce((n, f) => n + (f.entries ? f.entries.length : (+f.versions || 0)), 0)}</span>` +
+    (d.broken.length ? `<span class="chip warn">坏档 ${d.broken.length}</span>` : "") +
+    (d.live ? `<span class="chip g">实况 .history/</span>` : `<span class="chip">出板统计</span>`) +
+    (fsRoot ? `<button class="btn" id="histRescan">重扫</button>` : `<button class="btn" id="histAuth">授权项目目录</button>`) +
+    `</div>`;
+  const noteHtml = note ? `<div class="note">${esc(note)}</div>` : "";
+  if (!rows.length) {
+    host.innerHTML = chipbar + noteHtml +
+      `<div class="empty">无本地历史（.history/ 缺席）——在文档面板点「编辑」，保存或定期保存会自动记版。</div>`;
+  } else {
+    host.innerHTML = chipbar + noteHtml + rows.map((f, i) => {
+      let h = `<div class="lrow" data-hf="${i}" style="cursor:pointer">` +
+        `<span class="lmsg mono">${esc(f.file)}</span>` +
+        `<span class="chip">${f.entries ? f.entries.length : (+f.versions || 0)} 版</span>` +
+        `<span class="tm">${esc(((f.entries ? f.entries[f.entries.length - 1].ts : f.lastTs) || "").replace("T", " ").slice(0, 19))}</span></div>`;
+      if (lhUI.open.has(i) && f.entries) {
+        const take = f.entries.slice(-LH_VER_TAKE);
+        const base = f.entries.length - take.length;
+        h += take.map((e, k) => {
+          const idx = base + k;
+          return `<div class="lrow" data-hv="${i}|${idx}" style="cursor:pointer;padding-left:16px">` +
+            `<span class="tm">${esc(e.ts.replace("T", " ").slice(0, 19))}</span>` +
+            `<span class="chip${e.full ? " g" : ""}">${e.full ? "全文" : "diff"}</span>` +
+            `<span class="chip">字数 ${e.words}</span></div>`;
+        }).join("") + (base > 0 ? `<div class="note">仅列最近 ${LH_VER_TAKE} 版（更早 ${base} 版仍在盘上，重放链完整）</div>` : "");
+      }
+      return h;
+    }).join("") +
+      (d.files.length > LH_FILE_TAKE ? `<div class="note">共 ${d.files.length} 个文件档，只列前 ${LH_FILE_TAKE}（按路径序）。</div>` : "") +
+      (d.live ? "" : `<div class="note">出板时的统计快照（patch 正文永不入 payload）。授权项目目录（读写）后可逐版看 diff、恢复任意版本。</div>`) +
+      (d.broken.length ? `<div class="note">坏档目录（manifest 缺失/半写，已跳过）：${d.broken.slice(0, 6).map(esc).join("、")}${d.broken.length > 6 ? "…" : ""}</div>` : "");
+  }
+  const au = document.getElementById("histAuth");
+  if (au) au.onclick = () => fsPick(() => { lhUI.scanned = false; lhRefresh(); });
+  const rs = document.getElementById("histRescan");
+  if (rs) rs.onclick = () => { lhUI.scanned = false; lhRefresh(); };
+  host.querySelectorAll("[data-hf]").forEach(r => r.onclick = () => {
+    const i = +r.dataset.hf;
+    lhUI.open.has(i) ? lhUI.open.delete(i) : lhUI.open.add(i);
+    renderHistory();
+  });
+  host.querySelectorAll("[data-hv]").forEach(r => r.onclick = () => {
+    const [fi, vi] = r.dataset.hv.split("|").map(Number);
+    const f = lhData().files[fi];
+    if (f && f.entries) histDetail(fi, vi);
+  });
+}
+function histDetail(fi, vi) {
+  const f = lhData().files[fi];
+  if (!f || !f.entries) return;
+  const e = f.entries[vi];
+  if (!e) return;
+  const canRestore = !!fsRoot;
+  const pre = e.full
+    ? `<pre class="view">${esc(e.patch.length > 20000 ? e.patch.slice(0, 20000) + "\n…（全文过长仅显示前段，恢复走重放链）" : e.patch)}</pre>`
+    : `<div class="diffbox" style="max-height:56vh">` + e.patch.split("\n").map(l =>
+        `<div class="${l.startsWith("@") || l.startsWith("---") || l.startsWith("+++") ? "hud"
+          : l.startsWith("+") ? "add" : l.startsWith("-") ? "del" : l.startsWith("\\") ? "ctx" : "ctx"}">${esc(l) || "&nbsp;"}</div>`).join("") +
+      `</div>`;
+  openDetail("lh:" + f.file + ":" + e.ts, f.file.split("/").pop(),
+    `${e.ts} · 第 ${vi + 1}/${f.entries.length} 版 · ${e.full ? "full" : "patch"} · 字数 ${e.words}`,
+    `<div class="note">${e.full
+      ? "首版全文（full）——重放链的锚点。"
+      : "unified diff（相对上一版）。恢复此版 = 从最近 full 版顺向重放到本行。"}</div>` + pre +
+    `<div class="bar" style="margin-top:12px">` +
+    `<button class="btn" id="lhRestore"${canRestore ? "" : " disabled title=\"无项目目录授权，恢复不可用（在线场景只读）\""}>恢复此版</button>` +
+    `<span class="muted" style="font-size:12px">写回原文件并记一条新历史</span></div>`,
+    () => {
+      const b = document.getElementById("lhRestore");
+      if (b) b.onclick = () => histRestore(f, vi);
+    });
+}
+function histRestore(f, vi) {
+  const r = lhReplayTo(f.entries, vi);
+  if (r.err) { lhUI.note = "重建该版失败：" + r.err; dwGo("history"); return; }
+  const rel = f.file;
+  if (editingSuf() && editState.rel === rel) {
+    lhUI.note = "该文件正在编辑中——先退出编辑再恢复（避免覆盖未落盘修改）";
+    dwGo("history"); return;
+  }
+  openConfirm("恢复确认", rel,
+    `<div class="note">把「${esc(rel)}」写回到第 ${vi + 1} 版（${esc(f.entries[vi].ts)}）。` +
+    `纯静态纪律：FS API 直写项目目录，恢复本身也记一条新历史（不抹旧账）。</div>` +
+    `<div class="bar"><button class="btn" id="hrYes">确认恢复</button><button class="btn" id="hrNo">取消</button></div>`);
+  document.getElementById("hrNo").onclick = () => closeConfirm();
+  document.getElementById("hrYes").onclick = () => {
+    document.getElementById("hrYes").disabled = true;
+    lhEnqueue(async () => {
+      if (!(await ensureRW())) return "无写权限，恢复取消";
+      if (!/^(.+\/)?[^/]+\.(md|txt)$/i.test(String(rel).replace(/\\/g, "/")))
+        return "恢复目标只收 .md/.txt，已拒绝：" + rel;
+      const man = (await lhManifest(await lhDir(fsRoot, rel, false))) || { file: rel, entries: [] };
+      const cur = man.entries.length ? lhReplayTo(man.entries, man.entries.length - 1)
+                                      : { text: await lhReadText(fsRoot, rel) };
+      if (!cur.err && cur.text === r.text) return "目标版与现行版一致，未落盘";
+      const ts = await lhAddVersion(fsRoot, rel, r.text);   // 基线=manifest 重放/盘上现文，写文件前记账
+      await lhWrite(fsRoot, rel, r.text);
+      return ts ? ("已恢复并记入新历史：" + ts) : "已恢复（内容与历史现行版一致）";
+    }).then(msg => {
+      closeConfirm();
+      lhUI.scanned = false; lhUI.note = msg;
+      const ds = docState.a === rel ? "A" : docState.b === rel ? "B" : "";
+      closeDetail();
+      dwGo("history");
+      if (ds && editingSuf() !== ds) loadPane(ds, rel);     // 文档分栏打开着同一文件 → 刷新视图
+    }).catch(e => {
+      closeConfirm();
+      lhUI.scanned = false; lhUI.note = "恢复失败：" + ((e && e.message) || e);
+      dwGo("history");
+    });
+  };
+}
+async function lhRefresh() {
+  try {
+    const res = await lhScanAll(fsRoot);
+    lhUI.scanned = res.scanned; lhUI.files = res.files; lhUI.broken = res.broken;
+  } catch (e) {
+    lhUI.scanned = false; lhUI.files = []; lhUI.broken = [];
+    lhUI.note = "扫描 .history/ 失败：" + ((e && e.message) || e);
+  }
+  if (dwPage === "history") renderHistory();   // 无条件重渲：扫描失败/不支持也要换掉「正在扫描…」骨架
+}
+
 // ── 配置二层抽屉（一层导航：模型配置 / 日志 / 历史快照 / 偏好；二层内容页） ──
 const drawer = document.getElementById("drawer");
 const dwBody = document.getElementById("dwBody");
 const dwBack = document.getElementById("dwBack");
 const dwTitle = document.getElementById("dwTitle");
-const DW_PAGES = { models: "模型配置", logs: "日志", snaps: "历史快照", prefs: "偏好" };
+const DW_PAGES = { models: "模型配置", logs: "日志", snaps: "历史快照", history: "本地历史", prefs: "偏好" };
 let dwPage = "";
 const logState = { level: "", q: "" };
 function openDrawer() { drawer.classList.add("open"); dwGo(dwPage); }
@@ -1416,6 +2138,7 @@ function dwGo(page) {
       `<div class="navrow" data-p="models"><span>模型配置</span><span class="chip">${CFG.models.length} 项</span><span class="ar">›</span></div>` +
       `<div class="navrow" data-p="logs"><span>日志</span><span class="chip">${CFG.logs.length} 条</span><span class="ar">›</span></div>` +
       `<div class="navrow" data-p="snaps"><span>历史快照</span><span class="chip">${CFG.snapshots.length} 条</span><span class="ar">›</span></div>` +
+      `<div class="navrow" data-p="history"><span>本地历史</span><span class="chip">${CFG.localHistory.length} 档</span><span class="ar">›</span></div>` +
       `<div class="navrow" data-p="prefs"><span>偏好</span>` +
       `<span class="chip">${c.theme === "light" ? "白灰青" : "暗色"} · ${{ gold: "金", blue: "蓝", green: "绿", purple: "紫" }[c.themeColor] || c.themeColor}</span>` +
       `<span class="ar">›</span></div>` +
@@ -1443,6 +2166,10 @@ function dwGo(page) {
     renderLogs();
   }
   else if (page === "snaps") { dwBody.innerHTML = `<div id="snapsBody"></div>`; renderSnaps(); }
+  else if (page === "history") {
+    dwBody.innerHTML = `<div id="histBody"><div class="empty">正在扫描 .history/ …</div></div>`;
+    if (fsRoot && !lhUI.scanned) lhRefresh(); else renderHistory();
+  }
   else if (page === "prefs") { dwBody.innerHTML = `<div id="prefsBody"></div>`; renderPrefs(); }
 }
 dwBack.addEventListener("click", () => dwGo(""));
@@ -1526,77 +2253,9 @@ function snapConfirm(s) {
         `<div class="${l.startsWith("@") || l.startsWith("---") || l.startsWith("+++") ? "hud" : l.startsWith("+") ? "add" : l.startsWith("-") ? "del" : "ctx"}">${esc(l)}</div>`).join("")}</div>`;
   });
 }
-// 行级 diff（复用 v2 看板同源实现：掐公共头尾 + LCS，中段过大退整块替换）
-function splitLines(t) {
-  const s = String(t ?? "");
-  if (!s.length) return { lines: [], nl: false };
-  if (s.endsWith("\n")) return { lines: s.slice(0, -1).split("\n"), nl: true };
-  return { lines: s.split("\n"), nl: false };
-}
-function lineDiff(a, b) {
-  const sa = splitLines(a), sb = splitLines(b);
-  const A = sa.lines, B = sb.lines, aNL = sa.nl, bNL = sb.nl;
-  let s = 0;
-  while (s < A.length && s < B.length && A[s] === B[s]) s++;
-  let ea = A.length, eb = B.length;
-  while (ea > s && eb > s && A[ea - 1] === B[eb - 1]) { ea--; eb--; }
-  const midA = A.slice(s, ea), midB = B.slice(s, eb), hunks = [];
-  if (midA.length * midB.length > 4000000) { hunks.push({ a1: s, a2: ea, b1: s, b2: eb }); return { A, B, aNL, bNL, hunks }; }
-  const n = midA.length, m = midB.length, W = m + 1;
-  const dp = new Uint32Array((n + 1) * W);
-  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
-    dp[i * W + j] = midA[i] === midB[j] ? dp[(i + 1) * W + j + 1] + 1 : Math.max(dp[(i + 1) * W + j], dp[i * W + j + 1]);
-  let i = 0, j = 0, cur = null;
-  const flush = () => { if (cur) { hunks.push(cur); cur = null; } };
-  while (i < n && j < m) {
-    if (midA[i] === midB[j]) { flush(); i++; j++; }
-    else if (dp[(i + 1) * W + j] >= dp[i * W + j + 1]) { cur = cur || { a1: s + i, a2: s + i, b1: s + j, b2: s + j }; cur.a2 = ++i + s; }
-    else { cur = cur || { a1: s + i, a2: s + i, b1: s + j, b2: s + j }; cur.b2 = ++j + s; }
-  }
-  if (i < n || j < m) { cur = cur || { a1: s + i, a2: s + i, b1: s + j, b2: s + j }; cur.a2 = s + n; cur.b2 = s + m; }
-  flush();
-  return { A, B, aNL, bNL, hunks };
-}
-function diffScript(d) {
-  const s = [];
-  let ai = 0, bi = 0;
-  for (const h of d.hunks) {
-    while (ai < h.a1) { s.push({ t: "ctx", a: ai, b: bi }); ai++; bi++; }
-    for (let i = h.a1; i < h.a2; i++) s.push({ t: "del", a: i, b: bi });
-    ai = h.a2;
-    for (let i = h.b1; i < h.b2; i++) s.push({ t: "ins", a: ai, b: i });
-    bi = h.b2;
-  }
-  while (ai < d.A.length) { s.push({ t: "ctx", a: ai, b: bi }); ai++; bi++; }
-  return s;
-}
-function unifiedDiff(rel, d) {
-  const s = diffScript(d), C = 3, out = ["--- a/" + rel, "+++ b/" + rel];
-  const keep = new Array(s.length).fill(false);
-  s.forEach((e, i) => {
-    if (e.t === "ctx") return;
-    for (let k = Math.max(0, i - C); k <= Math.min(s.length - 1, i + C); k++) keep[k] = true;
-  });
-  let i = 0;
-  while (i < s.length) {
-    if (!keep[i]) { i++; continue; }
-    let j = i; while (j < s.length && keep[j]) j++;
-    const lines = [];
-    let aN = 0, bN = 0;
-    const noNL = (t, idx) => (t === "ins" ? !d.bNL && idx === d.B.length - 1 : !d.aNL && idx === d.A.length - 1);
-    for (let k = i; k < j; k++) {
-      const e = s[k];
-      if (e.t === "ctx") { lines.push(" " + d.A[e.a]); aN++; bN++; if (noNL("ctx", e.a) && !d.bNL) lines.push("\\ No newline at end of file"); }
-      else if (e.t === "del") { lines.push("-" + d.A[e.a]); aN++; if (noNL("del", e.a)) lines.push("\\ No newline at end of file"); }
-      else { lines.push("+" + d.B[e.b]); bN++; if (noNL("ins", e.b)) lines.push("\\ No newline at end of file"); }
-    }
-    const a1 = aN === 0 ? s[i].a : s[i].a + 1, b1 = bN === 0 ? s[i].b : s[i].b + 1;
-    out.push("@@ -" + a1 + "," + aN + " +" + b1 + "," + bN + " @@");
-    for (const l of lines) out.push(l);
-    i = j;
-  }
-  return out.join("\n");
-}
+// 行级 diff（splitLines / lineDiff / diffScript / unifiedDiff）与 LocalHistory 纯函数同区，
+// 见「LocalHistory 核心」一节（V4-4 收拢为可整段抽取自检的无 DOM 区；快照补丁生成照常调用）。
+
 // ── 偏好（抽屉二层「偏好」页）：字号 / 行高 / 主题色 / 紧凑 / 主题（localStorage 持久化） ──
 function renderPrefs() {
   const c = state.config;
@@ -1612,6 +2271,10 @@ function renderPrefs() {
     `<div class="prefrow"><label>行高</label><input type="range" id="pfLh" min="1.4" max="2.2" step="0.05" value="${c.lineHeight}"><span class="v" id="pfLhV">${c.lineHeight}</span></div>` +
     `<div class="prefrow"><label>紧凑</label>` +
     `<button class="sw${c.compact ? " on" : ""}" id="pfCompact">紧凑模式</button></div>` +
+    `<div class="prefrow"><label>本地历史</label>` +
+    `<button class="sw${c.localHistory ? " on" : ""}" id="pfHistSw" title="保存与编辑中的定期保存自动记版到 .history/；关闭后保存照常写文件但不记史">记入本地历史</button></div>` +
+    `<div class="prefrow"><label>记档间隔</label><input type="range" id="pfHistInt" min="200" max="2000" step="100" value="${c.histInterval}">` +
+    `<span class="v" id="pfHistIntV">${c.histInterval}字</span></div>` +
     `<h3 style="margin:14px 0 6px">功能入口</h3>` +
     `<div class="prefrow"><label>入口开关</label>` + ENTRIES.map(e => {
       const on = entryOn(e.id), locked = e.id === "config";
@@ -1626,6 +2289,12 @@ function renderPrefs() {
   document.getElementById("pfFs").addEventListener("input", e => { c.fontSize = +e.target.value; document.getElementById("pfFsV").textContent = c.fontSize + "px"; savePrefs(); applyPrefs(); });
   document.getElementById("pfLh").addEventListener("input", e => { c.lineHeight = +e.target.value; document.getElementById("pfLhV").textContent = c.lineHeight; savePrefs(); applyPrefs(); });
   document.getElementById("pfCompact").addEventListener("click", () => { c.compact = !c.compact; savePrefs(); applyPrefs(); dwGo("prefs"); });
+  document.getElementById("pfHistSw").addEventListener("click", () => { c.localHistory = !c.localHistory; savePrefs(); dwGo("prefs"); });
+  document.getElementById("pfHistInt").addEventListener("input", e => {
+    c.histInterval = Math.min(2000, Math.max(200, Math.round(+e.target.value || 500)));
+    document.getElementById("pfHistIntV").textContent = c.histInterval + "字";
+    savePrefs();
+  });
   scoped("[data-pl]").forEach(b => b.addEventListener("click", () => {
     const id = b.dataset.pl;
     if (id === "config") return;                       // 永驻入口不可关（disabled 双保险）
