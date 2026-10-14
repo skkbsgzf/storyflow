@@ -5,8 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>__TITLE__</title>
 <style>
-  /* 项目看板 v4 · 固定模板（看板 v4 工单 V4-1 三段式框架）。
+  /* 项目看板 v4 · 固定模板（看板 v4 工单 V4-1 三段式框架 + V4-3a 世界书 Pinax 移植）。
      顶栏（项目名 + 右上角配置）/ 44px 图标栏（五浏览面板 + 文档）/ 主区 = 总览面板 ∥ 详情面板（右侧滑入）。
+     世界书面板 = 分类树（折叠+计数徽标+状态过滤轴）∥ 统一浏览器（搜索/排序/视图切换记忆；三轴单源：
+       词条墙按轴筛、图谱按轴隐节点且布局不重排、检索命中在图上描环、图例点击即分类过滤）∥ 词条 wiki 页（详情面板内，
+       含 frontmatter 字段表 / 关联词条跳转链 / 历史栈返回 / 正文页内直读）；图谱点节点直达 wiki。
      主区零弹窗（唯一豁免：破坏性确认）；配置 = 右上角二层抽屉；详情弹性收起（保留滚动状态）；
      文档阅读支持 1+1 并行分栏，分栏比与详情宽度 localStorage 记忆。
      零外部资源：系统字体栈、内联样式、SVG 内联图标、数据生成时内联为惰性 JSON，不回 call kit。
@@ -94,18 +97,40 @@
   .mono { font-family:var(--mono); }
   .who { color:var(--blue); }
   /* ── 世界书 ── */
-  .grp-h { display:flex; align-items:center; gap:8px; padding:7px 10px; cursor:pointer; user-select:none;
-           color:var(--dim); border-radius:6px; }
-  .grp-h:hover { background:var(--panel2); color:var(--ink); }
-  .grp-h .n { font-family:var(--mono); font-size:11px; }
-  .grp-h .ar { font-family:var(--mono); font-size:10px; }
   .row { display:flex; align-items:baseline; gap:8px; padding:6px 10px; border-bottom:1px solid var(--border);
          cursor:pointer; flex-wrap:wrap; }
   body.compact .row { padding:3px 10px; }
   .row:hover { background:var(--panel); }
   .row b { font-weight:600; }
   .row .tm { margin-left:auto; font-family:var(--mono); font-size:11px; color:var(--dim); }
-  .row.flash { outline:2px solid var(--accent); outline-offset:-2px; }
+  .row.on { background:var(--panel2); box-shadow:inset 2px 0 0 var(--accent); }
+  .btn[disabled] { opacity:.4; cursor:default; }
+  .btn[disabled]:hover { color:var(--dim); }
+  /* 世界书三栏（Pinax CategoryTree/UnifiedEntryBrowser 范式） */
+  .wb3 { display:flex; gap:14px; align-items:flex-start; min-width:0; }
+  .wbtree { flex:0 0 200px; background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:6px; }
+  .wbtree .tnode { display:flex; align-items:baseline; gap:6px; padding:4px 8px; cursor:pointer;
+                   border-radius:6px; color:var(--dim); font-size:12.5px; }
+  .wbtree .tnode:hover { background:var(--panel2); color:var(--ink); }
+  .wbtree .tnode.on { color:var(--accent); }
+  .wbtree .tnode .n { font-family:var(--mono); font-size:11px; margin-left:auto; }
+  .wbtree .ar { font-family:var(--mono); font-size:10px; width:12px; flex:0 0 12px; cursor:pointer; }
+  .wbtree .sub { padding-left:16px; }
+  .wbtree .sub .tnode { font-size:12px; }
+  .wbfilter { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; padding-top:8px;
+              border-top:1px solid var(--border); }
+  .wbfilter .btn { font-size:11px; padding:2px 8px; }
+  .wbmain { flex:1; min-width:0; }
+  .row:focus-visible { outline:2px solid var(--accent); outline-offset:-2px; }
+  /* 词条 wiki 页（Pinax EntryWiki 范式） */
+  .wikibar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:-2px 0 12px; }
+  .lk { font-family:var(--mono); font-size:12px; color:var(--blue); background:var(--panel2);
+        border:1px solid var(--border); border-radius:999px; padding:1px 10px; margin:1px 4px 1px 0;
+        cursor:pointer; }
+  .lk:hover { border-color:var(--accent); color:var(--accent); }
+  .lk.dead { color:var(--dim); border-style:dashed; cursor:default; }
+  .lk.dead:hover { border-color:var(--border); color:var(--dim); }
+  .wbd { margin-top:16px; border-top:1px solid var(--border); padding-top:12px; }
   #cvwrap { position:relative; height:calc(100vh - 150px); min-height:380px; background:var(--panel);
             border:1px solid var(--border); border-radius:8px; overflow:hidden; }
   #cv { display:block; width:100%; height:100%; cursor:grab; }
@@ -113,6 +138,7 @@
         border-radius:999px; padding:1px 9px; margin:2px 3px 2px 0; cursor:pointer; user-select:none;
         display:inline-block; background:var(--panel2); }
   .lg .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; vertical-align:-1px; }
+  .lg.on { border-color:var(--accent); color:var(--accent); }
   .lg.off { opacity:.32; }
   /* ── 人物 ── */
   .pgrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:12px; }
@@ -238,6 +264,7 @@
   .diffbox .ctx { color:var(--dim); }
   .note { font-family:var(--mono); font-size:11px; color:var(--dim); line-height:1.8; margin:8px 0; }
   @media (max-width:640px) { #ov { padding:10px 10px 32px; } .pgrid { grid-template-columns:1fr 1fr; }
+    .wb3 { flex-direction:column; } .wbtree { flex:none; align-self:stretch; }
     #doccols { flex-direction:column; } #docGutter { flex:0 0 6px; cursor:row-resize; } }
 </style>
 </head>
@@ -462,94 +489,307 @@ function unfoldOverview() {
   if (!state.ovPanel) show("outline");
 }
 
-// ── 世界书面板（总览区） ──
-const wbState = { q: "", cat: "", mode: "list", collapsed: new Set() };
+// ── 世界书面板（总览区；Pinax 范式移植：CategoryTree 左栏折叠计数 / UnifiedEntryBrowser 筛选排序视图切换 / EntryWiki 词条页＋跳转链） ──
 const wbCats = [...new Set(WB.entries.map(e => e.cat || "总览"))].sort((a, b) => a.localeCompare(b, "zh"));
 const wbColor = {}; wbCats.forEach((c, i) => wbColor[c] = PALETTE[i % PALETTE.length]);
-function wbDetail(i) {
-  const e = WB.entries[i]; if (!e) return;
-  openDetail("wb:" + (e.id || i), e.title || e.id, e.path || "",
-    `<div class="w5">` + [
-      ["标题", esc(e.title || "")],
-      ["分类", esc(e.cat || "总览")],
-      ["摘要", esc(e.summary || "") || '<span class="none">—</span>'],
-      ["标签", (e.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join("") || '<span class="none">—</span>'],
-      ["更新时间", `<span class="mono">${esc(e.mtime || "")}</span>` || '<span class="none">—</span>'],
-      ["路径", `<span class="mono">${esc(e.path || "")}</span>`],
-    ].map(([k, v]) => `<div class="k5">${k}</div><div class="v5">${v}</div>`).join("") + `</div>`);
+const WBV_KEY = "dashv4.wbView";
+const wbState = { q: "", cat: "", status: "", sort: "title", mode: "list", sel: -1, collapsed: new Set(), hist: [], hi: -1 };
+const WB_STATUS_OPTS = [["", "全部状态"], ["draft", "草稿"], ["active", "激活"], ["retired", "退役"]];
+try {
+  const v0 = JSON.parse(localStorage.getItem(WBV_KEY) || "{}");
+  if (v0.mode === "list" || v0.mode === "graph" || v0.mode === "wiki") wbState.mode = v0.mode;
+  if (v0.sort === "mtime" || v0.sort === "title") wbState.sort = v0.sort;
+  if (typeof v0.cat === "string" && (v0.cat === "" || wbCats.includes(v0.cat))) wbState.cat = v0.cat;
+  if (WB_STATUS_OPTS.some(([v]) => v === v0.status)) wbState.status = v0.status;
+} catch (e) { /* 坏档按缺省 */ }
+function saveWbView() {
+  try { localStorage.setItem(WBV_KEY, JSON.stringify({ mode: wbState.mode, sort: wbState.sort, cat: wbState.cat, status: wbState.status })); } catch (e) {}
+}
+// 词条寻址表：id 与标题皆可命中（与 worldbook_index 关系归纳层的 by_id 语义一致）
+const wbIdx = new Map();
+WB.entries.forEach((e, i) => {
+  if (e.id && !wbIdx.has(e.id)) wbIdx.set(e.id, i);
+  if (e.title && !wbIdx.has(e.title)) wbIdx.set(e.title, i);
+});
+const wbCatCount = {};
+WB.entries.forEach(e => { const c = e.cat || "总览"; wbCatCount[c] = (wbCatCount[c] || 0) + 1; });
+const wbName = e => String(e.title || e.id || "");
+// 三轴单源（Pinax UnifiedEntryBrowser 范式）：cat+status 轴同时驱动词条墙与图谱；q 在墙=过滤、在图=描环
+function wbAxisMatch(e) {
+  return (!wbState.cat || (e.cat || "总览") === wbState.cat) &&
+         (!wbState.status || (e.status || "active") === wbState.status);
+}
+function wbMatchQ(e) {
+  const q = wbState.q.trim().toLowerCase();
+  return !q || ((e.title || "") + (e.summary || "") + (e.tags || []).join(" ")).toLowerCase().includes(q);
+}
+function wbSortedIdx(catFilter) {
+  const out = WB.entries.map((e, i) => i).filter(i => !catFilter || (WB.entries[i].cat || "总览") === catFilter);
+  out.sort((a, b) => wbState.sort === "mtime"
+    ? (String(WB.entries[b].mtime || "").localeCompare(String(WB.entries[a].mtime || "")) || a - b)
+    : wbName(WB.entries[a]).localeCompare(wbName(WB.entries[b]), "zh"));
+  return out;
+}
+function wbFiltered() {
+  return wbSortedIdx(wbState.cat).filter(i => wbAxisMatch(WB.entries[i]) && wbMatchQ(WB.entries[i]));
+}
+function wbUpdateCount(shown) {
+  const el = document.getElementById("wbCount");
+  if (el) el.textContent = shown === WB.entries.length ? `词条 ${shown}` : `显示 ${shown} / ${WB.entries.length}`;
 }
 function renderWorldbook() {
+  if (!WB.entries.length) {
+    stopGraph(); graphCtl = null;
+    ovEl.innerHTML = `<div class="wrap"><div class="bar"><span class="chip">词条 0</span><span class="chip">关系 ${WB.relations.length}</span></div>` +
+      `<div class="empty">世界书无词条卡片——python tools/worldbook.py init ${esc(D.project || "")} 建骨架，写卡后重跑出板。</div></div>`;
+    return;
+  }
   const bar = `<div class="bar">` +
     `<input type="search" id="wbQ" placeholder="搜标题/摘要/标签" value="${esc(wbState.q)}">` +
-    `<select id="wbCat"><option value="">全部分类</option>` +
-    wbCats.map(c => `<option${c === wbState.cat ? " selected" : ""}>${esc(c)}</option>`).join("") +
-    `</select>` +
-    `<button class="btn${wbState.mode === "graph" ? " on" : ""}" id="wbGraphBtn">图谱</button>` +
-    `<span class="chip">词条 ${WB.entries.length}</span><span class="chip">关系 ${WB.relations.length}</span>` +
-    `</div>`;
-  ovEl.innerHTML = `<div class="wrap">${bar}<div id="wbBody"></div></div>`;
-  if (wbState.mode === "graph") { renderWbGraph(); }
-  else renderWbList();
+    `<button class="btn" id="wbSortT" title="点击切换排序">排序：${wbState.sort === "mtime" ? "更新时间" : "字母序"}</button>` +
+    `<span role="tablist" aria-label="视图切换">` + [["list", "列表"], ["graph", "图谱"], ["wiki", "wiki"]].map(([m, lab]) =>
+      `<button class="btn${wbState.mode === m ? " on" : ""}" role="tab" aria-selected="${wbState.mode === m}" data-m="${m}">${lab}</button>`).join("") + `</span>` +
+    `<span class="chip" id="wbCount"></span><span class="chip">关系 ${WB.relations.length}</span>` +
+    `<span id="wbCatInfo"></span></div>`;
+  ovEl.innerHTML = `<div class="wrap">${bar}<div class="wb3"><div class="wbtree" id="wbTree"></div><div class="wbmain" id="wbMain"></div></div></div>`;
   const q = document.getElementById("wbQ");
   q.addEventListener("input", () => {
     wbState.q = q.value;
-    if (wbState.mode === "list") renderWbList();
-    const n = document.getElementById("wbQ"); if (n) { n.focus(); n.setSelectionRange(n.value.length, n.value.length); }
+    if (graphCtl) graphCtl.set(); else renderWbMain();
   });
-  document.getElementById("wbCat").addEventListener("change", e => { wbState.cat = e.target.value; renderWbList(); });
-  document.getElementById("wbGraphBtn").addEventListener("click", () => {
-    wbState.mode = wbState.mode === "graph" ? "list" : "graph";
-    renderWorldbook();
+  document.getElementById("wbSortT").addEventListener("click", () => {
+    wbState.sort = wbState.sort === "title" ? "mtime" : "title";
+    saveWbView();
+    document.getElementById("wbSortT").textContent = "排序：" + (wbState.sort === "mtime" ? "更新时间" : "字母序");
+    if (!graphCtl) { renderWbSidebar(); renderWbMain(); }
+    else renderWbSidebar();
   });
-}
-function wbFiltered() {
-  const q = wbState.q.trim().toLowerCase();
-  return WB.entries.map((e, i) => [e, i]).filter(([e]) =>
-    (!wbState.cat || (e.cat || "总览") === wbState.cat) &&
-    (!q || ((e.title || "") + (e.summary || "") + (e.tags || []).join(" ")).toLowerCase().includes(q)));
-}
-function renderWbList() {
-  const body = document.getElementById("wbBody");
-  const hits = wbFiltered();
-  const groups = {};
-  for (const [e, i] of hits) (groups[e.cat || "总览"] = groups[e.cat || "总览"] || []).push([e, i]);
-  body.innerHTML = Object.keys(groups).sort((a, b) => a.localeCompare(b, "zh")).map(cat => {
-    const collapsed = wbState.collapsed.has(cat);
-    const rows = groups[cat].sort((a, b) => String(a[0].title || a[0].id).localeCompare(String(b[0].title || b[0].id), "zh"))
-      .map(([e, i]) => `<div class="row" data-wb="${i}">` +
-        `<b>${esc(e.title || e.id)}</b>` +
-        (e.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join("") +
-        `<span class="tm">${esc(e.mtime || "")}</span></div>`).join("");
-    return `<div class="grp-h" data-cat="${esc(cat)}"><span class="ar">${collapsed ? "▶" : "▼"}</span>` +
-      `${esc(cat)}<span class="n">${groups[cat].length}</span></div>` +
-      (collapsed ? "" : rows);
-  }).join("") || `<div class="empty">无匹配词条</div>`;
-  body.querySelectorAll(".grp-h").forEach(h => h.addEventListener("click", () => {
-    const c = h.dataset.cat;
-    wbState.collapsed.has(c) ? wbState.collapsed.delete(c) : wbState.collapsed.add(c);
-    renderWbList();
+  ovEl.querySelectorAll("[data-m]").forEach(b => b.addEventListener("click", () => {
+    const m = b.dataset.m;
+    if (m === "wiki") {
+      const t = wbState.sel >= 0 ? wbState.sel : wbFiltered()[0];
+      if (t !== undefined) wbShowWiki(t);
+      return;
+    }
+    wbState.mode = m; saveWbView(); renderWorldbook();
   }));
-  body.querySelectorAll(".row").forEach(r => r.addEventListener("click", () => wbDetail(+r.dataset.wb)));
+  renderWbSidebar();
+  wbPaintCat();
+  if (wbState.mode === "graph") { renderWbGraph(); return; }
+  graphCtl = null;
+  renderWbMain();                        // mode==="wiki" 时 renderWbMain 内部恢复详情
 }
-function wbLocate(i) {
-  wbState.mode = "list";
-  const e = WB.entries[i]; if (!e) { renderWorldbook(); return; }
-  wbState.collapsed.delete(e.cat || "总览");
-  wbState.cat = ""; wbState.q = "";
-  renderWorldbook();
-  const el = document.querySelector(`[data-wb="${i}"]`);
-  if (el) { el.scrollIntoView({ block: "center" }); el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1800); }
+// 左栏持久存在（图谱视图也不例外，Pinax ueb-side 范式）：分类树 + 状态过滤轴
+function wbSidebarHtml() {
+  const tree = [`<div class="tnode${wbState.cat === "" ? " on" : ""}" data-cat=""><span class="ar">•</span>全部词条<span class="n">${WB.entries.length}</span></div>`];
+  for (const cat of wbCats) {
+    const foldKey = "t:" + cat;
+    const collapsed = wbState.collapsed.has(foldKey);
+    tree.push(`<div class="tnode${cat === wbState.cat ? " on" : ""}" data-cat="${esc(cat)}">` +
+      `<span class="ar" data-fold="${esc(foldKey)}">${collapsed ? "▶" : "▼"}</span>${esc(cat)}` +
+      `<span class="n">${wbCatCount[cat]}</span></div>`);
+    if (!collapsed) {
+      tree.push(`<div class="sub">` + wbSortedIdx(cat).map(i =>
+        `<div class="tnode" data-go="${i}"><span class="ar">·</span>${esc(wbName(WB.entries[i]))}</div>`).join("") + `</div>`);
+    }
+  }
+  const st = `<div class="wbfilter" role="group" aria-label="状态过滤">` + WB_STATUS_OPTS.map(([v, l]) =>
+    `<button class="btn${wbState.status === v ? " on" : ""}" data-st="${v}">${l}</button>`).join("") + `</div>`;
+  return tree.join("") + st;
 }
-// 力导向图（Canvas）：节点按分类着色；拖节点 / 滚轮缩放 / 拖画布平移；点节点回列表定位
-let graphRAF = 0;
-function stopGraph() { if (graphRAF) { cancelAnimationFrame(graphRAF); graphRAF = 0; } }
+function renderWbSidebar() {
+  const el = document.getElementById("wbTree");
+  if (!el) return;
+  el.innerHTML = wbSidebarHtml();
+  el.querySelectorAll("[data-fold]").forEach(a => a.addEventListener("click", ev => {
+    ev.stopPropagation();
+    const k = a.dataset.fold;
+    wbState.collapsed.has(k) ? wbState.collapsed.delete(k) : wbState.collapsed.add(k);
+    renderWbSidebar();
+  }));
+  el.querySelectorAll(".tnode[data-cat]").forEach(t => t.addEventListener("click", () => wbSetCat(t.dataset.cat)));
+  el.querySelectorAll(".tnode[data-go]").forEach(t => t.addEventListener("click", () => wbShowWiki(+t.dataset.go)));
+  el.querySelectorAll("[data-st]").forEach(b => b.addEventListener("click", () => {
+    wbState.status = b.dataset.st; saveWbView();
+    renderWbSidebar();
+    if (graphCtl) graphCtl.set(); else renderWbMain();
+  }));
+}
+function wbSetCat(c) {
+  wbState.cat = c; saveWbView();
+  renderWbSidebar(); wbPaintCat();
+  if (graphCtl) graphCtl.set(); else renderWbMain();
+}
+function wbPaintCat() {
+  const el = document.getElementById("wbCatInfo");
+  if (!el) return;
+  el.innerHTML = wbState.cat
+    ? `<span class="chip g">分类：${esc(wbState.cat)}</span><button class="btn" id="wbClr">清除筛选</button>`
+    : "";
+  const c = document.getElementById("wbClr");
+  if (c) c.addEventListener("click", () => wbSetCat(""));
+}
+// 中栏：统一浏览器词条墙（过滤+搜索+排序结果列表，选中行高亮；Enter 直达 wiki）
+function renderWbMain() {
+  stopGraph();
+  const main = document.getElementById("wbMain");
+  if (!main) return;
+  const hits = wbFiltered();
+  wbUpdateCount(hits.length);
+  main.innerHTML = hits.map(i => {
+    const e = WB.entries[i];
+    return `<div class="row${i === wbState.sel ? " on" : ""}" data-wb="${i}" tabindex="0">` +
+      `<span class="dot" style="background:${wbColor[e.cat || "总览"] || "#8a8375"}"></span>` +
+      `<b>${esc(wbName(e))}</b>` +
+      (e.tags || []).slice(0, 3).map(t => `<span class="tag">${esc(t)}</span>`).join("") +
+      `<span class="tm">${esc(e.mtime || "")}</span></div>`;
+  }).join("") || `<div class="empty">无匹配词条</div>`;
+  main.querySelectorAll(".row").forEach(r => {
+    r.addEventListener("click", () => wbShowWiki(+r.dataset.wb));
+    r.addEventListener("keydown", ev => { if (ev.key === "Enter") wbShowWiki(+r.dataset.wb); });
+  });
+  if (wbState.mode === "wiki") {           // wiki 覆盖态：详情随墙走
+    const t = wbState.sel >= 0 && WB.entries[wbState.sel] ? wbState.sel : hits[0];
+    if (t !== undefined) { wbState.sel = t; wbOpenDetail(t); }
+  }
+}
+// 词条 wiki 页（详情面板内）：frontmatter 字段表 + 关联词条跳转链 + 正文页内直读
+function wbWikiHtml(i) {
+  const e = WB.entries[i];
+  const histPos = wbState.hist.length ? `${wbState.hi + 1}/${wbState.hist.length}` : "";
+  const nav = `<div class="wikibar">` +
+    `<button class="btn" id="wbHb"${wbState.hi <= 0 ? " disabled" : ""} title="返回上一个词条">‹ 返回</button>` +
+    `<button class="btn" id="wbHf"${wbState.hi >= wbState.hist.length - 1 ? " disabled" : ""} title="前进">前进 ›</button>` +
+    (histPos ? `<span class="chip">${histPos}</span>` : "") +
+    (e.path ? `<button class="btn" id="wbToDoc" title="在文档分栏打开原文件">分栏打开</button>` : "") +
+    `</div>`;
+  const fields = [
+    ["标题", esc(wbName(e))],
+    ["分类", `<span class="dot" style="background:${wbColor[e.cat || "总览"] || "#8a8375"};margin-right:6px"></span>${esc(e.cat || "总览")}`],
+    ["状态", `<span class="${stCls(e.status)} mono">${esc(e.status || "active")}</span>`],
+    ["版本", esc(e.version || "") || '<span class="none">—</span>'],
+    ["标签", (e.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join("") || '<span class="none">—</span>'],
+    ["摘要", esc(e.summary || "") || '<span class="none">—</span>'],
+    ["更新时间", `<span class="mono">${esc(e.mtime || "")}</span>`],
+    ["路径", `<span class="mono">${esc(e.path || "")}</span>`],
+  ];
+  const linkChips = (e.links || []).map(l => {
+    const t = wbIdx.get(l);
+    return t === undefined
+      ? `<span class="lk dead" title="链接目标词条不存在">${esc(l)}</span>`
+      : `<button class="lk" data-go="${t}">${esc(wbName(WB.entries[t]))}</button>`;
+  }).join("") || '<span class="none">—</span>';
+  const rels = WB.relations.filter(r => r.a === e.id || r.b === e.id).map(r => {
+    const oid = r.a === e.id ? r.b : r.a;
+    const t = wbIdx.get(oid);
+    return `<div style="margin:2px 0">` +
+      (t === undefined ? `<span class="muted mono">${esc(oid)}</span>`
+        : `<button class="lk" data-go="${t}">${esc(wbName(WB.entries[t]))}</button>`) +
+      ` <span class="muted mono" style="font-size:11px">· ${esc(r.src)} · ${r.weight}</span></div>`;
+  }).join("") || '<span class="none">—</span>';
+  return nav +
+    `<div class="w5">` + fields.map(([k, v]) => `<div class="k5">${k}</div><div class="v5">${v}</div>`).join("") + `</div>` +
+    `<div style="margin-top:14px"><div class="k5" style="margin-bottom:6px">关联词条</div>${linkChips}</div>` +
+    `<div style="margin-top:14px"><div class="k5" style="margin-bottom:6px">关系边</div>${rels}</div>` +
+    `<div class="wbd"><div class="bar" style="margin-bottom:8px"><span class="chip">正文</span><span id="wbDocStat"></span></div>` +
+    `<div id="wbDoc"><div class="empty">读取中…</div></div></div>`;
+}
+function wbOpenDetail(i) {
+  const e = WB.entries[i]; if (!e) return;
+  openDetail("wbwiki:" + (e.id || e.path || i), wbName(e),
+    `${e.cat || "总览"} · ${e.path || ""}`, wbWikiHtml(i), () => wireWiki(i));
+}
+function wbShowWiki(i) {
+  if (!WB.entries[i]) return;
+  if (wbState.hist[wbState.hi] !== i) {          // 跳转链历史栈：截断前向分支再入栈
+    wbState.hist = wbState.hist.slice(0, wbState.hi + 1);
+    wbState.hist.push(i);
+    wbState.hi = wbState.hist.length - 1;
+  }
+  wbState.sel = i;
+  wbState.mode = "wiki";
+  saveWbView();
+  if (state.ovPanel === "worldbook" && !document.body.classList.contains("ov-folded")) renderWorldbook();
+  else wbOpenDetail(i);
+}
+function wbHistGo(d) {
+  const t = wbState.hi + d;
+  if (t < 0 || t >= wbState.hist.length) return;
+  wbState.hi = t;
+  wbState.sel = wbState.hist[t];
+  wbOpenDetail(wbState.sel);
+  if (wbState.mode !== "graph") renderWbMain();   // 同步中栏选中行高亮
+}
+function wireWiki(i) {
+  const hb = document.getElementById("wbHb"); if (hb) hb.addEventListener("click", () => wbHistGo(-1));
+  const hf = document.getElementById("wbHf"); if (hf) hf.addEventListener("click", () => wbHistGo(1));
+  const td = document.getElementById("wbToDoc"); if (td) td.addEventListener("click", () => openDocA(WB.entries[i].path));
+  dtBody.querySelectorAll(".lk[data-go]").forEach(b => b.addEventListener("click", () => wbShowWiki(+b.dataset.go)));
+  wbLoadBody(i);
+}
+function wbLoadBody(i) {
+  const e = WB.entries[i];
+  const box = document.getElementById("wbDoc");
+  const stat = document.getElementById("wbDocStat");
+  if (!box) return;
+  if (!e.path) { box.innerHTML = `<div class="empty">词条无源文件路径</div>`; return; }
+  if (!fsRoot) {
+    box.innerHTML = `<div class="empty">正文不内嵌于看板数据（出板规格）——授权项目目录（只读）后页内直读。<br><br>` +
+      `<button class="btn" id="wbAuth">授权项目目录</button></div>`;
+    const a = document.getElementById("wbAuth");
+    if (a) a.addEventListener("click", () => fsPick(() => wbLoadBody(wbState.sel >= 0 ? wbState.sel : i)));
+    return;
+  }
+  box.innerHTML = `<div class="empty">读取中…</div>`;
+  fsRead(e.path)
+    .then(f => { if (stat) stat.textContent = `${f.size} 字节`; return f.slice(0, 200 * 1024).text(); })
+    .then(t => {
+      if (t.charCodeAt(0) === 0xFEFF) t = t.slice(1);
+      const bare = t.replace(/^---[ \t]*\r?\n[\s\S]*?\r?\n---[ \t]*\r?\n?/, "");
+      box.innerHTML = `<article class="doc">${mdRender(bare)}</article>`;
+    })
+    .catch(err => {
+      if (stat) stat.textContent = "";
+      box.innerHTML = `<div class="empty">读取失败：${esc(err.message || err)}<br>路径 ${esc(e.path)}（须授权该词条所属项目目录）</div>`;
+    });
+}
+// 力导向图（Canvas）：节点按分类着色；拖节点 / 滚轮缩放 / 拖画布平移；点节点打开 wiki 词条页。
+// Pinax GraphCanvas 范式：过滤轴与词条墙同源——按轴隐藏节点但布局不重排（原位收窄）；检索命中集合描环。
+let graphRAF = 0, graphTeardown = null, graphCtl = null;
+function stopGraph() {
+  if (graphRAF) { cancelAnimationFrame(graphRAF); graphRAF = 0; }
+  if (graphTeardown) { graphTeardown(); graphTeardown = null; }   // 摘除上一幅图的 window 级拖拽监听
+}
 function renderWbGraph() {
-  const body = document.getElementById("wbBody");
-  body.innerHTML = `<div id="cvwrap"><canvas id="cv"></canvas></div>` +
-    (wbCats.length ? `<div style="margin-top:8px">` + wbCats.map(c =>
-      `<span class="lg"><span class="dot" style="background:${wbColor[c]}"></span>${esc(c)}</span>`).join("") +
-      `</div><div class="note">拖节点 / 空白平移 / 滚轮缩放；点节点回列表定位。</div>` : "");
+  stopGraph();
+  const main = document.getElementById("wbMain");
+  main.innerHTML = `<div id="cvwrap"><canvas id="cv"></canvas></div>` +
+    (wbCats.length ? `<div id="wbLeg" style="margin-top:8px">` + wbCats.map(c =>
+      `<span class="lg" data-cat="${esc(c)}"><span class="dot" style="background:${wbColor[c]}"></span>${esc(c)}</span>`).join("") +
+      `</div><div class="note">图例点击=分类过滤；拖节点 / 空白平移 / 滚轮缩放；点节点打开 wiki 词条页。</div>` : "");
   const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+  let vis = null, hi = null;   // vis=null=全量；hi=检索命中集合（描环）
+  function paintLeg() {
+    document.querySelectorAll("#wbLeg .lg").forEach(el => {
+      el.classList.toggle("on", el.dataset.cat === wbState.cat);
+      el.classList.toggle("off", !!wbState.cat && el.dataset.cat !== wbState.cat);
+    });
+  }
+  function applyFilter() {
+    vis = (wbState.cat || wbState.status)
+      ? new Set(WB.entries.map((e, i) => i).filter(i => wbAxisMatch(WB.entries[i])))
+      : null;
+    hi = wbState.q.trim()
+      ? new Set(WB.entries.map((e, i) => i).filter(i => wbAxisMatch(WB.entries[i]) && wbMatchQ(WB.entries[i])))
+      : null;
+    wbUpdateCount(vis ? vis.size : WB.entries.length);
+    paintLeg();
+  }
+  graphCtl = { set: applyFilter };
+  applyFilter();
+  if (main) main.querySelectorAll("#wbLeg .lg").forEach(el => el.addEventListener("click", () => {
+    wbSetCat(el.dataset.cat === wbState.cat ? "" : el.dataset.cat);
+  }));
   let W = 0, H = 0, DPR = 1;
   const view = { tx: 0, ty: 0, scale: 1 };
   const nodes = WB.entries.map((e, i) => ({ i, id: e.id, title: e.title || e.id, cat: e.cat || "总览", r: 6 }));
@@ -590,11 +830,20 @@ function renderWbGraph() {
     ctx.setTransform(DPR * view.scale, 0, 0, DPR * view.scale, DPR * view.tx, DPR * view.ty);
     ctx.lineWidth = 1 / view.scale;
     ctx.strokeStyle = "rgba(138,131,117,0.22)";
-    for (const [a, b] of links) { ctx.beginPath(); ctx.moveTo(nodes[a].x, nodes[a].y); ctx.lineTo(nodes[b].x, nodes[b].y); ctx.stroke(); }
+    for (const [a, b] of links) {
+      if (vis && (!vis.has(a) || !vis.has(b))) continue;
+      ctx.beginPath(); ctx.moveTo(nodes[a].x, nodes[a].y); ctx.lineTo(nodes[b].x, nodes[b].y); ctx.stroke(); }
     ctx.textAlign = "center"; ctx.textBaseline = "top";
+    const accent = getComputedStyle(document.body).getPropertyValue("--accent") || "#e8b33d";
     for (const n of nodes) {
+      if (vis && !vis.has(n.i)) continue;
       ctx.fillStyle = wbColor[n.cat] || "#8a8375";
       ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, 6.2832); ctx.fill();
+      if (hi && hi.has(n.i)) {
+        ctx.strokeStyle = accent; ctx.lineWidth = 2 / view.scale;
+        ctx.beginPath(); ctx.arc(n.x, n.y, n.r + 3 / view.scale, 0, 6.2832); ctx.stroke();
+        ctx.lineWidth = 1 / view.scale;
+      }
       ctx.font = `${11 / view.scale}px "Noto Sans SC",system-ui,sans-serif`;
       ctx.fillStyle = getComputedStyle(document.body).getPropertyValue("--ink") || "#d8d4cb";
       ctx.fillText(n.title, n.x, n.y + n.r + 2 / view.scale);
@@ -605,21 +854,25 @@ function renderWbGraph() {
   let dragNode = null, panning = false, moved = 0, px = 0, py = 0;
   const toWorld = (mx, my) => ({ x: (mx - view.tx) / view.scale, y: (my - view.ty) / view.scale });
   const pick = (mx, my) => { const p = toWorld(mx, my); let best = null, bd = 1e9;
-    for (const n of nodes) { const dx = n.x - p.x, dy = n.y - p.y, d = dx * dx + dy * dy, rr = n.r + 5;
+    for (const n of nodes) { if (vis && !vis.has(n.i)) continue;
+      const dx = n.x - p.x, dy = n.y - p.y, d = dx * dx + dy * dy, rr = n.r + 5;
       if (d < rr * rr && d < bd) { best = n; bd = d; } } return best; };
   cv.addEventListener("mousedown", e => { const r = cv.getBoundingClientRect();
     const mx = e.clientX - r.left, my = e.clientY - r.top, n = pick(mx, my);
     moved = 0; px = mx; py = my;
     if (n) { dragNode = n; n.fixed = true; alpha = Math.max(alpha, 0.5); } else panning = true; });
-  window.addEventListener("mousemove", e => { const r = cv.getBoundingClientRect();
+  const mm = e => { const r = cv.getBoundingClientRect();
     const mx = e.clientX - r.left, my = e.clientY - r.top;
     if (dragNode) { const p = toWorld(mx, my); dragNode.x = p.x; dragNode.y = p.y;
       moved += Math.abs(mx - px) + Math.abs(my - py); alpha = Math.max(alpha, 0.3); px = mx; py = my; return; }
-    if (panning) { view.tx += mx - px; view.ty += my - py; moved += Math.abs(mx - px) + Math.abs(my - py); px = mx; py = my; } });
-  window.addEventListener("mouseup", () => {
-    if (dragNode && moved < 5) { const i = dragNode.i; dragNode.fixed = false; dragNode = null; panning = false; wbLocate(i); return; }
+    if (panning) { view.tx += mx - px; view.ty += my - py; moved += Math.abs(mx - px) + Math.abs(my - py); px = mx; py = my; } };
+  const mu = () => {
+    if (dragNode && moved < 5) { const i = dragNode.i; dragNode.fixed = false; dragNode = null; panning = false; wbShowWiki(i); return; }
     if (dragNode) dragNode.fixed = false;
-    dragNode = null; panning = false; });
+    dragNode = null; panning = false; };
+  window.addEventListener("mousemove", mm);
+  window.addEventListener("mouseup", mu);
+  graphTeardown = () => { window.removeEventListener("mousemove", mm); window.removeEventListener("mouseup", mu); };
   cv.addEventListener("wheel", e => { e.preventDefault(); const r = cv.getBoundingClientRect();
     const mx = e.clientX - r.left, my = e.clientY - r.top, f = e.deltaY < 0 ? 1.12 : 1 / 1.12;
     const ns = Math.max(0.05, Math.min(8, view.scale * f));
@@ -803,11 +1056,12 @@ let fsRoot = null;
 const docState = { a: "", b: "", parallel: false };
 let splitRatio = 0.5;
 try { const r0 = +localStorage.getItem(SPLIT_KEY); if (r0 > 0.1 && r0 < 0.9) splitRatio = r0; } catch (e) {}
-async function fsPick() {
+async function fsPick(cb) {
   if (!window.showDirectoryPicker) { alert("本浏览器无文件系统访问能力，文档阅读不可用"); return; }
   try {
     fsRoot = await window.showDirectoryPicker({ mode: "read" });
   } catch (e) { return; }
+  if (cb) { cb(); return; }
   renderDoc();
 }
 async function fsRead(rel) {
@@ -877,7 +1131,7 @@ function renderDoc() {
     (par ? `<div id="docGutter" title="拖动调整分栏比例"></div>` +
       `<div class="dcol" id="dcolB" style="flex:1 1 auto">` + paneBar("B", docState.b, false) + `</div>` : "") +
     `</div>`;
-  const auth = document.getElementById("docAuth"); if (auth) auth.addEventListener("click", fsPick);
+  const auth = document.getElementById("docAuth"); if (auth) auth.addEventListener("click", () => fsPick());
   const fold = document.getElementById("docFold"); if (fold) fold.addEventListener("click", foldOverview);
   const sp = document.getElementById("docSplit");
   if (sp) sp.addEventListener("click", () => {
